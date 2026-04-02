@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>XT - Treinamento</title>
     <link rel="stylesheet" href="css/docs.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
@@ -16,6 +17,9 @@
     <a id="topbar-title" href="index.html">XT - Treinamento</a>
 
     <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
+        <button onclick="changeZoom(-0.1)" title="Diminuir zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 8px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#8722;</button>
+        <span id="zoom-label" onclick="toggleZoomMenu()" style="cursor:pointer;font-size:0.82em;color:#555;min-width:40px;text-align:center;position:relative;">100%<div id="zoom-menu" style="display:none;position:absolute;top:100%;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #dde1e7;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.1);margin-top:8px;z-index:300;padding:4px 0;white-space:nowrap;"><a onclick="setZoom(0.75)" style="display:block;padding:6px 16px;color:#333;text-decoration:none;font-size:13px;cursor:pointer;">75%</a><a onclick="setZoom(1)" style="display:block;padding:6px 16px;color:#333;text-decoration:none;font-size:13px;cursor:pointer;">100%</a><a onclick="setZoom(1.25)" style="display:block;padding:6px 16px;color:#333;text-decoration:none;font-size:13px;cursor:pointer;">125%</a><a onclick="setZoom(1.5)" style="display:block;padding:6px 16px;color:#333;text-decoration:none;font-size:13px;cursor:pointer;">150%</a></div></span>
+        <button onclick="changeZoom(0.1)" title="Aumentar zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 8px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#43;</button>
         <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
     </div>
 </div>
@@ -25,34 +29,7 @@
 
 <!-- DRAWER -->
 <div id="drawer">
-<div id="drawer-inner">
-
-    <div class="menu-group">
-        <div class="menu-group-header" onclick="toggleGroup(this)">
-            NOVO MODULO
-            <span class="menu-group-arrow">&#9660;</span>
-        </div>
-        <div class="menu-group-items">
-            <a class="menu-item" href="pages/1-novo-modulo/novo-modulo.html">Ver episódio</a>
-            <a class="menu-item" href="pages/1-novo-modulo/ModuloManager.html">1º — ModuloManager</a>
-            <a class="menu-item" href="pages/1-novo-modulo/ModuloHome.html">2º — ModuloHome</a>
-            <a class="menu-item" href="pages/1-novo-modulo/ModuloMdFactory.html">3º — ModuloMdFactory</a>
-            <a class="menu-item" href="pages/1-novo-modulo/rootmanager.html">4º — RootManager</a>
-            <a class="menu-item" href="pages/1-novo-modulo/AppsRootModelFactory.html">5º — AppsRootModelFactory</a>
-        </div>
-    </div>
-
-    <div class="menu-group">
-        <div class="menu-group-header" onclick="toggleGroup(this)">
-            CRUD
-            <span class="menu-group-arrow">&#9660;</span>
-        </div>
-        <div class="menu-group-items">
-            <a class="menu-item" href="pages/2-crud/crud.html">Ver episódio</a>
-        </div>
-    </div>
-
-</div>
+<div id="drawer-inner"></div>
 </div>
 
 <!-- CONTENT -->
@@ -67,25 +44,27 @@
     <div class="home-grid">
 
         <div class="home-card" onclick="location.href='pages/1-novo-modulo/novo-modulo.html'">
-            <div class="home-card-icon" style="background:#7A3E9D;">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18L20 8.5v7L12 19.82 4 15.5v-7L12 4.18z"/></svg>
+            <div class="home-card-icon" style="background-color:#7A3E9D;">
+                <i class="fa-solid fa-cube"></i>
             </div>
             <div class="home-card-body">
                 <h3>NOVO MODULO</h3>
                 <p>Estrutura base de um módulo no framework Jasap: Manager, Home, MdFactory e entidades.</p>
             </div>
-            <span class="home-card-btn" style="border-color:#7A3E9D;color:#7A3E9D;">Ver docs</span>
+            <a class="home-card-btn" style="border-color:#7A3E9D; color:#7A3E9D;"
+               onmouseover="this.style.background='#7A3E9D'; this.style.color='#fff';"
+               onmouseout="this.style.background='transparent'; this.style.color='#7A3E9D';">Ver docs</a>
         </div>
 
-        <div class="home-card" onclick="location.href='pages/2-crud/crud.html'">
-            <div class="home-card-icon" style="background:#d97706;">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M3 5h2V3H3v2zm0 8h2v-2H3v2zm0 8h2v-2H3v2zm4-16v2h14V5H7zm0 10h14v-2H7v2zm0 8h14v-2H7v2z"/></svg>
+        <div class="home-card home-card--empty">
+            <div class="home-card-icon" style="background-color:#d97706;">
+                <i class="fa-solid fa-list"></i>
             </div>
             <div class="home-card-body">
                 <h3>CRUD</h3>
                 <p>Listagem, formulário e exclusão de registros no framework Jasap.</p>
             </div>
-            <span class="home-card-btn" style="border-color:#d97706;color:#d97706;">Ver docs</span>
+            <span class="home-card-btn" style="border-color:#999; color:#999;">Em breve</span>
         </div>
 
     </div>
@@ -93,44 +72,7 @@
 </div>
 
 <div id="footer">
-    <div id="footer-inner">
-        <div>
-            <h3>NOVO MODULO</h3>
-            <a href="pages/1-novo-modulo/novo-modulo.html">Ver episódio</a>
-            <a href="pages/1-novo-modulo/ModuloManager.html">ModuloManager</a>
-            <a href="pages/1-novo-modulo/ModuloHome.html">ModuloHome</a>
-            <a href="pages/1-novo-modulo/ModuloMdFactory.html">ModuloMdFactory</a>
-            <a href="pages/1-novo-modulo/rootmanager.html">RootManager</a>
-            <a href="pages/1-novo-modulo/AppsRootModelFactory.html">AppsRootModelFactory</a>
-        </div>
-        <div>
-            <h3>CRUD</h3>
-            <a href="pages/2-crud/crud.html">Ver episódio</a>
-        </div>
-        <div>
-            <h3>Conceitos</h3>
-            <a href="#">O que é uma Action</a>
-            <a href="#">O que é um Manager</a>
-            <a href="#">O que é um DAO</a>
-            <a href="#">O que é um Bean</a>
-            <a href="#">Fluxo de uma requisição</a>
-        </div>
-        <div>
-            <h3>Padrões</h3>
-            <a href="#">Nomenclatura de arquivos</a>
-            <a href="#">Constante ROOT</a>
-            <a href="#">Campo qs_xxx</a>
-            <a href="#">LinkBox e FK</a>
-            <a href="#">Detail e N-N</a>
-        </div>
-        <div>
-            <h3>Referências</h3>
-            <a href="#">CLAUDE.md</a>
-            <a href="#">Jasap — código-fonte</a>
-            <a href="#">app — modelo</a>
-            <a href="#">Banco PRD_ZERO</a>
-        </div>
-    </div>
+    <div id="footer-inner"></div>
 </div>
 
 </div>
@@ -138,6 +80,25 @@
 </div> <!-- layout -->
 
 <script>
+let zoom = 1;
+function changeZoom(delta) { setZoom(zoom + delta); }
+function setZoom(value) {
+    zoom = Math.min(2, Math.max(0.5, value));
+    document.getElementById('content').style.fontSize = zoom + 'em';
+    document.getElementById('zoom-label').childNodes[0].textContent = Math.round(zoom * 100) + '%';
+    document.getElementById('zoom-menu').style.display = 'none';
+}
+function toggleZoomMenu() {
+    const menu = document.getElementById('zoom-menu');
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', function(e) {
+    const label = document.getElementById('zoom-label');
+    if (label && !label.contains(e.target)) {
+        document.getElementById('zoom-menu').style.display = 'none';
+    }
+});
+
 function toggleDrawer() {
     const drawer = document.getElementById('drawer');
     drawer.classList.toggle('open');
@@ -166,6 +127,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 </script>
+<script src="js/menu.js"></script>
+<script src="js/footer.js"></script>
 
 </body>
 </html>

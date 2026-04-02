@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RootManager — XT - Treinamento</title>
+    <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
+    <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="../../css/docs.css">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+    <button id="hamburger" onclick="toggleDrawer()">
+        <span></span><span></span><span></span>
+    </button>
+    <a id="topbar-title" href="../../index.html">XT - Treinamento</a>
+    <nav class="breadcrumb-nav">
+        <span class="breadcrumb-sep">›</span>
+        <a href="novo-modulo.html">Novo Módulo</a>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-current">RootManager</span>
+    </nav>
+
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
+        <button onclick="changeZoom(-0.1)" title="Diminuir zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 8px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#8722;</button>
+        <button onclick="changeZoom(0)" title="Resetar zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:0.85em;padding:4px 6px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">100%</button>
+        <button onclick="changeZoom(0.1)" title="Aumentar zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 8px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#43;</button>
+        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
+    </div>
+
+</div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+<!-- DRAWER -->
+<div id="drawer">
+<div id="drawer-inner"></div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+<div id="content-inner">
+
+<h1>RootManager <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="6-RootManager/audio/RootManager.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<div class="carousel" data-path="6-RootManager/img/"></div>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">VISÃO GERAL</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+
+<p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="new NovoModuloManager().config()|import br.xt.app.novoModulo.NovoModuloManager"><code class="language-java">package br.xt;
+
+import br.jasap.core.JasapRootManager;
+import br.jasap.dao.DataBase;
+import br.jasap.util.filters.EffectFilter;
+import br.xt.app.painel.PnlManager;
+import br.xt.acore.filters.AAFilter;
+import br.xt.acore.filters.ErrorFilter;
+import br.xt.acore.filters.PerfFilter;
+import br.xt.acore.filters.PermissaoFilter;
+import br.xt.acore.filters.DataBaseFilter;
+import br.xt.app.ged.GedManager;
+import br.xt.acore.desk.HomeManager;
+import br.xt.app.laboratorio.LaboratorioManager;
+import br.xt.app.novoModulo.NovoModuloManager;
+
+public class RootManager extends JasapRootManager {
+
+    @Override
+    public void config() throws Exception {
+
+        regAction(AppsUpdateProgress.CheckProgress.class);
+        regAction(AppsUpdateProgress.StopProgress.class);
+
+        new PnlManager().config();
+        new HomeManager().config();
+        new GedManager().config();
+        new LaboratorioManager().config();
+        new NovoModuloManager().config();
+    }
+
+    @Override
+    public void sessionConfig() {
+    }
+
+    @Override
+    public void configGlobalFilters() throws Exception {
+
+        getGlobalFilters().add(
+            new DataBaseFilter(
+                true,
+                "BANCO_TREINAMENTO",
+                DataBase.POSTGRES,
+                "localhost",
+                5432,
+                "PRD_TREINAMENTO",
+                "postgres",
+                "masterkey"
+            )
+        );
+
+        getGlobalFilters().add(new PerfFilter());
+        getGlobalFilters().add(new EffectFilter());
+        getGlobalFilters().add(new AAFilter());
+        getGlobalFilters().add(new ErrorFilter());
+        getGlobalFilters().add(new PermissaoFilter());
+    }
+}</code></pre>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">RootManager (config)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="6-RootManager/audio/RootManager-config.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<h2 data-nav="extends JasapRootManager"><code class="explicacao">public class RootManager extends JasapRootManager</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>RootManager</code></td><td>Existe apenas uma instância desta classe no sistema. O Jasap a instancia automaticamente na inicialização do servidor (startup do Tomcat)</td></tr>
+    <tr><td><code>extends JasapRootManager</code></td><td>Herda do núcleo do Jasap os métodos <code>regAction()</code> e <code>getGlobalFilters()</code>. Também define o contrato: os três métodos <code>config()</code>, <code>sessionConfig()</code> e <code>configGlobalFilters()</code> precisam existir</td></tr>
+</table>
+</div>
+
+<h2 data-nav="throws Exception"><code class="explicacao">public void config() throws Exception</code></h2>
+
+<p><code>throws Exception</code> significa que se algo der errado aqui, a exceção sobe direto para o Jasap → Tomcat. Não existe nenhum <code>try/catch</code> acima dele dentro do projeto — é o fim da linha. Se falhar, o <strong>deploy não sobe</strong> e o servidor não inicia. Por isso erros no <code>config()</code> são graves: não é um erro em tempo de execução que aparece pro usuário, é um erro que impede o sistema inteiro de funcionar.</p>
+
+<h2 data-nav="AppsUpdateProgress"><code class="explicacao">regAction(AppsUpdateProgress.CheckProgress.class)<br>regAction(AppsUpdateProgress.StopProgress.class)</code></h2>
+
+<p>Utilitário de <strong>barra de progresso</strong> para operações demoradas no servidor (atualizações de banco em lote, importações, relatórios pesados). Funciona como uma criança no banco de trás do carro:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Action</th><th>O que faz</th></tr>
+    <tr><td><code>CheckProgress</code></td><td>"Já chegou?" — o browser fica fazendo chamadas Ajax periódicas perguntando o percentual atual. O servidor responde ("falta 40%") e o browser desenha a barra de progresso na tela</td></tr>
+    <tr><td><code>StopProgress</code></td><td>"Para o carro!" — permite cancelar a operação em andamento. O servidor interrompe a thread de processamento</td></tr>
+</table>
+</div>
+
+<p>Estão registradas fora de qualquer módulo (direto no RootManager, antes dos managers) porque são <strong>transversais</strong> — qualquer módulo do sistema pode precisar mostrar uma barra de progresso.</p>
+
+<h2 data-nav="registro dos módulos"><code class="explicacao">new XxxManager().config()</code></h2>
+
+<p>Aqui o gerente geral do prédio chega às 6h e entrega o crachá para cada gerente de departamento. Cada linha instancia um manager e chama o <code>config()</code> dele, que por sua vez registra todos os funcionários (<code>regAction</code>) e configura os crachás de acesso internos (<code>regFun</code>).</p>
+
+<div class="table-wrap">
+<table class="nowrap-col1">
+    <tr><th>Linha</th><th>O que registra</th></tr>
+    <tr><td><code>new PnlManager().config()</code></td><td>Departamento de segurança — usuários, permissões, sessões. <strong>Deve ser o primeiro:</strong> ele fabrica os crachás de permissão que os outros departamentos dependem</td></tr>
+    <tr><td><code>new HomeManager().config()</code></td><td>Recepção — tela inicial do sistema (desk)</td></tr>
+    <tr><td><code>new GedManager().config()</code></td><td>Arquivo de documentos — gestão de documentos</td></tr>
+    <tr><td><code>new LaboratorioManager().config()</code></td><td>Laboratório — módulo já existente no sistema</td></tr>
+    <tr><td><code>new NovoModuloManager().config()</code></td><td>O novo departamento — <strong>única linha que o aluno adiciona</strong> ao criar um módulo</td></tr>
+</table>
+</div>
+
+<h2 data-nav="sessionConfig()"><code class="explicacao">sessionConfig()</code></h2>
+
+<p>Corpo vazio neste projeto. O Jasap chama este método <strong>toda vez que um usuário faz login</strong> — serve para inicializar dados na sessão (preferências, cache, configurações padrão). É como se o gerente geral tivesse um checklist para preencher cada vez que um funcionário bate o ponto de manhã. Neste prédio, o checklist existe mas está em branco — todo mundo entra e vai direto trabalhar.</p>
+
+<p>O método precisa existir porque o <code>JasapRootManager</code> exige — é parte do contrato. Se remover, não compila. Em projetos reais seria usado para carregar preferências do usuário, cachear permissões ou configurar fuso horário.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">RootManager (configGlobalFilters)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="6-RootManager/audio/RootManager-configGlobalFilters.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>O <code>configGlobalFilters()</code> configura a <strong>portaria do prédio</strong> — as regras que todo mundo tem que passar antes de chegar ao departamento. Cada filtro é um "guarda" na entrada, em fila. Na <strong>ida</strong> (entrando) passam na ordem 1→6 antes de chegar à action; na <strong>volta</strong> (saindo) passam em ordem inversa 6→1 após a action terminar.</p>
+
+<h2 data-nav="DataBaseFilter"><code class="explicacao">new DataBaseFilter(...)</code></h2>
+
+<p>O primeiro filtro da cadeia — abre a conexão com o banco de dados. Os parâmetros de conexão:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Parâmetro</th><th>Valor</th><th>O que é</th></tr>
+    <tr><td>autocommit</td><td><code>true</code></td><td>Ativa o autocommit na conexão — cada operação SQL é confirmada automaticamente, sem precisar chamar <code>commit()</code> manualmente</td></tr>
+    <tr><td>nome do pool</td><td><code>"BANCO_TREINAMENTO"</code></td><td>Identificador interno do pool de conexões — usado pelo framework para gerenciar as conexões</td></tr>
+    <tr><td>tipo</td><td><code>DataBase.POSTGRES</code></td><td>Qual banco de dados — PostgreSQL neste projeto</td></tr>
+    <tr><td>host</td><td><code>"localhost"</code></td><td>Endereço do servidor de banco — máquina local</td></tr>
+    <tr><td>porta</td><td><code>5432</code></td><td>Porta padrão do PostgreSQL</td></tr>
+    <tr><td>banco</td><td><code>"PRD_TREINAMENTO"</code></td><td>Nome do banco de dados no PostgreSQL</td></tr>
+    <tr><td>usuário</td><td><code>"postgres"</code></td><td>Usuário de conexão com o banco</td></tr>
+    <tr><td>senha</td><td><code>"1234"</code></td><td>Senha do usuário</td></tr>
+</table>
+</div>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Filtro</th><th>Ida (request)</th><th>Volta (response)</th></tr>
+    <tr><td><code>DataBaseFilter</code></td><td>Abre o portão do estacionamento — abre a conexão com o banco e disponibiliza para toda a cadeia</td><td>Fecha o portão — fecha a conexão e devolve ao pool</td></tr>
+    <tr><td><code>PerfFilter</code></td><td>O segurança que anota a hora que você entrou</td><td>Anota quanto tempo ficou — calcula o tempo total de processamento</td></tr>
+    <tr><td><code>EffectFilter</code></td><td>Na ida só observa, apenas repassa</td><td>Na volta, empacota tudo que o departamento produziu — serializa todos os <code>eval()</code> e <code>update()</code> em JSON para o browser</td></tr>
+    <tr><td><code>AAFilter</code></td><td>"Você tem crachá?" — verifica se o usuário está autenticado. Se não estiver, barra na porta e redireciona para o login</td><td>—</td></tr>
+    <tr><td><code>ErrorFilter</code></td><td>O "plano B" — envolve o restante da cadeia em tratamento de erros</td><td>Se acontecer qualquer problema lá dentro, captura a exceção e mostra mensagem amigável ao invés do erro técnico</td></tr>
+    <tr><td><code>PermissaoFilter</code></td><td>"Ok, você tem crachá, mas pode entrar <strong>neste</strong> departamento?" — verifica a permissão via <code>regFun()</code></td><td>—</td></tr>
+</table>
+</div>
+
+<p>Nenhum desses filtros precisa ser alterado ao criar um novo módulo — eles são globais e já cobrem o módulo novo automaticamente. Mas entender o que cada um faz ajuda a debugar quando algo dá errado (ex: "por que minha action dá 403?" → <code>PermissaoFilter</code>).</p>
+
+        </div>
+    </div>
+
+</div>
+
+</div>
+
+<div id="footer">
+    <div id="footer-inner"></div>
+</div>
+</div>
+
+</div>
+
+</div> <!-- layout -->
+
+<script src="../../js/menu.js"></script>
+<script src="../../js/footer.js"></script>
+<script src="../../js/docs.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const inner = document.getElementById('content-inner');
+    highlightAll(inner);
+    initLineHighlights(inner);
+    initCopyButtons(inner);
+    initAudioPlayers(inner);
+    initCarousel(inner);
+    initSideNav(inner);
+
+    if (localStorage.getItem('drawerOpen') === 'true') {
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('hamburger').classList.add('open');
+    }
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.getElementById('theme-toggle').innerHTML = '&#9790;';
+        document.getElementById('hljs-light').disabled = true;
+        document.getElementById('hljs-dark').disabled  = false;
+    }
+});
+</script>
+
+</body>
+</html>

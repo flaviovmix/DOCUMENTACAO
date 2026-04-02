@@ -28,38 +28,7 @@
 
 <!-- DRAWER -->
 <div id="drawer">
-<div id="drawer-inner">
-
-    <div class="menu-group">
-        <div class="menu-group-header" onclick="toggleGroup(this)">
-            NOVO MODULO
-            <span class="menu-group-arrow">&#9660;</span>
-        </div>
-        <div class="menu-group-items">
-            <a class="menu-item" href="../1-novo-modulo/ModuloManager.html">1º — ModuloManager</a>
-            <a class="menu-item" href="../1-novo-modulo/ModuloHome.html">2º — ModuloHome</a>
-            <a class="menu-item" href="../1-novo-modulo/ModuloMdFactory.html">3º — ModuloMdFactory</a>
-            <a class="menu-item" href="../1-novo-modulo/rootmanager.html">4º — RootManager</a>
-            <a class="menu-item" href="../1-novo-modulo/AppsRootModelFactory.html">5º — AppsRootModelFactory</a>
-        </div>
-    </div>
-
-    <div class="menu-group">
-        <div class="menu-group-header" onclick="toggleGroup(this)">
-            CRUD
-            <span class="menu-group-arrow">&#9660;</span>
-        </div>
-        <div class="menu-group-items">
-            <a class="menu-item" href="crud.html">Ver episódio</a>
-            <a class="menu-item" href="ModuloProdutoBean.html">1º — ModuloProdutoBean</a>
-            <a class="menu-item" href="ModuloProdutoWBean.html">2º — ModuloProdutoWBean</a>
-            <a class="menu-item" href="ModuloProdutoDAO.html">3º — ModuloProdutoDAO</a>
-            <a class="menu-item active" href="ModuloProdutoModel.html">4º — ModuloProdutoModel</a>
-            <a class="menu-item" href="ModuloProdutoAction.html">5º — ModuloProdutoAction</a>
-        </div>
-    </div>
-
-</div>
+<div id="drawer-inner"></div>
 </div>
 
 <!-- CONTENT -->
@@ -130,45 +99,16 @@ public class ModuloProdutoModel extends ModuloProdutoDAO {
 </div>
 
 <div id="footer">
-    <div id="footer-inner">
-        <div>
-            <h3>NOVO MODULO</h3>
-            <a href="../1-novo-modulo/ModuloManager.html">ModuloManager</a>
-            <a href="../1-novo-modulo/ModuloHome.html">ModuloHome</a>
-            <a href="../1-novo-modulo/ModuloMdFactory.html">ModuloMdFactory</a>
-            <a href="../1-novo-modulo/rootmanager.html">RootManager</a>
-            <a href="../1-novo-modulo/AppsRootModelFactory.html">AppsRootModelFactory</a>
-        </div>
-        <div>
-            <h3>CRUD</h3>
-            <a href="crud.html">Ver episódio</a>
-            <a href="ModuloProdutoBean.html">ModuloProdutoBean</a>
-            <a href="ModuloProdutoWBean.html">ModuloProdutoWBean</a>
-            <a href="ModuloProdutoDAO.html">ModuloProdutoDAO</a>
-            <a href="ModuloProdutoModel.html">ModuloProdutoModel</a>
-        </div>
-        <div>
-            <h3>Conceitos</h3>
-            <a href="#">O que é uma Action</a>
-            <a href="#">O que é um Manager</a>
-            <a href="#">O que é um DAO</a>
-            <a href="#">O que é um Bean</a>
-            <a href="#">Fluxo de uma requisição</a>
-        </div>
-        <div>
-            <h3>Referências</h3>
-            <a href="#">CLAUDE.md</a>
-            <a href="#">Jasap — código-fonte</a>
-            <a href="#">app — modelo</a>
-            <a href="#">Banco PRD_TREINAMENTO</a>
-        </div>
-    </div>
+    <div id="footer-inner"></div>
+</div>
 </div>
 
 </div>
 
 </div> <!-- layout -->
 
+<script src="../../js/menu.js"></script>
+<script src="../../js/footer.js"></script>
 <script src="../../js/docs.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {

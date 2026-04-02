@@ -29,6 +29,24 @@ const iconPlay  = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white">
 
         btn.innerHTML = iconPlay;
 
+        // botão -10s
+        const btnBack = document.createElement('button');
+        btnBack.className = 'audio-skip audio-back';
+        btnBack.title = 'Voltar 10s';
+        btnBack.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M11.99 5V1l-5 5 5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6h-2c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>`;
+        btnBack.addEventListener('click', () => { audio.currentTime = Math.max(0, audio.currentTime - 10); });
+
+        // botão +10s
+        const btnFwd = document.createElement('button');
+        btnFwd.className = 'audio-skip audio-fwd';
+        btnFwd.title = 'Avançar 10s';
+        btnFwd.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12.01 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/></svg>`;
+        btnFwd.addEventListener('click', () => { audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10); });
+
+        // inserir: [back] [play] [fwd] [barra] [tempo]
+        btn.before(btnBack);
+        btn.after(btnFwd);
+
         audio.addEventListener('ended', () => { btn.innerHTML = iconPlay; });
 
         btn.addEventListener('click', () => {
@@ -44,6 +62,80 @@ const iconPlay  = `<svg viewBox="0 0 24 24" width="14" height="14" fill="white">
         seek.addEventListener('input', () => {
             if (audio.duration) audio.currentTime = (seek.value / 100) * audio.duration;
         });
+
+        // velocidade
+        const speeds = [0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4];
+        const speedLabels = {0.75: '0.7', 1.25: '1.2'};
+        function speedLabel(s) { return (speedLabels[s] || s) + 'x'; }
+        const speedWrap = document.createElement('div');
+        speedWrap.className = 'audio-speed-wrap';
+        const btnSpeed = document.createElement('button');
+        btnSpeed.className = 'audio-skip audio-speed';
+        btnSpeed.title = 'Velocidade';
+        btnSpeed.textContent = '1x';
+        const speedMenu = document.createElement('div');
+        speedMenu.className = 'audio-speed-menu';
+        speeds.forEach(s => {
+            const opt = document.createElement('button');
+            opt.textContent = speedLabel(s);
+            opt.className = 'audio-speed-opt' + (s === 1 ? ' active' : '');
+            opt.addEventListener('click', (e) => {
+                e.stopPropagation();
+                audio.playbackRate = s;
+                btnSpeed.textContent = speedLabel(s);
+                speedMenu.querySelectorAll('.audio-speed-opt').forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
+                speedMenu.classList.remove('show');
+            });
+            speedMenu.append(opt);
+        });
+        btnSpeed.addEventListener('click', (e) => {
+            e.stopPropagation();
+            speedMenu.classList.toggle('show');
+        });
+        document.addEventListener('click', () => speedMenu.classList.remove('show'));
+        speedWrap.append(btnSpeed, speedMenu);
+        time.after(speedWrap);
+
+        // volume
+        const iconVolOn  = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8.5v7a4.47 4.47 0 0 0 2.5-3.5zM14 3.23v2.06a6.51 6.51 0 0 1 0 13.42v2.06A8.5 8.5 0 0 0 14 3.23z"/></svg>`;
+        const iconVolOff = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M16.5 12A4.5 4.5 0 0 0 14 8.5v2.09l2.41 2.41c.06-.31.09-.65.09-1zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.46 8.46 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.46 8.46 0 0 0 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4l-1.88 1.88L12 7.76V4z"/></svg>`;
+        const volWrap = document.createElement('div');
+        volWrap.className = 'audio-vol-wrap';
+        const volBtn = document.createElement('button');
+        volBtn.className = 'audio-skip audio-vol-btn';
+        volBtn.title = 'Volume';
+        volBtn.innerHTML = iconVolOn;
+        function updateVolIcon() {
+            volBtn.innerHTML = (audio.muted || audio.volume === 0) ? iconVolOff : iconVolOn;
+        }
+        const volSlider = document.createElement('input');
+        volSlider.type = 'range';
+        volSlider.className = 'audio-vol-slider';
+        volSlider.min = '0';
+        volSlider.max = '100';
+        volSlider.value = '100';
+        volSlider.addEventListener('input', () => {
+            audio.volume = volSlider.value / 100;
+            audio.muted = volSlider.value == 0;
+            updateVolIcon();
+        });
+        volBtn.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            volSlider.value = audio.muted ? 0 : audio.volume * 100;
+            updateVolIcon();
+        });
+        volWrap.append(volBtn, volSlider);
+        speedWrap.after(volWrap);
+
+        // download
+        const btnDl = document.createElement('a');
+        btnDl.className = 'audio-skip audio-download';
+        btnDl.title = 'Download';
+        btnDl.href = player.dataset.src;
+        btnDl.download = '';
+        btnDl.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>`;
+        volWrap.after(btnDl);
 
         // sentinel: div invisível logo antes do player, usada para detectar quando ele grudou no topo
         const sentinel = document.createElement('div');
@@ -140,24 +232,38 @@ function initLineHighlights(container) {
     container.querySelectorAll('pre[data-add]').forEach(pre => {
         const code = pre.querySelector('code');
         if (!code) return;
-        const targets = pre.dataset.add.split('|').map(s => s.trim());
-        const lines = code.innerHTML.split('\n');
 
+        // Suporta "+N" no target para incluir N linhas extras após o match
+        // Ex: "public ModuloMdFactory modulo()+2" → linha + 2 seguintes
+        const targets = pre.dataset.add.split('|').map(s => {
+            const m = s.trim().match(/^(.*?)(\+\d+)?$/);
+            return { text: m[1], extra: m[2] ? parseInt(m[2].slice(1)) : -1 };
+        });
+
+        const lines = code.innerHTML.split('\n');
         const result = [];
         let i = 0;
         while (i < lines.length) {
             const plain = lines[i].replace(/<[^>]+>/g, '');
-            const match = targets.some(t => plain.includes(t));
-            if (match) {
+            const matchedTarget = targets.find(t => plain.includes(t.text));
+            if (matchedTarget) {
                 const group = [lines[i]];
                 let j = i + 1;
-                while (j < lines.length) {
-                    const nextPlain = lines[j].replace(/<[^>]+>/g, '');
-                    if (targets.some(t => nextPlain.includes(t))) {
+                if (matchedTarget.extra >= 0) {
+                    // Coleta exatamente N linhas extras
+                    for (let n = 0; n < matchedTarget.extra && j < lines.length; n++, j++) {
                         group.push(lines[j]);
-                        j++;
-                    } else {
-                        break;
+                    }
+                } else {
+                    // Comportamento original: coleta linhas consecutivas que também batem
+                    while (j < lines.length) {
+                        const nextPlain = lines[j].replace(/<[^>]+>/g, '');
+                        if (targets.some(t => nextPlain.includes(t.text))) {
+                            group.push(lines[j]);
+                            j++;
+                        } else {
+                            break;
+                        }
                     }
                 }
                 result.push(`<span class="line-add">${group.join('\n')}</span>`);
@@ -167,7 +273,15 @@ function initLineHighlights(container) {
                 i++;
             }
         }
-        code.innerHTML = result.join('\n');
+        // Junta sem \n extra após line-add (display:block já quebra a linha)
+        let html = '';
+        for (let k = 0; k < result.length; k++) {
+            if (k > 0 && !result[k - 1].startsWith('<span class="line-add">')) {
+                html += '\n';
+            }
+            html += result[k];
+        }
+        code.innerHTML = html;
     });
 }
 
@@ -189,14 +303,23 @@ function highlightAll(container) {
         'Effect','Js','LaboratorioManager','LaboratorioHome','LaboratorioMdFactory',
         'LabPessoaList','LabPessoaForm','LabPessoaSelect','LabProdutoList','LabProdutoForm',
         'LabProdutoSelect','LabPerfilList','LabPerfilForm','LabPerfilSelect',
-        'Title','MenuItem','MenuInicial'
+        'Title','MenuItem','MenuInicial',
+        'Check','JasapList','DomainValue','PcfgModel','PnlCfg','PainelMdFactory',
+        'AppsRootModelFactory','ContatosMdFactory','GedMdFactory','TransactionFilter',
+        'JasapRootManager','DataBase','DataBaseFilter','PerfFilter','EffectFilter',
+        'AAFilter','ErrorFilter','PermissaoFilter','HomeManager','GedManager',
+        'AppsUpdateProgress','RootManager'
     ];
 
     const methods = [
         'regAction','regFun','preAjax','eval','update','link','getManager','getInput',
         'getOutput','getFactory','isAjaxCall','toHtml','ajax','modalMax','putInteger',
         'putString','childWindow','btTitle','btTitleActive','render','config','add',
-        'write','row','col','setContent','setStyle','ok','getUser','getSession','ui'
+        'write','row','col','setContent','setStyle','ok','getUser','getSession','ui',
+        'setLabel','setValue','setSelected','getValue','getSetting','insert','cfgModel',
+        'painel','modulo','laboratorio','ged','contatos','setManager','getList',
+        'hasModulo','isAdminXT','getString','getGlobalFilters','sessionConfig',
+        'configGlobalFilters','line','concat'
     ];
 
     container.querySelectorAll('pre code').forEach(block => {
@@ -507,7 +630,8 @@ function toggleZoomMenu() {
 }
 
 document.addEventListener('click', function(e) {
-    if (!document.getElementById('zoom-label').contains(e.target)) {
+    const label = document.getElementById('zoom-label');
+    if (label && !label.contains(e.target)) {
         document.getElementById('zoom-menu').style.display = 'none';
     }
 });
@@ -533,6 +657,12 @@ function toggleDrawer() {
 
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Set --btn-clr from inline color for hover background
+    document.querySelectorAll('.home-card-btn').forEach(btn => {
+        const clr = btn.style.color || btn.style.borderColor;
+        if (clr) btn.style.setProperty('--btn-clr', clr);
+    });
+
     if (localStorage.getItem('drawerOpen') === 'true') {
         document.getElementById('drawer').classList.add('open');
         document.getElementById('hamburger').classList.add('open');
@@ -552,6 +682,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('hljs-dark').disabled  = false;
     }
 });
+
+function toggleInfoRow(btn) {
+    const row = btn.closest('.info-row');
+    row.classList.toggle('open');
+}
 
 function toggleGroup(header) {
     header.closest('.menu-group').classList.toggle('collapsed');
@@ -581,5 +716,73 @@ function toggleTheme() {
 function setTopActive(el) {
     document.querySelectorAll('#topnav a').forEach(a => a.classList.remove('active'));
     el.classList.add('active');
+}
+
+function initSideNav(inner) {
+    const rows = inner.querySelectorAll('.info-row');
+    if (rows.length === 0) return;
+
+    const nav = document.createElement('nav');
+    nav.id = 'sidenav';
+
+    const navInner = document.createElement('div');
+    navInner.id = 'sidenav-inner';
+
+    rows.forEach((row, i) => {
+        const titleEl = row.querySelector('.info-row-title');
+        if (!titleEl) return;
+
+        if (!row.id) row.id = 'section-' + i;
+
+        const a = document.createElement('a');
+        a.href = '#' + row.id;
+        a.textContent = titleEl.textContent;
+
+        a.addEventListener('click', e => {
+            e.preventDefault();
+            if (!row.classList.contains('open')) {
+                row.classList.add('open');
+            }
+            setTimeout(() => {
+                const top = row.getBoundingClientRect().top + window.scrollY - 60;
+                window.scrollTo({ top, behavior: 'smooth' });
+            }, 50);
+        });
+        navInner.appendChild(a);
+    });
+
+    nav.appendChild(navInner);
+
+    const layout = document.getElementById('layout');
+    layout.appendChild(nav);
+
+    // Hamburger toggle
+    const arrow = document.createElement('div');
+    arrow.id = 'sidenav-toggle-arrow';
+    arrow.innerHTML = '<span></span><span></span><span></span>';
+    arrow.title = 'Mostrar/ocultar índice';
+
+    arrow.addEventListener('click', () => {
+        const isOpen = nav.classList.toggle('open');
+        arrow.classList.toggle('open', isOpen);
+        localStorage.setItem('sidenavOpen', isOpen);
+    });
+    document.body.appendChild(arrow);
+
+    // Restaurar estado salvo (aberto por padrão)
+    if (localStorage.getItem('sidenavOpen') !== 'false') {
+        nav.classList.add('open');
+        arrow.classList.add('open');
+    }
+
+    // Scroll spy: destaca o link da seção visível
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            const a = navInner.querySelector('a[href="#' + entry.target.id + '"]');
+            if (a) a.classList.toggle('active', entry.isIntersecting);
+        });
+    }, { rootMargin: '-80px 0px -70% 0px', threshold: 0 });
+
+    rows.forEach(row => observer.observe(row));
 }
 

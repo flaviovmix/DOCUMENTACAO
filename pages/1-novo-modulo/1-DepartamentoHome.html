@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModuloHome — XT - Treinamento</title>
+    <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
+    <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="../../css/docs.css">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div id="topbar">
+    <button id="hamburger" onclick="toggleDrawer()">
+        <span></span><span></span><span></span>
+    </button>
+    <a id="topbar-title" href="../../index.html">XT - Treinamento</a>
+    <nav class="breadcrumb-nav">
+        <span class="breadcrumb-sep">›</span>
+        <a href="novo-modulo.html">Novo Módulo</a>
+        <span class="breadcrumb-sep">›</span>
+        <span class="breadcrumb-current">ModuloHome</span>
+    </nav>
+
+    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
+        <button onclick="changeZoom(-0.1)" title="Diminuir zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 8px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#8722;</button>
+        <button onclick="changeZoom(0)" title="Resetar zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:0.85em;padding:4px 6px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">100%</button>
+        <button onclick="changeZoom(0.1)" title="Aumentar zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 8px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#43;</button>
+        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
+    </div>
+
+</div>
+
+<!-- LAYOUT -->
+<div id="layout">
+
+<!-- DRAWER -->
+<div id="drawer">
+<div id="drawer-inner"></div>
+</div>
+
+<!-- CONTENT -->
+<div id="content">
+<div id="content-inner">
+
+<h1>ModuloHome <span class="badge badge-new">novo arquivo</span></h1>
+
+<div class="carousel" data-path="1-DepartamentoHome/img/"></div>
+
+<p>Tela inicial do módulo. Controla a navegação lateral (sidebar), o breadcrumb do header e o roteamento entre as entidades via parâmetro <code>MID</code>. É a primeira action instanciada quando o usuário abre o módulo.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Visão Geral — public class, MID, execute() e render()</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="1-DepartamentoHome/audio/ModuloHome-visaoGeral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<pre><code class="language-java">public class ModuloHome extends AppsRootAction {
+
+    public static final String MID = "__MOD_MID";
+
+}</code></pre>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>ModuloHome</code></td><td>Nome da classe. Convenção do projeto: prefixo do módulo + <code>Home</code>. É a tela raiz — o ponto de entrada quando o usuário abre o módulo</td></tr>
+    <tr><td><code>extends AppsRootAction</code></td><td>Herança — esta classe recebe todos os recursos de <code>AppsRootAction</code>: <code>ui()</code>, <code>link()</code>, <code>eval()</code>, <code>update()</code>, <code>getInput()</code>, <code>getManager()</code> e todos os métodos do framework ficam disponíveis automaticamente</td></tr>
+    <tr><td><code>public static final String MID</code></td><td>Guarda o nome da chave usada para transportar o número do item clicado no menu entre o browser e o servidor. <code>MID=0</code> abre o menu inicial; <code>MID=1,2,3…</code> abrirá cada entidade quando forem adicionadas</td></tr>
+</table>
+</div>
+
+<pre><code class="language-java">@Override
+public Effect execute() throws Exception {
+    render();
+    return new Response();
+}
+
+public void render() throws Exception {
+    XtPage page = new XtPage(getManager());
+    if (isAjaxCall()) {
+        eval(Js.CLOSE_SUB_WINDOWS);
+    } else {
+        page.getBody().append(page.content("", "", false));
+        page.setWinTitle("Módulo");
+        page.getCommands().add(link(MenuItem.class).putInteger(MID, 0).ajax());
+        getOutput().write(this, page);
+    }
+}</code></pre>
+
+<p><code>execute()</code> delega para <code>render()</code> para que as inner classes possam re-renderizar a home sem duplicar código. O <code>render()</code> lida com dois cenários:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Trecho</th><th>O que faz</th></tr>
+    <tr><td><code>isAjaxCall()</code></td><td>Verifica se a requisição veio de Ajax ou de abertura direta no browser</td></tr>
+    <tr><td><code>eval(Js.CLOSE_SUB_WINDOWS)</code></td><td>Fecha todos os modais abertos quando o usuário volta ao home via Ajax</td></tr>
+    <tr><td><code>page.content("", "", false)</code></td><td>Cria a estrutura da página: sidebar vazio, header e área de conteúdo — preenchidos depois por Ajax</td></tr>
+    <tr><td><code>page.setWinTitle("Módulo")</code></td><td>Define o texto da aba do navegador</td></tr>
+    <tr><td><code>page.getCommands().add(...)</code></td><td>Dispara <code>MenuItem</code> com <code>MID=0</code> automaticamente após a página carregar — sem isso o sidebar abriria vazio</td></tr>
+    <tr><td><code>getOutput().write(this, page)</code></td><td>Envia a página completa ao browser. Só chamado na abertura inicial, não nas chamadas Ajax</td></tr>
+</table>
+</div>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Title — atualiza o breadcrumb</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="1-DepartamentoHome/audio/ModuloHome-Title.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<pre><code class="language-java">public static class Title extends ModuloHome {
+    @Override
+    public Effect execute() throws Exception {
+        int mid = getInput().getInteger(MID, 0);
+
+        Table aux = new Table(getManager());
+        TableRow line = aux.row();
+
+        line.col().setStyle("padding: 0 5 0 5;").setContent(ui().btTitleActive("MÓDULO", ""));
+
+        update(JasapPage.DIV_HEADER_LEFT, aux);
+        update(JasapPage.DIV_HEADER_CENTER, "");
+        return new Response();
+    }
+}</code></pre>
+
+<p>Responsável por atualizar o breadcrumb no topo da tela. É uma <em>inner class</em> estática: o Jasap a instancia diretamente como uma action independente — o <code>execute()</code> do <code>ModuloHome</code> não é chamado. O <code>extends ModuloHome</code> existe para herdar os métodos utilitários: <code>update()</code>, <code>ui()</code>, <code>link()</code>, <code>getInput()</code>.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Trecho</th><th>O que faz</th></tr>
+    <tr><td><code>getInput().getInteger(MID, 0)</code></td><td>Lê o MID da requisição. Padrão <code>0</code> se não vier. Está presente para quando entidades forem adicionadas e o breadcrumb precisar variar por tela</td></tr>
+    <tr><td><code>new Table(getManager()) + aux.row()</code></td><td>O Jasap exige componentes de layout no header — não aceita HTML direto. <code>Table</code> e <code>TableRow</code> geram a estrutura esperada</td></tr>
+    <tr><td><code>setStyle("padding: 0 5 0 5;")</code></td><td>Espaçamento interno da célula: top, right, bottom, left em pixels</td></tr>
+    <tr><td><code>ui().btTitleActive("MÓDULO", "")</code></td><td>Botão de breadcrumb no estado ativo — texto sem link. Quando entidades forem adicionadas, "MÓDULO" virará <code>btTitle</code> (clicável) e o nome da entidade aparecerá ao lado</td></tr>
+    <tr><td><code>update(DIV_HEADER_LEFT, aux)</code></td><td>Substitui o header esquerdo pelo breadcrumb montado</td></tr>
+    <tr><td><code>update(DIV_HEADER_CENTER, "")</code></td><td>Limpa o centro do header para não sobrar conteúdo de outra tela</td></tr>
+</table>
+</div>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">MenuItem — roteador central</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="1-DepartamentoHome/audio/ModuloHome-MenuItem.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<pre><code class="language-java">public static class MenuItem extends ModuloHome {
+    @Override
+    public Effect execute() throws Exception {
+        int mid = getInput().getInteger(MID, 0);
+
+        if (mid > 0) {
+            eval(link(Title.class).putInteger(MID, mid).ajax());
+            eval(link(Title.class).putInteger(MID, mid).ajax(false));
+        } else {
+            eval(link(MenuInicial.class).ajax(false));
+            eval(link(Title.class).putInteger(MID, mid).ajax(false));
+        }
+
+        return new Response();
+    }
+}</code></pre>
+
+<p>Roteador central do módulo. Todo link do sidebar aponta para <code>MenuItem</code> com um <code>MID</code> diferente. A partir do valor recebido, decide o que acontece: abre a tela da entidade ou volta ao menu inicial.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Situação</th><th>O que acontece</th></tr>
+    <tr><td><code>mid &gt; 0</code></td><td>Entidade solicitada. Quando entidades forem adicionadas, um <code>eval(preAjax(XxxList.class).modalMax())</code> será inserido aqui. As duas chamadas a <code>Title</code> já preparam o breadcrumb</td></tr>
+    <tr><td><code>mid == 0</code></td><td>Menu inicial. Reconstrói o sidebar via <code>MenuInicial</code> e redefine o breadcrumb via <code>Title</code></td></tr>
+</table>
+</div>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Trecho</th><th>O que faz</th></tr>
+    <tr><td><code>eval(...ajax())</code></td><td>Executa imediatamente, no mesmo ciclo da requisição</td></tr>
+    <tr><td><code>eval(...ajax(false))</code></td><td>Enfileira para executar após o ciclo atual — garante a ordem correta quando múltiplas ações acontecem em sequência</td></tr>
+</table>
+</div>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">MenuInicial — conteúdo do sidebar</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="1-DepartamentoHome/audio/ModuloHome-MenuInicial.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<pre><code class="language-java">public static class MenuInicial extends ModuloHome {
+    @Override
+    public Effect execute() throws Exception {
+        SideMenu m = new SideMenu();
+        update("sidebar", m.toHtml());
+        return new Response();
+    }
+}</code></pre>
+
+<p>Renderiza o conteúdo do sidebar via Ajax, após a página já estar no browser. Isso permite atualizar só o sidebar quando o usuário volta ao menu inicial — sem recarregar a página inteira. No estado atual o <code>SideMenu</code> é criado vazio; conforme entidades forem adicionadas, cada uma ganhará um <code>m.add(...)</code> aqui.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Trecho</th><th>O que faz</th></tr>
+    <tr><td><code>new SideMenu()</code></td><td>Cria o componente de menu lateral do Jasap com estilos e comportamento prontos</td></tr>
+    <tr><td><code>m.add(visivel, label, link, null)</code></td><td>Quando entidades existirem: <code>visivel</code> controla a exibição, <code>label</code> é o texto, <code>link</code> aponta para <code>MenuItem</code> com o MID da entidade</td></tr>
+    <tr><td><code>m.toHtml()</code></td><td>Converte o <code>SideMenu</code> em HTML</td></tr>
+    <tr><td><code>update("sidebar", m.toHtml())</code></td><td>Substitui o conteúdo do <code>id="sidebar"</code> na tela. O ID é definido pelo <code>XtPage</code> ao montar a estrutura da página</td></tr>
+</table>
+</div>
+
+        </div>
+    </div>
+
+</div>
+
+<h2 style="margin-top:40px;">Código completo</h2>
+
+<pre><code class="language-java">package br.xt.app.modulo;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.SideMenu;
+import br.jasap.gui.Table;
+import br.jasap.gui.TableRow;
+import br.jasap.util.Js;
+import br.xt.AppsRootAction;
+import br.xt.acore.view.XtPage;
+
+public class ModuloHome extends AppsRootAction {
+
+    public static final String MID = "__MOD_MID";
+
+    @Override
+    public Effect execute() throws Exception {
+        render();
+        return new Response();
+    }
+
+    public void render() throws Exception {
+        XtPage page = new XtPage(getManager());
+        if (isAjaxCall()) {
+            eval(Js.CLOSE_SUB_WINDOWS);
+        } else {
+            page.getBody().append(page.content("", "", false));
+            page.setWinTitle("Módulo");
+            page.getCommands().add(link(MenuItem.class).putInteger(MID, 0).ajax());
+            getOutput().write(this, page);
+        }
+    }
+
+    public static class Title extends ModuloHome {
+        @Override
+        public Effect execute() throws Exception {
+            int mid = getInput().getInteger(MID, 0);
+
+            Table aux = new Table(getManager());
+            TableRow line = aux.row();
+
+            line.col().setStyle("padding: 0 5 0 5;").setContent(ui().btTitleActive("MÓDULO", ""));
+
+            update(JasapPage.DIV_HEADER_LEFT, aux);
+            update(JasapPage.DIV_HEADER_CENTER, "");
+            return new Response();
+        }
+    }
+
+    public static class MenuItem extends ModuloHome {
+        @Override
+        public Effect execute() throws Exception {
+            int mid = getInput().getInteger(MID, 0);
+
+            if (mid > 0) {
+                eval(link(Title.class).putInteger(MID, mid).ajax());
+                eval(link(Title.class).putInteger(MID, mid).ajax(false));
+            } else {
+                eval(link(MenuInicial.class).ajax(false));
+                eval(link(Title.class).putInteger(MID, mid).ajax(false));
+            }
+
+            return new Response();
+        }
+    }
+
+    public static class MenuInicial extends ModuloHome {
+        @Override
+        public Effect execute() throws Exception {
+            SideMenu m = new SideMenu();
+
+            update("sidebar", m.toHtml());
+            return new Response();
+        }
+    }
+
+}
+</code></pre>
+
+</div>
+
+<div id="footer">
+    <div id="footer-inner"></div>
+</div>
+</div>
+
+</div>
+
+</div> <!-- layout -->
+
+<script src="../../js/menu.js"></script>
+<script src="../../js/footer.js"></script>
+<script src="../../js/docs.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const inner = document.getElementById('content-inner');
+    highlightAll(inner);
+    initLineHighlights(inner);
+    initCopyButtons(inner);
+    initAudioPlayers(inner);
+    initCarousel(inner);
+    initSideNav(inner);
+
+    if (localStorage.getItem('drawerOpen') === 'true') {
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('hamburger').classList.add('open');
+    }
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark');
+        document.getElementById('theme-toggle').innerHTML = '&#9790;';
+        document.getElementById('hljs-light').disabled = true;
+        document.getElementById('hljs-dark').disabled  = false;
+    }
+});
+</script>
+
+</body>
+</html>
