@@ -4,35 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ModuloProdutoList — XT - Treinamento</title>
-    <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
-    <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <link rel="stylesheet" href="../../css/docs.css">
+    <script src="../../js/layout.js"></script>
 </head>
 <body>
-
-<!-- TOPBAR -->
-<div id="topbar">
-    <button id="hamburger" onclick="toggleDrawer()">
-        <span></span><span></span><span></span>
-    </button>
-    <a id="topbar-title" href="../../index.html">XT - Treinamento</a>
-    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
-        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
-    </div>
-</div>
-
-<!-- LAYOUT -->
-<div id="layout">
-
-<!-- DRAWER -->
-<div id="drawer">
-<div id="drawer-inner"></div>
-</div>
-
-<!-- CONTENT -->
-<div id="content">
-<div id="content-inner">
 
 <h1>ModuloProdutoList <span class="badge badge-new">novo arquivo</span></h1>
 
@@ -318,7 +292,7 @@ public ListView lView() throws Exception {
     <tr><td>Valor</td><td><code>VL_PRO</code></td><td>Largura 100, centralizado, ordenável</td></tr>
     <tr><td>Qtd</td><td><code>QTD_PRO</code></td><td>Largura 80, centralizado, ordenável</td></tr>
     <tr><td>Observação</td><td><code>OBS_PRO</code></td><td>Largura livre, ordenável</td></tr>
-    <tr><td><em>(exclusão)</em></td><td>—</td><td>Largura 40, sem cabeçalho — botão × inline</td></tr>
+    <tr><td><em>(exclusão)</em></td><td>—</td><td>Largura 40, sem cabeçalho — botão x inline</td></tr>
 </table>
 </div>
 
@@ -335,7 +309,7 @@ public ListView lView() throws Exception {
 </div>
 
 <h3>Botão de exclusão inline</h3>
-<p>A coluna <code>col_del</code> recebe um botão Bootstrap <code>class='close'</code> (×) com duas características importantes:</p>
+<p>A coluna <code>col_del</code> recebe um botão Bootstrap <code>class='close'</code> (x) com duas características importantes:</p>
 <ul>
     <li><code>float:none</code> — neutraliza o <code>float:right</code> padrão da classe <code>close</code>, necessário para que <code>alignCenter()</code> funcione corretamente</li>
     <li><code>event.stopPropagation()</code> — impede que o clique no botão acione o <code>setOnclick</code> da linha (que abriria o formulário de edição)</li>
@@ -384,12 +358,12 @@ public ListView lView() throws Exception {
 <div class="table-wrap">
 <table>
     <tr><th>Chamada</th><th>O que acontece</th></tr>
-    <tr><td>1ª (<code>CONFIRM_LIST</code> ausente)</td><td>Exibe o diálogo <code>swalConfirm</code>. O link do confirm repassa o ID e <code>CONFIRM_LIST=1</code></td></tr>
-    <tr><td>2ª (<code>CONFIRM_LIST == 1</code>)</td><td>Executa <code>daoDelete</code> e atualiza o corpo e a navegação da lista via Ajax</td></tr>
+    <tr><td>1a (<code>CONFIRM_LIST</code> ausente)</td><td>Exibe o diálogo <code>swalConfirm</code>. O link do confirm repassa o ID e <code>CONFIRM_LIST=1</code></td></tr>
+    <tr><td>2a (<code>CONFIRM_LIST == 1</code>)</td><td>Executa <code>daoDelete</code> e atualiza o corpo e a navegação da lista via Ajax</td></tr>
 </table>
 </div>
 
-<p><strong>Por que o ID vem do <code>getInput()</code> e não do <code>id_pro()</code>?</strong> Porque <code>ShowUpdate</code> não foi chamado — o usuário clicou no × direto na lista, sem abrir o formulário. O ID não está na sessão; ele vem do parâmetro passado no link do botão.</p>
+<p><strong>Por que o ID vem do <code>getInput()</code> e não do <code>id_pro()</code>?</strong> Porque <code>ShowUpdate</code> não foi chamado — o usuário clicou no x direto na lista, sem abrir o formulário. O ID não está na sessão; ele vem do parâmetro passado no link do botão.</p>
 <p><code>SQLConstraintException</code> é capturada para exibir um <code>Toast</code> vermelho quando o registro não pode ser excluído por estar referenciado em outra tabela (FK).</p>
 
         </div>
@@ -420,40 +394,6 @@ public static final String CONFIRM_LIST = LIST.concat("__CONFIRM_LIST");
     </div>
 
 </div>
-
-</div>
-
-<div id="footer">
-    <div id="footer-inner"></div>
-</div>
-</div>
-
-</div>
-
-</div> <!-- layout -->
-
-<script src="../../js/menu.js"></script>
-<script src="../../js/footer.js"></script>
-<script src="../../js/docs.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const inner = document.getElementById('content-inner');
-    highlightAll(inner);
-    initCopyButtons(inner);
-    initAudioPlayers(inner);
-
-    if (localStorage.getItem('drawerOpen') === 'true') {
-        document.getElementById('drawer').classList.add('open');
-        document.getElementById('hamburger').classList.add('open');
-    }
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark');
-        document.getElementById('theme-toggle').innerHTML = '&#9790;';
-        document.getElementById('hljs-light').disabled = true;
-        document.getElementById('hljs-dark').disabled  = false;
-    }
-});
-</script>
 
 </body>
 </html>

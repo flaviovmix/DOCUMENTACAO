@@ -4,46 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RootManager — XT - Treinamento</title>
-    <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
-    <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <link rel="stylesheet" href="../../css/docs.css">
+    <script src="../../js/layout.js"></script>
 </head>
 <body>
-
-<!-- TOPBAR -->
-<div id="topbar">
-    <button id="hamburger" onclick="toggleDrawer()">
-        <span></span><span></span><span></span>
-    </button>
-    <a id="topbar-title" href="../../index.html">XT - Treinamento</a>
-    <nav class="breadcrumb-nav">
-        <span class="breadcrumb-sep">›</span>
-        <a href="novo-modulo.html">Novo Módulo</a>
-        <span class="breadcrumb-sep">›</span>
-        <span class="breadcrumb-current">RootManager</span>
-    </nav>
-
-    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
-        <button onclick="changeZoom(-0.1)" title="Diminuir zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 8px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#8722;</button>
-        <button onclick="changeZoom(0)" title="Resetar zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:0.85em;padding:4px 6px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">100%</button>
-        <button onclick="changeZoom(0.1)" title="Aumentar zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 8px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#43;</button>
-        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
-    </div>
-
-</div>
-
-<!-- LAYOUT -->
-<div id="layout">
-
-<!-- DRAWER -->
-<div id="drawer">
-<div id="drawer-inner"></div>
-</div>
-
-<!-- CONTENT -->
-<div id="content">
-<div id="content-inner">
 
 <h1>RootManager <span class="badge badge-edit">editar arquivo</span></h1>
 
@@ -59,21 +22,9 @@
 
 <div class="carousel" data-path="6-RootManager/img/"></div>
 
+<p>Gerente geral do prédio — registra todos os managers de módulo e configura os filtros globais (portaria). O aluno adiciona uma única linha: <code>new DepartamentoManager().config()</code>.</p>
+
 <div class="info-accordion">
-
-    <div class="info-row open">
-        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-            <span class="info-row-title">VISÃO GERAL</span>
-            <button class="info-row-btn">+</button>
-        </div>
-        <div class="info-row-body">
-
-<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
-
-<p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
-
-        </div>
-    </div>
 
     <div class="info-row">
         <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
@@ -82,7 +33,7 @@
         </div>
         <div class="info-row-body">
 
-<pre data-add="new NovoModuloManager().config()|import br.xt.app.novoModulo.NovoModuloManager"><code class="language-java">package br.xt;
+<pre data-add="new DepartamentoManager().config()|import br.xt.app.departamento.DepartamentoManager"><code class="language-java">package br.xt;
 
 import br.jasap.core.JasapRootManager;
 import br.jasap.dao.DataBase;
@@ -96,7 +47,7 @@ import br.xt.acore.filters.DataBaseFilter;
 import br.xt.app.ged.GedManager;
 import br.xt.acore.desk.HomeManager;
 import br.xt.app.laboratorio.LaboratorioManager;
-import br.xt.app.novoModulo.NovoModuloManager;
+import br.xt.app.departamento.DepartamentoManager;
 
 public class RootManager extends JasapRootManager {
 
@@ -110,7 +61,7 @@ public class RootManager extends JasapRootManager {
         new HomeManager().config();
         new GedManager().config();
         new LaboratorioManager().config();
-        new NovoModuloManager().config();
+        new DepartamentoManager().config();
     }
 
     @Override
@@ -129,7 +80,7 @@ public class RootManager extends JasapRootManager {
                 5432,
                 "PRD_TREINAMENTO",
                 "postgres",
-                "masterkey"
+                "1234"
             )
         );
 
@@ -161,15 +112,17 @@ public class RootManager extends JasapRootManager {
     <span class="audio-time">0:00 / 0:00</span>
 </div>
 
-<h2 data-nav="extends JasapRootManager"><code class="explicacao">public class RootManager extends JasapRootManager</code></h2>
+<h2 data-nav="cadeia de herança"><code class="explicacao">public class RootManager extends JasapRootManager</code></h2>
 
 <div class="table-wrap">
 <table>
     <tr><th>Elemento</th><th>O que significa</th></tr>
     <tr><td><code>RootManager</code></td><td>Existe apenas uma instância desta classe no sistema. O Jasap a instancia automaticamente na inicialização do servidor (startup do Tomcat)</td></tr>
-    <tr><td><code>extends JasapRootManager</code></td><td>Herda do núcleo do Jasap os métodos <code>regAction()</code> e <code>getGlobalFilters()</code>. Também define o contrato: os três métodos <code>config()</code>, <code>sessionConfig()</code> e <code>configGlobalFilters()</code> precisam existir</td></tr>
+    <tr><td><code>extends JasapRootManager</code></td><td>Herda do núcleo do Jasap. Cadeia completa: <code>AppManager</code> → <code>JasapRootManager</code> → <code>RootManager</code></td></tr>
 </table>
 </div>
+
+<p>Do <code>AppManager</code> (o avô) herda: <code>regAction()</code>, <code>config()</code>, <code>sessionConfig()</code>, <code>getSession()</code>, <code>getInput()</code>, <code>getOutput()</code>, <code>getDataBase()</code>, <code>invokeAction()</code>. Do <code>JasapRootManager</code> (o pai direto) herda: <code>getGlobalFilters()</code> e o método abstrato <code>configGlobalFilters()</code>. O JasapRootManager é enxuto — só adiciona a responsabilidade dos filtros globais.</p>
 
 <h2 data-nav="throws Exception"><code class="explicacao">public void config() throws Exception</code></h2>
 
@@ -200,15 +153,17 @@ public class RootManager extends JasapRootManager {
     <tr><td><code>new HomeManager().config()</code></td><td>Recepção — tela inicial do sistema (desk)</td></tr>
     <tr><td><code>new GedManager().config()</code></td><td>Arquivo de documentos — gestão de documentos</td></tr>
     <tr><td><code>new LaboratorioManager().config()</code></td><td>Laboratório — módulo já existente no sistema</td></tr>
-    <tr><td><code>new NovoModuloManager().config()</code></td><td>O novo departamento — <strong>única linha que o aluno adiciona</strong> ao criar um módulo</td></tr>
+    <tr><td><code>new DepartamentoManager().config()</code></td><td>O novo departamento — <strong>única linha que o aluno adiciona</strong> ao criar um módulo</td></tr>
 </table>
 </div>
 
 <h2 data-nav="sessionConfig()"><code class="explicacao">sessionConfig()</code></h2>
 
-<p>Corpo vazio neste projeto. O Jasap chama este método <strong>toda vez que um usuário faz login</strong> — serve para inicializar dados na sessão (preferências, cache, configurações padrão). É como se o gerente geral tivesse um checklist para preencher cada vez que um funcionário bate o ponto de manhã. Neste prédio, o checklist existe mas está em branco — todo mundo entra e vai direto trabalhar.</p>
+<p>Corpo vazio neste projeto. Diferente do <code>config()</code> que roda <strong>uma vez</strong> no startup, o <code>sessionConfig()</code> roda <strong>toda vez que um usuário faz login</strong> (nova sessão HTTP). Serve para inicializar dados na sessão: preferências, cache, configurações padrão.</p>
 
-<p>O método precisa existir porque o <code>JasapRootManager</code> exige — é parte do contrato. Se remover, não compila. Em projetos reais seria usado para carregar preferências do usuário, cachear permissões ou configurar fuso horário.</p>
+<p>É como se o gerente geral tivesse um checklist para preencher cada vez que um funcionário bate o ponto de manhã. Neste prédio, o checklist existe mas está em branco — todo mundo entra e vai direto trabalhar.</p>
+
+<p>O método não é abstrato — o <code>AppManager</code> já tem implementação vazia (<code>public void sessionConfig(){}</code>). O <code>@Override</code> aqui é tecnicamente redundante, mas deixa explícito que o método foi considerado. Em projetos reais seria usado para carregar preferências do usuário, cachear permissões ou configurar fuso horário.</p>
 
         </div>
     </div>
@@ -230,81 +185,220 @@ public class RootManager extends JasapRootManager {
     <span class="audio-time">0:00 / 0:00</span>
 </div>
 
-<p>O <code>configGlobalFilters()</code> configura a <strong>portaria do prédio</strong> — as regras que todo mundo tem que passar antes de chegar ao departamento. Cada filtro é um "guarda" na entrada, em fila. Na <strong>ida</strong> (entrando) passam na ordem 1→6 antes de chegar à action; na <strong>volta</strong> (saindo) passam em ordem inversa 6→1 após a action terminar.</p>
+<p>O <code>configGlobalFilters()</code> configura a <strong>portaria do prédio</strong> — os guardas que todo mundo tem que passar antes de chegar ao departamento. Cada filtro é um "guarda" na entrada, em fila indiana.</p>
+
+<h2 data-nav="mecânica ida/volta"><code class="explicacao">Mecânica: ida e volta</code></h2>
+
+<p>Os filtros funcionam como uma <strong>boneca russa</strong> (matryoshka). Cada filtro envolve o próximo. Na <strong>ida</strong> (request chegando) passam na ordem 1→6 antes de chegar à action. Na <strong>volta</strong> (response saindo) passam em ordem <strong>inversa</strong> 6→1 após a action terminar.</p>
+
+<p>Dentro de cada filtro, o ponto de divisão é o <code>stack.next(manager)</code>: tudo <strong>antes</strong> dessa chamada é a ida, tudo <strong>depois</strong> é a volta.</p>
+
+<pre><code class="language-text">1. DataBaseFilter  →  abre conexão
+  2. PerfFilter     →  anota hora de entrada
+    3. EffectFilter →  (passa direto)
+      4. AAFilter   →  verifica autenticação
+        5. ErrorFilter → (monta try/catch)
+          6. PermissaoFilter → carrega permissões
+             ACTION.execute()  ← o funcionário trabalha
+          6. PermissaoFilter → (nada)
+        5. ErrorFilter → loga erro se houver
+      4. AAFilter   →  (nada)
+    3. EffectFilter →  empacota resposta / mostra erro amigável
+  2. PerfFilter     →  calcula tempo, mantém se >2s, deleta se <2s
+1. DataBaseFilter  →  commit + fecha conexão</code></pre>
 
 <h2 data-nav="DataBaseFilter"><code class="explicacao">new DataBaseFilter(...)</code></h2>
 
-<p>O primeiro filtro da cadeia — abre a conexão com o banco de dados. Os parâmetros de conexão:</p>
+<p>O primeiro filtro da cadeia — abre a conexão com o banco de dados. É o <strong>único filtro que recebe parâmetros</strong> no construtor — os outros 5 são <code>new XxxFilter()</code> sem parâmetros.</p>
 
 <div class="table-wrap">
 <table>
     <tr><th>Parâmetro</th><th>Valor</th><th>O que é</th></tr>
-    <tr><td>autocommit</td><td><code>true</code></td><td>Ativa o autocommit na conexão — cada operação SQL é confirmada automaticamente, sem precisar chamar <code>commit()</code> manualmente</td></tr>
-    <tr><td>nome do pool</td><td><code>"BANCO_TREINAMENTO"</code></td><td>Identificador interno do pool de conexões — usado pelo framework para gerenciar as conexões</td></tr>
-    <tr><td>tipo</td><td><code>DataBase.POSTGRES</code></td><td>Qual banco de dados — PostgreSQL neste projeto</td></tr>
-    <tr><td>host</td><td><code>"localhost"</code></td><td>Endereço do servidor de banco — máquina local</td></tr>
-    <tr><td>porta</td><td><code>5432</code></td><td>Porta padrão do PostgreSQL</td></tr>
-    <tr><td>banco</td><td><code>"PRD_TREINAMENTO"</code></td><td>Nome do banco de dados no PostgreSQL</td></tr>
-    <tr><td>usuário</td><td><code>"postgres"</code></td><td>Usuário de conexão com o banco</td></tr>
-    <tr><td>senha</td><td><code>"1234"</code></td><td>Senha do usuário</td></tr>
+    <tr><td>domainDB</td><td><code>true</code></td><td>Usa banco por domínio — monta o nome dinamicamente: <code>"PRD_" + domínio</code>. Permite multi-tenant (cada cliente com seu banco)</td></tr>
+    <tr><td>server_id</td><td><code>"BANCO_TREINAMENTO"</code></td><td>Identificador interno do pool de conexões — rótulo para gerenciar o pool</td></tr>
+    <tr><td>server_sgdb</td><td><code>DataBase.POSTGRES</code></td><td>Tipo do banco — constante numérica do Jasap que identifica PostgreSQL. Influencia como o SQL é gerado</td></tr>
+    <tr><td>server_host</td><td><code>"localhost"</code></td><td>Endereço do servidor de banco — máquina local. Em produção seria o IP do servidor dedicado</td></tr>
+    <tr><td>server_port</td><td><code>5432</code></td><td>Porta padrão do PostgreSQL</td></tr>
+    <tr><td>server_catalog</td><td><code>"PRD_TREINAMENTO"</code></td><td>Nome do banco de dados no PostgreSQL (o catalog)</td></tr>
+    <tr><td>server_user</td><td><code>"postgres"</code></td><td>Usuário de conexão com o banco</td></tr>
+    <tr><td>server_pass</td><td><code>"1234"</code></td><td>Senha do usuário de banco</td></tr>
 </table>
 </div>
+
+<p>O construtor <strong>não abre conexão</strong> — só guarda os parâmetros em campos <code>static</code>. A conexão é aberta na ida do <code>filter()</code> e fechada na volta (<code>finally</code>: <code>commit()</code> + <code>closeConnection()</code>).</p>
+
+<h2 data-nav="os 6 filtros"><code class="explicacao">Os 6 filtros — o que cada um faz</code></h2>
 
 <div class="table-wrap">
 <table>
     <tr><th>Filtro</th><th>Ida (request)</th><th>Volta (response)</th></tr>
-    <tr><td><code>DataBaseFilter</code></td><td>Abre o portão do estacionamento — abre a conexão com o banco e disponibiliza para toda a cadeia</td><td>Fecha o portão — fecha a conexão e devolve ao pool</td></tr>
-    <tr><td><code>PerfFilter</code></td><td>O segurança que anota a hora que você entrou</td><td>Anota quanto tempo ficou — calcula o tempo total de processamento</td></tr>
-    <tr><td><code>EffectFilter</code></td><td>Na ida só observa, apenas repassa</td><td>Na volta, empacota tudo que o departamento produziu — serializa todos os <code>eval()</code> e <code>update()</code> em JSON para o browser</td></tr>
-    <tr><td><code>AAFilter</code></td><td>"Você tem crachá?" — verifica se o usuário está autenticado. Se não estiver, barra na porta e redireciona para o login</td><td>—</td></tr>
-    <tr><td><code>ErrorFilter</code></td><td>O "plano B" — envolve o restante da cadeia em tratamento de erros</td><td>Se acontecer qualquer problema lá dentro, captura a exceção e mostra mensagem amigável ao invés do erro técnico</td></tr>
-    <tr><td><code>PermissaoFilter</code></td><td>"Ok, você tem crachá, mas pode entrar <strong>neste</strong> departamento?" — verifica a permissão via <code>regFun()</code></td><td>—</td></tr>
+    <tr><td><code>DataBaseFilter</code></td><td>Abre o portão do estacionamento — abre a conexão com o banco via pool de conexões e disponibiliza para toda a cadeia</td><td>Fecha o portão — <code>commit()</code> + <code>closeConnection()</code>. Está no <code>finally</code>: acontece <strong>sempre</strong>, mesmo se deu erro</td></tr>
+    <tr><td><code>PerfFilter</code></td><td>O segurança que anota a hora que você entrou — registra data/hora, IP, memória do servidor, parâmetros da requisição</td><td>Calcula quanto tempo ficou. <strong>Regra dos 2 segundos:</strong> se demorou mais de 2s, mantém o registro (requisição lenta, interessa investigar). Se demorou menos de 2s, deleta (não interessa)</td></tr>
+    <tr><td><code>EffectFilter</code></td><td>Na ida só observa, apenas repassa</td><td>Empacota tudo que a action produziu — serializa todos os <code>eval()</code> e <code>update()</code> em JSON para o browser. Se deu erro: troca o stack trace por mensagem amigável (<code>JasapAlertException</code> → mensagem real; outra exceção → "Erro de execução, informe ao suporte")</td></tr>
+    <tr><td><code>AAFilter</code></td><td>"Você tem crachá?" — verifica autenticação. 4 caminhos: banco falhou → login; <code>LogonInterface</code> → passa; <code>AnonymousAct</code> → passa; sessão ativa → passa; senão → tenta login com credenciais do input</td><td>—</td></tr>
+    <tr><td><code>ErrorFilter</code></td><td>O "plano B" — envolve o restante da cadeia em <code>try/catch</code></td><td>Se deu exceção, <strong>loga no banco</strong> via <code>SlgModel</code> (System Log): aviso para <code>JasapAlertException</code>, falha para erro técnico. Depois relança a exceção — quem mostra pro usuário é o EffectFilter acima</td></tr>
+    <tr><td><code>PermissaoFilter</code></td><td>Carrega <strong>todas</strong> as permissões do usuário de uma vez na <strong>primeira requisição</strong> da sessão e marca uma flag. Nas próximas, a flag já existe e o filtro passa direto. <strong>Não bloqueia ninguém</strong> — quem bloqueia é o <code>ok()</code> dentro de cada action</td><td>—</td></tr>
 </table>
 </div>
 
-<p>Nenhum desses filtros precisa ser alterado ao criar um novo módulo — eles são globais e já cobrem o módulo novo automaticamente. Mas entender o que cada um faz ajuda a debugar quando algo dá errado (ex: "por que minha action dá 403?" → <code>PermissaoFilter</code>).</p>
+<h2 data-nav="a ordem importa"><code class="explicacao">A ordem importa</code></h2>
+
+<p>Cada filtro depende do que o anterior já preparou:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Se mover...</th><th>Problema</th></tr>
+    <tr><td>PerfFilter antes do DataBaseFilter</td><td><code>daoInsert()</code> explode — não tem conexão aberta</td></tr>
+    <tr><td>AAFilter antes do DataBaseFilter</td><td>Não consegue consultar o banco pra autenticar</td></tr>
+    <tr><td>PermissaoFilter antes do AAFilter</td><td>Tenta carregar permissões de um usuário que ainda não foi identificado</td></tr>
+    <tr><td>ErrorFilter depois do PermissaoFilter</td><td>Exceções na permissão não seriam logadas</td></tr>
+    <tr><td>EffectFilter depois do ErrorFilter</td><td>Erro técnico apareceria como stack trace cru em vez de mensagem amigável</td></tr>
+    <tr><td>DataBaseFilter no final</td><td>Ninguém tem banco — tudo explode</td></tr>
+</table>
+</div>
+
+<p>Na <strong>volta</strong> a ordem inversa também importa: o DataBaseFilter fecha a conexão <strong>por último</strong>, garantindo que o PerfFilter ainda tenha banco pra gravar o tempo de performance.</p>
+
+<h2 data-nav="global vs local"><code class="explicacao">Filtros globais vs locais</code></h2>
+
+<p>Os 6 filtros do <code>configGlobalFilters()</code> são <strong>globais</strong> — rodam em toda requisição, sem exceção. Mas existem filtros <strong>locais</strong> que só rodam em actions específicas. O exemplo mais comum é o <code>TransactionFilter</code>:</p>
+
+<pre><code class="language-java">public static class Insert extends LabPessoaAction {
+    public Insert() {
+        super.getFilters().add(new TransactionFilter());
+    }
+}</code></pre>
+
+<p>O <code>TransactionFilter</code> só é adicionado em actions de escrita (Insert, Update, Delete). Actions de leitura (List, Sort) não precisam de transação.</p>
+
+<p>A cadeia final fica: <strong>globais primeiro, locais depois</strong>. Para um Insert: <code>DataBaseFilter → PerfFilter → EffectFilter → AAFilter → ErrorFilter → PermissaoFilter → TransactionFilter → action.execute()</code>.</p>
+
+<p>Nenhum dos filtros globais precisa ser alterado ao criar um novo módulo — eles já cobrem o módulo novo automaticamente.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">configGlobalFilters — Aprofundamento (cada filtro por dentro)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="6-RootManager/audio/RootManager-configGlobalFilters-aprofundamento.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<h2 data-nav="CallStack"><code class="explicacao">CallStack — como a cadeia funciona por dentro</code></h2>
+
+<p>O <code>CallStack</code> mantém uma <code>LinkedList</code> com todos os filtros + a action no final. Quando uma requisição chega, o <code>AppManager.invokeAction()</code> monta o stack e chama <code>stack.next(manager)</code>:</p>
+
+<pre><code class="language-java">// AppManager.invokeAction()
+setStack(new CallStack(action));
+getStack().addFilters(action.getManager().getLocalFilters());  // globais
+getStack().addFilters(action.getFilters());                     // locais
+Effect effect = getStack().next(this);</code></pre>
+
+<p>Cada chamada a <code>stack.next()</code> remove o primeiro filtro da lista e chama o <code>filter()</code> dele. Dentro do <code>filter()</code>, o filtro faz seu trabalho de ida, depois chama <code>stack.next()</code> de novo — que remove o próximo, e assim por diante. Quando a lista fica vazia, o CallStack chama <code>action.execute()</code>. O resultado volta pela pilha de chamadas recursivas.</p>
+
+<h2 data-nav="DataBaseFilter por dentro"><code class="explicacao">DataBaseFilter — por dentro</code></h2>
+
+<p>O construtor guarda os 8 parâmetros de conexão em campos <code>public static</code> — qualquer parte do sistema pode acessar <code>DataBaseFilter.SERVERDB_HOST</code> etc. Também chama <code>DataBase.setSGDB()</code> que configura globalmente qual SGBD o Jasap usa.</p>
+
+<p>Na ida do <code>filter()</code>:</p>
+<ul>
+    <li>Se a action implementa <code>NoDBAct</code> — pula tudo (action que não precisa de banco, tipo servir arquivo estático)</li>
+    <li>Se a conexão ainda não existe — abre uma nova usando pool de conexões via JNDI + Apache DBCP2</li>
+    <li>Monta o nome do banco dinamicamente: <code>"PRD_" + domínio do usuário</code> — multi-tenant</li>
+    <li>Se dá erro na conexão — mostra alert ("Falha de Conexão")</li>
+</ul>
+
+<p>Na volta (<code>finally</code>): <code>commit(true)</code> + <code>closeConnection(true)</code>. Está no <code>finally</code> — acontece sempre, mesmo se deu exceção. É a garantia de que a conexão nunca fica "presa".</p>
+
+<h2 data-nav="PerfFilter por dentro"><code class="explicacao">PerfFilter — por dentro</code></h2>
+
+<p>Ignora 3 tipos de requisição: <code>NoDBAct</code> (sem banco), <code>isMultipart()</code> (upload) e <code>KeepAlive</code> (ping). Para as demais, na ida registra:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Campo</th><th>O que grava</th></tr>
+    <tr><td><code>nome_prf</code></td><td>Nome completo da classe (ex: <code>br.xt.app.laboratorio.pessoa.LabPessoaList</code>)</td></tr>
+    <tr><td><code>dt_ini_prf</code></td><td>Data/hora de entrada</td></tr>
+    <tr><td><code>ip_prf</code></td><td>IP do usuário</td></tr>
+    <tr><td><code>totmen_prf</code> / <code>freemen_prf</code></td><td>Memória total e livre da JVM</td></tr>
+    <tr><td><code>input_prf</code></td><td>Todos os parâmetros da requisição</td></tr>
+</table>
+</div>
+
+<p>Na volta calcula o tempo total e aplica a <strong>regra dos 2 segundos</strong>: demorou mais de 2s → <code>daoUpdate()</code> (mantém pra análise); demorou menos → <code>daoDelete()</code> (descarta). A tabela de performance só acumula requisições lentas.</p>
+
+<h2 data-nav="EffectFilter por dentro"><code class="explicacao">EffectFilter — por dentro</code></h2>
+
+<p>Este é do <strong>Jasap</strong> (<code>br.jasap.util.filters</code>), não do projeto. Estende <code>Filter</code> direto (não <code>RootFilter</code>) — não tem acesso a <code>getFactory()</code>.</p>
+
+<p>Na ida: nada. Na volta, dois caminhos:</p>
+<ul>
+    <li><strong>Caminho feliz:</strong> <code>result.execute(action)</code> — serializa todos os <code>eval()</code> e <code>update()</code> em JSON para o browser</li>
+    <li><strong>Caminho de erro:</strong> <code>manager.getOutput().reset()</code> (limpa output parcial), depois mostra mensagem amigável. <code>JasapAlertException</code> → mostra a mensagem real. Outra exceção → "Erro de execução, informe ao suporte". Depois faz <code>throw e</code> — relança pro ErrorFilter logar</li>
+</ul>
+
+<p>Divisão de responsabilidades: <strong>ErrorFilter loga</strong> (grava no banco) e <strong>EffectFilter mostra</strong> (troca stack trace por mensagem amigável).</p>
+
+<h2 data-nav="AAFilter por dentro"><code class="explicacao">AAFilter — por dentro</code></h2>
+
+<p>Na ida, 5 caminhos verificados nesta ordem:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>#</th><th>Condição</th><th>O que acontece</th></tr>
+    <tr><td>1</td><td>Banco falhou (<code>isFail()</code>)</td><td>Redireciona pra página de login — não dá pra autenticar sem banco</td></tr>
+    <tr><td>2</td><td><code>LogonInterface</code></td><td>Deixa passar — é a tela de login, não precisa estar logado</td></tr>
+    <tr><td>3</td><td><code>AnonymousAct</code></td><td>Deixa passar — action pública</td></tr>
+    <tr><td>4</td><td><code>SESSION_USER</code> na sessão</td><td>Deixa passar — já está logado. <strong>99% das requisições caem aqui</strong></td></tr>
+    <tr><td>5</td><td>Nenhuma das anteriores</td><td>Tenta autenticar com login/senha do input (<code>AALocal</code>)</td></tr>
+</table>
+</div>
+
+<p>O <code>AALocal</code> trata o formato <code>usuario@DOMINIO</code>, autentica no banco, verifica se está inativo, e se der certo: grava cookies (login + domínio), coloca o <code>PusuBean</code> na sessão, registra IP e data, e redireciona pro <code>WorkSpace.jsap</code>. Se der exceção, destrói a sessão por segurança (<code>session.invalidate()</code>).</p>
+
+<h2 data-nav="ErrorFilter por dentro"><code class="explicacao">ErrorFilter — por dentro</code></h2>
+
+<p>Na ida: nada — só monta o <code>try/catch</code>. Na volta, se deu exceção:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Tipo de exceção</th><th>Nível do log</th><th>O que é</th></tr>
+    <tr><td><code>JasapAlertException</code></td><td><code>logAviso</code> ("Alert")</td><td>Erro esperado — validação, campo obrigatório, regra de negócio</td></tr>
+    <tr><td>Qualquer outra</td><td><code>logFalha</code> ("Jasap") + <code>printStackTrace()</code></td><td>Erro técnico — NullPointer, SQL, bug</td></tr>
+</table>
+</div>
+
+<p>Nos dois casos: captura o stack trace completo, grava no banco via <code>SlgModel</code> (System Log), e <strong>relança a exceção</strong> (<code>throw e</code>). O ErrorFilter não engole o erro — só loga e repassa.</p>
+
+<h2 data-nav="PermissaoFilter por dentro"><code class="explicacao">PermissaoFilter — por dentro</code></h2>
+
+<p>O mais enxuto de todos. Na ida: se a action não é <code>AnonymousAct</code> e a flag <code>PERMISSAO_SESSION</code> ainda não existe na sessão, chama <code>daoCarregarPermissoes()</code> — carrega <strong>todas</strong> as permissões do usuário de uma vez do banco e marca a flag. Na segunda requisição em diante, a flag já existe e o filtro passa direto.</p>
+
+<p><strong>Não bloqueia ninguém.</strong> Só carrega. Quem bloqueia é o <code>ok("chave")</code> dentro de cada action/form que consulta o cache na sessão.</p>
+
+<p>Eficiência: carregar tudo de uma vez evita N queries por tela. Uma tela com 10 botões verificando permissão faz 0 queries — só leitura de memória. A desvantagem: se o admin mudar permissões de um usuário logado, o usuário precisa <strong>relogar</strong> pra pegar as novas permissões.</p>
+
+<h2 data-nav="RootFilter e marker interfaces"><code class="explicacao">RootFilter e interfaces marcadoras</code></h2>
+
+<p>5 dos 6 filtros estendem <code>RootFilter</code> (não <code>Filter</code> direto). O <code>RootFilter</code> adiciona uma única coisa: <code>getFactory()</code> — acesso à ferramentaria central. O <code>EffectFilter</code> é a exceção: vem do Jasap e estende <code>Filter</code> direto.</p>
+
+<p><code>NoDBAct</code> e <code>AnonymousAct</code> são <strong>interfaces marcadoras</strong> (marker interfaces). Não têm nenhum método — a action só implementa (<code>implements NoDBAct</code>) e os filtros reconhecem via <code>instanceof</code>. É como pendurar uma placa na porta: "não preciso de banco" ou "sou público".</p>
 
         </div>
     </div>
 
 </div>
-
-</div>
-
-<div id="footer">
-    <div id="footer-inner"></div>
-</div>
-</div>
-
-</div>
-
-</div> <!-- layout -->
-
-<script src="../../js/menu.js"></script>
-<script src="../../js/footer.js"></script>
-<script src="../../js/docs.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const inner = document.getElementById('content-inner');
-    highlightAll(inner);
-    initLineHighlights(inner);
-    initCopyButtons(inner);
-    initAudioPlayers(inner);
-    initCarousel(inner);
-    initSideNav(inner);
-
-    if (localStorage.getItem('drawerOpen') === 'true') {
-        document.getElementById('drawer').classList.add('open');
-        document.getElementById('hamburger').classList.add('open');
-    }
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark');
-        document.getElementById('theme-toggle').innerHTML = '&#9790;';
-        document.getElementById('hljs-light').disabled = true;
-        document.getElementById('hljs-dark').disabled  = false;
-    }
-});
-</script>
 
 </body>
 </html>

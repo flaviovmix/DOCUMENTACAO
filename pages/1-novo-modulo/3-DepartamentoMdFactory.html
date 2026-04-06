@@ -4,46 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ModuloMdFactory — XT - Treinamento</title>
-    <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
-    <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <link rel="stylesheet" href="../../css/docs.css">
+    <script src="../../js/layout.js"></script>
 </head>
 <body>
-
-<!-- TOPBAR -->
-<div id="topbar">
-    <button id="hamburger" onclick="toggleDrawer()">
-        <span></span><span></span><span></span>
-    </button>
-    <a id="topbar-title" href="../../index.html">XT - Treinamento</a>
-    <nav class="breadcrumb-nav">
-        <span class="breadcrumb-sep">›</span>
-        <a href="novo-modulo.html">Novo Módulo</a>
-        <span class="breadcrumb-sep">›</span>
-        <span class="breadcrumb-current">ModuloMdFactory</span>
-    </nav>
-
-    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
-        <button onclick="changeZoom(-0.1)" title="Diminuir zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 8px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#8722;</button>
-        <button onclick="changeZoom(0)" title="Resetar zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:0.85em;padding:4px 6px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">100%</button>
-        <button onclick="changeZoom(0.1)" title="Aumentar zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 8px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#43;</button>
-        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
-    </div>
-
-</div>
-
-<!-- LAYOUT -->
-<div id="layout">
-
-<!-- DRAWER -->
-<div id="drawer">
-<div id="drawer-inner"></div>
-</div>
-
-<!-- CONTENT -->
-<div id="content">
-<div id="content-inner">
 
 <h1>ModuloMdFactory <span class="badge badge-new">novo arquivo</span></h1>
 
@@ -61,6 +24,14 @@
 
 
 <p>Centraliza o acesso aos models do módulo. Cada entidade adicionada ao módulo ganha um método aqui — garantindo que cada model seja criado uma única vez por requisição.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
 
 <pre><code class="language-java">package br.xt.app.modulo;
 
@@ -82,6 +53,10 @@ public class ModuloMdFactory {
     }
 
 }</code></pre>
+
+        </div>
+    </div>
+</div>
 
 <h2 data-nav="public class"><code class="explicacao">public class ModuloMdFactory</code></h2>
 
@@ -135,41 +110,6 @@ public ModuloMdFactory(AppManager manager) {
 }</code></pre>
 
 <p>Getter simples que expõe o <code>manager</code> armazenado. Usado internamente pelos models quando precisam acessar o banco de dados ou a sessão da requisição. À medida que entidades forem adicionadas ao módulo, novos métodos de model surgirão aqui seguindo o padrão <strong>lazy initialization</strong> — cada model criado uma única vez por requisição, somente quando solicitado.</p>
-
-</div>
-
-<div id="footer">
-    <div id="footer-inner"></div>
-</div>
-</div>
-
-</div>
-
-</div> <!-- layout -->
-
-<script src="../../js/menu.js"></script>
-<script src="../../js/footer.js"></script>
-<script src="../../js/docs.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const inner = document.getElementById('content-inner');
-    highlightAll(inner);
-    initCopyButtons(inner);
-    initAudioPlayers(inner);
-    initCarousel(inner);
-
-    if (localStorage.getItem('drawerOpen') === 'true') {
-        document.getElementById('drawer').classList.add('open');
-        document.getElementById('hamburger').classList.add('open');
-    }
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark');
-        document.getElementById('theme-toggle').innerHTML = '&#9790;';
-        document.getElementById('hljs-light').disabled = true;
-        document.getElementById('hljs-dark').disabled  = false;
-    }
-});
-</script>
 
 </body>
 </html>

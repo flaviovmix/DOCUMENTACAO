@@ -4,179 +4,211 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ModuloProdutoDAO — XT - Treinamento</title>
-    <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
-    <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <link rel="stylesheet" href="../../css/docs.css">
+    <script src="../../js/layout.js"></script>
 </head>
 <body>
 
-<!-- TOPBAR -->
-<div id="topbar">
-    <button id="hamburger" onclick="toggleDrawer()">
-        <span></span><span></span><span></span>
-    </button>
-    <a id="topbar-title" href="../../index.html">XT - Treinamento</a>
-
-    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
-        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
-    </div>
-</div>
-
-<!-- LAYOUT -->
-<div id="layout">
-
-<!-- DRAWER -->
-<div id="drawer">
-<div id="drawer-inner"></div>
-</div>
-
-<!-- CONTENT -->
-<div id="content">
-<div id="content-inner">
-
 <h1>ModuloProdutoDAO <span class="badge badge-new">novo arquivo</span></h1>
 
-<p>O DAO é a única camada do módulo que fala diretamente com o banco. Todos os SQLs da entidade Produto passam por ele: listagem, busca por ID, insert, update e delete.</p>
+<p>O DAO (Data Access Object) é a ponte entre o Bean e o banco de dados. Todos os SQLs da entidade Produto passam por ele: listagem, busca por ID, insert, update e delete. <strong>Terceiro arquivo</strong> a ser criado — depende do Bean e do WBean.</p>
 
-<pre><code class="language-java">package br.xt.app.modulo.produto;
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
 
 import br.jasap.core.AppManager;
 import br.jasap.dao.Query;
 import br.jasap.util.JasapList;
 import br.xt.AppsRootDAO;
 
-public class ModuloProdutoDAO extends AppsRootDAO {
+public class DepartamentoProdutoDAO extends AppsRootDAO {
 
-    public ModuloProdutoDAO() {
-    }
+    <span class="line-add">public DepartamentoProdutoDAO() {</span>
+    <span class="line-add">}</span>
 
-    public ModuloProdutoDAO(AppManager manager) {
-        setManager(manager);
-        setDataBase(manager.getDataBase());
-    }
+    <span class="line-add">public DepartamentoProdutoDAO(AppManager manager) {</span>
+    <span class="line-add">    setManager(manager);</span>
+    <span class="line-add">    setDataBase(manager.getDataBase());</span>
+    <span class="line-add">}</span>
 
-    public void daoList(JasapList list) throws Exception {
-        StringBuilder sql = new StringBuilder();
-        sql.append("select * from " + ModuloProdutoBean.TABLE);
-        sql.append(" where 1=1 <orderby>");
+    <span class="line-add">public void daoList(JasapList list) throws Exception {</span>
+    <span class="line-add">    StringBuilder sql = new StringBuilder();</span>
+    <span class="line-add">    sql.append("select * from " + DepartamentoProdutoBean.TABLE);</span>
+    <span class="line-add">    sql.append(" where 1=1 &lt;orderby&gt;");</span>
+    <span class="line-add"></span>
+    <span class="line-add">    Query query = getDataBase().getQuery(sql.toString());</span>
+    <span class="line-add">    select().executeList(query, list);</span>
+    <span class="line-add"></span>
+    <span class="line-add">    while (query.next()) {</span>
+    <span class="line-add">        DepartamentoProdutoBean bean = new DepartamentoProdutoBean();</span>
+    <span class="line-add">        query.populateBean(bean);</span>
+    <span class="line-add">        list.getList().add(bean);</span>
+    <span class="line-add">    }</span>
+    <span class="line-add">    query.release();</span>
+    <span class="line-add">}</span>
 
-        Query query = getDataBase().getQuery(sql.toString());
-        select().executeList(query, list);
+    <span class="line-add">public void daoSingle(DepartamentoProdutoBean bean) throws Exception {</span>
+    <span class="line-add">    select().execute(bean, DepartamentoProdutoBean.TABLE);</span>
+    <span class="line-add">}</span>
 
-        while (query.next()) {
-            ModuloProdutoBean bean = new ModuloProdutoBean();
-            query.populateBean(bean);
-            list.getList().add(bean);
-        }
-        query.release();
-    }
+    <span class="line-add">public void daoInsert(DepartamentoProdutoBean bean) throws Exception {</span>
+    <span class="line-add">    insert().execute(bean, DepartamentoProdutoBean.TABLE);</span>
+    <span class="line-add">}</span>
 
-    public void daoSingle(ModuloProdutoBean bean) throws Exception {
-        select().execute(bean, ModuloProdutoBean.TABLE);
-    }
+    <span class="line-add">public void daoUpdate(DepartamentoProdutoBean bean) throws Exception {</span>
+    <span class="line-add">    update().execute(bean, DepartamentoProdutoBean.TABLE);</span>
+    <span class="line-add">}</span>
 
-    public void daoInsert(ModuloProdutoBean bean) throws Exception {
-        insert().execute(bean, ModuloProdutoBean.TABLE);
-    }
+    <span class="line-add">public void daoDelete(DepartamentoProdutoBean bean) throws Exception {</span>
+    <span class="line-add">    delete().execute(bean, DepartamentoProdutoBean.TABLE);</span>
+    <span class="line-add">}</span>
 
-    public void daoUpdate(ModuloProdutoBean bean) throws Exception {
-        update().execute(bean, ModuloProdutoBean.TABLE);
-    }
+}</code></pre>
 
-    public void daoDelete(ModuloProdutoBean bean) throws Exception {
-        delete().execute(bean, ModuloProdutoBean.TABLE);
-    }
+        </div>
+    </div>
 
-}
-</code></pre>
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Hierarquia: de onde vêm os métodos?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
 
-<h2 data-nav="public class"><code class="explicacao">public class ModuloProdutoDAO extends AppsRootDAO</code></h2>
+<p>O DAO herda em dois níveis:</p>
+<p><code>JasapDAO</code> (Jasap) → <code>AppsRootDAO</code> (projeto) → <code>DepartamentoProdutoDAO</code></p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Classe</th><th>O que fornece</th></tr>
+    <tr><td><code>JasapDAO</code></td><td><code>select()</code>, <code>insert()</code>, <code>update()</code>, <code>delete()</code>, <code>qsWhere()</code>, <code>getDataBase()</code> — operações básicas de banco</td></tr>
+    <tr><td><code>AppsRootDAO</code></td><td><code>getFactory()</code> — acesso a MdFactories de outros módulos; <code>getUser()</code> — usuário logado; <code>ok()</code> — verificar permissão</td></tr>
+</table>
+</div>
+
+<p>Quando o DAO faz <code>insert().execute(bean, TABLE)</code>, o <code>insert()</code> vem do JasapDAO. O DAO não implementa SQL de INSERT — o Jasap faz por ele.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que dois construtores? (e o Bean/WBean não tem nenhum)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O Bean e o WBean não declaram construtores — o Java cria um vazio automaticamente. Basta porque são só objetos de dados.</p>
+
+<p>O DAO precisa de <strong>dois construtores explícitos</strong>:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Construtor</th><th>Quem chama</th><th>Para quê</th></tr>
+    <tr><td><code>DepartamentoProdutoDAO()</code></td><td>Jasap (reflection)</td><td>O framework pode precisar instanciar o DAO via <code>Class.newInstance()</code> — sem construtor vazio, falha em runtime</td></tr>
+    <tr><td><code>DepartamentoProdutoDAO(AppManager)</code></td><td>Model (<code>super(manager)</code>)</td><td>Configura <code>setManager()</code> + <code>setDataBase()</code> — sem isso, o DAO não tem conexão com o banco</td></tr>
+</table>
+</div>
+
+<p>Corrente de criação: MdFactory → Model → <code>super(manager)</code> → DAO configurado com conexão ao banco.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que daoList é diferente dos outros métodos?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Os 4 métodos automáticos (<code>daoSingle</code>, <code>daoInsert</code>, <code>daoUpdate</code>, <code>daoDelete</code>) operam sobre <strong>um único registro</strong> — o Jasap monta o SQL automaticamente usando <code>@DBInfo</code>.</p>
+
+<p>O <code>daoList</code> retorna <strong>vários registros</strong> e precisa:</p>
+<ol>
+    <li>Montar o SQL na mão (com placeholders)</li>
+    <li>Executar com paginação</li>
+    <li>Iterar registro por registro</li>
+    <li>Criar um Bean pra cada linha e popular via reflection</li>
+    <li>Liberar recursos</li>
+</ol>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que é "where 1=1"?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p><code>1=1</code> é sempre verdadeiro — não filtra nada sozinho. É um truque clássico de SQL que serve de "âncora" pra concatenar filtros com <code>AND</code> depois:</p>
+
+<pre><code class="language-sql">WHERE 1=1 AND st_pro=1 AND nome_pro LIKE '%João%'</code></pre>
+
+<p>Sem o <code>1=1</code>, o primeiro filtro precisaria saber se deve usar <code>WHERE</code> ou <code>AND</code>. Com o <code>1=1</code>, todos os filtros são sempre <code>AND</code> — simplifica a montagem.</p>
+
+        </div>
+    </div>
+</div>
+
+<h2 data-nav="public class"><code class="explicacao">public class DepartamentoProdutoDAO extends AppsRootDAO</code></h2>
 
 <div class="table-wrap">
 <table>
     <tr><th>Elemento</th><th>O que significa</th></tr>
     <tr><td><code>public</code></td><td>Visível para o Model, que estende este DAO</td></tr>
-    <tr><td><code>ModuloProdutoDAO</code></td><td>Convenção do projeto: prefixo do módulo + entidade + <code>DAO</code></td></tr>
-    <tr><td><code>extends AppsRootDAO</code></td><td>Herda <code>select()</code>, <code>insert()</code>, <code>update()</code>, <code>delete()</code> e <code>getDataBase()</code>. Sem essa herança seria necessário reimplementar toda a infraestrutura de acesso ao banco</td></tr>
+    <tr><td><code>DepartamentoProdutoDAO</code></td><td>Convenção do projeto: prefixo do módulo + entidade + <code>DAO</code></td></tr>
+    <tr><td><code>extends AppsRootDAO</code></td><td>Herda <code>select()</code>, <code>insert()</code>, <code>update()</code>, <code>delete()</code> e <code>getDataBase()</code> — toda a infraestrutura de banco</td></tr>
 </table>
 </div>
 
-<h2 data-nav="construtores"><code class="explicacao">ModuloProdutoDAO() / ModuloProdutoDAO(AppManager manager)</code></h2>
+<h2 data-nav="construtores"><code class="explicacao">DepartamentoProdutoDAO() / DepartamentoProdutoDAO(AppManager manager)</code></h2>
 
 <div class="table-wrap">
 <table>
     <tr><th>Construtor</th><th>Para quê</th></tr>
-    <tr><td><code>ModuloProdutoDAO()</code></td><td>Construtor vazio — exigido pelo framework para instanciar o DAO via reflection em alguns contextos internos do Jasap</td></tr>
-    <tr><td><code>ModuloProdutoDAO(AppManager manager)</code></td><td>Construtor principal, usado pelo Model. Recebe o <code>AppManager</code>, registra com <code>setManager()</code> e registra a conexão com <code>setDataBase(manager.getDataBase())</code> para que os métodos herdados saibam qual banco usar</td></tr>
+    <tr><td><code>DepartamentoProdutoDAO()</code></td><td>Construtor vazio — exigido pelo Jasap para instanciação via reflection</td></tr>
+    <tr><td><code>DepartamentoProdutoDAO(AppManager)</code></td><td>Construtor principal. <code>setManager(manager)</code> grava o manager; <code>setDataBase(manager.getDataBase())</code> configura a conexão com o banco</td></tr>
 </table>
 </div>
-
-<h2 data-nav="daoList vs demais"><code class="explicacao">Por que daoList é diferente dos outros métodos?</code></h2>
-<p>Os métodos <code>daoSingle</code>, <code>daoInsert</code>, <code>daoUpdate</code> e <code>daoDelete</code> usam os helpers do Jasap — <code>select().execute()</code>, <code>insert().execute()</code>, etc. — que constroem o SQL automaticamente a partir das anotações do Bean (<code>@DBInfo</code>, <code>pk=true</code>, <code>serial=true</code>), executam e mapeiam o resultado, tudo internamente. Eles sempre operam em <strong>um único registro</strong> identificado pelo ID.</p>
-<p>O <code>daoList</code> precisa fazer na mão porque retorna <strong>múltiplos registros</strong>, precisa de SQL customizado com <code>&lt;orderby&gt;</code> para ordenação, e precisa de paginação. Por isso monta o SQL, itera os resultados, cria um bean por linha e popula cada um.</p>
 
 <h2 data-nav="daoList"><code class="explicacao">daoList(JasapList list)</code></h2>
 
 <div class="table-wrap">
 <table>
     <tr><th>Linha</th><th>O que faz</th></tr>
-    <tr><td><code>sql.append("select * from " + ModuloProdutoBean.TABLE)</code></td><td>Monta o SELECT. Usa a constante <code>TABLE</code> em vez de string literal — se a tabela mudar no banco, só atualiza o Bean</td></tr>
-    <tr><td><code>sql.append(" where 1=1 &lt;orderby&gt;")</code></td><td><code>1=1</code> garante SQL válido mesmo sem condições. <code>&lt;orderby&gt;</code> é substituído pelo ORDER BY definido na listagem</td></tr>
-    <tr><td><code>getDataBase().getQuery(sql.toString())</code></td><td>Prepara a query com o SQL montado — ainda não executou</td></tr>
-    <tr><td><code>select().executeList(query, list)</code></td><td>Injeta <code>&lt;orderby&gt;</code>, aplica LIMIT/OFFSET para a página atual e executa a consulta no banco</td></tr>
-    <tr><td><code>while (query.next())</code></td><td>Itera os registros retornados. <code>next()</code> retorna <code>false</code> quando não há mais linhas</td></tr>
-    <tr><td><code>query.populateBean(bean)</code></td><td>Usa reflection para mapear cada coluna do <code>ResultSet</code> para o campo correspondente do bean — chama os setters pelo nome da coluna</td></tr>
-    <tr><td><code>list.getList().add(bean)</code></td><td>Adiciona o bean populado na lista de resultados</td></tr>
-    <tr><td><code>query.release()</code></td><td>Libera o cursor e devolve a conexão para o pool. Obrigatório — sem <code>release()</code> a conexão fica ocupada e o pool se esgota</td></tr>
+    <tr><td><code>StringBuilder sql</code></td><td>Mais eficiente que concatenar String com <code>+</code> — String é imutável, cada <code>+</code> cria objeto novo</td></tr>
+    <tr><td><code>sql.append("select * from " + TABLE)</code></td><td>Monta o SELECT usando a constante <code>TABLE</code> do Bean</td></tr>
+    <tr><td><code>" where 1=1 &lt;orderby&gt;"</code></td><td><code>1=1</code> = âncora pra filtros AND; <code>&lt;orderby&gt;</code> = placeholder substituído pelo Jasap</td></tr>
+    <tr><td><code>getDataBase().getQuery(sql)</code></td><td>Cria a Query com o SQL — ainda não executou</td></tr>
+    <tr><td><code>select().executeList(query, list)</code></td><td>Executa aplicando paginação (LIMIT/OFFSET) e ORDER BY</td></tr>
+    <tr><td><code>while (query.next())</code></td><td>Itera registros como cursor — <code>false</code> quando acabou</td></tr>
+    <tr><td><code>new DepartamentoProdutoBean()</code></td><td>Bean vazio pra cada linha do resultado</td></tr>
+    <tr><td><code>query.populateBean(bean)</code></td><td>Reflection: coluna → setter → preenche o Bean</td></tr>
+    <tr><td><code>list.getList().add(bean)</code></td><td>Adiciona na lista que a tela vai exibir</td></tr>
+    <tr><td><code>query.release()</code></td><td>Libera recursos — <strong>obrigatório</strong>, senão o pool de conexões se esgota</td></tr>
 </table>
 </div>
 
-<h2 data-nav="daoSingle"><code class="explicacao">daoSingle(ModuloProdutoBean bean)</code></h2>
-<p>Carrega um único registro pelo ID. O bean deve ter <code>id_pro</code> preenchido antes de chamar — o Jasap usa o campo marcado com <code>@DBInfo(pk=true)</code> para montar o <code>WHERE</code> automaticamente. Após a execução, os demais campos do bean são preenchidos com os dados do banco.</p>
+<h2 data-nav="daoSingle"><code class="explicacao">daoSingle(DepartamentoProdutoBean bean)</code></h2>
+<p>Carrega um único registro pelo ID. O bean deve ter <code>id_pro</code> preenchido — o Jasap usa <code>@DBInfo(pk=true)</code> para montar <code>SELECT * FROM laboratorio.pro WHERE id_pro = ?</code> automaticamente. Após a execução, os demais campos do bean ficam preenchidos.</p>
 
-<h2 data-nav="daoInsert"><code class="explicacao">daoInsert(ModuloProdutoBean bean)</code></h2>
-<p>Insere um novo registro. O Jasap omite automaticamente o campo <code>serial=true</code> no INSERT. Após a execução, o ID gerado pelo banco é gravado de volta em <code>bean.setId_pro()</code>.</p>
+<h2 data-nav="daoInsert"><code class="explicacao">daoInsert(DepartamentoProdutoBean bean)</code></h2>
+<p>Insere um registro novo. O Jasap omite o campo <code>serial=true</code> do INSERT e, após executar, grava o ID gerado pelo banco de volta no bean via <code>setId_pro()</code>.</p>
 
-<h2 data-nav="daoUpdate"><code class="explicacao">daoUpdate(ModuloProdutoBean bean)</code></h2>
-<p>Atualiza um registro existente. O bean deve ter <code>id_pro</code> preenchido para o <code>WHERE</code> e os demais campos com os novos valores. O Jasap monta: <code>UPDATE laboratorio.pro SET campo=valor, ... WHERE id_pro = ?</code></p>
+<h2 data-nav="daoUpdate"><code class="explicacao">daoUpdate(DepartamentoProdutoBean bean)</code></h2>
+<p>Atualiza um registro existente. O Jasap monta: <code>UPDATE laboratorio.pro SET nome_pro=..., vl_pro=..., ... WHERE id_pro = ?</code>. Usa <code>@DBInfo(pk=true)</code> pro WHERE e omite a PK do SET.</p>
 
-<h2 data-nav="daoDelete"><code class="explicacao">daoDelete(ModuloProdutoBean bean)</code></h2>
-<p>Exclui um registro pelo ID. Se houver FK em outra tabela apontando para esse registro, o banco lança <code>SQLConstraintException</code> — o Form captura essa exceção para exibir a mensagem de erro ao usuário.</p>
-
-</div>
-
-<div id="footer">
-    <div id="footer-inner"></div>
-</div>
-</div>
-
-</div>
-
-</div> <!-- layout -->
-
-<script src="../../js/menu.js"></script>
-<script src="../../js/footer.js"></script>
-<script src="../../js/docs.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const inner = document.getElementById('content-inner');
-    highlightAll(inner);
-    initCopyButtons(inner);
-    initAudioPlayers(inner);
-
-    if (localStorage.getItem('drawerOpen') === 'true') {
-        document.getElementById('drawer').classList.add('open');
-        document.getElementById('hamburger').classList.add('open');
-    }
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark');
-        document.getElementById('theme-toggle').innerHTML = '&#9790;';
-        document.getElementById('hljs-light').disabled = true;
-        document.getElementById('hljs-dark').disabled  = false;
-    }
-});
-</script>
+<h2 data-nav="daoDelete"><code class="explicacao">daoDelete(DepartamentoProdutoBean bean)</code></h2>
+<p>Exclui um registro pelo ID. Monta: <code>DELETE FROM laboratorio.pro WHERE id_pro = ?</code>. Se houver FK em outra tabela apontando para esse registro, o banco lança <code>SQLConstraintException</code>.</p>
 
 </body>
 </html>

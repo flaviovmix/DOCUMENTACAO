@@ -4,46 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HomeDesk — XT - Treinamento</title>
-    <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css">
-    <link id="hljs-dark"  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" disabled>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <link rel="stylesheet" href="../../css/docs.css">
+    <script src="../../js/layout.js"></script>
 </head>
 <body>
-
-<!-- TOPBAR -->
-<div id="topbar">
-    <button id="hamburger" onclick="toggleDrawer()">
-        <span></span><span></span><span></span>
-    </button>
-    <a id="topbar-title" href="../../index.html">XT - Treinamento</a>
-    <nav class="breadcrumb-nav">
-        <span class="breadcrumb-sep">›</span>
-        <a href="novo-modulo.html">Novo Módulo</a>
-        <span class="breadcrumb-sep">›</span>
-        <span class="breadcrumb-current">HomeDesk</span>
-    </nav>
-
-    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
-        <button onclick="changeZoom(-0.1)" title="Diminuir zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 8px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#8722;</button>
-        <button onclick="changeZoom(0)" title="Resetar zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:0.85em;padding:4px 6px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">100%</button>
-        <button onclick="changeZoom(0.1)" title="Aumentar zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 8px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#43;</button>
-        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
-    </div>
-
-</div>
-
-<!-- LAYOUT -->
-<div id="layout">
-
-<!-- DRAWER -->
-<div id="drawer">
-<div id="drawer-inner"></div>
-</div>
-
-<!-- CONTENT -->
-<div id="content">
-<div id="content-inner">
 
 <h1>HomeDesk <span class="badge badge-edit">editar arquivo</span></h1>
 
@@ -59,10 +22,17 @@
 
 <div class="carousel" data-path="7-HomeDesk/img/"></div>
 
-
 <p>Tela do desk — o ambiente principal que o usuário vê após o login. É aqui que ficam os ícones de entrada de cada módulo. Para que o novo módulo apareça nessa tela, é preciso adicionar um <code>m.add(...)</code> no método <code>menuDesk()</code> e importar as duas classes do módulo.</p>
 
-<pre data-add="import br.xt.app.novoModulo.NovoModuloHome|import br.xt.app.novoModulo.NovoModuloManager|NovoNovoModuloManager.F_ACESSO_MODULO|NOVO MÓDULO|NovoNovoModuloHome.class).childWindow|__WD_XT_NOVO_MODULO"><code class="language-java">package br.xt.acore.desk;
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="import br.xt.app.departamento.DepartamentoHome|import br.xt.app.departamento.DepartamentoManager|DepartamentoManager.F_ACESSO_MODULO+3"><code class="language-java">package br.xt.acore.desk;
 
 import br.jasap.core.Effect;
 import br.jasap.dao.Query;
@@ -82,10 +52,12 @@ import br.xt.app.painel.usu.PusuModel;
 
 import br.xt.app.painel.usu.PusuAction;
 import br.xt.acore.view.XtPage;
+import br.xt.app.departamento.DepartamentoHome;
+import br.xt.app.departamento.DepartamentoManager;
+
 import br.xt.app.laboratorio.LaboratorioHome;
 import br.xt.app.laboratorio.LaboratorioManager;
-import br.xt.app.novoModulo.NovoModuloHome;
-import br.xt.app.novoModulo.NovoModuloManager;
+
 import br.xt.app.ged.GedHome;
 import br.xt.app.ged.GedManager;
 
@@ -111,9 +83,9 @@ public class HomeDesk extends AppsRootAction  {
                 link(LaboratorioHome.class).childWindow("__WD_XT_LABORATORIO"),
                 null).setImage("res/ico/mn_cto_colaboradores.png");
 
-        m.add(ok(NovoNovoModuloManager.F_ACESSO_MODULO) && PnlCfg.hasNovoModulo(getManager()),
-                "NOVO MÓDULO",
-                link(NovoNovoModuloHome.class).childWindow("__WD_XT_NOVO_MODULO"),
+        m.add(ok(DepartamentoManager.F_ACESSO_MODULO) && PnlCfg.hasDepartamento(getManager()),
+                "DEPARTAMENTO",
+                link(DepartamentoHome.class).childWindow("__WD_XT_DEPARTAMENTO"),
                 null).setImage("res/ico/mn_cto_colaboradores.png");
 
         m.add(ok(GedManager.F_ACESSO_MODULO) && PnlCfg.hasGED(getManager()),
@@ -133,6 +105,10 @@ public class HomeDesk extends AppsRootAction  {
 }
 </code></pre>
 
+        </div>
+    </div>
+</div>
+
 <h2 data-nav="O que muda"><code class="explicacao">O que muda neste arquivo</code></h2>
 
 <p>São duas adições independentes: os dois imports no topo e o bloco <code>m.add(...)</code> dentro de <code>menuDesk()</code>. Sem os imports o compilador não encontra as classes; sem o <code>m.add</code> o ícone do módulo não aparece no desk.</p>
@@ -140,8 +116,8 @@ public class HomeDesk extends AppsRootAction  {
 <div class="table-wrap">
 <table>
     <tr><th>O que adicionar</th><th>Onde</th></tr>
-    <tr><td><code>import br.xt.app.novoModulo.NovoModuloHome;</code></td><td>Bloco de imports — necessário porque <code>menuDesk()</code> referencia <code>NovoModuloHome.class</code></td></tr>
-    <tr><td><code>import br.xt.app.novoModulo.NovoModuloManager;</code></td><td>Bloco de imports — necessário porque <code>menuDesk()</code> referencia <code>NovoModuloManager.F_ACESSO_MODULO</code></td></tr>
+    <tr><td><code>import br.xt.app.departamento.DepartamentoHome;</code></td><td>Bloco de imports — necessário porque <code>menuDesk()</code> referencia <code>DepartamentoHome.class</code></td></tr>
+    <tr><td><code>import br.xt.app.departamento.DepartamentoManager;</code></td><td>Bloco de imports — necessário porque <code>menuDesk()</code> referencia <code>DepartamentoManager.F_ACESSO_MODULO</code></td></tr>
     <tr><td>bloco <code>m.add(...)</code></td><td>Dentro de <code>menuDesk()</code>, entre os outros módulos</td></tr>
 </table>
 </div>
@@ -151,9 +127,9 @@ public class HomeDesk extends AppsRootAction  {
 <pre><code class="language-java">public String menuDesk() throws Exception {
     SideMenu m = new SideMenu();
 
-    m.add(ok(NovoModuloManager.F_ACESSO_MODULO) && PnlCfg.hasNovoModulo(getManager()),
-            "MÓDULO",
-            link(NovoModuloHome.class).childWindow("__WD_XT_NOVO_MODULO"),
+    m.add(ok(DepartamentoManager.F_ACESSO_MODULO) && PnlCfg.hasDepartamento(getManager()),
+            "DEPARTAMENTO",
+            link(DepartamentoHome.class).childWindow("__WD_XT_DEPARTAMENTO"),
             null).setImage("res/ico/mn_cto_colaboradores.png");
 
     return m.toHtml();
@@ -166,74 +142,38 @@ public class HomeDesk extends AppsRootAction  {
 <div class="table-wrap">
 <table>
     <tr><th>Parâmetro do <code>m.add()</code></th><th>O que é</th></tr>
-    <tr><td><code>ok(NovoModuloManager.F_ACESSO_MODULO) && PnlCfg.hasNovoModulo(getManager())</code></td><td>Condição de visibilidade. O item só aparece se o usuário tiver permissão (<code>ok()</code>) <strong>e</strong> o módulo estiver habilitado na configuração do sistema (<code>PnlCfg.hasNovoModulo()</code>). Se qualquer uma das duas for falsa, o item some do desk para aquele usuário</td></tr>
-    <tr><td><code>"NOVO MÓDULO"</code></td><td>Rótulo exibido abaixo do ícone no desk</td></tr>
-    <tr><td><code>link(NovoModuloHome.class).childWindow("__WD_XT_NOVO_MODULO")</code></td><td>Link gerado ao clicar no ícone. <code>childWindow</code> abre o módulo em uma janela filha com o ID informado — esse ID identifica a janela para que o Jasap saiba onde abrir e reutilizar</td></tr>
+    <tr><td><code>ok(DepartamentoManager.F_ACESSO_MODULO) && PnlCfg.hasDepartamento(getManager())</code></td><td>Condição de visibilidade. O item só aparece se o usuário tiver permissão (<code>ok()</code>) <strong>e</strong> o módulo estiver habilitado na configuração do sistema (<code>PnlCfg.hasDepartamento()</code>). Se qualquer uma das duas for falsa, o item some do desk para aquele usuário</td></tr>
+    <tr><td><code>"DEPARTAMENTO"</code></td><td>Rótulo exibido abaixo do ícone no desk</td></tr>
+    <tr><td><code>link(DepartamentoHome.class).childWindow("__WD_XT_DEPARTAMENTO")</code></td><td>Link gerado ao clicar no ícone. <code>childWindow</code> abre o módulo em uma janela filha com o ID informado — esse ID identifica a janela para que o Jasap saiba onde abrir e reutilizar</td></tr>
     <tr><td><code>null</code></td><td>Ícone alternativo (texto) — não utilizado aqui porque a imagem é definida via <code>setImage()</code></td></tr>
     <tr><td><code>.setImage("res/ico/mn_cto_colaboradores.png")</code></td><td>Imagem exibida no desk. O caminho é relativo à raiz do projeto web</td></tr>
 </table>
 </div>
 
-<h2 data-nav="ok() e PnlCfg"><code class="explicacao">ok() e PnlCfg.hasNovoModulo()</code></h2>
+<h2 data-nav="ok() e PnlCfg"><code class="explicacao">ok() e PnlCfg.hasDepartamento()</code></h2>
 
 <p>A condição de visibilidade combina dois controles independentes:</p>
 
 <div class="table-wrap">
 <table>
     <tr><th>Controle</th><th>Quem define</th><th>O que verifica</th></tr>
-    <tr><td><code>ok(NovoModuloManager.F_ACESSO_MODULO)</code></td><td>Permissão do usuário — configurada no Painel de Controle</td><td>Se o usuário logado tem permissão de acesso ao módulo. A chave <code>F_ACESSO_MODULO</code> foi registrada via <code>regFun()</code> no <code>ModuloManager</code></td></tr>
-    <tr><td><code>PnlCfg.hasNovoModulo(getManager())</code></td><td>Configuração do sistema — ligada ou desligada por um administrador</td><td>Se o módulo está habilitado globalmente na configuração da aplicação. Independe do usuário — se desligado, some para todos</td></tr>
+    <tr><td><code>ok(DepartamentoManager.F_ACESSO_MODULO)</code></td><td>Permissão do usuário — configurada no Painel de Controle</td><td>Se o usuário logado tem permissão de acesso ao módulo. A chave <code>F_ACESSO_MODULO</code> foi registrada via <code>regFun()</code> no <code>DepartamentoManager</code></td></tr>
+    <tr><td><code>PnlCfg.hasDepartamento(getManager())</code></td><td>Configuração do sistema — ligada ou desligada por um administrador</td><td>Se o módulo está habilitado globalmente na configuração da aplicação. Independe do usuário — se desligado, some para todos</td></tr>
 </table>
 </div>
 
-<h2 data-nav="childWindow"><code class="explicacao">childWindow("__WD_XT_NOVO_MODULO")</code></h2>
+<h2 data-nav="childWindow"><code class="explicacao">childWindow("__WD_XT_DEPARTAMENTO")</code></h2>
 
 <p>Cada módulo é aberto em sua própria janela filha, identificada por uma string única. Essa string funciona como um "slot" — se o usuário clicar no ícone do módulo enquanto ele já está aberto, o Jasap encontra a janela existente e a traz para frente em vez de abrir uma segunda.</p>
 
 <div class="table-wrap">
 <table>
     <tr><th>Convenção</th><th>Exemplo</th></tr>
-    <tr><td>Prefixo <code>__WD_XT_</code> + nome do módulo em maiúsculas</td><td><code>__WD_XT_NOVO_MODULO</code>, <code>__WD_XT_LABORATORIO</code>, <code>__WD_XT_GED</code></td></tr>
+    <tr><td>Prefixo <code>__WD_XT_</code> + nome do módulo em maiúsculas</td><td><code>__WD_XT_DEPARTAMENTO</code>, <code>__WD_XT_LABORATORIO</code>, <code>__WD_XT_GED</code></td></tr>
 </table>
 </div>
 
 <p>O ID deve ser único entre todos os módulos — reutilizar o ID de outro módulo faria os dois compartilharem a mesma janela, sobrescrevendo um ao outro.</p>
-
-</div>
-
-<div id="footer">
-    <div id="footer-inner"></div>
-</div>
-</div>
-
-</div>
-
-</div> <!-- layout -->
-
-<script src="../../js/menu.js"></script>
-<script src="../../js/footer.js"></script>
-<script src="../../js/docs.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const inner = document.getElementById('content-inner');
-    highlightAll(inner);
-    initLineHighlights(inner);
-    initCopyButtons(inner);
-    initAudioPlayers(inner);
-    initCarousel(inner);
-
-    if (localStorage.getItem('drawerOpen') === 'true') {
-        document.getElementById('drawer').classList.add('open');
-        document.getElementById('hamburger').classList.add('open');
-    }
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark');
-        document.getElementById('theme-toggle').innerHTML = '&#9790;';
-        document.getElementById('hljs-light').disabled = true;
-        document.getElementById('hljs-dark').disabled  = false;
-    }
-});
-</script>
 
 </body>
 </html>

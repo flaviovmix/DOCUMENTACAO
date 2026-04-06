@@ -4,33 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRUD — XT - Treinamento</title>
-    <link rel="stylesheet" href="../../css/docs.css">
+    <script src="../../js/layout.js"></script>
 </head>
 <body>
-
-<!-- TOPBAR -->
-<div id="topbar">
-    <button id="hamburger" onclick="toggleDrawer()">
-        <span></span><span></span><span></span>
-    </button>
-    <a id="topbar-title" href="../../index.html">XT - Treinamento</a>
-
-    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
-        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
-    </div>
-</div>
-
-<!-- LAYOUT -->
-<div id="layout">
-
-<!-- DRAWER -->
-<div id="drawer">
-<div id="drawer-inner"></div>
-</div>
-
-<!-- CONTENT -->
-<div id="content">
-<div id="content-inner">
 
     <div class="home-header">
         <h1 class="home-title">CRUD</h1>
@@ -116,48 +92,5 @@
 
     </div>
 
-</div>
-
-<div id="footer">
-    <div id="footer-inner"></div>
-</div>
-</div>
-
-</div>
-
-</div> <!-- layout -->
-
-<script>
-function toggleDrawer() {
-    const drawer = document.getElementById('drawer');
-    drawer.classList.toggle('open');
-    document.getElementById('hamburger').classList.toggle('open');
-    localStorage.setItem('drawerOpen', drawer.classList.contains('open'));
-}
-
-function toggleGroup(header) {
-    header.closest('.menu-group').classList.toggle('collapsed');
-}
-
-function toggleTheme() {
-    const dark = document.body.classList.toggle('dark');
-    document.getElementById('theme-toggle').innerHTML = dark ? '&#9790;' : '&#9788;';
-    localStorage.setItem('theme', dark ? 'dark' : 'light');
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    if (localStorage.getItem('drawerOpen') === 'true') {
-        document.getElementById('drawer').classList.add('open');
-        document.getElementById('hamburger').classList.add('open');
-    }
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark');
-        document.getElementById('theme-toggle').innerHTML = '&#9790;';
-    }
-});
-</script>
-
-<script src="../../js/menu.js"></script>
-<script src="../../js/footer.js"></script>
 </body>
 </html>

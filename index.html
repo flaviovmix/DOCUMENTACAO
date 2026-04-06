@@ -4,131 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>XT - Treinamento</title>
-    <link rel="stylesheet" href="css/docs.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="js/layout.js"></script>
 </head>
 <body>
 
-<!-- TOPBAR -->
-<div id="topbar">
-    <button id="hamburger" onclick="toggleDrawer()">
-        <span></span><span></span><span></span>
-    </button>
-    <a id="topbar-title" href="index.html">XT - Treinamento</a>
-
-    <div style="margin-left: auto; display: flex; align-items: center; gap: 4px;">
-        <button onclick="changeZoom(-0.1)" title="Diminuir zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 8px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#8722;</button>
-        <span id="zoom-label" onclick="toggleZoomMenu()" style="cursor:pointer;font-size:0.82em;color:#555;min-width:40px;text-align:center;position:relative;">100%<div id="zoom-menu" style="display:none;position:absolute;top:100%;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #dde1e7;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.1);margin-top:8px;z-index:300;padding:4px 0;white-space:nowrap;"><a onclick="setZoom(0.75)" style="display:block;padding:6px 16px;color:#333;text-decoration:none;font-size:13px;cursor:pointer;">75%</a><a onclick="setZoom(1)" style="display:block;padding:6px 16px;color:#333;text-decoration:none;font-size:13px;cursor:pointer;">100%</a><a onclick="setZoom(1.25)" style="display:block;padding:6px 16px;color:#333;text-decoration:none;font-size:13px;cursor:pointer;">125%</a><a onclick="setZoom(1.5)" style="display:block;padding:6px 16px;color:#333;text-decoration:none;font-size:13px;cursor:pointer;">150%</a></div></span>
-        <button onclick="changeZoom(0.1)" title="Aumentar zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 8px;line-height:1;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#43;</button>
-        <button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color='#2563eb'" onmouseout="this.style.color='#555'">&#9788;</button>
-    </div>
-</div>
-
-<!-- LAYOUT -->
-<div id="layout">
-
-<!-- DRAWER -->
-<div id="drawer">
-<div id="drawer-inner"></div>
-</div>
-
-<!-- CONTENT -->
-<div id="content">
-<div id="content-inner">
-
     <div class="home-header">
-        <h1 class="home-title">DOCUMENTAÇÃO</h1>
-        <p class="home-sub">Documentação do framework Jasap aplicado ao módulo de estudo</p>
+        <h1 class="home-title">DOCUMENTACAO</h1>
+        <p class="home-sub">Documentacao do framework Jasap aplicado ao modulo de estudo</p>
     </div>
 
     <div class="home-grid">
 
-        <div class="home-card" onclick="location.href='pages/1-novo-modulo/novo-modulo.html'">
-            <div class="home-card-icon" style="background-color:#7A3E9D;">
-                <i class="fa-solid fa-cube"></i>
+        <!-- NOVO MODULO -->
+        <div class="home-card" data-href="pages/1-novo-modulo/novo-modulo.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
             </div>
-            <div class="home-card-body">
-                <h3>NOVO MODULO</h3>
-                <p>Estrutura base de um módulo no framework Jasap: Manager, Home, MdFactory e entidades.</p>
+            <div class="home-card-info">
+                <ul class="home-card-links">
+                    <li><a href="pages/1-novo-modulo/1-DepartamentoHome.html">DepartamentoHome <i class="fa-solid fa-house"></i></a></li>
+                    <li><a href="pages/1-novo-modulo/2-DepartamentoManager.html">DepartamentoManager <i class="fa-solid fa-gears"></i></a></li>
+                    <li><a href="pages/1-novo-modulo/3-DepartamentoMdFactory.html">DepartamentoMdFactory <i class="fa-solid fa-wrench"></i></a></li>
+                    <li><a href="pages/1-novo-modulo/4-AppsRootModelFactory.html">AppsRootModelFactory <i class="fa-solid fa-sitemap"></i></a></li>
+                    <li><a href="pages/1-novo-modulo/5-PnlCfg.html">PnlCfg <i class="fa-solid fa-sliders"></i></a></li>
+                    <li><a href="pages/1-novo-modulo/6-RootManager.html">RootManager <i class="fa-solid fa-crown"></i></a></li>
+                    <li><a href="pages/1-novo-modulo/7-HomeDesk.html">HomeDesk <i class="fa-solid fa-desktop"></i></a></li>
+                </ul>
             </div>
-            <a class="home-card-btn" style="border-color:#7A3E9D; color:#7A3E9D;"
-               onmouseover="this.style.background='#7A3E9D'; this.style.color='#fff';"
-               onmouseout="this.style.background='transparent'; this.style.color='#7A3E9D';">Ver docs</a>
+            <div class="home-card-img">
+                <img src="img/cards/novo-modulo.png" alt="Novo Modulo">
+                <span class="home-card-name">NOVO MODULO</span>
+            </div>
+            <div class="home-card-bar">
+                <p>Estrutura base de um modulo no framework Jasap</p>
+                <span class="home-card-tag" style="--tag-clr:#7A3E9D;">Ver docs</span>
+            </div>
         </div>
 
-        <div class="home-card home-card--empty">
-            <div class="home-card-icon" style="background-color:#d97706;">
-                <i class="fa-solid fa-list"></i>
+        <!-- CRUD -->
+        <div class="home-card" data-href="pages/2-crud/crud.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
             </div>
-            <div class="home-card-body">
-                <h3>CRUD</h3>
-                <p>Listagem, formulário e exclusão de registros no framework Jasap.</p>
+            <div class="home-card-info">
+                <ul class="home-card-links">
+                    <li><a href="pages/2-crud/ModuloProdutoBean.html">ModuloProdutoBean <i class="fa-solid fa-cube"></i></a></li>
+                    <li><a href="pages/2-crud/ModuloProdutoWBean.html">ModuloProdutoWBean <i class="fa-solid fa-filter"></i></a></li>
+                    <li><a href="pages/2-crud/ModuloProdutoDAO.html">ModuloProdutoDAO <i class="fa-solid fa-database"></i></a></li>
+                    <li><a href="pages/2-crud/ModuloProdutoModel.html">ModuloProdutoModel <i class="fa-solid fa-layer-group"></i></a></li>
+                    <li><a href="pages/2-crud/ModuloProdutoAction.html">ModuloProdutoAction <i class="fa-solid fa-bolt"></i></a></li>
+                    <li><a href="pages/2-crud/ModuloProdutoList.html">ModuloProdutoList <i class="fa-solid fa-list"></i></a></li>
+                    <li><a href="pages/2-crud/ModuloProdutoForm.html">ModuloProdutoForm <i class="fa-solid fa-pen-to-square"></i></a></li>
+                </ul>
             </div>
-            <span class="home-card-btn" style="border-color:#999; color:#999;">Em breve</span>
+            <div class="home-card-img">
+                <img src="img/cards/crud.png" alt="CRUD">
+                <span class="home-card-name">CRUD</span>
+            </div>
+            <div class="home-card-bar">
+                <p>Listagem, formulario e exclusao de registros</p>
+                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+            </div>
+        </div>
+
+        <!-- JASAP -->
+        <div class="home-card home-card--empty" data-href="#">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="home-card-info">
+                <ul class="home-card-links">
+                    <li><a href="pages/jasap/jasap.html">Jasap — Visao Geral <i class="fa-solid fa-gears"></i></a></li>
+                </ul>
+            </div>
+            <div class="home-card-img">
+                <img src="img/cards/jasap.png" alt="Jasap">
+                <span class="home-card-name">JASAP</span>
+            </div>
+            <div class="home-card-bar">
+                <p>Por dentro do framework</p>
+                <span class="home-card-tag" style="--tag-clr:#999;">Em breve</span>
+            </div>
         </div>
 
     </div>
-
-</div>
-
-<div id="footer">
-    <div id="footer-inner"></div>
-</div>
-
-</div>
-
-</div> <!-- layout -->
-
-<script>
-let zoom = 1;
-function changeZoom(delta) { setZoom(zoom + delta); }
-function setZoom(value) {
-    zoom = Math.min(2, Math.max(0.5, value));
-    document.getElementById('content').style.fontSize = zoom + 'em';
-    document.getElementById('zoom-label').childNodes[0].textContent = Math.round(zoom * 100) + '%';
-    document.getElementById('zoom-menu').style.display = 'none';
-}
-function toggleZoomMenu() {
-    const menu = document.getElementById('zoom-menu');
-    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-}
-document.addEventListener('click', function(e) {
-    const label = document.getElementById('zoom-label');
-    if (label && !label.contains(e.target)) {
-        document.getElementById('zoom-menu').style.display = 'none';
-    }
-});
-
-function toggleDrawer() {
-    const drawer = document.getElementById('drawer');
-    drawer.classList.toggle('open');
-    document.getElementById('hamburger').classList.toggle('open');
-    localStorage.setItem('drawerOpen', drawer.classList.contains('open'));
-}
-
-function toggleGroup(header) {
-    header.closest('.menu-group').classList.toggle('collapsed');
-}
-
-function toggleTheme() {
-    const dark = document.body.classList.toggle('dark');
-    document.getElementById('theme-toggle').innerHTML = dark ? '&#9790;' : '&#9788;';
-    localStorage.setItem('theme', dark ? 'dark' : 'light');
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    if (localStorage.getItem('drawerOpen') === 'true') {
-        document.getElementById('drawer').classList.add('open');
-        document.getElementById('hamburger').classList.add('open');
-    }
-    if (localStorage.getItem('theme') === 'dark') {
-        document.body.classList.add('dark');
-        document.getElementById('theme-toggle').innerHTML = '&#9790;';
-    }
-});
-</script>
-<script src="js/menu.js"></script>
-<script src="js/footer.js"></script>
 
 </body>
 </html>
