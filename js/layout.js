@@ -269,25 +269,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     // ── Footer ──
     buildFooter(currentFolder);
 
-    // ── Home cards — menu info toggle + navegacao ──
+    // ── Home cards — menu info toggle ──
     document.querySelectorAll('.home-card').forEach(function(card) {
         var btn = card.querySelector('.btnMenuCard');
         var info = card.querySelector('.home-card-info');
-        var href = card.getAttribute('data-href');
 
         if (btn && info) {
             btn.addEventListener('click', function(e) {
-                e.stopPropagation();
                 info.classList.toggle('aberto');
                 btn.classList.toggle('aberto');
-            });
-        }
-
-        if (href && href !== '#') {
-            card.addEventListener('click', function(e) {
-                if (!e.target.closest('.btnMenuCard')) {
-                    location.href = href;
-                }
             });
         }
     });
