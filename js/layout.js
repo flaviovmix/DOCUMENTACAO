@@ -25,27 +25,50 @@ var MENU = [
         grupo: 'NOVO MÓDULO',
         pagina: 'novo-modulo.html',
         items: [
-            { label: '1 - DepartamentoHome',     arquivo: '1-DepartamentoHome.html',  icon: 'fa-solid fa-house' },
-            { label: '2 - DepartamentoManager',   arquivo: '2-DepartamentoManager.html', icon: 'fa-solid fa-gears' },
-            { label: '3 - DepartamentoMdFactory', arquivo: '3-DepartamentoMdFactory.html', icon: 'fa-solid fa-wrench' },
-            { label: '4 - AppsRootModelFactory',  arquivo: '4-AppsRootModelFactory.html', icon: 'fa-solid fa-sitemap' },
-            { label: '5 - PnlCfg',               arquivo: '5-PnlCfg.html',            icon: 'fa-solid fa-sliders' },
-            { label: '6 - RootManager',           arquivo: '6-RootManager.html',       icon: 'fa-solid fa-crown' },
-            { label: '7 - HomeDesk',              arquivo: '7-HomeDesk.html',          icon: 'fa-solid fa-desktop' }
+            { label: '1 - DepartamentoHome',     arquivo: '1-DepartamentoHome/1-DepartamentoHome.html',   tipo: 'novo' },
+            { label: '2 - DepartamentoManager',   arquivo: '2-DepartamentoManager/2-DepartamentoManager.html', tipo: 'novo' },
+            { label: '3 - DepartamentoMdFactory', arquivo: '3-DepartamentoMdFactory/3-DepartamentoMdFactory.html', tipo: 'novo' },
+            { label: '4 - AppsRootModelFactory',  arquivo: '4-AppsRootModelFactory/4-AppsRootModelFactory.html', tipo: 'editar' },
+            { label: '5 - PnlCfg',               arquivo: '5-PnlCfg/5-PnlCfg.html',                     tipo: 'editar' },
+            { label: '6 - RootManager',           arquivo: '6-RootManager/6-RootManager.html',             tipo: 'editar' },
+            { label: '7 - HomeDesk',              arquivo: '7-HomeDesk/7-HomeDesk.html',                   tipo: 'editar' }
         ],
         pasta: '1-novo-modulo'
     },
     {
         grupo: 'CRUD',
         pagina: 'crud.html',
-        items: [
-            { label: '1 - ModuloProdutoBean',   arquivo: 'ModuloProdutoBean.html',   icon: 'fa-solid fa-cube' },
-            { label: '2 - ModuloProdutoWBean',  arquivo: 'ModuloProdutoWBean.html',  icon: 'fa-solid fa-filter' },
-            { label: '3 - ModuloProdutoDAO',    arquivo: 'ModuloProdutoDAO.html',    icon: 'fa-solid fa-database' },
-            { label: '4 - ModuloProdutoModel',  arquivo: 'ModuloProdutoModel.html',  icon: 'fa-solid fa-layer-group' },
-            { label: '5 - ModuloProdutoAction', arquivo: 'ModuloProdutoAction.html', icon: 'fa-solid fa-bolt' },
-            { label: '6 - ModuloProdutoList',   arquivo: 'ModuloProdutoList.html',   icon: 'fa-solid fa-list' },
-            { label: '7 - ModuloProdutoForm',   arquivo: 'ModuloProdutoForm.html',   icon: 'fa-solid fa-pen-to-square' }
+        subgrupos: [
+            {
+                label: 'READ',
+                items: [
+                    { label: '1 - DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean.html',   tipo: 'novo' },
+                    { label: '2 - DepartamentoProdutoWBean',  arquivo: '2-DepartamentoProdutoWBean.html',  tipo: 'novo' },
+                    { label: '3 - DepartamentoProdutoDAO',    arquivo: '3-DepartamentoProdutoDAO.html',    tipo: 'novo' },
+                    { label: '4 - DepartamentoProdutoModel',  arquivo: '4-DepartamentoProdutoModel.html',  tipo: 'novo' },
+                    { label: '5 - DepartamentoProdutoAction', arquivo: '5-DepartamentoProdutoAction.html', tipo: 'novo' },
+                    { label: '6 - getManager',                arquivo: '6-getManager.html',                tipo: 'editar' },
+                    { label: '7 - DepartamentoMdFactory',     arquivo: '7-DepartamentoMdFactory.html',     tipo: 'editar' },
+                    { label: '8 - DepartamentoProdutoList',   arquivo: '8-DepartamentoProdutoList.html',   tipo: 'novo' },
+                    { label: '9 - DepartamentoHome',          arquivo: '9-DepartamentoHome.html',          tipo: 'editar' }
+                ]
+            },
+            {
+                label: 'DELETE',
+                items: [
+                    { label: '1 - DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean.html',   tipo: 'editar' },
+                    { label: '2 - DepartamentoProdutoWBean',  arquivo: '2-DepartamentoProdutoWBean.html',  tipo: 'check' },
+                    { label: '3 - DepartamentoProdutoDAO',    arquivo: '3-DepartamentoProdutoDAO.html',    tipo: 'editar' },
+                    { label: '4 - DepartamentoProdutoModel',  arquivo: '4-DepartamentoProdutoModel.html',  tipo: 'novo' },
+                    { label: '5 - DepartamentoProdutoAction', arquivo: '5-DepartamentoProdutoAction.html', tipo: 'check' },
+                    { label: '6 - getManager',                arquivo: '6-getManager.html',                tipo: 'novo' },
+                    { label: '7 - DepartamentoMdFactory',     arquivo: '7-DepartamentoMdFactory.html',     tipo: 'check' },
+                    { label: '8 - DepartamentoProdutoList',   arquivo: '8-DepartamentoProdutoList.html',   tipo: 'editar' },
+                    { label: '9 - DepartamentoHome',          arquivo: '9-DepartamentoHome.html',          tipo: 'novo' }
+                ]
+            },
+            { label: 'CREATE', items: [] },
+            { label: 'UPDATE', items: [] }
         ],
         pasta: '2-crud'
     }
@@ -56,26 +79,28 @@ var FOOTER = {
         {
             grupo: 'NOVO MÓDULO',
             items: [
-                { label: 'DepartamentoHome',     arquivo: '1-DepartamentoHome.html' },
-                { label: 'DepartamentoManager',   arquivo: '2-DepartamentoManager.html' },
-                { label: 'DepartamentoMdFactory', arquivo: '3-DepartamentoMdFactory.html' },
-                { label: 'AppsRootModelFactory',  arquivo: '4-AppsRootModelFactory.html' },
-                { label: 'PnlCfg',               arquivo: '5-PnlCfg.html' },
-                { label: 'RootManager',           arquivo: '6-RootManager.html' },
-                { label: 'HomeDesk',              arquivo: '7-HomeDesk.html' }
+                { label: 'DepartamentoHome',     arquivo: '1-DepartamentoHome/1-DepartamentoHome.html' },
+                { label: 'DepartamentoManager',   arquivo: '2-DepartamentoManager/2-DepartamentoManager.html' },
+                { label: 'DepartamentoMdFactory', arquivo: '3-DepartamentoMdFactory/3-DepartamentoMdFactory.html' },
+                { label: 'AppsRootModelFactory',  arquivo: '4-AppsRootModelFactory/4-AppsRootModelFactory.html' },
+                { label: 'PnlCfg',               arquivo: '5-PnlCfg/5-PnlCfg.html' },
+                { label: 'RootManager',           arquivo: '6-RootManager/6-RootManager.html' },
+                { label: 'HomeDesk',              arquivo: '7-HomeDesk/7-HomeDesk.html' }
             ],
             pasta: '1-novo-modulo'
         },
         {
             grupo: 'CRUD',
             items: [
-                { label: 'ModuloProdutoBean',   arquivo: 'ModuloProdutoBean.html' },
-                { label: 'ModuloProdutoWBean',  arquivo: 'ModuloProdutoWBean.html' },
-                { label: 'ModuloProdutoDAO',    arquivo: 'ModuloProdutoDAO.html' },
-                { label: 'ModuloProdutoModel',  arquivo: 'ModuloProdutoModel.html' },
-                { label: 'ModuloProdutoAction', arquivo: 'ModuloProdutoAction.html' },
-                { label: 'ModuloProdutoList',   arquivo: 'ModuloProdutoList.html' },
-                { label: 'ModuloProdutoForm',   arquivo: 'ModuloProdutoForm.html' }
+                { label: 'DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean.html' },
+                { label: 'DepartamentoProdutoWBean',  arquivo: '2-DepartamentoProdutoWBean.html' },
+                { label: 'DepartamentoProdutoDAO',    arquivo: '3-DepartamentoProdutoDAO.html' },
+                { label: 'DepartamentoProdutoModel',  arquivo: '4-DepartamentoProdutoModel.html' },
+                { label: 'DepartamentoProdutoAction', arquivo: '5-DepartamentoProdutoAction.html' },
+                { label: 'getManager',                arquivo: '6-getManager.html' },
+                { label: 'DepartamentoMdFactory',     arquivo: '7-DepartamentoMdFactory.html' },
+                { label: 'DepartamentoProdutoList',   arquivo: '8-DepartamentoProdutoList.html' },
+                { label: 'DepartamentoHome',          arquivo: '9-DepartamentoHome.html' }
             ],
             pasta: '2-crud'
         }
@@ -197,6 +222,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     var isRoot = (BASE === '' || BASE === './');
     var section = findSection(currentFolder);
     var isSectionIndex = section && currentFile === section.pagina;
+    // Detecta se o HTML está numa subpasta dentro do grupo (ex: 1-DepartamentoHome/1-DepartamentoHome.html)
+    var isSubFolder = false;
+    if (currentFolder) {
+        var afterGroup = path.split('/' + currentFolder + '/')[1] || '';
+        isSubFolder = afterGroup.indexOf('/') !== -1;
+    }
 
     // Extrair título da tag <title> (remove sufixo " — XT - Treinamento")
     var pageTitle = document.title.replace(/\s*[—–-]\s*XT\s*-\s*Treinamento\s*$/, '').trim();
@@ -218,7 +249,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             breadcrumbHTML += '<span class="breadcrumb-current">' + section.grupo + '</span>';
         } else {
             breadcrumbHTML += '<span class="breadcrumb-sep">\u203a</span>';
-            breadcrumbHTML += '<a href="' + section.pagina + '">' + section.grupo + '</a>';
+            breadcrumbHTML += '<a href="' + (isSubFolder ? '../' : '') + section.pagina + '">' + section.grupo + '</a>';
             breadcrumbHTML += '<span class="breadcrumb-sep">\u203a</span>';
             breadcrumbHTML += '<span class="breadcrumb-current">' + pageTitle + '</span>';
         }
@@ -264,10 +295,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         '</div>';
 
     // ── Menu lateral ──
-    buildMenu(currentFile, currentFolder);
+    buildMenu(currentFile, currentFolder, isSubFolder);
 
     // ── Footer ──
-    buildFooter(currentFolder);
+    buildFooter(currentFolder, isSubFolder);
 
     // ── Home cards — menu info toggle ──
     document.querySelectorAll('.home-card').forEach(function(card) {
@@ -323,7 +354,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 // MENU LATERAL (DRAWER)
 // ═══════════════════════════════════════════════════════════════════
 
-function buildMenu(currentPage, currentFolder) {
+function buildMenu(currentPage, currentFolder, isSubFolder) {
     var inner = document.getElementById('drawer-inner');
     if (!inner) return;
 
@@ -332,8 +363,12 @@ function buildMenu(currentPage, currentFolder) {
         var g = MENU[i];
         var prefix;
 
-        if (currentFolder === g.pasta) {
+        if (currentFolder === g.pasta && isSubFolder) {
+            prefix = '../';
+        } else if (currentFolder === g.pasta) {
             prefix = '';
+        } else if (currentFolder !== '' && isSubFolder) {
+            prefix = '../../' + g.pasta + '/';
         } else if (currentFolder !== '') {
             prefix = '../' + g.pasta + '/';
         } else {
@@ -347,12 +382,51 @@ function buildMenu(currentPage, currentFolder) {
         html += ' <span class="menu-group-arrow">&#9660;</span>';
         html += '</div>';
         html += '<div class="menu-group-items">';
-        for (var j = 0; j < g.items.length; j++) {
-            var item = g.items[j];
-            var active = (currentPage === item.arquivo) ? ' active' : '';
-            var iconHtml = item.icon ? ' <i class="' + item.icon + '" style="opacity:0.4;margin-left:6px;font-size:0.85em;"></i>' : '';
-            html += '<a class="menu-item' + active + '" href="' + prefix + item.arquivo + '">' + item.label + iconHtml + '</a>';
+
+        function renderItems(items) {
+            var out = '';
+            for (var j = 0; j < items.length; j++) {
+                var item = items[j];
+                var active = (currentPage === item.arquivo || item.arquivo.indexOf(currentPage) !== -1) ? ' active' : '';
+                var badgeHtml = '';
+                if (item.tipo === 'novo') {
+                    badgeHtml = ' <i class="fa-solid fa-file-circle-plus" style="margin-left:6px;font-size:0.8em;color:#16a34a;" title="novo arquivo"></i>';
+                } else if (item.tipo === 'editar') {
+                    badgeHtml = ' <i class="fa-solid fa-pen-to-square" style="margin-left:6px;font-size:0.8em;color:#d97706;" title="editar arquivo"></i>';
+                } else if (item.tipo === 'check') {
+                    badgeHtml = ' <svg style="margin-left:6px;width:1em;height:1em;vertical-align:-0.1em;" viewBox="0 0 640 640" fill="#999" title="não precisa alterar"><path d="M160 128C107 128 64 171 64 224L64 480C64 533 107 576 160 576L416 576C469 576 512 533 512 480L512 384C512 366.3 497.7 352 480 352C462.3 352 448 366.3 448 384L448 480C448 497.7 433.7 512 416 512L160 512C142.3 512 128 497.7 128 480L128 224C128 206.3 142.3 192 160 192L256 192C273.7 192 288 177.7 288 160C288 142.3 273.7 128 256 128L160 128z"/><path d="M168 340L208 300L290 390L510 80L550 120L290 440Z"/></svg>';
+                } else if (item.icon) {
+                    badgeHtml = ' <i class="' + item.icon + '" style="opacity:0.4;margin-left:6px;font-size:0.85em;"></i>';
+                }
+                out += '<a class="menu-item' + active + '" href="' + prefix + item.arquivo + '">' + item.label + badgeHtml + '</a>';
+            }
+            return out;
         }
+
+        if (g.subgrupos) {
+            for (var s = 0; s < g.subgrupos.length; s++) {
+                var sub = g.subgrupos[s];
+                var hasItems = sub.items && sub.items.length > 0;
+                var hasActive = false;
+                if (hasItems) {
+                    for (var k = 0; k < sub.items.length; k++) {
+                        if (currentPage === sub.items[k].arquivo || sub.items[k].arquivo.indexOf(currentPage) !== -1) { hasActive = true; break; }
+                    }
+                }
+                var subCollapsed = hasActive ? '' : ' collapsed';
+                html += '<div class="menu-subgroup' + subCollapsed + '">';
+                html += '<div class="menu-subgroup-label' + (hasItems ? '' : ' disabled') + '" onclick="toggleSubgroup(this)">';
+                html += sub.label;
+                html += ' <span class="menu-subgroup-arrow">&#9660;</span>';
+                html += '</div>';
+                html += '<div class="menu-subgroup-items">';
+                if (hasItems) html += renderItems(sub.items);
+                html += '</div></div>';
+            }
+        } else if (g.items) {
+            html += renderItems(g.items);
+        }
+
         html += '</div></div>';
     }
 
@@ -363,7 +437,7 @@ function buildMenu(currentPage, currentFolder) {
 // FOOTER
 // ═══════════════════════════════════════════════════════════════════
 
-function buildFooter(currentFolder) {
+function buildFooter(currentFolder, isSubFolder) {
     var inner = document.getElementById('footer-inner');
     if (!inner) return;
 
@@ -373,8 +447,12 @@ function buildFooter(currentFolder) {
         var ep = FOOTER.episodios[i];
         var prefix;
 
-        if (currentFolder === ep.pasta) {
+        if (currentFolder === ep.pasta && isSubFolder) {
+            prefix = '../';
+        } else if (currentFolder === ep.pasta) {
             prefix = '';
+        } else if (currentFolder !== '' && isSubFolder) {
+            prefix = '../../' + ep.pasta + '/';
         } else if (currentFolder !== '') {
             prefix = '../' + ep.pasta + '/';
         } else {
@@ -473,6 +551,10 @@ function toggleGroup(header) {
     header.closest('.menu-group').classList.toggle('collapsed');
 }
 
+function toggleSubgroup(label) {
+    label.closest('.menu-subgroup').classList.toggle('collapsed');
+}
+
 function toggleInfoRow(btn) {
     var row = btn.closest('.info-row');
     row.classList.toggle('open');
@@ -499,6 +581,7 @@ window.changeZoom     = changeZoom;
 window.setZoom        = setZoom;
 window.toggleZoomMenu = toggleZoomMenu;
 window.toggleGroup    = toggleGroup;
+window.toggleSubgroup = toggleSubgroup;
 window.toggleInfoRow  = toggleInfoRow;
 window.toggleChapter  = toggleChapter;
 
@@ -845,7 +928,7 @@ function highlightAll(container) {
         );
 
         html = html.replace(
-            /\b([A-Z][A-Z0-9_]{2,})\b(?=[^>]*<|[^<>]*$)/g,
+            /(?<!\x00)\b([A-Z][A-Z0-9_]{2,})\b(?=[^>]*<|[^<>]*$)/g,
             '<span class="xt-constant">$1</span>'
         );
 

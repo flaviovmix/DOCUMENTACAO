@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>getManager() — XT - Treinamento</title>
+    <script src="../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>getManager() <span class="badge badge-edit">conceitual</span></h1>
+
+<div class="audio-player" data-src="6-getManager/audio/getManager.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<div class="carousel" data-path="6-getManager/img/"></div>
+
+<p>O <code>getManager()</code> aparece em vários lugares do CRUD — na Action, na XtPage, no DAO, na MdFactory e no Model. Cada um usa de um jeito diferente, e isso pode confundir. Esta página explica o fluxo completo: de onde vem, como é montado, e como chega em cada lugar.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Analogia — O Assistente com a Maleta</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O <code>getManager()</code> é a <strong>maleta do gerente</strong> do departamento (<code>DepartamentoManager</code>).</p>
+
+<p><strong>Fase 1 — Antes do expediente</strong> (sistema inicia):</p>
+<ol>
+    <li>O <code>RootManager</code> (gerente geral) abre o prédio</li>
+    <li>Ele cria os gerentes de cada departamento — o <code>DepartamentoManager</code> é um deles</li>
+    <li>O <code>DepartamentoManager</code> faz o cadastro dos seus funcionários usando <code>regAction()</code>: "DepProdutoList pertence ao DepartamentoManager", "DepProdutoForm pertence ao DepartamentoManager", e assim por diante</li>
+    <li><strong>Neste momento ele NÃO entrega a maleta pra ninguém.</strong> Só anota quem pertence a quem</li>
+</ol>
+
+<p><strong>Fase 2 — Durante o expediente</strong> (requisição do usuário):</p>
+<ol start="5">
+    <li>Um cliente chega — o usuário clicou em algo no navegador</li>
+    <li>O framework age como um <strong>assistente</strong> que navega pelo prédio:
+        <ul>
+            <li>Olha o quadro de cadastro: "DepProdutoList pertence ao DepartamentoManager"</li>
+            <li>Pega uma <strong>maleta vazia</strong> do DepartamentoManager</li>
+            <li>Vai passando pelos andares colocando o que precisa dentro:
+                <ul>
+                    <li>Almoxarifado → <strong>conexão com o banco</strong></li>
+                    <li>RH → <strong>usuário logado</strong></li>
+                    <li>Ferramentaria → acesso às <strong>instâncias</strong> (getInstance)</li>
+                </ul>
+            </li>
+            <li>Entrega a maleta pro funcionário (a action)</li>
+        </ul>
+    </li>
+    <li>O funcionário recebe a maleta pronta — quando chama <code>getManager()</code>, tudo já está dentro</li>
+    <li>O cliente vai embora (requisição termina) — a maleta é <strong>descartada</strong></li>
+    <li>Próximo cliente (próximo clique): <strong>maleta nova</strong>, processo repete do zero</li>
+</ol>
+
+<p class="info-note"><strong>Ponto-chave:</strong> cada clique = uma requisição = uma maleta nova. A maleta é descartável — dura só o tempo de uma requisição.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">A Ficha do Cliente — a Sessão</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Se a maleta é descartada a cada clique, como o sistema lembra qual produto o usuário estava editando? Ou em qual página da lista ele estava?</p>
+
+<p>A resposta é a <strong>sessão</strong> — que funciona como a <strong>ficha do cliente</strong> na recepção do prédio.</p>
+
+<p>Na primeira vez que o cliente entra no prédio, a recepção cria uma ficha pra ele. A partir daí, toda vez que ele volta, o assistente pega a <strong>mesma ficha</strong> e coloca dentro da maleta nova.</p>
+
+<p>Nessa ficha tem anotado:</p>
+<ul>
+    <li>Qual produto ele estava editando (<code>id_pro</code>)</li>
+    <li>Em qual página da lista ele estava</li>
+    <li>Quais filtros ele tinha aplicado</li>
+    <li>Que ele está logado como "Flávio"</li>
+</ul>
+
+<p><strong>A maleta morre a cada clique. A ficha sobrevive.</strong> A ficha só é descartada quando o cliente vai embora de vez (sessão expira ou faz logout).</p>
+
+<h3>Exemplo prático — Lista de 15 mil produtos</h3>
+
+<p>O cliente chega e diz: "me vê a lista de produtos disponíveis."</p>
+<p>O sistema tem 15 mil produtos. Pra não entregar trocentos papéis, o funcionário entrega só os primeiros 500, ordenados em ordem alfabética. Antes de entregar, anota na ficha: <em>"Flávio levou os primeiros 500 produtos, em ordem alfabética."</em></p>
+<p>Maleta descartada. Ficha atualizada na recepção.</p>
+<p>O Flávio olha a lista e percebe que o produto que queria não está ali. Volta e pede mais.</p>
+<p>O assistente pega uma <strong>maleta nova</strong>, vai na recepção, pega a <strong>ficha do Flávio</strong>, coloca dentro da maleta, e entrega pro funcionário.</p>
+<p>O funcionário abre a maleta, olha a ficha: <em>"esse cara parou nos 500, em ordem alfabética."</em> Vai no almoxarifado e pega do 501 ao 1000, na mesma ordem.</p>
+<p>Atualiza a ficha: <em>"agora está nos 501 a 1000, manteve ordem alfabética."</em></p>
+<p>No código, quem carrega esses dados entre requisições é o <code>proWBean()</code> guardado na sessão.</p>
+
+        </div>
+    </div>
+</div>
+
+<h2 data-nav="onde aparece">Onde o getManager() aparece no CRUD</h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Onde</th><th>O que faz com a maleta</th><th>Código</th></tr>
+    <tr><td><strong>Action</strong></td><td>Abre a maleta → pega instâncias (Bean, WBean)</td><td><code>getManager().getInstance(DepProdutoBean.class)</code></td></tr>
+    <tr><td><strong>XtPage</strong></td><td>Recebe a maleta inteira → sabe qual módulo é</td><td><code>new XtPage(getManager())</code></td></tr>
+    <tr><td><strong>DAO</strong></td><td>Abre a maleta → pega a conexão com o banco</td><td><code>setDataBase(manager.getDataBase())</code></td></tr>
+    <tr><td><strong>MdFactory</strong></td><td>Guarda a maleta → repassa pros Models</td><td><code>setManager(manager)</code></td></tr>
+    <tr><td><strong>Model</strong></td><td>Recebe a maleta → repassa pro DAO via herança</td><td><code>super(manager)</code></td></tr>
+</table>
+</div>
+
+<h2 data-nav="action">Na Action</h2>
+<p>O funcionário abre a maleta pra pegar fichas em branco:</p>
+<pre><code class="language-java">getManager().getInstance(DepartamentoProdutoBean.class)   // ficha de dados do produto
+getManager().getInstance(DepartamentoProdutoWBean.class)   // ficha de filtros</code></pre>
+
+<h2 data-nav="xtpage">Na XtPage</h2>
+<p>A página recebe a maleta inteira pra saber de qual departamento ela é — pra montar a estrutura correta (CSS, JS, título):</p>
+<pre><code class="language-java">XtPage page = new XtPage(getManager());</code></pre>
+
+<h2 data-nav="dao">No DAO</h2>
+<p>O construtor recebe a maleta e tira a conexão com o banco de dentro:</p>
+<pre><code class="language-java">public DepartamentoProdutoDAO(AppManager manager) {
+    setManager(manager);                    // guarda a maleta
+    setDataBase(manager.getDataBase());     // pega a conexão com o banco
+}</code></pre>
+
+<h2 data-nav="mdfactory">Na MdFactory</h2>
+<p>A MdFactory recebe a maleta e guarda pra repassar aos Models quando forem criados:</p>
+<pre><code class="language-java">public DepartamentoMdFactory(AppManager manager) {
+    setManager(manager);
+}</code></pre>
+
+<h2 data-nav="model">No Model</h2>
+<p>O Model recebe a maleta e repassa pro DAO pela herança:</p>
+<pre><code class="language-java">public DepartamentoProdutoModel(AppManager manager) {
+    super(manager);    // chama o construtor do DAO
+}</code></pre>
+
+<p>A corrente completa:</p>
+<pre><code>MdFactory guarda a maleta → cria o Model → Model repassa ao DAO via super(manager) → DAO pega a conexão com o banco</code></pre>
+
+<h2 data-nav="resumo">Resumo</h2>
+
+<ul>
+    <li><code>getManager()</code> é a maleta do gerente do departamento</li>
+    <li>O <code>regAction()</code> só cadastra quem pertence ao departamento — não entrega a maleta</li>
+    <li>A maleta só é montada e entregue quando uma requisição chega de verdade</li>
+    <li>Cada clique = maleta nova, descartada no final</li>
+    <li>A sessão (ficha do cliente) sobrevive entre requisições — é colocada dentro da maleta nova</li>
+    <li>A mesma maleta circula por todo o módulo: Action, XtPage, DAO, MdFactory e Model</li>
+</ul>
+
+</body>
+</html>

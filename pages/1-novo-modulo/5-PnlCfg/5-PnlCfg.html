@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PnlCfg — XT - Treinamento</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>PnlCfg <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="audio/PnlCfg.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<div class="carousel" data-path="img/"></div>
+
+<p>Tela de configuração do sistema onde o administrador ativa ou desativa módulos. Cada módulo precisa de um checkbox aqui para que o <code>HomeDesk</code> saiba se deve exibi-lo no menu principal. Sem as adições deste episódio, o módulo nunca apareceria no menu — mesmo que todo o código esteja correto.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="getFactory().painel().cfgModel().insert(MD_DEPARTAMENTO, getInput+0|form.line().add(mdDepartamento()+0|protected Check mdDepartamento = null+18|public static String MD_DEPARTAMENTO+0"><code class="language-java">package br.xt.app.painel;
+
+import br.jasap.core.AppManager;
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.Bar;
+import br.jasap.gui.Button;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.Table;
+import br.jasap.gui.form.Check;
+import br.jasap.gui.form.Form;
+import br.jasap.gui.form.Text;
+import br.jasap.util.DomainValue;
+import br.jasap.util.JasapList;
+import br.jasap.util.Js;
+import br.jasap.util.filters.TransactionFilter;
+import br.xt.AppsRootAction;
+import br.xt.app.painel.cfg.PcfgModel;
+import br.xt.acore.view.XtPage;
+
+public class PnlCfg extends AppsRootAction {
+
+    @Override
+    public Effect execute() throws Exception {
+        render();
+        return new Response();
+    }
+
+    public static class Insert extends PnlCfg {
+        public Insert() { super(); super.getFilters().add(new TransactionFilter()); }
+        @Override
+        public Effect execute() throws Exception {
+            getFactory().painel().cfgModel().insert(DIR_REPOSITORIO_ROOT, getInput().getString(DIR_REPOSITORIO_ROOT));
+            getFactory().painel().cfgModel().insert(MD_GED, getInput().getString(MD_GED));
+            getFactory().painel().cfgModel().insert(MD_DEPARTAMENTO, getInput().getString(MD_DEPARTAMENTO));
+            getFactory().painel().cfgModel().insert(MD_LABORATORIO, getInput().getString(MD_LABORATORIO));
+
+            eval(Js.alert("Informações salvas com sucesso!"));
+            return new Response();
+        }
+    }
+
+    public void render() throws Exception {
+        XtPage page = new XtPage(getManager());
+        if (isAjaxCall()){
+            update(JasapPage.DIV_WINDOW, page.content(window().toHtml()));
+            eval(Js.CLOSE_SUB_WINDOWS);
+        } else {
+            page.getTable().setBorder(4).rowC("100%").setContent(page.content(window().toHtml())).setStyle(ui().stretchBorder());;
+            page.setWinTitle("XT Cloud");
+            getOutput().write(this, page);
+        }
+    }
+
+    public Table window() throws Exception {
+        Table w = new Table(getManager()).setStyle("background:#f7eee6").setSize("100%", "100%");
+
+        w.rowC("1%", null, ui().line());
+        w.rowC("99%").setId(JasapPage.DIV_WSPACE).setContent(form()).setScroll(Table.SCROLL_VERTICAL).table();
+        w.rowC("1%", null, ui().line());
+        w.rowC("1%", JasapPage.DIV_BOTTOM, br());
+
+        return w;
+    }
+
+    private Bar br = null;
+    private Bar br() throws Exception{
+        if (br==null){
+
+            Button salvar = ui().button("Salvar")
+            .setOnClick(submit(Insert.class).validate());
+
+            br = ui().bar()
+            .addRight(salvar);
+        }
+        return br;
+    }
+
+    private Form form = null;
+    public String form() throws Exception{
+
+        form = ui().form();
+        form.line().add(ui().header("CONFIGURAÇÕES GERAIS DO SISTEMA", "30"));
+        form.line().add(repRoot(), "200");
+        form.line().add(ui().header("MÓDULOS DO SISTEMA", "30"));
+        if (isAdminXT()){
+            form.line().add(mdGED(), "200");
+            form.line().add(mdDepartamento(), "200");
+            form.line().add(mdLaboratorio(), "200");
+        }
+
+        return form.getTable().toHtml();
+    }
+
+    protected Text repRoot = null;
+    public Text repRoot() throws Exception {
+        if (repRoot==null){
+            repRoot = ui().text(DIR_REPOSITORIO_ROOT)
+            .setLabel("Repositório")
+            .setStyle("width:550")
+            .setMaxlength(200)
+            .setRequired(true)
+            .setValue(getFactory().painel().cfgModel().getSetting(DIR_REPOSITORIO_ROOT))
+            .setComplement(new Table(getManager()).rowC().setVerticalAlign(Table.ALIGN_MIDDLE).setContent("ROOT PATH").table());
+        }
+        return repRoot;
+    }
+
+    protected Check mdGED = null;
+    public Check mdGED() throws Exception {
+        JasapList list = new JasapList();
+        list.getList().add(new DomainValue(1, "ativar Módulo Gerenciador Eletrônico de Documentos (GED)"));
+
+        if (mdGED==null){
+            mdGED = new Check(getManager(), MD_GED)
+            .setLabel("")
+            .setValue(list);
+            mdGED.getValue().setSelected(getFactory().painel().cfgModel().getSetting(MD_GED));
+        }
+        return mdGED;
+    }
+
+    public static boolean hasGED(AppManager manager) throws Exception{
+        PcfgModel cfgModel = new PcfgModel(manager);
+        return (cfgModel.getSetting(MD_GED)!=null);
+    }
+
+    protected Check mdDepartamento = null;
+    public Check mdDepartamento() throws Exception {
+        JasapList list = new JasapList();
+        list.getList().add(new DomainValue(1, "ativar Módulo Departamento"));
+
+        if (mdDepartamento==null){
+            mdDepartamento = new Check(getManager(), MD_DEPARTAMENTO)
+            .setLabel("")
+            .setValue(list);
+            mdDepartamento.getValue().setSelected(getFactory().painel().cfgModel().getSetting(MD_DEPARTAMENTO));
+        }
+        return mdDepartamento;
+    }
+
+    public static boolean hasDepartamento(AppManager manager) throws Exception{
+        PcfgModel cfgModel = new PcfgModel(manager);
+        return (cfgModel.getSetting(MD_DEPARTAMENTO)!=null);
+    }
+
+    protected Check mdLaboratorio = null;
+    public Check mdLaboratorio() throws Exception {
+        JasapList list = new JasapList();
+        list.getList().add(new DomainValue(1, "ativar Módulo Laboratório"));
+
+        if (mdLaboratorio==null){
+            mdLaboratorio = new Check(getManager(), MD_LABORATORIO)
+            .setLabel("")
+            .setValue(list);
+            mdLaboratorio.getValue().setSelected(getFactory().painel().cfgModel().getSetting(MD_LABORATORIO));
+        }
+        return mdLaboratorio;
+    }
+
+    public static boolean hasLaboratorio(AppManager manager) throws Exception{
+        PcfgModel cfgModel = new PcfgModel(manager);
+        return (cfgModel.getSetting(MD_LABORATORIO)!=null);
+    }
+
+    public static String ROOT = "__ROOT_CFG_SYSTEM/";
+
+    public static String DIR_REPOSITORIO_ROOT = ROOT.concat("__DIR_REPOSITORIO_ROOT");
+    public static String MD_GED = ROOT.concat("__MD_GED");
+    public static String MD_DEPARTAMENTO = ROOT.concat("__MD_DEPARTAMENTO");
+    public static String MD_LABORATORIO = ROOT.concat("__MD_LABORATORIO");
+
+    public PcfgModel cfgModel;
+    public PcfgModel cfgModel(){ if (cfgModel==null)cfgModel = new PcfgModel(getManager()); return cfgModel; }
+}</code></pre>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Checkbox do módulo — MD_DEPARTAMENTO + mdDepartamento()</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/PnlCfg-Checkbox.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<h2 data-nav="MD_DEPARTAMENTO"><code class="explicacao">public static String MD_DEPARTAMENTO</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>public</code></td><td>Acessível de outros pacotes — <code>HomeDesk</code> acessa indiretamente via <code>hasDepartamento()</code></td></tr>
+    <tr><td><code>static</code></td><td>Pertence à classe, não a instâncias — acesso direto via <code>PnlCfg.MD_DEPARTAMENTO</code> sem criar objeto</td></tr>
+    <tr><td><code>String</code></td><td>Chave de texto usada para identificar a configuração no banco de dados</td></tr>
+    <tr><td><code>MD_DEPARTAMENTO</code></td><td>Prefixo <code>MD_</code> = módulo — padrão do projeto para constantes de configuração de módulos</td></tr>
+    <tr><td><code>ROOT.concat("__MD_DEPARTAMENTO")</code></td><td><code>ROOT</code> é <code>"__ROOT_CFG_SYSTEM/"</code>. A concatenação gera a chave final <code>"__ROOT_CFG_SYSTEM/__MD_DEPARTAMENTO"</code> — identificador único na tabela de configurações</td></tr>
+</table>
+</div>
+
+<p>Chave presente no banco = módulo ativo. Chave ausente = módulo inativo ou nunca configurado.</p>
+
+<h2 data-nav="campo mdDepartamento"><code class="explicacao">protected Check mdDepartamento = null</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>protected</code></td><td>Padrão do projeto para campos de componentes de formulário — não <code>private</code> (subclasses podem acessar) e não <code>public</code> (não precisa ser exposto fora do pacote)</td></tr>
+    <tr><td><code>Check</code></td><td>Componente de checkbox do Jasap — representa um campo de marcação sim/não em formulários</td></tr>
+    <tr><td><code>mdDepartamento</code></td><td>Mesmo nome do método getter — padrão do projeto</td></tr>
+    <tr><td><code>= null</code></td><td>Lazy initialization — o componente só é criado quando <code>mdDepartamento()</code> é chamado pela primeira vez</td></tr>
+</table>
+</div>
+
+<h2 data-nav="mdDepartamento()"><code class="explicacao">public Check mdDepartamento() throws Exception</code></h2>
+
+<p>Método getter com lazy initialization que cria e configura o checkbox do módulo:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Linha</th><th>O que faz</th></tr>
+    <tr><td><code>new JasapList()</code></td><td>Cria a lista de opções para o checkbox — contêiner do Jasap para listas de <code>DomainValue</code></td></tr>
+    <tr><td><code>new DomainValue(1, "ativar Módulo Departamento")</code></td><td>Adiciona uma opção: valor <code>1</code> quando marcado, texto descritivo exibido ao lado do checkbox na tela</td></tr>
+    <tr><td><code>if (mdDepartamento==null)</code></td><td>Só cria o componente se ainda não existe — evita recriar a cada chamada dentro da mesma requisição</td></tr>
+    <tr><td><code>new Check(getManager(), MD_DEPARTAMENTO)</code></td><td><code>getManager()</code> = contexto da requisição · <code>MD_DEPARTAMENTO</code> = nome do campo HTML (o valor virá como <code>getInput().getString(MD_DEPARTAMENTO)</code>)</td></tr>
+    <tr><td><code>.setLabel("")</code></td><td>Rótulo vazio — o texto descritivo já está dentro do <code>DomainValue</code></td></tr>
+    <tr><td><code>.setValue(list)</code></td><td>Associa as opções disponíveis ao checkbox</td></tr>
+    <tr><td><code>mdDepartamento.getValue().setSelected(...)</code></td><td>Busca no banco o estado atual via <code>getFactory().painel().cfgModel().getSetting(MD_DEPARTAMENTO)</code>. Não-nulo = checkbox marcado. Null = desmarcado</td></tr>
+</table>
+</div>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Integração — hasDepartamento(), Insert e form()</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<h2 data-nav="hasDepartamento()"><code class="explicacao">public static boolean hasDepartamento(AppManager manager)</code></h2>
+
+<pre><code class="language-java">public static boolean hasDepartamento(AppManager manager) throws Exception{
+    PcfgModel cfgModel = new PcfgModel(manager);
+    return (cfgModel.getSetting(MD_DEPARTAMENTO)!=null);
+}</code></pre>
+
+<p>Método estático que permite ao <code>HomeDesk</code> verificar se o módulo está ativo sem precisar instanciar <code>PnlCfg</code>.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>public</code></td><td>Acessível de qualquer lugar — especialmente do <code>HomeDesk</code></td></tr>
+    <tr><td><code>static</code></td><td>Chamado sem instância: <code>PnlCfg.hasDepartamento(getManager())</code>. Sem <code>static</code>, o <code>HomeDesk</code> precisaria criar um objeto <code>PnlCfg</code> inteiro só para essa verificação</td></tr>
+    <tr><td><code>boolean</code></td><td><code>true</code> = módulo ativo · <code>false</code> = módulo inativo</td></tr>
+    <tr><td><code>AppManager manager</code></td><td>Necessário porque o método é estático (sem acesso ao <code>this</code>) — precisa do contexto da requisição para consultar o banco</td></tr>
+    <tr><td><code>new PcfgModel(manager)</code></td><td>Instancia diretamente o model de configurações — em métodos estáticos não existe <code>getFactory()</code></td></tr>
+    <tr><td><code>getSetting(MD_DEPARTAMENTO) != null</code></td><td>A simples presença da chave no banco indica que o módulo foi ativado pelo administrador</td></tr>
+</table>
+</div>
+
+<h2 data-nav="Insert"><code class="explicacao">Linha adicionada no Insert.execute()</code></h2>
+
+<pre><code class="language-java">getFactory().painel().cfgModel().insert(MD_DEPARTAMENTO, getInput().getString(MD_DEPARTAMENTO));</code></pre>
+
+<p>Chamada quando o administrador clica em "Salvar" na tela de configuração. Cada módulo tem exatamente uma linha aqui:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Chamada</th><th>O que faz</th></tr>
+    <tr><td><code>getFactory()</code></td><td>Retorna <code>AppsRootModelFactory</code></td></tr>
+    <tr><td><code>.painel()</code></td><td>Retorna <code>PainelMdFactory</code></td></tr>
+    <tr><td><code>.cfgModel()</code></td><td>Retorna o model de configurações do painel (<code>PcfgModel</code>)</td></tr>
+    <tr><td><code>.insert(MD_DEPARTAMENTO, ...)</code></td><td>Grava a configuração no banco: chave = <code>MD_DEPARTAMENTO</code>, valor = <code>getInput().getString(MD_DEPARTAMENTO)</code> (<code>"1"</code> se marcado, <code>null</code> se desmarcado)</td></tr>
+</table>
+</div>
+
+<p>Sem esta linha: o checkbox aparece na tela, o admin pode marcar, mas ao salvar o estado é ignorado — nunca é gravado no banco.</p>
+
+<h2 data-nav="form()"><code class="explicacao">Linha adicionada no form()</code></h2>
+
+<pre><code class="language-java">// dentro de if (isAdminXT()) { ... }
+form.line().add(mdDepartamento(), "200");</code></pre>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>form.line()</code></td><td>Adiciona uma nova linha ao formulário — organiza os campos verticalmente</td></tr>
+    <tr><td><code>.add(mdDepartamento(), "200")</code></td><td><code>mdDepartamento()</code> = o componente Check · <code>"200"</code> = largura do rótulo em pixels</td></tr>
+    <tr><td><code>if (isAdminXT())</code></td><td>Módulos do projeto de estudo ficam dentro deste bloco — apenas administradores XT os visualizam</td></tr>
+</table>
+</div>
+
+<p>Sem esta linha: o checkbox nunca aparece na tela de configuração, tornando impossível ativar o módulo pela interface.</p>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

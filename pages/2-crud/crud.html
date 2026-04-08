@@ -24,70 +24,211 @@
                     style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 177.78%; height: 100%; display: block;"></iframe>
         </div>
 
-        <div class="home-card" onclick="location.href='ModuloProdutoBean.html'">
-            <div class="home-card-icon" style="background:#d97706;">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v1.5H8V13zm0 3h8v1.5H8V16zm0-6h5v1.5H8V10z"/></svg>
+        <div class="home-card" data-href="1-DepartamentoProdutoBean.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
             </div>
-            <div class="home-card-body">
-                <h3>ModuloProdutoBean</h3>
-                <p>Classe de dados que representa um registro da tabela. Define os campos, os tipos e a chave primária.</p>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <div>
+                        <strong>Classe de dados que representa um registro da tabela.</strong>
+                        <p>Define os campos, os tipos e a chave primaria. Cada coluna do banco vira um campo Java com getter e setter. As constantes TABLE e ID ficam aqui.</p>
+                        <p>O Bean e um POJO puro — sem logica de negocio, sem acesso ao banco. So carrega os dados de um lado pro outro: do formulario pro DAO, do DAO pra lista.</p>
+                    </div>
+                </div>
             </div>
-            <span class="home-card-btn" style="border-color:#d97706;color:#d97706;">Ver docs</span>
+            <div class="home-card-img">
+                <img src="img/cards/bean.png" alt="DepartamentoProdutoBean">
+                <span class="home-card-name">DepartamentoProdutoBean <i class="fa-solid fa-file-lines"></i></span>
+            </div>
+            <div class="home-card-bar">
+                <p>Campos, tipos e chave primaria</p>
+                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+            </div>
         </div>
 
-        <div class="home-card" onclick="location.href='ModuloProdutoWBean.html'">
-            <div class="home-card-icon" style="background:#d97706;">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 8v-2h-1V9H9v2H3v2h6v2h1v-2h3zm2-8v2h8V5h-8zm-3 6h1v2h2v-2h1v-2h-4v2zm4 4v2h4v-2h-4z"/></svg>
+        <div class="home-card" data-href="2-DepartamentoProdutoWBean.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
             </div>
-            <div class="home-card-body">
-                <h3>ModuloProdutoWBean</h3>
-                <p>Bean de filtro da listagem. Implementa Criteria e carrega os parâmetros que o DAO usa para montar o WHERE do SQL.</p>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <div>
+                        <strong>Bean de filtro da listagem.</strong>
+                        <p>Implementa Criteria e carrega os parametros que o DAO usa para montar o WHERE do SQL. Campos como status, busca rapida e faixas de data/valor ficam aqui.</p>
+                        <p>Estende o Bean principal — herda todos os campos e adiciona os filtros extras. O DAO le esses filtros no daoWhere() para montar a query dinamicamente.</p>
+                    </div>
+                </div>
             </div>
-            <span class="home-card-btn" style="border-color:#d97706;color:#d97706;">Ver docs</span>
+            <div class="home-card-img">
+                <img src="img/cards/wbean.png" alt="DepartamentoProdutoWBean">
+                <span class="home-card-name">DepartamentoProdutoWBean <i class="fa-solid fa-filter"></i></span>
+            </div>
+            <div class="home-card-bar">
+                <p>Filtros WHERE para o DAO</p>
+                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+            </div>
         </div>
 
-        <div class="home-card" onclick="location.href='ModuloProdutoDAO.html'">
-            <div class="home-card-icon" style="background:#d97706;">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M20 13H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1zm-2 5h-2v-2h2v2zm0-8H4c-.55 0-1 .45-1 1v.5c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V10c0-.55-.45-1-1-1zm0-6H4c-.55 0-1 .45-1 1v.5c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1zm-2 1h-2V3h2v2z"/></svg>
+        <div class="home-card" data-href="3-DepartamentoProdutoDAO.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
             </div>
-            <div class="home-card-body">
-                <h3>ModuloProdutoDAO</h3>
-                <p>Camada de acesso ao banco. Único arquivo que fala diretamente com o PostgreSQL — listagem, busca, insert, update e delete.</p>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <div>
+                        <strong>Camada de acesso ao banco.</strong>
+                        <p>Unico arquivo que fala diretamente com o PostgreSQL — listagem, busca, insert, update e delete. Monta as queries SQL e executa via JasapDAO.</p>
+                        <p>O daoList busca registros com paginacao, o daoSingle carrega um registro pelo ID, e o daoWhere monta o WHERE dinamico a partir do WBean.</p>
+                    </div>
+                </div>
             </div>
-            <span class="home-card-btn" style="border-color:#d97706;color:#d97706;">Ver docs</span>
+            <div class="home-card-img">
+                <img src="img/cards/dao.png" alt="DepartamentoProdutoDAO">
+                <span class="home-card-name">DepartamentoProdutoDAO <i class="fa-solid fa-database"></i></span>
+            </div>
+            <div class="home-card-bar">
+                <p>SQL: listagem, busca, insert, update e delete</p>
+                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+            </div>
         </div>
 
-        <div class="home-card" onclick="location.href='ModuloProdutoModel.html'">
-            <div class="home-card-icon" style="background:#d97706;">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+        <div class="home-card" data-href="4-DepartamentoProdutoModel.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
             </div>
-            <div class="home-card-body">
-                <h3>ModuloProdutoModel</h3>
-                <p>Camada de regras de negócio entre o formulário e o DAO. Neste CRUD simples delega diretamente — mas é aqui que as regras entrariam.</p>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <div>
+                        <strong>Camada de regras de negocio.</strong>
+                        <p>Fica entre o formulario e o DAO. Neste CRUD simples delega diretamente — mas e aqui que as regras entrariam (validacoes, calculos, cascades).</p>
+                        <p>Estende o DAO — herda todos os metodos de acesso ao banco. Os metodos insert() e update() sao o ponto de entrada para qualquer logica antes de gravar.</p>
+                    </div>
+                </div>
             </div>
-            <span class="home-card-btn" style="border-color:#d97706;color:#d97706;">Ver docs</span>
+            <div class="home-card-img">
+                <img src="img/cards/model.png" alt="DepartamentoProdutoModel">
+                <span class="home-card-name">DepartamentoProdutoModel <i class="fa-solid fa-scale-balanced"></i></span>
+            </div>
+            <div class="home-card-bar">
+                <p>Regras de negocio entre form e DAO</p>
+                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+            </div>
         </div>
 
-        <div class="home-card" onclick="location.href='ModuloProdutoAction.html'">
-            <div class="home-card-icon" style="background:#d97706;">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M13 2.05v2.02c3.95.49 7 3.85 7 7.93 0 3.21-1.81 6-4.72 7.28L13 17v5h5l-1.22-1.22C19.91 19.07 22 15.76 22 12c0-5.18-3.95-9.45-9-9.95zM11 2.05C5.95 2.55 2 6.82 2 12c0 3.76 2.09 7.07 5.22 8.78L6 22h5v-5l-2.28 2.28C7.81 18 6 15.21 6 12c0-4.08 3.05-7.44 7-7.93V2.05z"/></svg>
+        <div class="home-card" data-href="5-DepartamentoProdutoAction.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
             </div>
-            <div class="home-card-body">
-                <h3>ModuloProdutoAction</h3>
-                <p>Classe base abstrata de List e Form. Centraliza ROOT, proBean(), proWBean() e id_pro() para todas as actions de Produto.</p>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <div>
+                        <strong>Classe base abstrata de List e Form.</strong>
+                        <p>Centraliza ROOT, proBean(), proWBean() e id_pro() para todas as actions de Produto. Qualquer action de Produto estende essa classe.</p>
+                        <p>O ROOT define o caminho de permissao. Os metodos proBean() e proWBean() guardam o bean na sessao — assim List e Form compartilham o mesmo estado.</p>
+                    </div>
+                </div>
             </div>
-            <span class="home-card-btn" style="border-color:#d97706;color:#d97706;">Ver docs</span>
+            <div class="home-card-img">
+                <img src="img/cards/action.png" alt="DepartamentoProdutoAction">
+                <span class="home-card-name">DepartamentoProdutoAction <i class="fa-solid fa-bolt"></i></span>
+            </div>
+            <div class="home-card-bar">
+                <p>Base: ROOT, proBean() e id_pro()</p>
+                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+            </div>
         </div>
 
-        <div class="home-card" onclick="location.href='ModuloProdutoList.html'">
-            <div class="home-card-icon" style="background:#d97706;">
-                <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+        <div class="home-card" data-href="6-getManager.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
             </div>
-            <div class="home-card-body">
-                <h3>ModuloProdutoList</h3>
-                <p>Tela de listagem. Exibe os registros em uma ListView paginável com ordenação por coluna, botão para novo registro e exclusão inline com confirmação.</p>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <div>
+                        <strong>De onde vem o getManager().</strong>
+                        <p>Conceitual: como o manager e montado e como chega na Action, XtPage, DAO, MdFactory e Model. O fio que conecta todas as camadas.</p>
+                        <p>O Jasap cria o manager uma vez e injeta em todas as actions do modulo. Dali, getFactory() acessa os models e getDataBase() acessa a conexao.</p>
+                    </div>
+                </div>
             </div>
-            <span class="home-card-btn" style="border-color:#d97706;color:#d97706;">Ver docs</span>
+            <div class="home-card-img">
+                <img src="img/cards/getmanager.png" alt="getManager()">
+                <span class="home-card-name">getManager() <i class="fa-solid fa-link"></i></span>
+            </div>
+            <div class="home-card-bar">
+                <p>O fio que conecta todas as camadas</p>
+                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+            </div>
+        </div>
+
+        <div class="home-card" data-href="7-DepartamentoMdFactory.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <div>
+                        <strong>Ferramentaria do departamento.</strong>
+                        <p>Adiciona o proModel() na MdFactory do modulo para que as actions acessem o Model de Produto via getFactory().</p>
+                        <p>Lazy initialization: cria o model na primeira chamada e retorna o mesmo nas proximas. Padrao protected — so o proprio modulo acessa.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="home-card-img">
+                <img src="img/cards/mdfactory.png" alt="DepartamentoMdFactory">
+                <span class="home-card-name">DepartamentoMdFactory <i class="fa-solid fa-wrench"></i></span>
+            </div>
+            <div class="home-card-bar">
+                <p>proModel() com lazy initialization</p>
+                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+            </div>
+        </div>
+
+        <div class="home-card" data-href="8-DepartamentoProdutoList.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <div>
+                        <strong>Tela de listagem.</strong>
+                        <p>Exibe os registros em uma ListView paginavel com ordenacao por coluna, botao para novo registro e exclusao inline com confirmacao.</p>
+                        <p>Busca rapida, tabs de status e paginacao. Cada linha clicavel abre o Form de edicao. O Sort reordena e o QuickSearch filtra sem recarregar a pagina.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="home-card-img">
+                <img src="img/cards/list.png" alt="DepartamentoProdutoList">
+                <span class="home-card-name">DepartamentoProdutoList <i class="fa-solid fa-list"></i></span>
+            </div>
+            <div class="home-card-bar">
+                <p>ListView paginavel com busca e ordenacao</p>
+                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+            </div>
+        </div>
+
+        <div class="home-card" data-href="9-DepartamentoHome.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <div>
+                        <strong>Recepcao do departamento.</strong>
+                        <p>Adiciona o item Produto no sidebar, o case no MenuItem para abrir a lista, e o breadcrumb no Title.</p>
+                        <p>Cada guiche (MID) aponta para uma entidade. O MenuInicial monta o painel com os guiches disponiveis e o MenuItem redireciona o usuario ao clicar.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="home-card-img">
+                <img src="img/cards/home.png" alt="DepartamentoHome">
+                <span class="home-card-name">DepartamentoHome <i class="fa-solid fa-house"></i></span>
+            </div>
+            <div class="home-card-bar">
+                <p>Sidebar, MenuItem e breadcrumb</p>
+                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+            </div>
         </div>
 
     </div>

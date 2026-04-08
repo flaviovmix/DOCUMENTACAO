@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoProdutoAction — XT - Treinamento</title>
+    <script src="../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoProdutoAction <span class="badge badge-new">novo arquivo</span></h1>
+
+<div class="audio-player" data-src="5-DepartamentoProdutoAction/audio/DepartamentoProdutoAction.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<div class="carousel" data-path="5-DepartamentoProdutoAction/img/"></div>
+
+<p>Classe base <strong>abstrata</strong> de todas as actions de Produto. Centraliza o que <code>DepartamentoProdutoList</code>, <code>DepartamentoProdutoForm</code> e suas inner classes precisam compartilhar: o prefixo <code>ROOT</code>, os objetos Bean e WBean da requisição, e o acesso ao ID do produto em edição.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.xt.AppsRootAction;
+import br.xt.app.departamento.DepartamentoManager;
+
+public abstract class DepartamentoProdutoAction extends AppsRootAction {
+
+    <span class="line-add">public static final String ROOT = DepartamentoManager.F_ACESSO_MODULO.concat("__PRO/");</span>
+
+    <span class="line-add">private DepartamentoProdutoWBean wbean = null;</span>
+    <span class="line-add">public DepartamentoProdutoWBean proWBean() throws Exception {</span>
+    <span class="line-add">    if (wbean == null)</span>
+    <span class="line-add">        wbean = (DepartamentoProdutoWBean) getManager().getInstance(DepartamentoProdutoWBean.class);</span>
+    <span class="line-add">    return wbean;</span>
+    <span class="line-add">}</span>
+
+    <span class="line-add">private DepartamentoProdutoBean bean = null;</span>
+    <span class="line-add">public DepartamentoProdutoBean proBean() throws Exception {</span>
+    <span class="line-add">    if (bean == null)</span>
+    <span class="line-add">        bean = (DepartamentoProdutoBean) getManager().getInstance(DepartamentoProdutoBean.class);</span>
+    <span class="line-add">    return bean;</span>
+    <span class="line-add">}</span>
+
+    <span class="line-add">public Integer id_pro() throws Exception {</span>
+    <span class="line-add">    return getSession().getInteger(ROOT.concat(DepartamentoProdutoBean.ID_PRO));</span>
+    <span class="line-add">}</span>
+
+}</code></pre>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que o extends AppsRootAction traz?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Toda a infraestrutura que o CRUD precisa vem da herança. Sem ela, cada action teria que implementar tudo do zero:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Método herdado</th><th>Uso no CRUD</th></tr>
+    <tr><td><code>getFactory()</code></td><td>Acessa o Model para insert/update/delete</td></tr>
+    <tr><td><code>ui()</code></td><td>Cria componentes visuais (form, listView, button, linkBox...)</td></tr>
+    <tr><td><code>getInput()</code></td><td>Lê dados enviados pelo formulário</td></tr>
+    <tr><td><code>getSession()</code></td><td>Guarda e lê dados entre requisições</td></tr>
+    <tr><td><code>link(Class)</code></td><td>Cria links para outras actions</td></tr>
+    <tr><td><code>preAjax(Class)</code></td><td>Abre tela como modal</td></tr>
+    <tr><td><code>ok(String)</code></td><td>Verifica permissão do usuário</td></tr>
+    <tr><td><code>eval()</code></td><td>Envia comandos JavaScript para o navegador</td></tr>
+    <tr><td><code>update()</code></td><td>Atualiza DIVs na tela</td></tr>
+    <tr><td><code>getUser()</code></td><td>Usuário logado na sessão</td></tr>
+</table>
+</div>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">ROOT — montado em duas partes</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O ROOT não surge do nada — ele é a <strong>junção</strong> de duas partes:</p>
+<ol>
+    <li><strong>No Manager:</strong> <code>F_ACESSO_MODULO = "XT.PAINEL_CONTROLE.ACESSO_MODULO.DEPARTAMENTO"</code></li>
+    <li><strong>Na Action:</strong> <code>.concat("__PRO/")</code> junta o sufixo da entidade</li>
+</ol>
+<p>Resultado: <code>"XT.PAINEL_CONTROLE.ACESSO_MODULO.DEPARTAMENTO__PRO/"</code></p>
+<p>O Manager define o endereço do <strong>módulo</strong>. A Action completa com o endereço da <strong>entidade</strong> dentro do módulo. Se tivesse outra entidade (ex: Pessoa), seria <code>__PES/</code> em vez de <code>__PRO/</code>.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Padrão lazy: getInstance()</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Os métodos <code>proBean()</code> e <code>proWBean()</code> usam o padrão de <strong>inicialização lazy</strong>: o objeto só é criado na primeira chamada e reutilizado nas seguintes.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Linha</th><th>O que faz</th></tr>
+    <tr><td><code>private ... bean = null</code></td><td>Campo privado inicializado como <code>null</code> — ainda não foi criado</td></tr>
+    <tr><td><code>if (bean == null)</code></td><td>Só instancia na primeira chamada. Se já foi criado, pula direto para o <code>return</code></td></tr>
+    <tr><td><code>getManager().getInstance(...)</code></td><td>Retorna a instância no escopo da requisição. Todas as actions que chamam na mesma requisição recebem o <strong>mesmo objeto</strong></td></tr>
+</table>
+</div>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que id_pro() lê da sessão?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O formulário tem várias ações (salvar, excluir, cancelar) e cada uma é uma <strong>requisição separada</strong>. O ID precisa sobreviver entre requisições — a sessão garante isso.</p>
+<p>Quando o usuário clica num registro da lista, o <code>ShowUpdate</code> grava o ID na sessão. A partir daí, qualquer action que precisar saber qual produto está aberto chama <code>id_pro()</code>.</p>
+
+        </div>
+    </div>
+</div>
+
+<h2 data-nav="abstract"><code class="explicacao">public abstract class DepartamentoProdutoAction extends AppsRootAction</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>abstract</code></td><td>Esta classe nunca é usada diretamente — não tem <code>execute()</code>. Só existe para ser estendida por <code>DepartamentoProdutoList</code> e <code>DepartamentoProdutoForm</code>. Impede que o framework tente instanciá-la por engano</td></tr>
+    <tr><td><code>extends AppsRootAction</code></td><td>Herda toda a infraestrutura do framework: <code>getInput()</code>, <code>getSession()</code>, <code>getManager()</code>, <code>ui()</code>, <code>link()</code>, <code>eval()</code>, <code>update()</code>, entre outros</td></tr>
+</table>
+</div>
+
+<h2 data-nav="ROOT"><code class="explicacao">public static final String ROOT</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>public</code></td><td>Acessível de fora — List e Form usam ROOT para montar suas próprias constantes</td></tr>
+    <tr><td><code>static</code></td><td>Pertence à classe, não à instância</td></tr>
+    <tr><td><code>final</code></td><td>Não pode ser alterado — é uma constante verdadeira</td></tr>
+    <tr><td><code>F_ACESSO_MODULO.concat("__PRO/")</code></td><td>Manager define o módulo + Action define a entidade → <code>"XT...DEPARTAMENTO__PRO/"</code></td></tr>
+</table>
+</div>
+
+<h2 data-nav="proBean vs proWBean"><code class="explicacao">proBean() e proWBean()</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Método</th><th>Tipo retornado</th><th>Usado por</th><th>Para quê</th></tr>
+    <tr><td><code>proBean()</code></td><td><code>DepartamentoProdutoBean</code></td><td>Formulário</td><td>Dados do registro (nome, valor, quantidade)</td></tr>
+    <tr><td><code>proWBean()</code></td><td><code>DepartamentoProdutoWBean</code></td><td>Listagem</td><td>Filtros de pesquisa e estado de paginação</td></tr>
+</table>
+</div>
+
+<h2 data-nav="id_pro"><code class="explicacao">id_pro()</code></h2>
+<p>Lê da sessão o ID do produto em edição. A chave é <code>ROOT + "id_pro"</code> — o prefixo ROOT garante que não conflita com o ID de outra entidade.</p>
+
+</body>
+</html>

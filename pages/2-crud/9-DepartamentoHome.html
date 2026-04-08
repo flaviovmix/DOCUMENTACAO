@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoHome — CRUD — XT - Treinamento</title>
+    <script src="../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoHome <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="9-DepartamentoHome/audio/DepartamentoHome.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<div class="carousel" data-path="9-DepartamentoHome/img/"></div>
+
+<p>O Home foi criado vazio no passo "Novo Módulo" — sem entidades no sidebar, sem breadcrumb com sub-níveis, sem roteamento de telas. Agora que a List existe, adicionamos o item "Produto" ao menu lateral, o <code>case</code> no MenuItem para abrir a lista, e o breadcrumb no Title.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="import br.xt.app.departamento.produto.DepartamentoProdutoList|if (mid == 0)+7|switch (mid)+2|case 1: eval(preAjax(DepartamentoProdutoList|m.add(true+1"><code class="language-java">package br.xt.app.departamento;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.SideMenu;
+import br.jasap.gui.Table;
+import br.jasap.gui.TableRow;
+import br.jasap.util.Js;
+import br.xt.AppsRootAction;
+import br.xt.acore.view.XtPage;
+<span class="line-add">import br.xt.app.departamento.produto.DepartamentoProdutoList;</span>
+
+public class DepartamentoHome extends AppsRootAction {
+
+    public static final String MID = "__DEPARTAMENTO_MID";
+
+    @Override
+    public Effect execute() throws Exception {
+        render();
+        return new Response();
+    }
+
+    public void render() throws Exception {
+        XtPage page = new XtPage(getManager());
+        if (isAjaxCall()) {
+            eval(Js.CLOSE_SUB_WINDOWS);
+        } else {
+            page.getBody().append(page.content("", "", false));
+            page.setWinTitle("Departamento");
+            page.getCommands().add(link(MenuItem.class).putInteger(MID, 0).ajax());
+            getOutput().write(this, page);
+        }
+    }
+
+    public static class Title extends DepartamentoHome {
+        @Override
+        public Effect execute() throws Exception {
+            int mid = getInput().getInteger(MID, 0);
+
+            Table aux = new Table(getManager());
+            TableRow line = aux.row();
+
+            <span class="line-add">if (mid == 0) {</span>
+                line.col().setStyle("padding: 0 5 0 5;").setContent(ui().btTitleActive("DEPARTAMENTO", ""));
+            <span class="line-add">} else {</span>
+            <span class="line-add">    line.col().setStyle("padding: 0 5 0 5;").setContent(ui().btTitle("DEPARTAMENTO", link(Title.class).putInteger(MID, 0).ajax()));</span>
+            <span class="line-add">    switch (mid) {</span>
+            <span class="line-add">        case 1: line.col().setStyle("padding: 0 5 0 5;").setContent(ui().btTitleActive("Produto", "")); break;</span>
+            <span class="line-add">    }</span>
+            <span class="line-add">}</span>
+
+            update(JasapPage.DIV_HEADER_LEFT, aux);
+            update(JasapPage.DIV_HEADER_CENTER, "");
+            return new Response();
+        }
+    }
+
+    public static class MenuItem extends DepartamentoHome {
+        @Override
+        public Effect execute() throws Exception {
+            int mid = getInput().getInteger(MID, 0);
+
+            if (mid > 0) {
+                eval(link(Title.class).putInteger(MID, mid).ajax());
+                <span class="line-add">switch (mid) {</span>
+                <span class="line-add">    case 1: eval(preAjax(DepartamentoProdutoList.class).modalMax()); break;</span>
+                <span class="line-add">}</span>
+                eval(link(Title.class).putInteger(MID, mid).ajax(false));
+            } else {
+                eval(link(MenuInicial.class).ajax(false));
+                eval(link(Title.class).putInteger(MID, mid).ajax(false));
+            }
+
+            return new Response();
+        }
+    }
+
+    public static class MenuInicial extends DepartamentoHome {
+        @Override
+        public Effect execute() throws Exception {
+            SideMenu m = new SideMenu();
+
+            <span class="line-add">m.add(true, "Produto", link(MenuItem.class).putInteger(MID, 1).ajax(), null)</span>
+            <span class="line-add"> .setImage("res/ico/mn_cto_clientes.png");</span>
+
+            update("sidebar", m.toHtml());
+            return new Response();
+        }
+    }
+
+}</code></pre>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que mudou em cada inner class</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="table-wrap">
+<table>
+    <tr><th>Inner class</th><th>O que era</th><th>O que foi adicionado</th></tr>
+    <tr><td><strong>Title</strong></td><td>Sempre mostrava "DEPARTAMENTO" fixo</td><td><code>if/else</code> + <code>switch(mid)</code>: quando <code>mid &gt; 0</code>, "DEPARTAMENTO" vira link clicável (<code>btTitle</code>) e o nome da entidade aparece ao lado como ativo (<code>btTitleActive</code>)</td></tr>
+    <tr><td><strong>MenuItem</strong></td><td>Bloco <code>mid &gt; 0</code> vazio (só chamava Title)</td><td><code>switch(mid)</code> com <code>case 1</code>: abre <code>DepartamentoProdutoList</code> em modal maximizado via <code>preAjax().modalMax()</code></td></tr>
+    <tr><td><strong>MenuInicial</strong></td><td><code>SideMenu</code> vazio</td><td><code>m.add()</code> com o item "Produto" apontando para <code>MenuItem</code> com <code>MID=1</code></td></tr>
+</table>
+</div>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Breadcrumb — btTitle vs btTitleActive</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="table-wrap">
+<table>
+    <tr><th>Componente</th><th>Visual</th><th>Comportamento</th></tr>
+    <tr><td><code>btTitle("DEPARTAMENTO", link)</code></td><td>Texto clicável</td><td>Ao clicar, volta ao menu inicial (MID=0)</td></tr>
+    <tr><td><code>btTitleActive("Produto", "")</code></td><td>Texto destacado, sem link</td><td>Indica a tela atual — não é clicável</td></tr>
+</table>
+</div>
+
+<p>Resultado visual: <strong>DEPARTAMENTO > Produto</strong> — o primeiro é clicável, o segundo é fixo.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">preAjax().modalMax() — o que faz</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">eval(preAjax(DepartamentoProdutoList.class).modalMax());</code></pre>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Parte</th><th>O que faz</th></tr>
+    <tr><td><code>preAjax(DepartamentoProdutoList.class)</code></td><td>Prepara a abertura da List como modal — carrega o conteúdo via Ajax</td></tr>
+    <tr><td><code>.modalMax()</code></td><td>Abre em tela cheia (maximizado) — a lista ocupa toda a área de conteúdo</td></tr>
+</table>
+</div>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">MenuInicial — m.add() detalhado</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">m.add(true, "Produto", link(MenuItem.class).putInteger(MID, 1).ajax(), null)
+ .setImage("res/ico/mn_cto_clientes.png");</code></pre>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Parâmetro</th><th>O que significa</th></tr>
+    <tr><td><code>true</code></td><td>Item visível no menu</td></tr>
+    <tr><td><code>"Produto"</code></td><td>Texto exibido no sidebar</td></tr>
+    <tr><td><code>link(MenuItem.class).putInteger(MID, 1).ajax()</code></td><td>Ao clicar, chama MenuItem com MID=1 — que abre a lista de Produto</td></tr>
+    <tr><td><code>null</code></td><td>Sem submenu</td></tr>
+    <tr><td><code>.setImage(...)</code></td><td>Ícone exibido ao lado do texto</td></tr>
+</table>
+</div>
+
+<p>Para cada nova entidade, um novo <code>m.add()</code> com o próximo MID (2, 3...) seria adicionado aqui.</p>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

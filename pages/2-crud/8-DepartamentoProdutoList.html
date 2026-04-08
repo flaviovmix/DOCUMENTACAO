@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoProdutoList — XT - Treinamento</title>
+    <script src="../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoProdutoList <span class="badge badge-new">novo arquivo</span></h1>
+
+<div class="audio-player" data-src="8-DepartamentoProdutoList/audio/DepartamentoProdutoList.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<div class="carousel" data-path="8-DepartamentoProdutoList/img/"></div>
+
+<p>Tela de listagem de Produto. Exibe todos os registros em uma <code>ListView</code> simples — sem paginação, sem ordenação por coluna, sem exclusão inline. É a versão mínima de uma listagem funcional no framework Jasap.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.ListColumn;
+import br.jasap.gui.ListLine;
+import br.jasap.gui.ListView;
+import br.jasap.gui.Table;
+import br.xt.acore.view.XtPage;
+
+public class DepartamentoProdutoList extends DepartamentoProdutoAction {
+
+    <span class="line-add">@Override</span>
+    <span class="line-add">public Effect execute() throws Exception {</span>
+    <span class="line-add">    render();</span>
+    <span class="line-add">    return new Response();</span>
+    <span class="line-add">}</span>
+
+    <span class="line-add">private void render() throws Exception {</span>
+    <span class="line-add">    XtPage page = new XtPage(getManager());</span>
+    <span class="line-add">    if (isAjaxCall()) {</span>
+    <span class="line-add">        update(JasapPage.DIV_WINDOW, page.content(window().toHtml()));</span>
+    <span class="line-add">    } else {</span>
+    <span class="line-add">        page.getTable()</span>
+    <span class="line-add">            .setBorder(4)</span>
+    <span class="line-add">            .rowC("100%")</span>
+    <span class="line-add">            .setContent(page.content(window().toHtml()))</span>
+    <span class="line-add">            .setStyle(ui().stretchBorder());</span>
+    <span class="line-add">        page.setWinTitle("Produtos");</span>
+    <span class="line-add">        getOutput().write(this, page);</span>
+    <span class="line-add">    }</span>
+    <span class="line-add">}</span>
+
+    <span class="line-add">public Table window() throws Exception {</span>
+    <span class="line-add">    Table w = new Table(getManager()).setSize("100%", "100%");</span>
+    <span class="line-add">    w.rowC("100%", JasapPage.DIV_WSPACE, lView());</span>
+    <span class="line-add">    return w;</span>
+    <span class="line-add">}</span>
+
+    <span class="line-add">private ListView lv = null;</span>
+    <span class="line-add">public ListView lView() throws Exception {</span>
+    <span class="line-add">    if (lv == null) {</span>
+    <span class="line-add">        lv = ui().lView();</span>
+    <span class="line-add"></span>
+    <span class="line-add">        lv.setFiltro(proWBean());</span>
+    <span class="line-add">        getFactory().departamento().proModel().daoList(lv.getData());</span>
+    <span class="line-add"></span>
+    <span class="line-add">        ListColumn col_nome = lv.newColumn("Nome").setWidth(220).setPadding(";padding:10 8 10 8;");</span>
+    <span class="line-add">        ListColumn col_vl   = lv.newColumn("Valor").setWidth(100).setPadding(";padding:10 8 10 8;").alignCenter();</span>
+    <span class="line-add">        ListColumn col_qtd  = lv.newColumn("Qtd").setWidth(80).setPadding(";padding:10 8 10 8;").alignCenter();</span>
+    <span class="line-add">        ListColumn col_obs  = lv.newColumn("Observação").setPadding(";padding:10 8 10 8;");</span>
+    <span class="line-add"></span>
+    <span class="line-add">        while (lv.hasNext()) {</span>
+    <span class="line-add">            DepartamentoProdutoBean bean = (DepartamentoProdutoBean) lv.next();</span>
+    <span class="line-add">            ListLine line = lv.createLine();</span>
+    <span class="line-add"></span>
+    <span class="line-add">            col_nome.setContent(bean.getNome_pro());</span>
+    <span class="line-add">            col_vl.setContent(bean.getVl_pro());</span>
+    <span class="line-add">            col_qtd.setContent(bean.getQtd_pro());</span>
+    <span class="line-add">            col_obs.setContent(bean.getObs_pro());</span>
+    <span class="line-add"></span>
+    <span class="line-add">            lv.addLine(line);</span>
+    <span class="line-add">        }</span>
+    <span class="line-add">    }</span>
+    <span class="line-add">    return lv;</span>
+    <span class="line-add">}</span>
+
+}</code></pre>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">execute() e render()</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p><code>execute()</code> é o ponto de entrada — apenas chama <code>render()</code> e retorna.</p>
+<p><code>render()</code> decide como entregar a tela ao browser:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Contexto</th><th>O que acontece</th></tr>
+    <tr><td>Chamada Ajax (ex: abertura via modal)</td><td><code>update(DIV_WINDOW, ...)</code> — substitui o conteúdo do <code>DIV_WINDOW</code> sem recarregar a página inteira</td></tr>
+    <tr><td>Acesso direto pelo browser (URL)</td><td><code>getOutput().write(this, page)</code> — escreve o HTML completo com CSS, JS e título da janela</td></tr>
+</table>
+</div>
+
+<p>Na prática, 99% das vezes a lista abre via Ajax (pelo MenuItem do Home). O <code>else</code> é um fallback para o caso raro de acesso direto pela URL.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">window() — estrutura de layout</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">public Table window() throws Exception {
+    Table w = new Table(getManager()).setSize("100%", "100%");
+    w.rowC("100%", JasapPage.DIV_WSPACE, lView());
+    return w;
+}</code></pre>
+
+<p><code>Table</code> aqui é um componente de layout do framework — não é uma tabela HTML de dados. Nesta versão mínima, a tela tem uma única linha:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Parâmetro</th><th>O que faz</th></tr>
+    <tr><td><code>"100%"</code></td><td>A ListView ocupa toda a altura disponível</td></tr>
+    <tr><td><code>JasapPage.DIV_WSPACE</code></td><td>ID do div — permite scroll interno quando há muitos registros</td></tr>
+    <tr><td><code>lView()</code></td><td>O conteúdo — a ListView com os dados</td></tr>
+</table>
+</div>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">lView() — a ListView</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<h3>Inicialização lazy</h3>
+<p>Mesmo padrão do <code>proBean()</code> na Action: o componente só é criado na primeira chamada e reutilizado nas seguintes dentro da mesma requisição.</p>
+
+<h3>setFiltro e daoList</h3>
+<p><code>setFiltro(proWBean())</code> associa o WBean como <code>Criteria</code> — define as condições WHERE aplicadas pelo <code>daoList</code>. Como o WBean está vazio (sem filtros), lista todos os registros.</p>
+<p><code>getFactory().departamento().proModel().daoList(lv.getData())</code> executa a consulta no banco e preenche a lista interna da ListView.</p>
+
+<h3>Colunas</h3>
+<div class="table-wrap">
+<table>
+    <tr><th>Coluna</th><th>Largura</th><th>Alinhamento</th></tr>
+    <tr><td>Nome</td><td>220px</td><td>esquerda (padrão)</td></tr>
+    <tr><td>Valor</td><td>100px</td><td>centro</td></tr>
+    <tr><td>Qtd</td><td>80px</td><td>centro</td></tr>
+    <tr><td>Observação</td><td>livre (ocupa o restante)</td><td>esquerda (padrão)</td></tr>
+</table>
+</div>
+
+<p>Nesta versão mínima, as colunas <strong>não têm</strong> <code>setOrderBy()</code> — não são clicáveis para ordenar.</p>
+
+<h3>Loop de registros</h3>
+<p><code>while (lv.hasNext())</code> itera sobre todos os registros retornados. Para cada um:</p>
+<ul>
+    <li><code>lv.next()</code> avança e retorna como <code>Object</code> — cast para <code>DepartamentoProdutoBean</code></li>
+    <li><code>lv.createLine()</code> cria uma linha (sem <code>setOnclick</code> — não é clicável nesta versão)</li>
+    <li><code>setContent(valor)</code> preenche cada célula — escapa HTML automaticamente</li>
+    <li><code>lv.addLine(line)</code> adiciona a linha à ListView</li>
+</ul>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que esta versão NÃO tem (e será adicionado depois)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="table-wrap">
+<table>
+    <tr><th>Feature</th><th>O que faz</th><th>Quando entra</th></tr>
+    <tr><td>Sort</td><td>Ordenação por coluna e paginação via Ajax</td><td>Quando a lista crescer e precisar de organização</td></tr>
+    <tr><td>br()</td><td>Barra inferior com navegação de páginas e botão "Novo Registro"</td><td>Junto com o Form e o Sort</td></tr>
+    <tr><td>DeleteFromList</td><td>Exclusão inline com confirmação (swalConfirm)</td><td>Quando existir exclusão de registros</td></tr>
+    <tr><td>Linhas clicáveis</td><td><code>setOnclick</code> para abrir o formulário de edição em modal</td><td>Quando o Form for criado</td></tr>
+    <tr><td>Constantes LIST, RESET_PAGE, CONFIRM_LIST</td><td>Chaves de sessão para paginação e confirmação</td><td>Junto com Sort e DeleteFromList</td></tr>
+</table>
+</div>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

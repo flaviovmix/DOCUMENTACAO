@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoProdutoModel — XT - Treinamento</title>
+    <script src="../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoProdutoModel <span class="badge badge-new">novo arquivo</span></h1>
+
+<div class="audio-player" data-src="4-DepartamentoProdutoModel/audio/DepartamentoProdutoModel.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<div class="carousel" data-path="4-DepartamentoProdutoModel/img/"></div>
+
+<p>O Model é a camada de <strong>regras de negócio</strong> — fica entre o formulário e o DAO. O formulário <strong>nunca</strong> chama o DAO diretamente para salvar dados — sempre passa pelo Model. A cadeia é: Formulário → Model → DAO → Banco.</p>
+
+<p class="info-note"><strong>Nota:</strong> neste CRUD simples não há regras de negócio, por isso o arquivo é pequeno — <code>insert</code> e <code>update</code> apenas delegam para o DAO. Conforme o módulo evoluir, as regras entram aqui sem precisar alterar o formulário nem o DAO.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.AppManager;
+
+public class DepartamentoProdutoModel extends DepartamentoProdutoDAO {
+
+    <span class="line-add">public DepartamentoProdutoModel(AppManager manager) {</span>
+    <span class="line-add">    super(manager);</span>
+    <span class="line-add">}</span>
+
+    <span class="line-add">public void insert(DepartamentoProdutoBean bean) throws Exception {</span>
+    <span class="line-add">    daoInsert(bean);</span>
+    <span class="line-add">}</span>
+
+    <span class="line-add">public void update(DepartamentoProdutoBean bean) throws Exception {</span>
+    <span class="line-add">    daoUpdate(bean);</span>
+    <span class="line-add">}</span>
+
+}</code></pre>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que o Model é tão pequeno?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O Model concentra as regras de negócio que precisam rodar antes de persistir um dado. Em módulos mais complexos, o <code>insert()</code> e o <code>update()</code> fariam coisas como:</p>
+<ul>
+    <li>Montar o <code>qs_pro</code> (Quick Search) antes de salvar</li>
+    <li>Validar campos obrigatórios ou combinações inválidas</li>
+    <li>Propagar status de um registro pai pros filhos</li>
+    <li>Atualizar contadores em outras tabelas</li>
+</ul>
+<p>Neste CRUD não há nada disso — então o Model só delega para o DAO.</p>
+<p>Você pode estar se perguntando: <em>"por que não chamar o DAO direto do formulário?"</em> — A resposta é separação de responsabilidades. Se amanhã precisar adicionar uma regra no insert, ela entra no Model sem tocar no formulário nem no DAO.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que delete não está aqui?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Delete não tem regra de negócio neste módulo. O formulário chama <code>daoDelete()</code> diretamente — como o Model herda do DAO, o formulário faz <code>getFactory().departamento().proModel().daoDelete(bean)</code> e funciona.</p>
+<p>Se no futuro delete precisar de regra (ex: arquivar em vez de excluir, ou verificar dependências antes), um método <code>delete()</code> seria adicionado aqui no Model.</p>
+
+        </div>
+    </div>
+</div>
+
+<h2 data-nav="public class"><code class="explicacao">public class DepartamentoProdutoModel extends DepartamentoProdutoDAO</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>DepartamentoProdutoModel</code></td><td>Convenção do projeto: prefixo do módulo + entidade + <code>Model</code></td></tr>
+    <tr><td><code>extends DepartamentoProdutoDAO</code></td><td>Herda todos os métodos do DAO (<code>daoList</code>, <code>daoSingle</code>, <code>daoInsert</code>, <code>daoUpdate</code>, <code>daoDelete</code>). O Model acessa o DAO diretamente pela herança, sem precisar criar uma instância separada</td></tr>
+</table>
+</div>
+
+<p>A cadeia completa de herança:</p>
+<pre><code>JasapDAO → AppsRootDAO → DepartamentoProdutoDAO → DepartamentoProdutoModel</code></pre>
+
+<h2 data-nav="construtor"><code class="explicacao">DepartamentoProdutoModel(AppManager manager)</code></h2>
+<p>Passa o <code>AppManager</code> para o construtor do DAO via <code>super(manager)</code>. É quem inicializa a conexão com o banco — sem isso os métodos herdados do DAO não teriam acesso ao banco de dados.</p>
+
+<p>A corrente de criação:</p>
+<pre><code>MdFactory cria Model → Model chama super(manager) → DAO configurado com conexão ao banco</code></pre>
+
+<h2 data-nav="insert e update"><code class="explicacao">insert(bean) / update(bean)</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Método</th><th>O que faz agora</th><th>O que faria num módulo mais complexo</th></tr>
+    <tr><td><code>insert(bean)</code></td><td>Chama <code>daoInsert(bean)</code></td><td>Calcularia campos derivados, dispararia ações em outras tabelas antes de persistir</td></tr>
+    <tr><td><code>update(bean)</code></td><td>Chama <code>daoUpdate(bean)</code></td><td>Validaria consistência, propagaria mudanças para registros filhos</td></tr>
+</table>
+</div>
+
+</body>
+</html>

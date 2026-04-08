@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoMdFactory — CRUD — XT - Treinamento</title>
+    <script src="../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoMdFactory <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="7-DepartamentoMdFactory/audio/DepartamentoMdFactory.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<div class="carousel" data-path="7-DepartamentoMdFactory/img/"></div>
+
+<p>A MdFactory foi criada vazia no passo "Novo Módulo". Agora que o Model existe, adicionamos o método <code>proModel()</code> para que as actions consigam acessar o Model de Produto via <code>getFactory().departamento().proModel()</code>.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="import br.xt.app.departamento.produto.DepartamentoProdutoModel|protected DepartamentoProdutoModel proModel = null+4"><code class="language-java">package br.xt.app.departamento;
+
+import br.jasap.core.AppManager;
+<span class="line-add">import br.xt.app.departamento.produto.DepartamentoProdutoModel;</span>
+
+public class DepartamentoMdFactory {
+
+    protected AppManager manager = null;
+
+    public DepartamentoMdFactory() {
+    }
+
+    public DepartamentoMdFactory(AppManager manager) {
+        setManager(manager);
+    }
+
+    public AppManager getManager() {
+        return manager;
+    }
+
+    public void setManager(AppManager manager) {
+        this.manager = manager;
+    }
+
+    <span class="line-add">protected DepartamentoProdutoModel proModel = null;</span>
+    <span class="line-add">public DepartamentoProdutoModel proModel() {</span>
+    <span class="line-add">    if (proModel == null) proModel = new DepartamentoProdutoModel(manager);</span>
+    <span class="line-add">    return proModel;</span>
+    <span class="line-add">}</span>
+
+}</code></pre>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que proModel() fica na MdFactory e não na Action?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>A MdFactory é o ponto central de acesso aos Models do módulo. Qualquer action de qualquer módulo pode acessar o Model de Produto via:</p>
+<pre><code class="language-java">getFactory().departamento().proModel()</code></pre>
+<p>Se o <code>proModel()</code> ficasse na Action, só as actions de Produto teriam acesso. Com a MdFactory, até uma action de outro módulo (ex: Laboratório) poderia acessar o Model de Produto do Departamento se precisasse.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Padrão lazy — criado uma vez, reutilizado</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O mesmo padrão que aparece no <code>proBean()</code> da Action:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Linha</th><th>O que faz</th></tr>
+    <tr><td><code>protected ... proModel = null</code></td><td>Campo começa vazio — o Model ainda não foi criado</td></tr>
+    <tr><td><code>if (proModel == null)</code></td><td>Só cria na primeira chamada. Nas seguintes, retorna o mesmo objeto</td></tr>
+    <tr><td><code>new DepartamentoProdutoModel(manager)</code></td><td>Cria o Model passando o <code>manager</code> — que repassa ao DAO via <code>super(manager)</code>, configurando a conexão com o banco</td></tr>
+</table>
+</div>
+
+<p>A corrente completa de criação:</p>
+<pre><code>Action chama getFactory().departamento().proModel()
+  → MdFactory cria DepartamentoProdutoModel(manager)
+    → Model chama super(manager) → DAO configura conexão com banco</code></pre>
+
+        </div>
+    </div>
+</div>
+
+<h2 data-nav="proModel()"><code class="explicacao">public DepartamentoProdutoModel proModel()</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>protected</code> (campo)</td><td>Visível para esta classe e subclasses — mesmo padrão do campo <code>manager</code></td></tr>
+    <tr><td><code>public</code> (método)</td><td>Acessível de fora — as actions chamam <code>getFactory().departamento().proModel()</code></td></tr>
+    <tr><td><code>DepartamentoProdutoModel</code></td><td>Tipo de retorno — o Model que herda do DAO e contém as regras de negócio</td></tr>
+</table>
+</div>
+
+<p>Para cada nova entidade adicionada ao módulo, um método semelhante seria criado aqui. Exemplo: se o módulo tivesse uma entidade Pessoa, teria um <code>pesModel()</code> ao lado do <code>proModel()</code>.</p>
+
+</body>
+</html>
