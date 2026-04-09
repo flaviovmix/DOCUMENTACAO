@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DepartamentoProdutoList — XT - Treinamento</title>
-    <script src="../../js/layout.js"></script>
+    <script src="../../../js/layout.js"></script>
 </head>
 <body>
 
@@ -77,7 +77,6 @@ public class DepartamentoProdutoList extends DepartamentoProdutoAction {
     <span class="line-add">    if (lv == null) {</span>
     <span class="line-add">        lv = ui().lView();</span>
     <span class="line-add"></span>
-    <span class="line-add">        lv.setFiltro(proWBean());</span>
     <span class="line-add">        getFactory().departamento().proModel().daoList(lv.getData());</span>
     <span class="line-add"></span>
     <span class="line-add">        ListColumn col_nome = lv.newColumn("Nome").setWidth(220).setPadding(";padding:10 8 10 8;");</span>
@@ -165,9 +164,8 @@ public class DepartamentoProdutoList extends DepartamentoProdutoAction {
 <h3>Inicialização lazy</h3>
 <p>Mesmo padrão do <code>proBean()</code> na Action: o componente só é criado na primeira chamada e reutilizado nas seguintes dentro da mesma requisição.</p>
 
-<h3>setFiltro e daoList</h3>
-<p><code>setFiltro(proWBean())</code> associa o WBean como <code>Criteria</code> — define as condições WHERE aplicadas pelo <code>daoList</code>. Como o WBean está vazio (sem filtros), lista todos os registros.</p>
-<p><code>getFactory().departamento().proModel().daoList(lv.getData())</code> executa a consulta no banco e preenche a lista interna da ListView.</p>
+<h3>daoList</h3>
+<p><code>getFactory().departamento().proModel().daoList(lv.getData())</code> executa a consulta no banco e preenche a lista interna da ListView. Nesta versão mínima não há filtros — lista todos os registros.</p>
 
 <h3>Colunas</h3>
 <div class="table-wrap">

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager — XT - Treinamento</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>Manager <span class="badge badge-info">conceito</span></h1>
+
+<p>O Manager no Jasap <strong>não é uma pessoa</strong> — é a infraestrutura que monta e acompanha cada requisição. RootManager, ModuloManager e AppManager são <strong>nomes de níveis</strong>, não entidades separadas. Na hora da requisição, existe <strong>um único objeto manager</strong> do início ao fim.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Resumo rápido</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<ul>
+    <li>A hierarquia Root → Módulo → App existe para <strong>organizar a montagem</strong>, não para criar gerentes diferentes</li>
+    <li>Cada nível tem um <strong>escopo</strong>: o que faz sentido configurar ali (filtros globais, actions do módulo, actions do CRUD)</li>
+    <li>Na hora da requisição, o Jasap cria <strong>uma instância só</strong> do manager que registrou a action — e essa instância já herda tudo dos níveis acima</li>
+    <li>Se fosse tudo num arquivo só, funcionaria igual — mas seria impossível de manter</li>
+</ul>
+
+        </div>
+    </div>
+</div>
+
+<h2 data-nav="Hierarquia">A hierarquia de classes</h2>
+
+<p>No projeto de estudo, a cadeia completa é:</p>
+
+<pre><code class="language-java">AppManager              (Jasap — base abstrata)
+ └── JasapRootManager   (Jasap — configuração de filtros globais)
+      └── RootManager   (br.xt — registra módulos)
+           └── PnlManager   (br.xt.app.painel — painel de controle)
+                └── DepartamentoManager   (br.xt.app.departamento — seu módulo)</code></pre>
+
+<p>Cada classe <strong>herda tudo</strong> da anterior. Quando o Jasap cria um <code>new DepartamentoManager()</code>, esse objeto já <strong>é</strong> um PnlManager, já <strong>é</strong> um RootManager, já <strong>é</strong> um AppManager — tudo junto numa instância só.</p>
+
+<p>Os nomes diferentes existem pelo mesmo motivo que endereço tem País, Estado e Rua — são <strong>níveis de organização</strong> do mesmo ponto:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Nível</th><th>Classe</th><th>O que configura</th></tr>
+    <tr><td>Raiz</td><td><code>RootManager</code></td><td>Filtros globais (DataBaseFilter, AAFilter...), registra os módulos</td></tr>
+    <tr><td>Módulo</td><td><code>PnlManager / DepartamentoManager</code></td><td>Actions e permissões do módulo, filtros adicionais</td></tr>
+    <tr><td>App/CRUD</td><td><code>AppManager</code> (menor nível)</td><td>Actions do CRUD específico — não registra outros managers</td></tr>
+</table>
+</div>
+
+<h2 data-nav="Dois momentos">Dois momentos completamente diferentes</h2>
+
+<p>O Manager aparece em <strong>dois momentos</strong> da vida do sistema, com papéis diferentes em cada um:</p>
+
+<h3>Momento 1 — Configuração (servidor iniciando)</h3>
+
+<p>Quando o Tomcat inicia, o <code>RootManager.config()</code> é chamado <strong>uma única vez</strong>. Ele cria instâncias temporárias de cada ModuloManager só para registrar as actions:</p>
+
+<pre><code class="language-java">// RootManager.config() — roda UMA VEZ na inicialização
+public void config() throws Exception {
+    new PnlManager().config();              // instância temporária
+    new DepartamentoManager().config();     // instância temporária — registra e descarta
+}</code></pre>
+
+<p>Cada <code>config()</code> chama <code>regAction()</code>, que grava num XML global: <strong>"esta action pertence a este manager"</strong>.</p>
+
+<pre><code class="language-xml">&lt;!-- Mapa gerado pelo regAction — fica na memória do servidor --&gt;
+&lt;url action="br.xt.app.departamento.DepartamentoHome"
+     manager="br.xt.app.departamento.DepartamentoManager"/&gt;</code></pre>
+
+<p>Depois que o <code>config()</code> termina, essas instâncias temporárias são <strong>descartadas</strong>. Serviram apenas para montar o mapa.</p>
+
+<h3>Momento 2 — Requisição (usuário clicou algo)</h3>
+
+<p>Quando uma requisição chega, o <code>JasapController.service()</code> faz o trabalho real:</p>
+
+<pre><code class="language-java">// JasapController.service() — roda A CADA REQUISIÇÃO
+public void service(HttpServletRequest request, HttpServletResponse response) {
+
+    // 1. Consulta o XML: qual manager registrou essa action?
+    Element eURL = mapURL.getElementById(actionURL);
+    String clsManager = eURL.getAttribute("manager");   // "DepartamentoManager"
+    String clsAction  = eURL.getAttribute("action");    // "DepartamentoHome"
+
+    // 2. Cria UMA instância nova do manager certo
+    AppManager manager = Class.forName(clsManager).newInstance();
+
+    // 3. Importa os filtros globais do RootManager
+    manager.importGlobalFilters(rootManager.getGlobalFilters());
+
+    // 4. Configura o manager com o contexto da requisição
+    manager.setInput(new Input(request));
+    manager.setOutput(new Output(response));
+    manager.setSession(new Session(request.getSession()));
+
+    // 5. Cria a action e conecta ao manager
+    JasapAct action = Class.forName(clsAction).newInstance();
+    action.setManager(manager);   // O BINDING — action e manager conectados
+
+    // 6. Executa
+    manager.invokeAction(action);
+}</code></pre>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Passo</th><th>O que acontece</th></tr>
+    <tr><td><strong>1. Consulta</strong></td><td>O Jasap olha o mapa XML e descobre: "essa URL foi registrada pelo <code>DepartamentoManager</code>"</td></tr>
+    <tr><td><strong>2. Instância</strong></td><td>Cria um <code>new DepartamentoManager()</code> — que por herança já é PnlManager + AppManager</td></tr>
+    <tr><td><strong>3. Filtros</strong></td><td>Copia os filtros globais (DataBaseFilter, AAFilter...) para este manager</td></tr>
+    <tr><td><strong>4. Contexto</strong></td><td>Injeta request, response e session — agora o manager conhece o usuário e pode responder</td></tr>
+    <tr><td><strong>5. Binding</strong></td><td>Cria a action e conecta ao manager — a partir daqui, <code>action.getManager()</code> retorna este manager</td></tr>
+    <tr><td><strong>6. Execução</strong></td><td>O manager executa os filtros na ordem e depois chama <code>action.execute()</code></td></tr>
+</table>
+</div>
+
+<h2 data-nav="Por que nomes diferentes">Por que nomes diferentes se é um só?</h2>
+
+<p>Porque são <strong>níveis de organização</strong>, não entidades separadas.</p>
+
+<p>Se todo o código de configuração ficasse num arquivo só — filtros globais, permissões de todos os módulos, actions de todos os CRUDs — funcionaria. Mas seria um arquivo com milhares de linhas, impossível de manter.</p>
+
+<p>A separação em níveis permite:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Benefício</th><th>Como funciona</th></tr>
+    <tr><td><strong>Modularidade</strong></td><td>Cada módulo tem seu próprio Manager com suas actions — adicionar ou remover um módulo é mexer em um arquivo</td></tr>
+    <tr><td><strong>Escopo claro</strong></td><td>Filtros globais ficam no Root, permissões do módulo ficam no Módulo — cada coisa no seu lugar</td></tr>
+    <tr><td><strong>Herança Java</strong></td><td>O <code>DepartamentoManager</code> herda <code>regAction()</code> e <code>regFun()</code> sem reimplementar nada</td></tr>
+</table>
+</div>
+
+<p>Na requisição, a herança garante que a instância criada tem <strong>tudo</strong>:</p>
+
+<pre><code class="language-java">DepartamentoManager manager = new DepartamentoManager();
+// manager É um PnlManager   → tem regFun(), mapFUN
+// manager É um AppManager    → tem regAction(), setInput(), setOutput()
+// manager É um RootManager   → tem configGlobalFilters()
+// Tudo numa instância só — a herança Java faz o merge automaticamente</code></pre>
+
+<h2 data-nav="regAction e o mapa">O que regAction() realmente faz</h2>
+
+<p>Quando <code>DepartamentoManager.config()</code> chama <code>regAction(DepartamentoHome.class)</code>, o que acontece internamente é:</p>
+
+<pre><code class="language-java">// AppManager.mapURL() — dentro do regAction
+public void mapURL(String call, Class actionClass) throws Exception {
+    Element url = JasapController.mapURL.newElement("url");
+    url.setAttribute("id", call);                                    // URL hasheada
+    url.setAttribute("action", actionClass.getName());               // "br.xt...DepartamentoHome"
+    url.setAttribute("manager", this.getClass().getName());          // "br.xt...DepartamentoManager"
+    JasapController.mapURL.getRootElement().appendChild(url);
+}</code></pre>
+
+<p>O ponto chave é o <code>this.getClass().getName()</code> — o método grava <strong>qual manager está chamando</strong>. Como quem chama é o <code>DepartamentoManager</code>, fica registrado <code>"br.xt.app.departamento.DepartamentoManager"</code>.</p>
+
+<p>Depois, na requisição, o <code>JasapController</code> lê esse atributo e sabe exatamente qual classe instanciar com <code>Class.forName()</code>.</p>
+
+<h2 data-nav="Fluxo completo">Fluxo completo: do clique à resposta</h2>
+
+<pre><code>USUÁRIO clica em "Departamento" no menu
+    ↓
+BROWSER envia requisição HTTP para "a1b2c3d4.jsap"
+    ↓
+JASAPCONTROLLER.service()
+    ↓
+CONSULTA mapURL → action: DepartamentoHome, manager: DepartamentoManager
+    ↓
+NEW DepartamentoManager() — instância com tudo herdado
+    ↓
+importGlobalFilters() — copia DataBaseFilter, AAFilter, etc.
+    ↓
+setInput(request), setOutput(response), setSession(session)
+    ↓
+NEW DepartamentoHome() — action criada
+    ↓
+action.setManager(manager) — BINDING
+    ↓
+manager.invokeAction(action)
+    ↓
+FILTROS executam na ordem → action.execute() → monta a tela
+    ↓
+RESPONSE enviada ao browser</code></pre>
+
+</body>
+</html>

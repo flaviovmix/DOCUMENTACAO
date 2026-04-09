@@ -42,29 +42,29 @@ var MENU = [
             {
                 label: 'READ',
                 items: [
-                    { label: '1 - DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean.html',   tipo: 'novo' },
-                    { label: '2 - DepartamentoProdutoWBean',  arquivo: '2-DepartamentoProdutoWBean.html',  tipo: 'novo' },
-                    { label: '3 - DepartamentoProdutoDAO',    arquivo: '3-DepartamentoProdutoDAO.html',    tipo: 'novo' },
-                    { label: '4 - DepartamentoProdutoModel',  arquivo: '4-DepartamentoProdutoModel.html',  tipo: 'novo' },
-                    { label: '5 - DepartamentoProdutoAction', arquivo: '5-DepartamentoProdutoAction.html', tipo: 'novo' },
-                    { label: '6 - getManager',                arquivo: '6-getManager.html',                tipo: 'editar' },
-                    { label: '7 - DepartamentoMdFactory',     arquivo: '7-DepartamentoMdFactory.html',     tipo: 'editar' },
-                    { label: '8 - DepartamentoProdutoList',   arquivo: '8-DepartamentoProdutoList.html',   tipo: 'novo' },
-                    { label: '9 - DepartamentoHome',          arquivo: '9-DepartamentoHome.html',          tipo: 'editar' }
+                    { label: '1 - DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html',   tipo: 'novo' },
+                    { label: '2 - DepartamentoProdutoWBean',  arquivo: '2-DepartamentoProdutoWBean/2-DepartamentoProdutoWBean.html',  tipo: 'novo' },
+                    { label: '3 - DepartamentoProdutoDAO',    arquivo: '3-DepartamentoProdutoDAO/3-DepartamentoProdutoDAO.html',    tipo: 'novo' },
+                    { label: '4 - DepartamentoProdutoModel',  arquivo: '4-DepartamentoProdutoModel/4-DepartamentoProdutoModel.html',  tipo: 'novo' },
+                    { label: '5 - DepartamentoProdutoAction', arquivo: '5-DepartamentoProdutoAction/5-DepartamentoProdutoAction.html', tipo: 'novo' },
+                    { label: '6 - getManager',                arquivo: '6-getManager/6-getManager.html',                tipo: 'editar' },
+                    { label: '7 - DepartamentoMdFactory',     arquivo: '7-DepartamentoMdFactory/7-DepartamentoMdFactory.html',     tipo: 'editar' },
+                    { label: '8 - DepartamentoProdutoList',   arquivo: '8-DepartamentoProdutoList/8-DepartamentoProdutoList.html',   tipo: 'novo' },
+                    { label: '9 - DepartamentoHome',          arquivo: '9-DepartamentoHome/9-DepartamentoHome.html',          tipo: 'editar' }
                 ]
             },
             {
                 label: 'DELETE',
                 items: [
-                    { label: '1 - DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean.html',   tipo: 'editar' },
-                    { label: '2 - DepartamentoProdutoWBean',  arquivo: '2-DepartamentoProdutoWBean.html',  tipo: 'check' },
-                    { label: '3 - DepartamentoProdutoDAO',    arquivo: '3-DepartamentoProdutoDAO.html',    tipo: 'editar' },
-                    { label: '4 - DepartamentoProdutoModel',  arquivo: '4-DepartamentoProdutoModel.html',  tipo: 'novo' },
-                    { label: '5 - DepartamentoProdutoAction', arquivo: '5-DepartamentoProdutoAction.html', tipo: 'check' },
-                    { label: '6 - getManager',                arquivo: '6-getManager.html',                tipo: 'novo' },
-                    { label: '7 - DepartamentoMdFactory',     arquivo: '7-DepartamentoMdFactory.html',     tipo: 'check' },
-                    { label: '8 - DepartamentoProdutoList',   arquivo: '8-DepartamentoProdutoList.html',   tipo: 'editar' },
-                    { label: '9 - DepartamentoHome',          arquivo: '9-DepartamentoHome.html',          tipo: 'novo' }
+                    { label: '1 - DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html',   tipo: 'editar' },
+                    { label: '2 - DepartamentoProdutoWBean',  arquivo: '2-DepartamentoProdutoWBean/2-DepartamentoProdutoWBean.html',  tipo: 'check' },
+                    { label: '3 - DepartamentoProdutoDAO',    arquivo: '3-DepartamentoProdutoDAO/3-DepartamentoProdutoDAO.html',    tipo: 'editar' },
+                    { label: '4 - DepartamentoProdutoModel',  arquivo: '4-DepartamentoProdutoModel/4-DepartamentoProdutoModel.html',  tipo: 'novo' },
+                    { label: '5 - DepartamentoProdutoAction', arquivo: '5-DepartamentoProdutoAction/5-DepartamentoProdutoAction.html', tipo: 'check' },
+                    { label: '6 - getManager',                arquivo: '6-getManager/6-getManager.html',                tipo: 'novo' },
+                    { label: '7 - DepartamentoMdFactory',     arquivo: '7-DepartamentoMdFactory/7-DepartamentoMdFactory.html',     tipo: 'check' },
+                    { label: '8 - DepartamentoProdutoList',   arquivo: '8-DepartamentoProdutoList/8-DepartamentoProdutoList.html',   tipo: 'editar' },
+                    { label: '9 - DepartamentoHome',          arquivo: '9-DepartamentoHome/9-DepartamentoHome.html',          tipo: 'novo' }
                 ]
             },
             { label: 'CREATE', items: [] },
@@ -92,15 +92,15 @@ var FOOTER = {
         {
             grupo: 'CRUD',
             items: [
-                { label: 'DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean.html' },
-                { label: 'DepartamentoProdutoWBean',  arquivo: '2-DepartamentoProdutoWBean.html' },
-                { label: 'DepartamentoProdutoDAO',    arquivo: '3-DepartamentoProdutoDAO.html' },
-                { label: 'DepartamentoProdutoModel',  arquivo: '4-DepartamentoProdutoModel.html' },
-                { label: 'DepartamentoProdutoAction', arquivo: '5-DepartamentoProdutoAction.html' },
-                { label: 'getManager',                arquivo: '6-getManager.html' },
-                { label: 'DepartamentoMdFactory',     arquivo: '7-DepartamentoMdFactory.html' },
-                { label: 'DepartamentoProdutoList',   arquivo: '8-DepartamentoProdutoList.html' },
-                { label: 'DepartamentoHome',          arquivo: '9-DepartamentoHome.html' }
+                { label: 'DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html' },
+                { label: 'DepartamentoProdutoWBean',  arquivo: '2-DepartamentoProdutoWBean/2-DepartamentoProdutoWBean.html' },
+                { label: 'DepartamentoProdutoDAO',    arquivo: '3-DepartamentoProdutoDAO/3-DepartamentoProdutoDAO.html' },
+                { label: 'DepartamentoProdutoModel',  arquivo: '4-DepartamentoProdutoModel/4-DepartamentoProdutoModel.html' },
+                { label: 'DepartamentoProdutoAction', arquivo: '5-DepartamentoProdutoAction/5-DepartamentoProdutoAction.html' },
+                { label: 'getManager',                arquivo: '6-getManager/6-getManager.html' },
+                { label: 'DepartamentoMdFactory',     arquivo: '7-DepartamentoMdFactory/7-DepartamentoMdFactory.html' },
+                { label: 'DepartamentoProdutoList',   arquivo: '8-DepartamentoProdutoList/8-DepartamentoProdutoList.html' },
+                { label: 'DepartamentoHome',          arquivo: '9-DepartamentoHome/9-DepartamentoHome.html' }
             ],
             pasta: '2-crud'
         }
