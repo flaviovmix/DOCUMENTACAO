@@ -324,6 +324,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         initLineHighlights(inner);
     }
 
+    highlightTemplates(inner);
+
     initCopyButtons(inner);
     initAudioPlayers(inner);
     await initCarousel(inner);
@@ -918,11 +920,6 @@ function highlightAll(container) {
         });
 
         html = html.replace(
-            /\b(br\.xt[a-zA-Z0-9._]*)/g,
-            '<span class="xt-package">$1</span>'
-        );
-
-        html = html.replace(
             /(\.)class\b/g,
             '.<span class="xt-constant">class</span>'
         );
@@ -946,10 +943,39 @@ function highlightAll(container) {
             );
         });
 
-        // Restaura strings literais intactas
+        // Departamento* — placeholders de template (marca-texto)
+        // Aluno troca "Departamento" pelo nome real do módulo (Estoque, Financeiro, etc.)
+        // Boundary custom (não usa \b) pra pegar DEPARTAMENTO mesmo cercado de _, ex: __DEPARTAMENTO_MID
+        var templateRe = /(?<![A-Za-z0-9])(Departamento\w*|departamento|DEPARTAMENTO)(?![A-Za-z0-9])(?=[^>]*<|[^<>]*$)/g;
+        html = html.replace(templateRe, '<span class="xt-template">$1</span>');
+
+        // Aplica o mesmo highlight dentro das strings literais que foram protegidas
+        saved = saved.map(function(s) {
+            return s.replace(templateRe, '<span class="xt-template">$1</span>');
+        });
+
+        // Restaura strings literais (agora com o highlight do Departamento já dentro)
         saved.forEach(function(s, i) { html = html.replace('\x00S' + i + '\x00', s); });
 
         block.innerHTML = html;
+    });
+}
+
+// Highlight dos placeholders "Departamento*" fora de <pre><code>
+// Roda sempre (mesmo se a página não tem bloco de código)
+function highlightTemplates(container) {
+    var re = /(?<![A-Za-z0-9])(Departamento\w*|departamento|DEPARTAMENTO)(?![A-Za-z0-9])(?=[^>]*<|[^<>]*$)/g;
+
+    // Inline <code> em parágrafos/listas — pula <pre> e tabelas de explicação
+    container.querySelectorAll('code').forEach(function(block) {
+        if (block.closest('pre')) return;   // já processado em highlightAll
+        if (block.closest('table')) return; // tabelas de explicação não precisam
+        block.innerHTML = block.innerHTML.replace(re, '<span class="xt-template">$1</span>');
+    });
+
+    // Título <h1> da página
+    container.querySelectorAll('h1').forEach(function(el) {
+        el.innerHTML = el.innerHTML.replace(re, '<span class="xt-template">$1</span>');
     });
 }
 

@@ -13,36 +13,80 @@
         <p class="home-sub">Estrutura base de um módulo no framework Jasap</p>
     </div>
 
-    <div class="audio-player" data-src="_audio/Novo Modulo.m4a">
-        <audio preload="metadata"></audio>
-        <button class="audio-btn" title="Play / Pause"></button>
-        <div class="audio-progress-wrap">
-            <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
-            <div class="audio-progress-fill"></div>
-        </div>
-        <span class="audio-time">0:00</span>
-    </div>
-
     <div class="info-accordion">
         <div class="info-row">
             <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-                <span class="info-row-title">O que é criar um novo módulo?</span>
+                <span class="info-row-title">Visão Geral — Parte 1: Como funciona um pedido na aplicação</span>
                 <span class="info-row-btn">+</span>
             </div>
             <div class="info-row-body">
+                <div class="audio-player" data-src="visaogeralparte1.m4a">
+                    <audio preload="metadata"></audio>
+                    <button class="audio-btn" title="Play / Pause"></button>
+                    <div class="audio-progress-wrap">
+                        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                        <div class="audio-progress-fill"></div>
+                    </div>
+                    <span class="audio-time">0:00 / 0:00</span>
+                </div>
+                <p>Antes de criar um módulo, é preciso entender <strong>como o prédio recebe e atende um pedido</strong>. Acompanhamos o caminho do clique do usuário até a tela aparecer:</p>
+                <ul style="list-style:none; padding-left:0;">
+                    <li style="margin-bottom:16px;">
+                        <strong>Internet sem estado</strong><br>
+                        <span style="color:#666; font-size:0.92em;">Cada pedido é tratado como se fosse a primeira vez. Tudo que foi montado para atender o pedido é descartado quando a resposta sai. O prédio em si continua de pé entre um pedido e outro.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Request e Response</strong><br>
+                        <span style="color:#666; font-size:0.92em;">Andam sempre em par. Cada clique do usuário vira um request que viaja pela internet, entra no prédio, é processado, e um response (geralmente um documento HTML) volta pro browser.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>6 Guardas na Entrada</strong> — Filtros Globais<br>
+                        <span style="color:#666; font-size:0.92em;">Todo pedido passa por 6 guardas em fila antes de entrar: abrem a conexão com o banco, medem tempo, verificam autenticação, conferem permissões. Nenhum pedido entra sem passar por todos.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Ficha Permanente</strong> — Sessão do Usuário<br>
+                        <span style="color:#666; font-size:0.92em;">A única coisa que persiste entre pedidos. Fica guardada dentro do prédio numa gaveta. O browser do usuário só carrega o número dela e manda em todo pedido seguinte.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Manager</strong> — Cartão Temporário<br>
+                        <span style="color:#666; font-size:0.92em;">Montado fresco a cada pedido com 3 camadas encaixadas (AppManager + PnlManager + ManagerDoDepartamento). Carrega todo o contexto: conexão com o banco, sessão do usuário, acesso à ferramentaria, ao ui(), às permissões.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Atendente usa o cartão em cada parada</strong><br>
+                        <span style="color:#666; font-size:0.92em;">Pegar a ferramentaria, fabricar a ferramenta, acessar o banco, criar componentes visuais. Sem cartão, o atendente não faz nada — o cartão é o personagem principal do framework.</span>
+                    </li>
+                    <li>
+                        <strong>Permissões linha por linha</strong><br>
+                        <span style="color:#666; font-size:0.92em;">Para cada produto da lista, o atendente pergunta ao cartão "esse usuário pode deletar?" antes de desenhar o botão. A tela é montada dinamicamente, baseada em quem está logado.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+                <span class="info-row-title">Visão Geral — Parte 2: Como criar um departamento novo</span>
+                <span class="info-row-btn">+</span>
+            </div>
+            <div class="info-row-body">
+                <div class="audio-player" data-src="visaogeralparte2.m4a">
+                    <audio preload="metadata"></audio>
+                    <button class="audio-btn" title="Play / Pause"></button>
+                    <div class="audio-progress-wrap">
+                        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                        <div class="audio-progress-fill"></div>
+                    </div>
+                    <span class="audio-time">0:00 / 0:00</span>
+                </div>
                 <p><strong>7 arquivos</strong> — 3 novos + 4 edições — formam a cadeia para criar um módulo:</p>
                 <ul style="list-style:none; padding-left:0;">
                     <li style="margin-bottom:16px;">
-                        <strong>RootManager</strong> <span class="badge-edit">editar</span> — Gerente Geral<br>
-                        <span style="color:#666; font-size:0.92em;">Uma linha é suficiente para o Jasap saber que o departamento existe.</span>
+                        <strong>NovoModuloHome</strong> <span class="badge-new">novo</span> — Recepção<br>
+                        <span style="color:#666; font-size:0.92em;">Tela principal do módulo com sidebar e breadcrumb. É o primeiro lugar que o usuário vê ao entrar no departamento.</span>
                     </li>
                     <li style="margin-bottom:16px;">
                         <strong>DepartamentoManager</strong> <span class="badge-new">novo</span> — Gerente do Departamento<br>
                         <span style="color:#666; font-size:0.92em;">Registra todas as actions e define os crachás de permissão. Prepara o andar antes de todo mundo chegar.</span>
-                    </li>
-                    <li style="margin-bottom:16px;">
-                        <strong>NovoModuloHome</strong> <span class="badge-new">novo</span> — Recepção<br>
-                        <span style="color:#666; font-size:0.92em;">Tela principal do módulo com sidebar e breadcrumb. É o primeiro lugar que o usuário vê ao entrar no departamento.</span>
                     </li>
                     <li style="margin-bottom:16px;">
                         <strong>NovoModuloMdFactory</strong> <span class="badge-new">novo</span> — Ferramentaria<br>
@@ -55,6 +99,10 @@
                     <li style="margin-bottom:16px;">
                         <strong>PnlCfg</strong> <span class="badge-edit">editar</span> — Cabine do Avião<br>
                         <span style="color:#666; font-size:0.92em;">Painel com 500 botões. Plugamos um cabo e saímos de fininho — adiciona o checkbox para ativar/desativar o módulo.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>RootManager</strong> <span class="badge-edit">editar</span> — Gerente Geral<br>
+                        <span style="color:#666; font-size:0.92em;">Uma linha é suficiente para o Jasap saber que o departamento existe.</span>
                     </li>
                     <li>
                         <strong>HomeDesk</strong> <span class="badge-edit">editar</span> — Saguão de Entrada<br>
@@ -73,20 +121,14 @@
             </div>
             <div class="home-card-info">
                 <div class="home-card-resumo">
-                    <div>
-                        <strong>Recepcao do departamento.</strong>
-                        <p>Monta o menu lateral (sidebar) com os guiches (MID) e o breadcrumb de navegacao. E o primeiro lugar que o usuario ve ao entrar no modulo.</p>
-                        <p>Cada guiche (MID) aponta para uma entidade — Pessoa, Produto, Perfil. O MenuInicial monta o painel com os guiches disponiveis e o MenuItem redireciona o usuario ao clicar.</p>
-                    </div>
+                    <p>Monta a sidebar com os guiches (MID) e o breadcrumb. Primeira tela do modulo.</p>
                 </div>
             </div>
             <div class="home-card-img">
                 <img src="img/home.png" alt="DepartamentoHome">
-                <span class="home-card-name">DepartamentoHome <i class="fa-solid fa-house"></i></span>
             </div>
             <div class="home-card-bar">
-                <p>Tela principal: menu lateral e breadcrumb</p>
-                <span class="home-card-tag" style="--tag-clr:#2563eb;">Ver docs</span>
+                <a href="1-DepartamentoHome/1-DepartamentoHome.html" class="home-card-tag" style="--tag-clr:#2563eb;">Ver docs</a>
             </div>
         </div>
 
@@ -96,20 +138,14 @@
             </div>
             <div class="home-card-info">
                 <div class="home-card-resumo">
-                    <div>
-                        <strong>Gerente do departamento.</strong>
-                        <p>Registra todas as actions (funcionarios) no framework via regAction e define os crachas de permissao via regFun. Prepara o andar antes de todo mundo chegar.</p>
-                        <p>Estende PnlManager — herda o registro de permissoes e a integracao com o painel de controle. Sem ele, nenhuma action do modulo e encontrada pelo Jasap.</p>
-                    </div>
+                    <p>Registra as actions via regAction e as permissoes via regFun. Estende PnlManager.</p>
                 </div>
             </div>
             <div class="home-card-img">
                 <img src="img/manager.png" alt="DepartamentoManager">
-                <span class="home-card-name">DepartamentoManager <i class="fa-solid fa-gears"></i></span>
             </div>
             <div class="home-card-bar">
-                <p>Registra actions e define permissoes</p>
-                <span class="home-card-tag" style="--tag-clr:#7A3E9D;">Ver docs</span>
+                <a href="2-DepartamentoManager/2-DepartamentoManager.html" class="home-card-tag" style="--tag-clr:#7A3E9D;">Ver docs</a>
             </div>
         </div>
 
@@ -119,20 +155,14 @@
             </div>
             <div class="home-card-info">
                 <div class="home-card-resumo">
-                    <div>
-                        <strong>Ferramentaria do departamento.</strong>
-                        <p>Fabrica os models sob encomenda e guarda pra reusar (lazy initialization). As ferramentas que as actions usam para acessar o banco.</p>
-                        <p>Cada metodo (pesModel, proModel, prfModel) cria o model na primeira chamada e retorna o mesmo nas proximas. Padrao protected — so o proprio modulo acessa.</p>
-                    </div>
+                    <p>Fabrica os models sob encomenda e guarda pra reusar (lazy init).</p>
                 </div>
             </div>
             <div class="home-card-img">
                 <img src="img/mdfactory.png" alt="DepartamentoMdFactory">
-                <span class="home-card-name">DepartamentoMdFactory <i class="fa-solid fa-wrench"></i></span>
             </div>
             <div class="home-card-bar">
-                <p>Acesso aos models com lazy initialization</p>
-                <span class="home-card-tag" style="--tag-clr:#0891b2;">Ver docs</span>
+                <a href="3-DepartamentoMdFactory/3-DepartamentoMdFactory.html" class="home-card-tag" style="--tag-clr:#0891b2;">Ver docs</a>
             </div>
         </div>
 
@@ -141,15 +171,15 @@
                 <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
             </div>
             <div class="home-card-info">
-                <p class="home-card-resumo"><span><strong>Ferramentaria central.</strong>Conecta a ferramentaria do modulo ao sistema. Sem essa linha, nenhum outro departamento consegue acessar suas ferramentas via getFactory().<br><br>Uma unica linha: criar o campo protected e o metodo publico. Mesmo padrao para todos os modulos — Laboratorio, Contatos, Painel, Ged, Aula.</span></p>
+                <div class="home-card-resumo">
+                    <p>Conecta a ferramentaria do modulo ao getFactory() global.</p>
+                </div>
             </div>
             <div class="home-card-img">
                 <img src="img/appsroot.png" alt="AppsRootModelFactory">
-                <span class="home-card-name">AppsRootModelFactory <i class="fa-solid fa-sitemap"></i></span>
             </div>
             <div class="home-card-bar">
-                <p>Conecta a factory ao sistema</p>
-                <span class="home-card-tag" style="--tag-clr:#059669;">Ver docs</span>
+                <a href="4-AppsRootModelFactory/4-AppsRootModelFactory.html" class="home-card-tag" style="--tag-clr:#059669;">Ver docs</a>
             </div>
         </div>
 
@@ -158,15 +188,15 @@
                 <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
             </div>
             <div class="home-card-info">
-                <p class="home-card-resumo"><span><strong>Cabine do aviao com 500 botoes.</strong>Plugamos um cabo e saimos de fininho — adiciona o checkbox para o administrador ativar ou desativar o modulo no painel de controle.<br><br>Duas edicoes: uma constante ACESSO_MODULO e um checkbox no formulario. O interruptor que liga e desliga o departamento inteiro para cada empresa.</span></p>
+                <div class="home-card-resumo">
+                    <p>Checkbox pra ativar ou desativar o modulo no painel de controle.</p>
+                </div>
             </div>
             <div class="home-card-img">
                 <img src="img/pnlcfg.png" alt="PnlCfg">
-                <span class="home-card-name">PnlCfg <i class="fa-solid fa-sliders"></i></span>
             </div>
             <div class="home-card-bar">
-                <p>Ativar ou desativar o modulo no painel</p>
-                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+                <a href="5-PnlCfg/5-PnlCfg.html" class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</a>
             </div>
         </div>
 
@@ -175,15 +205,15 @@
                 <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
             </div>
             <div class="home-card-info">
-                <p class="home-card-resumo"><span><strong>Gerente geral do predio.</strong>Uma unica linha registra o modulo no framework. Sem ela, o Jasap nao sabe que o departamento existe — nenhuma action e encontrada.<br><br>O RootManager conhece todos os departamentos. Adicionar o new DepartamentoManager() no array e o suficiente. O predio abre as 6h e carrega todos os gerentes.</span></p>
+                <div class="home-card-resumo">
+                    <p>Uma linha no array de Managers registra o modulo no framework.</p>
+                </div>
             </div>
             <div class="home-card-img">
                 <img src="img/rootmanager.png" alt="RootManager">
-                <span class="home-card-name">RootManager <i class="fa-solid fa-crown"></i></span>
             </div>
             <div class="home-card-bar">
-                <p>Registra o modulo no framework</p>
-                <span class="home-card-tag" style="--tag-clr:#dc2626;">Ver docs</span>
+                <a href="6-RootManager/6-RootManager.html" class="home-card-tag" style="--tag-clr:#dc2626;">Ver docs</a>
             </div>
         </div>
 
@@ -192,15 +222,15 @@
                 <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
             </div>
             <div class="home-card-info">
-                <p class="home-card-resumo"><span><strong>Saguao de entrada.</strong>Adiciona o card do modulo no menu principal do sistema. So aparece se o interruptor do PnlCfg esta ligado e o usuario tem permissao de acesso.<br><br>O HomeDesk e a tela inicial do sistema (desk). Cada modulo adiciona seu card aqui — com icone, titulo e link. Verifica permissao antes de exibir.</span></p>
+                <div class="home-card-resumo">
+                    <p>Adiciona o card do modulo na tela inicial do sistema (desk).</p>
+                </div>
             </div>
             <div class="home-card-img">
                 <img src="img/homedesk.png" alt="HomeDesk">
-                <span class="home-card-name">HomeDesk <i class="fa-solid fa-desktop"></i></span>
             </div>
             <div class="home-card-bar">
-                <p>Card do modulo no menu principal</p>
-                <span class="home-card-tag" style="--tag-clr:#6366f1;">Ver docs</span>
+                <a href="7-HomeDesk/7-HomeDesk.html" class="home-card-tag" style="--tag-clr:#6366f1;">Ver docs</a>
             </div>
         </div>
 

@@ -577,6 +577,18 @@ body.dark .xt-method   { color: #E9C97F; }
 body.dark .xt-constant { color: #cdd6f4; }
 body.dark .xt-package  { color: #A3D484; }
 
+/* Template placeholder — "Departamento" que o aluno troca pelo nome real */
+.xt-template {
+    background: #fef08a;
+    padding: 1px 4px;
+    border-radius: 3px;
+}
+
+body.dark .xt-template {
+    background: rgba(253, 224, 71, 0.22);
+    color: #fef9c3;
+}
+
 /* RESPONSIVO */
 .table-wrap {
     overflow-x: auto;
@@ -806,7 +818,6 @@ body.dark #footer a.sub:hover      { color: #cba6f7; }
 
 /* HOME — cards estilo Card Adventure */
 .home-header {
-    margin-bottom: 40px;
 }
 
 .home-title {
@@ -832,10 +843,10 @@ body.dark #footer a.sub:hover      { color: #cba6f7; }
 /* --- Card --- */
 .home-card {
     position: relative;
-    flex: 1 1 240px;
-    max-width: 320px;
+    flex: 1 1 calc(25% - 24px);
+    max-width: calc(25% - 24px);
     min-width: 200px;
-    aspect-ratio: 3.5 / 5.5;
+    aspect-ratio: 3.5 / 4.5;
     border-radius: 8px;
     overflow: hidden;
     cursor: default;
@@ -923,7 +934,7 @@ body.dark #footer a.sub:hover      { color: #cba6f7; }
     background: #f0f0f0;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     padding: 0 12px;
     box-shadow: 0 -3px 6px rgba(0,0,0,0.15);
     z-index: 2;
@@ -939,12 +950,14 @@ body.dark #footer a.sub:hover      { color: #cba6f7; }
 }
 
 .home-card-tag {
-    font-size: 0.75em;
+    flex: 1;
+    text-align: center;
+    font-size: 0.85em;
     font-weight: 700;
     color: var(--tag-clr, #555);
     border: 2px solid var(--tag-clr, #555);
     border-radius: 6px;
-    padding: 4px 10px;
+    padding: 8px 10px;
     white-space: nowrap;
     text-decoration: none;
     cursor: pointer;
@@ -1021,6 +1034,7 @@ body.dark #footer a.sub:hover      { color: #cba6f7; }
     top: 0;
     right: 0;
     bottom: 56px;
+    overflow: hidden;
     width: 100%;
     padding: 0;
     z-index: 4;
@@ -1056,7 +1070,8 @@ body.dark #footer a.sub:hover      { color: #cba6f7; }
 
 /* --- Info com links (index) precisa de padding --- */
 .home-card-info:has(.home-card-links) {
-    padding: 16px 14px;
+    padding: 10px 10px;
+    overflow: hidden;
 }
 
 /* --- Links dentro do painel --- */
@@ -1066,7 +1081,7 @@ body.dark #footer a.sub:hover      { color: #cba6f7; }
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
 }
 
 .home-card-links li {
@@ -1095,8 +1110,8 @@ body.dark #footer a.sub:hover      { color: #cba6f7; }
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 7px 12px;
-    font-size: 0.82em;
+    padding: 4px 10px;
+    font-size: 0.75em;
     font-weight: 600;
     color: #1a1a1a;
     text-decoration: none;
@@ -1119,15 +1134,17 @@ body.dark #footer a.sub:hover      { color: #cba6f7; }
 
 /* --- Resumo dentro do painel --- */
 .home-card-resumo {
-    margin: 10px;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
     font-size: 0.85em;
     line-height: 1.6;
     color: #1a1a1a;
     text-align: left;
     padding: 6px 8px;
-    flex: 1;
-    display: flex;
-    align-items: flex-start;
+    overflow-y: auto;
     background: rgba(255,255,255,0.4);
     border-radius: 10px;
     border: 1px solid rgba(0,0,0,0.08);
