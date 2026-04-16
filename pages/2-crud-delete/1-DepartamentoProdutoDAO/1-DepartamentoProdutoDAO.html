@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoProdutoDAO (DELETE) — XT - Treinamento</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoProdutoDAO <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="1-DepartamentoProdutoDAO/audio/DepartamentoProdutoDAO.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>Primeira edição da sequência DELETE. O DAO, que até agora só tinha o <code>daoList</code>, ganha UM método a mais: <code>daoDelete</code>. Uma única linha de lógica que usa o framework pra executar um DELETE pelo ID.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.AppManager;
+import br.jasap.dao.Query;
+import br.jasap.util.JasapList;
+import br.xt.AppsRootDAO;
+
+public class DepartamentoProdutoDAO extends AppsRootDAO {
+
+    public DepartamentoProdutoDAO() {
+    }
+
+    public DepartamentoProdutoDAO(AppManager manager) {
+        setManager(manager);
+        setDataBase(manager.getDataBase());
+    }
+
+    public void daoList(JasapList list) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("select a.* from " + DepartamentoProdutoBean.TABLE + " a &lt;orderby&gt;");
+
+        Query query = getDataBase().getQuery(sql.toString());
+        select().executeList(query, list);
+
+        while (query.next()) {
+            DepartamentoProdutoBean bean = new DepartamentoProdutoBean();
+            query.populateBean(bean);
+            list.getList().add(bean);
+        }
+        query.release();
+    }
+
+    <span class="line-add">public void daoDelete(DepartamentoProdutoBean bean) throws Exception {</span>
+    <span class="line-add">    delete().execute(bean, DepartamentoProdutoBean.TABLE);</span>
+    <span class="line-add">}</span>
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudança nesta sequência:</strong> somente o método <code>daoDelete</code> (verde). Tudo o mais já existia da sequência CRUD READ.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Como o framework sabe a coluna do WHERE?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Via <strong>reflection</strong>. O <code>delete().execute(bean, TABLE)</code> inspeciona o Bean procurando um getter com a anotação <code>@DBInfo(pk=true)</code>. Encontra o <code>getId_produto()</code>. A partir daí, monta automaticamente:</p>
+
+<pre><code class="language-sql">DELETE FROM departamento.produto WHERE id_produto = ?</code></pre>
+
+<p>E passa o valor de <code>bean.getId_produto()</code> como parâmetro. O chamador (DeleteFromList no próximo arquivo) só precisa criar uma ficha em branco e colocar o ID nela — todo o resto é o framework.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Tratamento de erro — <code>throws Exception</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O DAO NÃO captura exceções aqui. Dois erros comuns deixam subir:</p>
+<ul>
+    <li><strong><code>SQLConstraintException</code></strong> — quando outra tabela tem uma FK apontando pra este registro. A <code>DeleteFromList</code> captura especificamente pra mostrar Toast amigável.</li>
+    <li><strong>Outros erros</strong> (conexão caiu, query inválida) — sobem pro <code>ErrorFilter</code> global que mostra tela amigável.</li>
+</ul>
+
+<p>Divisão clara: DAO só fala com o banco, tratamento fica com quem chama.</p>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

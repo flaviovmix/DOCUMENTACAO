@@ -288,7 +288,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         '<div id="layout">' +
             '<div id="drawer"><div id="drawer-inner"></div></div>' +
             '<div id="content">' +
-                '<div id="topnav"></div>' +
                 '<div id="content-inner">' + content + '</div>' +
                 '<div id="footer"><div id="footer-inner"></div></div>' +
             '</div>' +
@@ -330,7 +329,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     initAudioPlayers(inner);
     await initCarousel(inner);
     initSideNav(inner);
-    initTopnav(inner);
 
     // ── Restaurar estado do drawer ──
     if (localStorage.getItem('drawerOpen') === 'true') {
@@ -971,11 +969,6 @@ function highlightTemplates(container) {
         if (block.closest('pre')) return;   // já processado em highlightAll
         if (block.closest('table')) return; // tabelas de explicação não precisam
         block.innerHTML = block.innerHTML.replace(re, '<span class="xt-template">$1</span>');
-    });
-
-    // Título <h1> da página
-    container.querySelectorAll('h1').forEach(function(el) {
-        el.innerHTML = el.innerHTML.replace(re, '<span class="xt-template">$1</span>');
     });
 }
 

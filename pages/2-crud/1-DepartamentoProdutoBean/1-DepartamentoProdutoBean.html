@@ -21,7 +21,7 @@
 </div>
 
 
-<p>O Bean é a classe de dados que representa um único registro da tabela <code>laboratorio.pro</code>. Ele define os campos, os tipos e a chave primária — é a estrutura que o DAO, o formulário e a listagem usam para ler, gravar e exibir os dados. <strong>Primeiro arquivo</strong> a ser criado no CRUD — todos os outros dependem dele.</p>
+<p>O Bean é a classe de dados que representa um único registro da tabela <code>departamento.produto</code>. Ele define os campos, os tipos e a chave primária — é a estrutura que o DAO, o formulário e a listagem usam para ler, gravar e exibir os dados. <strong>Primeiro arquivo</strong> a ser criado no CRUD — todos os outros dependem dele.</p>
 
 <div class="info-accordion">
     <div class="info-row">
@@ -38,35 +38,35 @@ import java.io.Serializable;
 
 public class DepartamentoProdutoBean implements Serializable {
 
-    public static String TABLE = "laboratorio.pro";
+    public static String TABLE = "departamento.produto";
 
-    <span class="line-add">private Integer id_pro;</span>
-    <span class="line-add">private String  nome_pro;</span>
-    <span class="line-add">private Double  vl_pro;</span>
-    <span class="line-add">private Integer qtd_pro;</span>
-    <span class="line-add">private String  obs_pro;</span>
+    <span class="line-add">private Integer id_produto;</span>
+    <span class="line-add">private String  nome_produto;</span>
+    <span class="line-add">private Double  vl_produto;</span>
+    <span class="line-add">private Integer qtd_produto;</span>
+    <span class="line-add">private String  obs_produto;</span>
 
     <span class="line-add">@DBInfo(serial=true, pk=true)</span>
-    <span class="line-add">public Integer getId_pro() { return id_pro; }</span>
-    <span class="line-add">public void setId_pro(Integer id_pro) { this.id_pro = id_pro; }</span>
+    <span class="line-add">public Integer getId_produto() { return id_produto; }</span>
+    <span class="line-add">public void setId_produto(Integer id_produto) { this.id_produto = id_produto; }</span>
 
-    <span class="line-add">public String getNome_pro() { return nome_pro; }</span>
-    <span class="line-add">public void setNome_pro(String nome_pro) { this.nome_pro = nome_pro; }</span>
+    <span class="line-add">public String getNome_produto() { return nome_produto; }</span>
+    <span class="line-add">public void setNome_produto(String nome_produto) { this.nome_produto = nome_produto; }</span>
 
-    <span class="line-add">public Double getVl_pro() { return vl_pro; }</span>
-    <span class="line-add">public void setVl_pro(Double vl_pro) { this.vl_pro = vl_pro; }</span>
+    <span class="line-add">public Double getVl_produto() { return vl_produto; }</span>
+    <span class="line-add">public void setVl_produto(Double vl_produto) { this.vl_produto = vl_produto; }</span>
 
-    <span class="line-add">public Integer getQtd_pro() { return qtd_pro; }</span>
-    <span class="line-add">public void setQtd_pro(Integer qtd_pro) { this.qtd_pro = qtd_pro; }</span>
+    <span class="line-add">public Integer getQtd_produto() { return qtd_produto; }</span>
+    <span class="line-add">public void setQtd_produto(Integer qtd_produto) { this.qtd_produto = qtd_produto; }</span>
 
-    <span class="line-add">public String getObs_pro() { return obs_pro; }</span>
-    <span class="line-add">public void setObs_pro(String obs_pro) { this.obs_pro = obs_pro; }</span>
+    <span class="line-add">public String getObs_produto() { return obs_produto; }</span>
+    <span class="line-add">public void setObs_produto(String obs_produto) { this.obs_produto = obs_produto; }</span>
 
-    <span class="line-add">public static String ID_PRO   = "id_pro";</span>
-    <span class="line-add">public static String NOME_PRO = "nome_pro";</span>
-    <span class="line-add">public static String VL_PRO   = "vl_pro";</span>
-    <span class="line-add">public static String QTD_PRO  = "qtd_pro";</span>
-    <span class="line-add">public static String OBS_PRO  = "obs_pro";</span>
+    <span class="line-add">public static String ID_PRODUTO   = "id_produto";</span>
+    <span class="line-add">public static String NOME_PRODUTO = "nome_produto";</span>
+    <span class="line-add">public static String VL_PRODUTO   = "vl_produto";</span>
+    <span class="line-add">public static String QTD_PRODUTO  = "qtd_produto";</span>
+    <span class="line-add">public static String OBS_PRODUTO  = "obs_produto";</span>
 
 }</code></pre>
 
@@ -145,18 +145,18 @@ public class DepartamentoProdutoBean implements Serializable {
 
 <p><code>this</code> referencia o <strong>objeto atual</strong>. No setter, diferencia o campo da classe do parâmetro do método:</p>
 
-<pre><code class="language-java">public void setId_pro(Integer id_pro) {
-    this.id_pro = id_pro;
+<pre><code class="language-java">public void setId_produto(Integer id_produto) {
+    this.id_produto = id_produto;
 //  ↑ campo       ↑ parâmetro
 //  da classe     do método
 }</code></pre>
 
-<p>Sem o <code>this</code>, seria <code>id_pro = id_pro</code> — o Java atribuiria o parâmetro a ele mesmo, sem efeito nenhum.</p>
+<p>Sem o <code>this</code>, seria <code>id_produto = id_produto</code> — o Java atribuiria o parâmetro a ele mesmo, sem efeito nenhum.</p>
 
 <p>Se os nomes fossem diferentes, o <code>this</code> não seria necessário:</p>
 
-<pre><code class="language-java">public void setId_pro(Integer valor) {
-    id_pro = valor;  // sem conflito de nome
+<pre><code class="language-java">public void setId_produto(Integer valor) {
+    id_produto = valor;  // sem conflito de nome
 }</code></pre>
 
 <p>Mas por convenção o nome é igual, então o <code>this</code> é obrigatório.</p>
@@ -177,7 +177,7 @@ public class DepartamentoProdutoBean implements Serializable {
 </table>
 </div>
 
-<h2 data-nav="TABLE"><code class="explicacao">public static String TABLE = "laboratorio.pro"</code></h2>
+<h2 data-nav="TABLE"><code class="explicacao">public static String TABLE = "departamento.produto"</code></h2>
 
 <div class="table-wrap">
 <table>
@@ -186,21 +186,21 @@ public class DepartamentoProdutoBean implements Serializable {
     <tr><td><code>static</code></td><td>Pertence à classe, não a uma instância — permite usar <code>DepartamentoProdutoBean.TABLE</code> sem criar um <code>new DepartamentoProdutoBean()</code></td></tr>
     <tr><td><code>String</code></td><td>Tipo da constante — é um texto com o nome da tabela</td></tr>
     <tr><td><code>TABLE</code></td><td>Nome da constante. Convenção do projeto: maiúsculas, sempre chamado <code>TABLE</code> em todos os beans</td></tr>
-    <tr><td><code>"laboratorio.pro"</code></td><td>Schema + tabela no PostgreSQL. O schema <code>laboratorio</code> agrupa as tabelas deste domínio. O DAO passa essa constante para <code>insert()</code>, <code>update()</code> e <code>delete()</code></td></tr>
+    <tr><td><code>"departamento.produto"</code></td><td>Schema + tabela no PostgreSQL. O schema <code>departamento</code> agrupa as tabelas deste domínio. O DAO passa essa constante para <code>insert()</code>, <code>update()</code> e <code>delete()</code></td></tr>
 </table>
 </div>
 
-<h2 data-nav="campos"><code class="explicacao">private Integer id_pro / private String nome_pro / ...</code></h2>
+<h2 data-nav="campos"><code class="explicacao">private Integer id_produto / private String nome_produto / ...</code></h2>
 <p>Cada campo privado representa uma coluna da tabela. O Jasap usa os nomes dos getters (via reflection) para mapear automaticamente os valores do <code>ResultSet</code> para o bean em <code>query.populateBean(bean)</code> — por isso o nome do getter/setter deve bater exatamente com o nome da coluna no banco.</p>
 
 <div class="table-wrap">
 <table>
     <tr><th>Campo</th><th>Tipo Java</th><th>Coluna no banco</th><th>O que armazena</th></tr>
-    <tr><td><code>id_pro</code></td><td><code>Integer</code></td><td><code>id_pro</code></td><td>Chave primária gerada pelo banco (serial). <code>Integer</code> e não <code>int</code> porque pode ser <code>null</code> antes do INSERT</td></tr>
-    <tr><td><code>nome_pro</code></td><td><code>String</code></td><td><code>nome_pro</code></td><td>Nome do produto — campo obrigatório validado no formulário</td></tr>
-    <tr><td><code>vl_pro</code></td><td><code>Double</code></td><td><code>vl_pro</code></td><td>Valor numérico com casas decimais — mapeado para <code>numeric</code> no PostgreSQL</td></tr>
-    <tr><td><code>qtd_pro</code></td><td><code>Integer</code></td><td><code>qtd_pro</code></td><td>Quantidade inteira</td></tr>
-    <tr><td><code>obs_pro</code></td><td><code>String</code></td><td><code>obs_pro</code></td><td>Observação livre — campo de texto longo</td></tr>
+    <tr><td><code>id_produto</code></td><td><code>Integer</code></td><td><code>id_produto</code></td><td>Chave primária gerada pelo banco (serial). <code>Integer</code> e não <code>int</code> porque pode ser <code>null</code> antes do INSERT</td></tr>
+    <tr><td><code>nome_produto</code></td><td><code>String</code></td><td><code>nome_produto</code></td><td>Nome do produto — campo obrigatório validado no formulário</td></tr>
+    <tr><td><code>vl_produto</code></td><td><code>Double</code></td><td><code>vl_produto</code></td><td>Valor numérico com casas decimais — mapeado para <code>numeric</code> no PostgreSQL</td></tr>
+    <tr><td><code>qtd_produto</code></td><td><code>Integer</code></td><td><code>qtd_produto</code></td><td>Quantidade inteira</td></tr>
+    <tr><td><code>obs_produto</code></td><td><code>String</code></td><td><code>obs_produto</code></td><td>Observação livre — campo de texto longo</td></tr>
 </table>
 </div>
 
@@ -215,28 +215,28 @@ public class DepartamentoProdutoBean implements Serializable {
 </table>
 </div>
 
-<h2 data-nav="getter/setter"><code class="explicacao">public Integer getId_pro() / public void setId_pro(Integer id_pro)</code></h2>
-<p>Padrão JavaBeans: getter lê o valor, setter grava. O Jasap usa reflection em <code>populateBean(bean)</code> para encontrar o setter pelo nome da coluna (<code>id_pro</code> → <code>setId_pro</code>). Se o nome não bater, o campo fica <code>null</code>.</p>
+<h2 data-nav="getter/setter"><code class="explicacao">public Integer getId_produto() / public void setId_produto(Integer id_produto)</code></h2>
+<p>Padrão JavaBeans: getter lê o valor, setter grava. O Jasap usa reflection em <code>populateBean(bean)</code> para encontrar o setter pelo nome da coluna (<code>id_produto</code> → <code>setId_produto</code>). Se o nome não bater, o campo fica <code>null</code>.</p>
 
 <div class="table-wrap">
 <table>
     <tr><th>Elemento</th><th>O que faz</th></tr>
-    <tr><td><code>getId_pro()</code></td><td>Retorna o valor de <code>id_pro</code>. A anotação <code>@DBInfo</code> fica aqui porque o Jasap lê anotações via reflection nos getters</td></tr>
-    <tr><td><code>setId_pro(Integer id_pro)</code></td><td>Atribui o valor. <code>this.id_pro = id_pro</code> diferencia o campo da classe (this) do parâmetro do método</td></tr>
+    <tr><td><code>getId_produto()</code></td><td>Retorna o valor de <code>id_produto</code>. A anotação <code>@DBInfo</code> fica aqui porque o Jasap lê anotações via reflection nos getters</td></tr>
+    <tr><td><code>setId_produto(Integer id_produto)</code></td><td>Atribui o valor. <code>this.id_produto = id_produto</code> diferencia o campo da classe (this) do parâmetro do método</td></tr>
 </table>
 </div>
 
-<h2 data-nav="constantes de campo"><code class="explicacao">public static String ID_PRO = "id_pro"</code></h2>
+<h2 data-nav="constantes de campo"><code class="explicacao">public static String ID_PRODUTO = "id_produto"</code></h2>
 <p>Constantes que referenciam o nome das colunas no banco. Usadas no DAO ao construir SQLs e na listagem pro ORDER BY — evitam strings literais espalhadas pelo código. Se errar o nome da constante, o compilador avisa; se errar uma string literal, só descobre em runtime.</p>
 
 <div class="table-wrap">
 <table>
     <tr><th>Constante</th><th>Valor</th><th>Onde é usada</th></tr>
-    <tr><td><code>ID_PRO</code></td><td><code>"id_pro"</code></td><td>DAO: WHERE do daoSingle, daoUpdate, daoDelete</td></tr>
-    <tr><td><code>NOME_PRO</code></td><td><code>"nome_pro"</code></td><td>DAO: ORDER BY padrão da listagem; List: coluna ordenável</td></tr>
-    <tr><td><code>VL_PRO</code></td><td><code>"vl_pro"</code></td><td>List: coluna ordenável; disponível para filtros futuros</td></tr>
-    <tr><td><code>QTD_PRO</code></td><td><code>"qtd_pro"</code></td><td>List: coluna ordenável</td></tr>
-    <tr><td><code>OBS_PRO</code></td><td><code>"obs_pro"</code></td><td>List: coluna de exibição</td></tr>
+    <tr><td><code>ID_PRODUTO</code></td><td><code>"id_produto"</code></td><td>DAO: WHERE do daoSingle, daoUpdate, daoDelete</td></tr>
+    <tr><td><code>NOME_PRODUTO</code></td><td><code>"nome_produto"</code></td><td>DAO: ORDER BY padrão da listagem; List: coluna ordenável</td></tr>
+    <tr><td><code>VL_PRODUTO</code></td><td><code>"vl_produto"</code></td><td>List: coluna ordenável; disponível para filtros futuros</td></tr>
+    <tr><td><code>QTD_PRODUTO</code></td><td><code>"qtd_produto"</code></td><td>List: coluna ordenável</td></tr>
+    <tr><td><code>OBS_PRODUTO</code></td><td><code>"obs_produto"</code></td><td>List: coluna de exibição</td></tr>
 </table>
 </div>
 

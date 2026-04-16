@@ -41,12 +41,8 @@ public class DepartamentoProdutoWBean extends DepartamentoProdutoBean implements
 
     <span class="line-add">private String where;</span>
 
-    <span class="line-add">public String getWhere() {</span>
-    <span class="line-add">    return where;</span>
-    <span class="line-add">}</span>
-    <span class="line-add">public void setWhere(String where) {</span>
-    <span class="line-add">    this.where = where;</span>
-    <span class="line-add">}</span>
+    <span class="line-add">public String getWhere()             { return where; }</span>
+    <span class="line-add">public void   setWhere(String where) { this.where = where; }</span>
 
 }</code></pre>
 
@@ -80,7 +76,7 @@ public class DepartamentoProdutoWBean extends DepartamentoProdutoBean implements
         </div>
         <div class="info-row-body">
 
-<p>O WBean herda todos os campos e constantes do Bean (<code>NOME_PRO</code>, <code>ID_PRO</code>, <code>TABLE</code>, etc.). Isso é útil porque quando formos adicionar filtros, o <code>daoWhere()</code> vai precisar das constantes de campo pra montar o SQL (ex: <code>SQL.column(DepartamentoProdutoBean.NOME_PRO)</code>).</p>
+<p>O WBean herda todos os campos e constantes do Bean (<code>NOME_PRODUTO</code>, <code>ID_PRODUTO</code>, <code>TABLE</code>, etc.). Isso é útil porque quando formos adicionar filtros, o <code>daoWhere()</code> vai precisar das constantes de campo pra montar o SQL (ex: <code>SQL.column(DepartamentoProdutoBean.NOME_PRODUTO)</code>).</p>
 
 <p>É também a convenção do projeto: <strong>todo WBean estende seu Bean correspondente</strong>. O WBean nunca carrega dados de um registro real — é usado exclusivamente como objeto de filtro na listagem.</p>
 
@@ -116,9 +112,9 @@ public class DepartamentoProdutoWBean extends DepartamentoProdutoBean implements
 
 <p>Fluxo (quando for usado):</p>
 <ol>
-    <li>O usuário aplica um filtro (ex: clica na aba "Ativos")</li>
-    <li>O DAO monta a condição SQL: <code>"st_pro = 1"</code></li>
-    <li>O DAO grava no WBean: <code>filtro.setWhere("st_pro = 1")</code></li>
+    <li>O usuário aplica um filtro (ex: só os produtos com estoque)</li>
+    <li>O DAO monta a condição SQL: <code>"qtd_produto > 0"</code></li>
+    <li>O DAO grava no WBean: <code>filtro.setWhere("qtd_produto > 0")</code></li>
     <li>O framework lê <code>filtro.getWhere()</code> e injeta no SQL da consulta</li>
 </ol>
 
@@ -135,7 +131,7 @@ public class DepartamentoProdutoWBean extends DepartamentoProdutoBean implements
     <tr><th>Elemento</th><th>O que significa</th></tr>
     <tr><td><code>public</code></td><td>Visível para o DAO e para a listagem, que instanciam o WBean diretamente</td></tr>
     <tr><td><code>DepartamentoProdutoWBean</code></td><td>Convenção do projeto: mesmo prefixo do Bean + <code>WBean</code>. O "W" vem de "Where"</td></tr>
-    <tr><td><code>extends DepartamentoProdutoBean</code></td><td>Herda os campos e constantes do Bean (<code>NOME_PRO</code>, <code>ID_PRO</code>, etc.). Convenção do projeto: todo WBean estende seu Bean</td></tr>
+    <tr><td><code>extends DepartamentoProdutoBean</code></td><td>Herda os campos e constantes do Bean (<code>NOME_PRODUTO</code>, <code>ID_PRODUTO</code>, etc.). Convenção do projeto: todo WBean estende seu Bean</td></tr>
     <tr><td><code>implements Criteria</code></td><td>Contrato do Jasap — a classe promete ter <code>getWhere()</code> e <code>setWhere()</code>. Sem isso, o framework não reconhece o objeto como portador de filtros</td></tr>
 </table>
 </div>

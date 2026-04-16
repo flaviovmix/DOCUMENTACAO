@@ -13,16 +13,61 @@
         <p class="home-sub">Listagem, formulário e exclusão de registros no framework Jasap</p>
     </div>
 
-    <div class="home-grid">
-
-        <div class="home-card" style="cursor: default; padding: 0; overflow: hidden; position: relative; min-height: 220px;">
-            <iframe src="https://www.youtube.com/embed/gJzp73vo71o"
-                    title="CRUD"
-                    frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowfullscreen
-                    style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 177.78%; height: 100%; display: block;"></iframe>
+    <div class="audio-player" data-src="visaogeral.m4a">
+        <audio preload="metadata"></audio>
+        <button class="audio-btn" title="Play / Pause"></button>
+        <div class="audio-progress-wrap">
+            <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+            <div class="audio-progress-fill"></div>
         </div>
+        <span class="audio-time">0:00 / 0:00</span>
+    </div>
+
+    <div class="info-accordion">
+        <div class="info-row">
+            <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+                <span class="info-row-title">VISÃO GERAL</span>
+                <span class="info-row-btn">+</span>
+            </div>
+            <div class="info-row-body">
+                <p>Na sequência <strong>Novo Módulo</strong> a gente construiu o esqueleto do Departamento — ele existe, mas o menu lateral está vazio. Agora vamos plugar a primeira entidade: <strong>Produto</strong>. E o CRUD começa pelo <strong>R</strong> — antes de criar, editar ou deletar, o usuário precisa conseguir <strong>ver</strong> uma listagem saindo do banco.</p>
+                <p>O áudio acompanha a <strong>jornada do agente</strong> quando o usuário clica em "Produtos" no menu lateral:</p>
+                <ul style="list-style:none; padding-left:0;">
+                    <li style="margin-bottom:16px;">
+                        <strong>1º agente — o encaminhador</strong><br>
+                        <span style="color:#666; font-size:0.92em;">Nasce na recepção do departamento (MenuItem), olha o número do guichê e escreve uma ordem pro browser: "abre a tela cheia da listagem de Produtos". Não busca nada — só escreve a ordem e é descartado.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Ajax dispara um novo pedido</strong><br>
+                        <span style="color:#666; font-size:0.92em;">O browser não troca a página inteira — pede só um recorte que vai ser colado por cima da recepção do departamento.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>2º agente nasce no setor de listagem</strong><br>
+                        <span style="color:#666; font-size:0.92em;">Cartão temporário novo, agente novo. Ele lê o procedimento afixado no setor (DepartamentoProdutoList): monta uma mesa de listagem, pega a ferramenta de Produto, busca no almoxarifado, monta as linhas, devolve o HTML.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Parada na ferramentaria local</strong><br>
+                        <span style="color:#666; font-size:0.92em;">O agente vai até o DepartamentoMdFactory e pede o ProdutoModel. Se for a primeira vez no pedido, a ferramentaria fabrica e guarda na prateleira pra reusar.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Parada no almoxarifado (banco)</strong><br>
+                        <span style="color:#666; font-size:0.92em;">Com a ferramenta na mão, o agente executa a query "select tudo, ordenado por nome". O almoxarifado devolve uma lista de fichas preenchidas — nome, valor, quantidade, observação.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Mesa de listagem montada</strong><br>
+                        <span style="color:#666; font-size:0.92em;">O agente cria as colunas (Nome, Valor, Quantidade, Observação) e percorre a lista de produtos um por um, montando cada linha da tabela.</span>
+                    </li>
+                    <li>
+                        <strong>Recorte HTML cola por cima</strong><br>
+                        <span style="color:#666; font-size:0.92em;">O agente embrulha tudo num recorte HTML, sai pelos guardas da saída, atravessa a internet e o browser cola a tela cheia por cima do que o usuário já estava vendo. Agente e cartão pro lixo.</span>
+                    </li>
+                </ul>
+                <p>No fim do áudio, o panorama dos <strong>9 arquivos</strong> que vão ser construídos nos próximos episódios — <strong>6 novos</strong> (Bean, WBean, DAO, Model, Action, List) e <strong>3 edits</strong> (MdFactory, Manager, Home) — na ordem de construção: de baixo pra cima.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="home-grid">
 
         <div class="home-card" data-href="1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html">
             <div class="home-card-menu btnMenuCard">
@@ -30,19 +75,14 @@
             </div>
             <div class="home-card-info">
                 <div class="home-card-resumo">
-                    <div>
-                        <strong>Classe de dados que representa um registro da tabela.</strong>
-                        <p>Define os campos, os tipos e a chave primaria. Cada coluna do banco vira um campo Java com getter e setter. As constantes TABLE e ID ficam aqui.</p>
-                        <p>O Bean e um POJO puro — sem logica de negocio, sem acesso ao banco. So carrega os dados de um lado pro outro: do formulario pro DAO, do DAO pra lista.</p>
-                    </div>
+                    <p>Ficha em branco que representa um produto. POJO com os campos da tabela, getters e setters.</p>
                 </div>
             </div>
             <div class="home-card-img">
                 <img src="img/bean.png" alt="DepartamentoProdutoBean">
             </div>
             <div class="home-card-bar">
-                <p>Campos, tipos e chave primaria</p>
-                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+                <a href="1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html" class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</a>
             </div>
         </div>
 
@@ -52,19 +92,14 @@
             </div>
             <div class="home-card-info">
                 <div class="home-card-resumo">
-                    <div>
-                        <strong>Bean de filtro da listagem.</strong>
-                        <p>Implementa Criteria e carrega os parametros que o DAO usa para montar o WHERE do SQL. Campos como status, busca rapida e faixas de data/valor ficam aqui.</p>
-                        <p>Estende o Bean principal — herda todos os campos e adiciona os filtros extras. O DAO le esses filtros no daoWhere() para montar a query dinamicamente.</p>
-                    </div>
+                    <p>Versao da ficha preparada pra servir de filtro nas buscas do banco (WHERE do SQL).</p>
                 </div>
             </div>
             <div class="home-card-img">
                 <img src="img/wbean.png" alt="DepartamentoProdutoWBean">
             </div>
             <div class="home-card-bar">
-                <p>Filtros WHERE para o DAO</p>
-                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+                <a href="2-DepartamentoProdutoWBean/2-DepartamentoProdutoWBean.html" class="home-card-tag" style="--tag-clr:#2563eb;">Ver docs</a>
             </div>
         </div>
 
@@ -74,19 +109,14 @@
             </div>
             <div class="home-card-info">
                 <div class="home-card-resumo">
-                    <div>
-                        <strong>Camada de acesso ao banco.</strong>
-                        <p>Unico arquivo que fala diretamente com o PostgreSQL — listagem, busca, insert, update e delete. Monta as queries SQL e executa via JasapDAO.</p>
-                        <p>O daoList busca registros com paginacao, o daoSingle carrega um registro pelo ID, e o daoWhere monta o WHERE dinamico a partir do WBean.</p>
-                    </div>
+                    <p>Peca que sabe falar com o almoxarifado. SELECT, INSERT, UPDATE e DELETE moram aqui.</p>
                 </div>
             </div>
             <div class="home-card-img">
                 <img src="img/dao.png" alt="DepartamentoProdutoDAO">
             </div>
             <div class="home-card-bar">
-                <p>SQL: listagem, busca, insert, update e delete</p>
-                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+                <a href="3-DepartamentoProdutoDAO/3-DepartamentoProdutoDAO.html" class="home-card-tag" style="--tag-clr:#7A3E9D;">Ver docs</a>
             </div>
         </div>
 
@@ -96,19 +126,14 @@
             </div>
             <div class="home-card-info">
                 <div class="home-card-resumo">
-                    <div>
-                        <strong>Camada de regras de negocio.</strong>
-                        <p>Fica entre o formulario e o DAO. Neste CRUD simples delega diretamente — mas e aqui que as regras entrariam (validacoes, calculos, cascades).</p>
-                        <p>Estende o DAO — herda todos os metodos de acesso ao banco. Os metodos insert() e update() sao o ponto de entrada para qualquer logica antes de gravar.</p>
-                    </div>
+                    <p>Camada fina em cima do DAO onde vao morar as regras de negocio nas proximas sequencias.</p>
                 </div>
             </div>
             <div class="home-card-img">
                 <img src="img/model.png" alt="DepartamentoProdutoModel">
             </div>
             <div class="home-card-bar">
-                <p>Regras de negocio entre form e DAO</p>
-                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+                <a href="4-DepartamentoProdutoModel/4-DepartamentoProdutoModel.html" class="home-card-tag" style="--tag-clr:#0891b2;">Ver docs</a>
             </div>
         </div>
 
@@ -118,19 +143,14 @@
             </div>
             <div class="home-card-info">
                 <div class="home-card-resumo">
-                    <div>
-                        <strong>Classe base abstrata de List e Form.</strong>
-                        <p>Centraliza ROOT, proBean(), proWBean() e id_pro() para todas as actions de Produto. Qualquer action de Produto estende essa classe.</p>
-                        <p>O ROOT define o caminho de permissao. Os metodos proBean() e proWBean() guardam o bean na sessao — assim List e Form compartilham o mesmo estado.</p>
-                    </div>
+                    <p>Classe base abstrata das actions de Produto. ROOT e proWBean() (lazy initialization da ficha de filtro).</p>
                 </div>
             </div>
             <div class="home-card-img">
                 <img src="img/action.png" alt="DepartamentoProdutoAction">
             </div>
             <div class="home-card-bar">
-                <p>Base: ROOT, proBean() e id_pro()</p>
-                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+                <a href="5-DepartamentoProdutoAction/5-DepartamentoProdutoAction.html" class="home-card-tag" style="--tag-clr:#059669;">Ver docs</a>
             </div>
         </div>
 
@@ -140,19 +160,14 @@
             </div>
             <div class="home-card-info">
                 <div class="home-card-resumo">
-                    <div>
-                        <strong>De onde vem o getManager().</strong>
-                        <p>Conceitual: como o manager e montado e como chega na Action, XtPage, DAO, MdFactory e Model. O fio que conecta todas as camadas.</p>
-                        <p>O Jasap cria o manager uma vez e injeta em todas as actions do modulo. Dali, getFactory() acessa os models e getDataBase() acessa a conexao.</p>
-                    </div>
+                    <p>De onde vem o getManager(). O fio que conecta Action, XtPage, DAO, MdFactory e Model.</p>
                 </div>
             </div>
             <div class="home-card-img">
                 <img src="img/getmanager.png" alt="getManager()">
             </div>
             <div class="home-card-bar">
-                <p>O fio que conecta todas as camadas</p>
-                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+                <a href="6-getManager/6-getManager.html" class="home-card-tag" style="--tag-clr:#dc2626;">Ver docs</a>
             </div>
         </div>
 
@@ -162,19 +177,14 @@
             </div>
             <div class="home-card-info">
                 <div class="home-card-resumo">
-                    <div>
-                        <strong>Ferramentaria do departamento.</strong>
-                        <p>Adiciona o proModel() na MdFactory do modulo para que as actions acessem o Model de Produto via getFactory().</p>
-                        <p>Lazy initialization: cria o model na primeira chamada e retorna o mesmo nas proximas. Padrao protected — so o proprio modulo acessa.</p>
-                    </div>
+                    <p>Edita a ferramentaria do departamento pra fabricar e guardar o ProdutoModel (lazy init).</p>
                 </div>
             </div>
             <div class="home-card-img">
                 <img src="img/mdfactory.png" alt="DepartamentoMdFactory">
             </div>
             <div class="home-card-bar">
-                <p>proModel() com lazy initialization</p>
-                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+                <a href="7-DepartamentoMdFactory/7-DepartamentoMdFactory.html" class="home-card-tag" style="--tag-clr:#6366f1;">Ver docs</a>
             </div>
         </div>
 
@@ -184,19 +194,14 @@
             </div>
             <div class="home-card-info">
                 <div class="home-card-resumo">
-                    <div>
-                        <strong>Tela de listagem.</strong>
-                        <p>Exibe os registros em uma ListView paginavel com ordenacao por coluna, botao para novo registro e exclusao inline com confirmacao.</p>
-                        <p>Busca rapida, tabs de status e paginacao. Cada linha clicavel abre o Form de edicao. O Sort reordena e o QuickSearch filtra sem recarregar a pagina.</p>
-                    </div>
+                    <p>Setor da listagem. Monta a mesa, pega a ferramenta, busca no almoxarifado, devolve o HTML.</p>
                 </div>
             </div>
             <div class="home-card-img">
                 <img src="img/list.png" alt="DepartamentoProdutoList">
             </div>
             <div class="home-card-bar">
-                <p>ListView paginavel com busca e ordenacao</p>
-                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+                <a href="8-DepartamentoProdutoList/8-DepartamentoProdutoList.html" class="home-card-tag" style="--tag-clr:#ea580c;">Ver docs</a>
             </div>
         </div>
 
@@ -206,19 +211,14 @@
             </div>
             <div class="home-card-info">
                 <div class="home-card-resumo">
-                    <div>
-                        <strong>Recepcao do departamento.</strong>
-                        <p>Adiciona o item Produto no sidebar, o case no MenuItem para abrir a lista, e o breadcrumb no Title.</p>
-                        <p>Cada guiche (MID) aponta para uma entidade. O MenuInicial monta o painel com os guiches disponiveis e o MenuItem redireciona o usuario ao clicar.</p>
-                    </div>
+                    <p>Edita a recepcao do departamento: item Produto no sidebar, case no MenuItem e breadcrumb no Title.</p>
                 </div>
             </div>
             <div class="home-card-img">
                 <img src="img/home.png" alt="DepartamentoHome">
             </div>
             <div class="home-card-bar">
-                <p>Sidebar, MenuItem e breadcrumb</p>
-                <span class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</span>
+                <a href="9-DepartamentoHome/9-DepartamentoHome.html" class="home-card-tag" style="--tag-clr:#db2777;">Ver docs</a>
             </div>
         </div>
 
