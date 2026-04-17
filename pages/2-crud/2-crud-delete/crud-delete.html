@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD DELETE — XT - Treinamento</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+    <div class="home-header">
+        <h1 class="home-title">CRUD DELETE</h1>
+        <p class="home-sub">Plugar a capacidade de excluir produtos direto na tela de listagem</p>
+    </div>
+
+    <div class="audio-player" data-src="visaogeral.m4a">
+        <audio preload="metadata"></audio>
+        <button class="audio-btn" title="Play / Pause"></button>
+        <div class="audio-progress-wrap">
+            <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+            <div class="audio-progress-fill"></div>
+        </div>
+        <span class="audio-time">0:00 / 0:00</span>
+    </div>
+
+    <div class="info-accordion">
+        <div class="info-row">
+            <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+                <span class="info-row-title">VISÃO GERAL</span>
+                <span class="info-row-btn">+</span>
+            </div>
+            <div class="info-row-body">
+                <p>Na sequência anterior (CRUD READ) a gente deixou o módulo com uma tela de listagem funcional. Agora a gente pluga a capacidade de <strong>excluir</strong> um produto diretamente da tela — via ícone de lixeirinha na última coluna + confirmação modal.</p>
+                <p>É a sequência mais <strong>simples</strong> do CRUD. Três arquivos editados, nenhum novo:</p>
+                <ul style="list-style:none; padding-left:0;">
+                    <li style="margin-bottom:16px;">
+                        <strong>DepartamentoProdutoDAO</strong> <span class="badge-edit">editar</span><br>
+                        <span style="color:#666; font-size:0.92em;">Ganha o método <code>daoDelete</code> — uma linha, usa <code>@DBInfo(pk=true)</code> do Bean via reflection pra montar o SQL automaticamente.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>DepartamentoProdutoList</strong> <span class="badge-edit">editar</span><br>
+                        <span style="color:#666; font-size:0.92em;">Ganha a coluna <code>col_del</code> (lixeirinha por linha) e a inner class <code>DeleteFromList</code> — que trata o ciclo de dois cliques (swalConfirm + executa). Tem tratamento específico pra <code>SQLConstraintException</code> com Toast de erro.</span>
+                    </li>
+                    <li>
+                        <strong>DepartamentoManager</strong> <span class="badge-edit">editar</span><br>
+                        <span style="color:#666; font-size:0.92em;">Ganha uma linha <code>regAction</code> pra registrar a <code>DeleteFromList</code> no mapa global do prédio. Sem isso, o framework não enxerga o setor e o clique na lixeira dá erro.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="home-grid">
+
+        <div class="home-card" data-href="1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <p>Adiciona o método daoDelete no DAO. Uma linha de lógica usando o helper delete() do framework.</p>
+                </div>
+            </div>
+            <div class="home-card-img">
+                <img src="img/dao.png" alt="DepartamentoProdutoDAO">
+            </div>
+            <div class="home-card-bar">
+                <a href="1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html" class="home-card-tag" style="--tag-clr:#7A3E9D;">Ver docs</a>
+            </div>
+        </div>
+
+        <div class="home-card" data-href="2-DepartamentoProdutoList/2-DepartamentoProdutoList.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <p>Adiciona a coluna da lixeirinha e a inner class DeleteFromList com ciclo de dois cliques (confirmar + executar).</p>
+                </div>
+            </div>
+            <div class="home-card-img">
+                <img src="img/list.png" alt="DepartamentoProdutoList">
+            </div>
+            <div class="home-card-bar">
+                <a href="2-DepartamentoProdutoList/2-DepartamentoProdutoList.html" class="home-card-tag" style="--tag-clr:#ea580c;">Ver docs</a>
+            </div>
+        </div>
+
+        <div class="home-card" data-href="3-DepartamentoManager/3-DepartamentoManager.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <p>Adiciona a linha regAction pra cadastrar a DeleteFromList no mapa global. Fecha o ciclo.</p>
+                </div>
+            </div>
+            <div class="home-card-img">
+                <img src="img/manager.png" alt="DepartamentoManager">
+            </div>
+            <div class="home-card-bar">
+                <a href="3-DepartamentoManager/3-DepartamentoManager.html" class="home-card-tag" style="--tag-clr:#7A3E9D;">Ver docs</a>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoProdutoDAO + Model (CREATE) — XT - Treinamento</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoProdutoDAO + Model <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="1-DepartamentoProdutoDAO/audio/DepartamentoProdutoDAO.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>Primeira edição da sequência CREATE. O DAO ganha o método <code>daoInsert</code> e o Model ganha o wrapper <code>insert(bean)</code>. Duas adições mínimas — uma linha de lógica cada — que seguem exatamente o mesmo padrão do <code>daoDelete</code> da sequência anterior.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DAO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.AppManager;
+import br.jasap.dao.Query;
+import br.jasap.util.JasapList;
+import br.xt.AppsRootDAO;
+
+public class DepartamentoProdutoDAO extends AppsRootDAO {
+
+    public DepartamentoProdutoDAO() {
+    }
+
+    public DepartamentoProdutoDAO(AppManager manager) {
+        setManager(manager);
+        setDataBase(manager.getDataBase());
+    }
+
+    public void daoList(JasapList list) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("select a.* from " + DepartamentoProdutoBean.TABLE + " a &lt;orderby&gt;");
+
+        Query query = getDataBase().getQuery(sql.toString());
+        select().executeList(query, list);
+
+        while (query.next()) {
+            DepartamentoProdutoBean bean = new DepartamentoProdutoBean();
+            query.populateBean(bean);
+            list.getList().add(bean);
+        }
+        query.release();
+    }
+
+    // ADICIONAR
+    public void daoInsert(DepartamentoProdutoBean bean) throws Exception {
+        insert().execute(bean, DepartamentoProdutoBean.TABLE);
+    }
+    // FIM
+
+    public void daoDelete(DepartamentoProdutoBean bean) throws Exception {
+        delete().execute(bean, DepartamentoProdutoBean.TABLE);
+    }
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudança nesta sequência:</strong> somente o método <code>daoInsert</code> (verde). Tudo o mais já existia das sequências CRUD READ e CRUD DELETE.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — Model</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.AppManager;
+
+public class DepartamentoProdutoModel extends DepartamentoProdutoDAO {
+
+    public DepartamentoProdutoModel(AppManager manager) {
+        super(manager);
+    }
+
+    // ADICIONAR
+    public void insert(DepartamentoProdutoBean bean) throws Exception {
+        daoInsert(bean);
+    }
+    // FIM
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudança nesta sequência:</strong> somente o método <code>insert</code> (verde). O construtor já existia da sequência CRUD READ.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Como <code>insert().execute</code> funciona?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Mesmo mecanismo do <code>delete().execute</code> — via <strong>reflection</strong>. O helper <code>insert()</code> herdado de <code>JasapDAO</code> inspeciona o Bean procurando todos os getters, monta automaticamente:</p>
+
+<pre><code class="language-sql">INSERT INTO departamento.produto (nome_produto, vl_produto, qtd_produto, obs_produto)
+VALUES (?, ?, ?, ?)</code></pre>
+
+<p>O campo <code>id_produto</code> é excluído automaticamente porque tem <code>@DBInfo(serial=true)</code> — o banco gera o próximo ID via sequence.</p>
+
+<p>Cada getter do Bean vira uma coluna + valor. O chamador só precisa preencher o Bean com os dados do formulário — todo o resto é o framework.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que o Model existe? (DAO vs Model)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O Model parece redundante — <code>insert(bean)</code> só chama <code>daoInsert(bean)</code>. Mas a separação tem um propósito:</p>
+
+<ul>
+    <li><strong>DAO</strong> — fala com o banco. Métodos começam com <code>dao</code> (<code>daoInsert</code>, <code>daoDelete</code>, <code>daoList</code>). Só SQL, sem regra de negócio.</li>
+    <li><strong>Model</strong> — coordena. Métodos têm nome de negócio (<code>insert</code>, <code>update</code>). Pode chamar múltiplos DAOs, aplicar validações, disparar cascatas.</li>
+</ul>
+
+<p>Hoje o <code>insert</code> é um wrapper direto. Mas quando a entidade crescer (ex: cascade de status, geração de campo <code>qs_produto</code>, vínculo com outras tabelas), a lógica extra entra no Model — o DAO continua limpo.</p>
+
+<p>As Actions NUNCA chamam o DAO diretamente — sempre via Model. Isso garante que qualquer regra adicionada no Model será aplicada automaticamente em todos os pontos de entrada.</p>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

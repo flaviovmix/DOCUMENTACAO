@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoProdutoModel — XT - Treinamento</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoProdutoModel <span class="badge badge-new">novo arquivo</span></h1>
+
+<div class="audio-player" data-src="4-DepartamentoProdutoModel/audio/DepartamentoProdutoModel.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>O Model é uma camada <strong>fina</strong> em cima do DAO. Fica entre o formulário e o DAO — é onde as <strong>regras de negócio</strong> vão morar conforme o módulo crescer. <strong>Quarto arquivo</strong> da sequência CRUD READ — pequeno e quase vazio, mas cria o ponto de entrada pra qualquer regra futura.</p>
+
+<p class="info-note"><strong>Nota:</strong> nesta fase CRUD READ o Model tem só o construtor. Os métodos <code>insert</code>, <code>update</code> e <code>delete</code> vão chegar conforme as sequências CREATE, UPDATE e DELETE forem acontecendo — cada uma adiciona o método correspondente aqui. Como o Model <strong>estende o DAO</strong>, ele já herda <code>daoList</code>, então o código do setor de listagem consegue acessar o daoList usando a referência do Model.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.AppManager;
+
+public class DepartamentoProdutoModel extends DepartamentoProdutoDAO {
+
+    <span class="line-add">public DepartamentoProdutoModel(AppManager manager) {</span>
+    <span class="line-add">    super(manager);</span>
+    <span class="line-add">}</span>
+
+}</code></pre>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que o Model está quase vazio?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Porque nesta fase CRUD READ não tem regra de negócio nenhuma pra rodar. O agente só precisa BUSCAR produtos no almoxarifado — e pra isso o DAO já basta.</p>
+
+<p>Em módulos mais complexos, o Model é onde entram validações, cálculos e propagações. Por exemplo, na sequência CREATE, um <code>insert(bean)</code> no Model poderia:</p>
+<ul>
+    <li>Montar um campo <code>qs_produto</code> (quick search) com o nome normalizado antes de gravar</li>
+    <li>Validar combinações inválidas entre campos</li>
+    <li>Atualizar contadores em outras tabelas</li>
+</ul>
+
+<p>A gente cria o Model AGORA pra deixar a camada pronta. Quando a regra aparecer, ela entra aqui sem precisar mexer no formulário nem no DAO.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que o Model estende o DAO?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Porque o formulário e a listagem vão acessar tudo pelo Model — <code>getFactory().departamento().proModel().daoList(...)</code>. Se o Model não estendesse o DAO, seria preciso criar duas instâncias separadas (uma do DAO, uma do Model) e gerenciar as duas.</p>
+
+<p>Estendendo, o Model herda tudo do DAO (<code>daoList</code> agora, futuramente <code>daoSingle</code>, <code>daoInsert</code>, <code>daoUpdate</code>, <code>daoDelete</code>) e ainda pode SOBRESCREVER se precisar adicionar regra antes de chamar o método do DAO.</p>
+
+<p>A cadeia completa de herança fica: <code>JasapDAO → AppsRootDAO → DepartamentoProdutoDAO → DepartamentoProdutoModel</code> — 4 níveis.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Quem chama o construtor do Model?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>A MdFactory do Departamento — que é a ferramentaria local do módulo. Na primeira vez que alguém pede um ProdutoModel, a ferramentaria cria via <code>new DepartamentoProdutoModel(manager)</code>, passando o cartão temporário. Depois guarda na prateleira pra reusar no mesmo pedido.</p>
+
+<p>A corrente fica assim:</p>
+<ol>
+    <li>Setor de listagem chama <code>getFactory().departamento().proModel()</code></li>
+    <li>MdFactory cria o Model passando o AppManager</li>
+    <li>Construtor do Model chama <code>super(manager)</code></li>
+    <li>Chega no construtor do DAO, que faz <code>setManager</code> + <code>setDataBase</code></li>
+    <li>Pronto — o Model (com tudo do DAO herdado) está configurado pra acessar o banco</li>
+</ol>
+
+        </div>
+    </div>
+</div>
+
+<h2><code class="explicacao">public class DepartamentoProdutoModel extends DepartamentoProdutoDAO</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>DepartamentoProdutoModel</code></td><td>Convenção do projeto: prefixo do módulo + entidade + <code>Model</code></td></tr>
+    <tr><td><code>extends DepartamentoProdutoDAO</code></td><td>Herda todos os métodos do DAO. Nesta fase READ, herda <code>daoList</code>. Nas próximas sequências, vai herdar também <code>daoSingle</code>, <code>daoInsert</code>, <code>daoUpdate</code>, <code>daoDelete</code> conforme forem adicionados no DAO</td></tr>
+</table>
+</div>
+
+<h2><code class="explicacao">DepartamentoProdutoModel(AppManager manager)</code></h2>
+<p>Único método do Model nesta fase. Recebe o cartão temporário (<code>AppManager</code>) e passa direto pro construtor do DAO via <code>super(manager)</code>. O construtor do DAO configura <code>setManager</code> e <code>setDataBase</code> — a conexão com o banco fica pronta pra uso.</p>
+
+</body>
+</html>

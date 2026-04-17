@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoProdutoList (UPDATE) — XT - Treinamento</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoProdutoList <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="4-DepartamentoProdutoList/audio/DepartamentoProdutoList.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>Edição pontual: cada linha da lista ganha um <code>setOnclick</code> que abre o form preenchido quando o usuário clica na linha. Até agora as linhas não eram clicáveis — o único ponto de interação era a lixeirinha de exclusão.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.ListColumn;
+import br.jasap.gui.ListLine;
+import br.jasap.gui.ListView;
+import br.jasap.gui.Bar;
+import br.jasap.gui.Button;
+import br.jasap.gui.Table;
+import br.jasap.gui.Toast;
+import br.jasap.util.JasapFunctions;
+import br.jasap.util.Js;
+import br.jasap.util.ModalConfig;
+import br.jasap.util.exceptions.SQLConstraintException;
+import br.xt.acore.view.IconButton;
+import br.xt.acore.view.XtPage;
+
+public class DepartamentoProdutoList extends DepartamentoProdutoAction {
+
+    @Override
+    public Effect execute() throws Exception {
+        render();
+        return new Response();
+    }
+
+    public void render() throws Exception {
+        // ... (sem alteração)
+        XtPage page = new XtPage(getManager());
+        if (isAjaxCall()) {
+            update(JasapPage.DIV_WINDOW, page.content(window().toHtml()));
+        } else {
+            page.getTable()
+                    .setBorder(4)
+                    .rowC("100%")
+                    .setContent(page.content(window().toHtml()))
+                    .setStyle(ui().stretchBorder());
+            page.setWinTitle("Produtos");
+            getOutput().write(this, page);
+        }
+    }
+
+    public Table window() throws Exception {
+        // ... (sem alteração)
+        Table w = new Table(getManager()).setSize("100%", "100%");
+        w.rowC("99%", JasapPage.DIV_WSPACE, lView());
+        w.rowC("1%",  null, ui().line());
+        w.rowC("1%",  JasapPage.DIV_BOTTOM, br());
+        w.rowC("1%",  null, ui().line());
+        return w;
+    }
+
+    public Bar br() throws Exception {
+        // ... (sem alteração)
+        Button cmd_novo = ui().button("&amp;nbsp;&amp;nbsp;Novo Registro&amp;nbsp;&amp;nbsp;")
+                .setCss("btn btn-success btn-lg").setNoSize()
+                .setOnClick(link(DepartamentoProdutoForm.ShowInsert.class)
+                        .modal(new ModalConfig().setWidth("750").setHeight("570")
+                                .setOnCloseURL(url(DepartamentoProdutoList.class))));
+
+        return ui().bar()
+                .addRight(cmd_novo);
+    }
+
+    private ListView lv = null;
+    public ListView lView() throws Exception {
+        if (lv == null) {
+            lv = ui().lView();
+
+            lv.setOrderBy(DepartamentoProdutoBean.NOME_PRODUTO);
+            lv.setPageSize(9999);
+
+            lv.setFiltro(getFiltro());
+            getFactory().departamento().proModel().daoList(lv.getData());
+
+            ListColumn col_nome = lv.newColumn("Nome").setWidth(220).setPadding(";padding:10 8 10 8;");
+            ListColumn col_vl   = lv.newColumn("Valor").setWidth(100).setPadding(";padding:10 8 10 8;").alignCenter();
+            ListColumn col_qtd  = lv.newColumn("Qtd").setWidth(80).setPadding(";padding:10 8 10 8;").alignCenter();
+            ListColumn col_obs  = lv.newColumn("Observação").setPadding(";padding:10 8 10 8;");
+            ListColumn col_del  = lv.newColumn("").setWidth(50).setPadding(";padding:6 4 6 4;").alignCenter();
+
+            while (lv.hasNext()) {
+                DepartamentoProdutoBean bean = (DepartamentoProdutoBean) lv.next();
+                ListLine line = lv.createLine();
+                // ADICIONAR
+                line.setOnclick(link(DepartamentoProdutoForm.ShowUpdate.class)
+                        .putInteger(DepartamentoProdutoBean.ID_PRODUTO, bean.getId_produto())
+                        .modal(new ModalConfig().setWidth("750").setHeight("570")
+                                .setOnCloseURL(url(DepartamentoProdutoList.class))));
+                // FIM
+                col_nome.setContent(bean.getNome_produto());
+                col_vl.setContent(bean.getVl_produto());
+                col_qtd.setContent(bean.getQtd_produto());
+                col_obs.setContent(bean.getObs_produto());
+                col_del.setHtmlData(new IconButton("trash")
+                        .setColor("#d9534f")
+                        .setTitle("Excluir")
+                        .setOnclick(link(DeleteFromList.class).putInteger(DepartamentoProdutoBean.ID_PRODUTO, bean.getId_produto()).ajax())
+                        .toHtml());
+                lv.addLine(line);
+            }
+        }
+        return lv;
+    }
+
+    // ... getFiltro(), DeleteFromList, constantes (sem alteração)
+
+    public static final String LIST         = ROOT.concat("__LIST/");
+    public static final String FILTRO       = LIST.concat("__FILTRO");
+    public static final String CONFIRM_LIST = LIST.concat("__CONFIRM_LIST");
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudança nesta sequência:</strong> somente as 4 linhas do <code>setOnclick</code> dentro do <code>while</code> (verde). Nenhum import novo. Tudo o mais já existia das sequências anteriores.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title"><code>setOnclick</code> — tornando as linhas clicáveis</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">line.setOnclick(link(DepartamentoProdutoForm.ShowUpdate.class)
+        .putInteger(DepartamentoProdutoBean.ID_PRODUTO, bean.getId_produto())
+        .modal(new ModalConfig().setWidth("750").setHeight("570")
+                .setOnCloseURL(url(DepartamentoProdutoList.class))));</code></pre>
+
+<p>Decompondo:</p>
+<ul>
+    <li><strong><code>line.setOnclick(...)</code></strong> — transforma a linha inteira num elemento clicável. No HTML gerado, a <code>&lt;tr&gt;</code> ganha um <code>onclick</code> com cursor pointer.</li>
+    <li><strong><code>link(ShowUpdate.class)</code></strong> — aponta pro setor ShowUpdate do Form.</li>
+    <li><strong><code>.putInteger(ID_PRODUTO, bean.getId_produto())</code></strong> — embute o ID do produto na URL. É assim que o ShowUpdate sabe QUAL produto carregar.</li>
+    <li><strong><code>.modal(new ModalConfig()...)</code></strong> — abre em modal 750×570 (mesmas dimensões do "Novo Registro").</li>
+    <li><strong><code>.setOnCloseURL(url(DepartamentoProdutoList.class))</code></strong> — ao fechar o modal, re-renderiza a lista. Assim, se o usuário editou um nome, ele aparece atualizado na tabela.</li>
+</ul>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Convivência: <code>setOnclick</code> vs <code>stopPropagation</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Agora a linha inteira é clicável (abre o form). Mas a lixeirinha de exclusão (<code>IconButton</code>) também está na linha. Como evitar que clicar na lixeirinha abra o form E exclua ao mesmo tempo?</p>
+
+<p>O <code>IconButton</code> (que já existia desde o CRUD DELETE) usa <code>event.stopPropagation()</code> no seu <code>onclick</code>. Isso impede que o clique "suba" da lixeirinha pra linha. Resultado:</p>
+
+<ul>
+    <li><strong>Clique na linha</strong> → <code>setOnclick</code> dispara → abre o form preenchido</li>
+    <li><strong>Clique na lixeirinha</strong> → <code>stopPropagation</code> bloqueia o setOnclick → só o delete dispara</li>
+</ul>
+
+<p>Esse padrão é o mesmo do Laboratório — <code>setOnclick</code> na linha toda + <code>stopPropagation</code> no botão inline.</p>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

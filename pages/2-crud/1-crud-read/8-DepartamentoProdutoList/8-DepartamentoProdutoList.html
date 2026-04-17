@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoProdutoList — XT - Treinamento</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoProdutoList <span class="badge badge-new">novo arquivo</span></h1>
+
+<div class="audio-player" data-src="8-DepartamentoProdutoList/audio/DepartamentoProdutoList.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>O setor de listagem — onde o agente chega quando o usuário clica em "Produtos" no menu lateral do Departamento. É a action CONCRETA que junta TUDO que foi construído até aqui: estende a Action base, usa o WBean como filtro, chama o Model (que herda do DAO) pra buscar os produtos, monta a mesa de listagem com colunas, e devolve o recorte HTML que o browser cola por cima. <strong>Oitavo passo</strong> da sequência CRUD READ.</p>
+
+<p class="info-note"><strong>Nota:</strong> esta fase CRUD READ tem uma listagem SIMPLES — 4 colunas (Nome, Valor, Qtd, Observação), ordenada por nome, sem paginação visível (<code>setPageSize(9999)</code>), sem tabs, sem busca rápida. As funcionalidades mais avançadas (paginação, tabs de status, busca rápida, ordenação por coluna) vão aparecer conforme forem necessárias em sequências futuras.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.ListColumn;
+import br.jasap.gui.ListLine;
+import br.jasap.gui.ListView;
+import br.jasap.gui.Table;
+import br.xt.acore.view.XtPage;
+
+public class DepartamentoProdutoList extends DepartamentoProdutoAction {
+
+    <span class="line-add">@Override</span>
+    <span class="line-add">public Effect execute() throws Exception {</span>
+    <span class="line-add">    render();</span>
+    <span class="line-add">    return new Response();</span>
+    <span class="line-add">}</span>
+
+    <span class="line-add">public void render() throws Exception {</span>
+    <span class="line-add">    XtPage page = new XtPage(getManager());</span>
+    <span class="line-add">    if (isAjaxCall()) {</span>
+    <span class="line-add">        update(JasapPage.DIV_WINDOW, page.content(window().toHtml()));</span>
+    <span class="line-add">    } else {</span>
+    <span class="line-add">        page.getTable()</span>
+    <span class="line-add">                .setBorder(4)</span>
+    <span class="line-add">                .rowC("100%")</span>
+    <span class="line-add">                .setContent(page.content(window().toHtml()))</span>
+    <span class="line-add">                .setStyle(ui().stretchBorder());</span>
+    <span class="line-add">        page.setWinTitle("Produtos");</span>
+    <span class="line-add">        getOutput().write(this, page);</span>
+    <span class="line-add">    }</span>
+    <span class="line-add">}</span>
+
+    <span class="line-add">public Table window() throws Exception {</span>
+    <span class="line-add">    Table w = new Table(getManager()).setSize("100%", "100%");</span>
+    <span class="line-add">    w.rowC("99%", JasapPage.DIV_WSPACE, lView());</span>
+    <span class="line-add">    w.rowC("1%",  null, ui().line());</span>
+    <span class="line-add">    return w;</span>
+    <span class="line-add">}</span>
+
+    <span class="line-add">private ListView lv = null;</span>
+    <span class="line-add">public ListView lView() throws Exception {</span>
+    <span class="line-add">    if (lv == null) {</span>
+    <span class="line-add">        lv = ui().lView();</span>
+
+    <span class="line-add">        lv.setOrderBy(DepartamentoProdutoBean.NOME_PRODUTO);</span>
+    <span class="line-add">        lv.setPageSize(9999);</span>
+
+    <span class="line-add">        lv.setFiltro(getFiltro());</span>
+    <span class="line-add">        getFactory().departamento().proModel().daoList(lv.getData());</span>
+
+    <span class="line-add">        ListColumn col_nome = lv.newColumn("Nome").setWidth(220).setPadding(";padding:10 8 10 8;");</span>
+    <span class="line-add">        ListColumn col_vl   = lv.newColumn("Valor").setWidth(100).setPadding(";padding:10 8 10 8;").alignCenter();</span>
+    <span class="line-add">        ListColumn col_qtd  = lv.newColumn("Qtd").setWidth(80).setPadding(";padding:10 8 10 8;").alignCenter();</span>
+    <span class="line-add">        ListColumn col_obs  = lv.newColumn("Observação").setPadding(";padding:10 8 10 8;");</span>
+
+    <span class="line-add">        while (lv.hasNext()) {</span>
+    <span class="line-add">            DepartamentoProdutoBean bean = (DepartamentoProdutoBean) lv.next();</span>
+    <span class="line-add">            ListLine line = lv.createLine();</span>
+    <span class="line-add">            col_nome.setContent(bean.getNome_produto());</span>
+    <span class="line-add">            col_vl.setContent(bean.getVl_produto());</span>
+    <span class="line-add">            col_qtd.setContent(bean.getQtd_produto());</span>
+    <span class="line-add">            col_obs.setContent(bean.getObs_produto());</span>
+    <span class="line-add">            lv.addLine(line);</span>
+    <span class="line-add">        }</span>
+    <span class="line-add">    }</span>
+    <span class="line-add">    return lv;</span>
+    <span class="line-add">}</span>
+
+    <span class="line-add">public DepartamentoProdutoWBean getFiltro() throws Exception {</span>
+    <span class="line-add">    DepartamentoProdutoWBean filtro = (DepartamentoProdutoWBean) getSession().getObject(FILTRO);</span>
+    <span class="line-add">    if (filtro == null) {</span>
+    <span class="line-add">        filtro = proWBean();</span>
+    <span class="line-add">        getSession().addObj(FILTRO, filtro);</span>
+    <span class="line-add">    }</span>
+    <span class="line-add">    return filtro;</span>
+    <span class="line-add">}</span>
+
+    <span class="line-add">public static final String LIST   = ROOT.concat("__LIST/");</span>
+    <span class="line-add">public static final String FILTRO = LIST.concat("__FILTRO");</span>
+
+}</code></pre>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Dois caminhos: primeira visita vs clique de menu (Ajax)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O método <code>render()</code> tem um <code>if (isAjaxCall())</code> que separa dois cenários:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Cenário</th><th>Quando</th><th>O que faz</th></tr>
+    <tr><td><strong>Não-Ajax</strong></td><td>Primeira visita à URL (raro — chegaria pela recepção antes)</td><td>Monta a página inteira com layout completo via <code>page.getTable()</code> + <code>setStyle</code> + <code>setWinTitle</code>. Escreve o documento HTML INTEIRO na resposta via <code>getOutput().write()</code></td></tr>
+    <tr><td><strong>Ajax</strong></td><td>Caminho normal — clique em "Produtos" no menu lateral dispara via <code>preAjax</code> do Home</td><td>Envia só um RECORTE via <code>update(JasapPage.DIV_WINDOW, ...)</code>. O browser cola o recorte por cima da tela atual — não troca a página</td></tr>
+</table>
+</div>
+
+<p>A janela em si (<code>window()</code>) é a MESMA nos dois casos — só muda como é entregue.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">A janela — <code>window()</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Cria um <code>Table</code> (que é o "container" visual) com tamanho 100% × 100%, e divide em duas linhas:</p>
+<ul>
+    <li>Linha superior (99%): a ListView propriamente dita. O parâmetro <code>JasapPage.DIV_WSPACE</code> é o ID do DIV onde o framework vai renderizar</li>
+    <li>Linha inferior (1%): uma linha horizontal (<code>ui().line()</code>) que dá um acabamento visual</li>
+</ul>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">A lista — <code>lView()</code> e lazy initialization</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Mesmo padrão que a gente viu no <code>proWBean</code> (Action base) e no <code>proModel</code> (MdFactory): o campo privado <code>lv</code> começa <code>null</code>, o método <code>lView()</code> verifica se é a primeira chamada, fabrica na primeira e reusa nas seguintes.</p>
+
+<p>A fabricação da ListView é longa porque ela tem várias etapas:</p>
+<ol>
+    <li><code>ui().lView()</code> — fábrica devolve uma ListView vazia</li>
+    <li><code>setOrderBy(NOME_PRODUTO)</code> — define a ordem padrão</li>
+    <li><code>setPageSize(9999)</code> — sem paginação visível nesta fase (depois vai ser refinado)</li>
+    <li><code>setFiltro(getFiltro())</code> — injeta o WBean (ficha de filtro) na ListView</li>
+    <li><code>getFactory().departamento().proModel().daoList(lv.getData())</code> — aqui é a chamada CENTRAL. Passa pela ferramentaria central, entra na ferramentaria do Departamento, pega o Model, chama daoList. A lista é preenchida com beans do almoxarifado</li>
+    <li>Cria as 4 colunas (Nome, Valor, Qtd, Observação) com larguras e paddings</li>
+    <li>Itera <code>while(lv.hasNext())</code> e monta uma linha pra cada bean, preenchendo as colunas com os getters</li>
+</ol>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que o WBean fica na SESSÃO?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O <code>getFiltro()</code> guarda o WBean na <strong>ficha permanente da sessão</strong>. Por quê?</p>
+
+<p>Porque o filtro PRECISA persistir ENTRE requests. Exemplo: o usuário clica numa aba (futura) "Em Estoque" — isso altera o filtro. Depois muda a página. Depois ordena por coluna. Cada uma dessas ações dispara um request NOVO, com um agente NOVO, um cartão NOVO. Se o filtro não estivesse na sessão, ele ia zerar a cada request.</p>
+
+<p>O <code>getFiltro()</code>: primeira vez, cria um WBean vazio via <code>proWBean()</code> (herdado da Action base) e GUARDA na sessão com a chave <code>FILTRO</code>. Requests seguintes: acha o WBean na sessão e devolve o mesmo — com os filtros que foram acumulados em chamadas anteriores.</p>
+
+<p>Nesta fase CRUD READ o filtro não muda — mas a infraestrutura tá pronta.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">As constantes de sessão: <code>LIST</code> e <code>FILTRO</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>São <strong>chaves únicas</strong> no mapa global de sessão. Partem do <code>ROOT</code> (herdado da Action base):</p>
+
+<pre><code>ROOT   = "...DEPARTAMENTO__PRODUTO/"
+LIST   = ROOT + "__LIST/"
+FILTRO = LIST + "__FILTRO"
+→ "...DEPARTAMENTO__PRODUTO/__LIST/__FILTRO"</code></pre>
+
+<p>Ter o caminho composto garante que o filtro da listagem de Produto do Departamento não conflita com nenhuma outra chave de sessão em nenhum outro lugar do sistema.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">@Override — o que é?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>A anotação <code>@Override</code> acima do <code>execute()</code> é uma sinalização pro compilador: "esse método está SOBRESCREVENDO um método da classe-pai". A classe-pai (herdada em cadeia até JasapAct) tem um <code>execute()</code> abstrato — cada action concreta é obrigada a fornecer sua versão.</p>
+
+<p>Se você digitasse <code>excute</code> (com typo) em vez de <code>execute</code>, o Java criaria um método novo em vez de sobrescrever. O <code>@Override</code> manda o compilador reclamar: "você jurou que estava sobrescrevendo algo, mas não existe método com esse nome na classe-pai — provavelmente um typo".</p>
+
+<p>Protege contra erros silenciosos. Sempre usar quando for sobrescrever.</p>
+
+        </div>
+    </div>
+</div>
+
+<h2><code class="explicacao">execute() e render()</code></h2>
+<p>O <code>execute()</code> é o ponto de entrada oficial da action — todo setor tem esse método. Aqui ele é minimalista: chama <code>render()</code> e devolve <code>new Response()</code> (um objeto vazio que sinaliza "terminei, pode mandar a resposta").</p>
+<p>O <code>render()</code> é onde a lógica de montagem da tela mora. Separar em dois métodos permite que outras actions (como futuras inner classes de Sort, QuickSearch, DeleteFromList) chamem <code>render()</code> direto sem passar pelo <code>execute()</code>.</p>
+
+<h2><code class="explicacao">getFactory().departamento().proModel().daoList(lv.getData())</code></h2>
+<p>A linha central da listagem. Nela acontece todo o fio do cartão temporário:</p>
+<ol>
+    <li><code>getFactory()</code> — devolve a <code>AppsRootModelFactory</code> configurada com o cartão</li>
+    <li><code>.departamento()</code> — ferramentaria central cria a ferramentaria local do Departamento passando o cartão</li>
+    <li><code>.proModel()</code> — ferramentaria local fabrica o Model (na primeira chamada), passando o cartão pro construtor</li>
+    <li><code>.daoList(lv.getData())</code> — chama o método herdado do DAO. A ListView tem uma lista vazia internamente (<code>lv.getData()</code>) que será preenchida com os beans</li>
+</ol>
+
+</body>
+</html>

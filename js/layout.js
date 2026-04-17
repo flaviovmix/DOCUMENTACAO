@@ -39,18 +39,38 @@ var MENU = [
         grupo: 'CRUD',
         pagina: 'crud.html',
         subgrupos: [
-            { label: 'READ',   href: 'crud-read.html' },
-            { label: 'DELETE', href: '../2-crud-delete/crud-delete.html', pasta: '2-crud-delete' },
-            { label: 'CREATE', href: '../2-crud-create/crud-create.html', pasta: '2-crud-create' },
-            { label: 'UPDATE', href: '../2-crud-update/crud-update.html', pasta: '2-crud-update' }
+            { label: 'READ',   href: '1-crud-read/crud-read.html',   pasta: '1-crud-read' },
+            { label: 'DELETE', href: '2-crud-delete/crud-delete.html', pasta: '2-crud-delete' },
+            { label: 'CREATE', href: '3-crud-create/crud-create.html', pasta: '3-crud-create' },
+            { label: 'UPDATE', href: '4-crud-update/crud-update.html', pasta: '4-crud-update' },
+            { label: 'FUNCIONALIDADES', href: '5-funcionalidades/funcionalidades.html', pasta: '5-funcionalidades' }
         ],
-        subpastas: ['2-crud-delete', '2-crud-create', '2-crud-update'],
+        subpastas: ['1-crud-read', '2-crud-delete', '3-crud-create', '4-crud-update', '5-funcionalidades'],
         pasta: '2-crud'
+    },
+    {
+        grupo: 'CRUD READ',
+        pagina: 'crud-read.html',
+        parent: { label: 'CRUD', href: '2-crud/crud.html' },
+        hidden: true,
+        items: [
+            { label: '1 - DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html',   tipo: 'novo' },
+            { label: '2 - DepartamentoProdutoWBean',  arquivo: '2-DepartamentoProdutoWBean/2-DepartamentoProdutoWBean.html', tipo: 'novo' },
+            { label: '3 - DepartamentoProdutoDAO',    arquivo: '3-DepartamentoProdutoDAO/3-DepartamentoProdutoDAO.html',     tipo: 'novo' },
+            { label: '4 - DepartamentoProdutoModel',  arquivo: '4-DepartamentoProdutoModel/4-DepartamentoProdutoModel.html', tipo: 'novo' },
+            { label: '5 - DepartamentoProdutoAction', arquivo: '5-DepartamentoProdutoAction/5-DepartamentoProdutoAction.html', tipo: 'novo' },
+            { label: '6 - getManager',                arquivo: '6-getManager/6-getManager.html',                             tipo: 'editar' },
+            { label: '7 - DepartamentoMdFactory',     arquivo: '7-DepartamentoMdFactory/7-DepartamentoMdFactory.html',       tipo: 'editar' },
+            { label: '8 - DepartamentoProdutoList',   arquivo: '8-DepartamentoProdutoList/8-DepartamentoProdutoList.html',   tipo: 'novo' },
+            { label: '9 - DepartamentoHome',          arquivo: '9-DepartamentoHome/9-DepartamentoHome.html',                 tipo: 'editar' }
+        ],
+        pasta: '1-crud-read',
+        basePath: '2-crud/1-crud-read'
     },
     {
         grupo: 'CRUD CREATE',
         pagina: 'crud-create.html',
-        parent: { label: 'CRUD', href: '../2-crud/crud.html' },
+        parent: { label: 'CRUD', href: '2-crud/crud.html' },
         hidden: true,
         items: [
             { label: '1 - DepartamentoProdutoDAO + Model', arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html', tipo: 'editar' },
@@ -59,24 +79,26 @@ var MENU = [
             { label: '4 - DepartamentoProdutoList',        arquivo: '4-DepartamentoProdutoList/4-DepartamentoProdutoList.html', tipo: 'editar' },
             { label: '5 - DepartamentoManager',            arquivo: '5-DepartamentoManager/5-DepartamentoManager.html', tipo: 'editar' }
         ],
-        pasta: '2-crud-create'
+        pasta: '3-crud-create',
+        basePath: '2-crud/3-crud-create'
     },
     {
         grupo: 'CRUD DELETE',
         pagina: 'crud-delete.html',
-        parent: { label: 'CRUD', href: '../2-crud/crud.html' },
+        parent: { label: 'CRUD', href: '2-crud/crud.html' },
         hidden: true,
         items: [
             { label: '1 - DepartamentoProdutoDAO',  arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html',  tipo: 'editar' },
             { label: '2 - DepartamentoProdutoList',  arquivo: '2-DepartamentoProdutoList/2-DepartamentoProdutoList.html',  tipo: 'editar' },
             { label: '3 - DepartamentoManager',      arquivo: '3-DepartamentoManager/3-DepartamentoManager.html',      tipo: 'editar' }
         ],
-        pasta: '2-crud-delete'
+        pasta: '2-crud-delete',
+        basePath: '2-crud/2-crud-delete'
     },
     {
         grupo: 'CRUD UPDATE',
         pagina: 'crud-update.html',
-        parent: { label: 'CRUD', href: '../2-crud/crud.html' },
+        parent: { label: 'CRUD', href: '2-crud/crud.html' },
         hidden: true,
         items: [
             { label: '1 - DepartamentoProdutoDAO + Model', arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html', tipo: 'editar' },
@@ -85,7 +107,19 @@ var MENU = [
             { label: '4 - DepartamentoProdutoList',        arquivo: '4-DepartamentoProdutoList/4-DepartamentoProdutoList.html', tipo: 'editar' },
             { label: '5 - DepartamentoManager',            arquivo: '5-DepartamentoManager/5-DepartamentoManager.html', tipo: 'editar' }
         ],
-        pasta: '2-crud-update'
+        pasta: '4-crud-update',
+        basePath: '2-crud/4-crud-update'
+    },
+    {
+        grupo: 'FUNCIONALIDADES',
+        pagina: 'funcionalidades.html',
+        parent: { label: 'CRUD', href: '2-crud/crud.html' },
+        hidden: true,
+        items: [
+            { label: '1 - Sort', arquivo: '1-sort/sort.html', tipo: 'editar' }
+        ],
+        pasta: '5-funcionalidades',
+        basePath: '2-crud/5-funcionalidades'
     }
 ];
 
@@ -105,7 +139,7 @@ var FOOTER = {
             pasta: '1-novo-modulo'
         },
         {
-            grupo: 'CRUD',
+            grupo: 'CRUD READ',
             items: [
                 { label: 'DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html' },
                 { label: 'DepartamentoProdutoWBean',  arquivo: '2-DepartamentoProdutoWBean/2-DepartamentoProdutoWBean.html' },
@@ -117,7 +151,8 @@ var FOOTER = {
                 { label: 'DepartamentoProdutoList',   arquivo: '8-DepartamentoProdutoList/8-DepartamentoProdutoList.html' },
                 { label: 'DepartamentoHome',          arquivo: '9-DepartamentoHome/9-DepartamentoHome.html' }
             ],
-            pasta: '2-crud'
+            pasta: '1-crud-read',
+            basePath: '2-crud/1-crud-read'
         },
         {
             grupo: 'CRUD CREATE',
@@ -128,7 +163,8 @@ var FOOTER = {
                 { label: 'DepartamentoProdutoList',        arquivo: '4-DepartamentoProdutoList/4-DepartamentoProdutoList.html' },
                 { label: 'DepartamentoManager',            arquivo: '5-DepartamentoManager/5-DepartamentoManager.html' }
             ],
-            pasta: '2-crud-create'
+            pasta: '3-crud-create',
+            basePath: '2-crud/3-crud-create'
         },
         {
             grupo: 'CRUD DELETE',
@@ -137,7 +173,8 @@ var FOOTER = {
                 { label: 'DepartamentoProdutoList',  arquivo: '2-DepartamentoProdutoList/2-DepartamentoProdutoList.html' },
                 { label: 'DepartamentoManager',      arquivo: '3-DepartamentoManager/3-DepartamentoManager.html' }
             ],
-            pasta: '2-crud-delete'
+            pasta: '2-crud-delete',
+            basePath: '2-crud/2-crud-delete'
         },
         {
             grupo: 'CRUD UPDATE',
@@ -148,7 +185,16 @@ var FOOTER = {
                 { label: 'DepartamentoProdutoList',        arquivo: '4-DepartamentoProdutoList/4-DepartamentoProdutoList.html' },
                 { label: 'DepartamentoManager',            arquivo: '5-DepartamentoManager/5-DepartamentoManager.html' }
             ],
-            pasta: '2-crud-update'
+            pasta: '4-crud-update',
+            basePath: '2-crud/4-crud-update'
+        },
+        {
+            grupo: 'FUNCIONALIDADES',
+            items: [
+                { label: 'Sort', arquivo: '1-sort/sort.html' }
+            ],
+            pasta: '5-funcionalidades',
+            basePath: '2-crud/5-funcionalidades'
         }
     ],
     extras: [
@@ -236,10 +282,12 @@ var BASE = document.currentScript.getAttribute('src').replace('js/layout.js', ''
 // ─── Helpers ───────────────────────────────────────────────────────
 
 function detectFolder(path) {
+    var best = '';
     for (var i = 0; i < MENU.length; i++) {
-        if (path.indexOf('/' + MENU[i].pasta + '/') > -1) return MENU[i].pasta;
+        var p = MENU[i].pasta;
+        if (path.indexOf('/' + p + '/') > -1 && p.length > best.length) best = p;
     }
-    return '';
+    return best;
 }
 
 function findSection(folder) {
@@ -275,6 +323,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         isSubFolder = afterGroup.indexOf('/') !== -1;
     }
 
+    // Profundidade a partir de pages/ (usado pra calcular prefixos de navegação)
+    var pagesIdx = path.indexOf('/pages/');
+    var depth = 0;
+    if (pagesIdx > -1) {
+        var afterPages = path.substring(pagesIdx + 7);
+        depth = afterPages.split('/').length - 1;
+    }
+
     // Extrair título da tag <title> (remove sufixo " — XT - Treinamento")
     var pageTitle = document.title.replace(/\s*[—–-]\s*XT\s*-\s*Treinamento\s*$/, '').trim();
 
@@ -288,12 +344,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // ── Breadcrumb ──
     var breadcrumbHTML = '';
+    var upToPages = '../'.repeat(depth);
     if (!isRoot && section) {
+        var sectionBasePath = section.basePath || section.pasta;
         var parentPrefix = '';
         if (section.parent) {
-            var parentHref = (isSubFolder ? '../' : '') + section.parent.href;
             parentPrefix = '<span class="breadcrumb-sep">\u203a</span>';
-            parentPrefix += '<a href="' + parentHref + '">' + section.parent.label + '</a>';
+            parentPrefix += '<a href="' + upToPages + section.parent.href + '">' + section.parent.label + '</a>';
         }
         breadcrumbHTML = '<nav class="breadcrumb-nav">';
         if (isSectionIndex) {
@@ -303,7 +360,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         } else {
             breadcrumbHTML += parentPrefix;
             breadcrumbHTML += '<span class="breadcrumb-sep">\u203a</span>';
-            breadcrumbHTML += '<a href="' + (isSubFolder ? '../' : '') + section.pagina + '">' + section.grupo + '</a>';
+            breadcrumbHTML += '<a href="' + upToPages + sectionBasePath + '/' + section.pagina + '">' + section.grupo + '</a>';
             breadcrumbHTML += '<span class="breadcrumb-sep">\u203a</span>';
             breadcrumbHTML += '<span class="breadcrumb-current">' + pageTitle + '</span>';
         }
@@ -348,10 +405,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         '</div>';
 
     // ── Menu lateral ──
-    buildMenu(currentFile, currentFolder, isSubFolder);
+    buildMenu(currentFile, currentFolder, isSubFolder, depth);
 
     // ── Footer ──
-    buildFooter(currentFolder, isSubFolder);
+    buildFooter(currentFolder, isSubFolder, depth);
 
     // ── Home cards — menu info toggle ──
     document.querySelectorAll('.home-card').forEach(function(card) {
@@ -408,28 +465,19 @@ document.addEventListener('DOMContentLoaded', async function() {
 // MENU LATERAL (DRAWER)
 // ═══════════════════════════════════════════════════════════════════
 
-function buildMenu(currentPage, currentFolder, isSubFolder) {
+function buildMenu(currentPage, currentFolder, isSubFolder, depth) {
     var inner = document.getElementById('drawer-inner');
     if (!inner) return;
+    var isRoot = (depth === 0);
+    var upToPages = '../'.repeat(depth);
 
     var html = '';
     for (var i = 0; i < MENU.length; i++) {
         var g = MENU[i];
         if (g.hidden) continue;
 
-        var prefix;
-
-        if (currentFolder === g.pasta && isSubFolder) {
-            prefix = '../';
-        } else if (currentFolder === g.pasta) {
-            prefix = '';
-        } else if (currentFolder !== '' && isSubFolder) {
-            prefix = '../../' + g.pasta + '/';
-        } else if (currentFolder !== '') {
-            prefix = '../' + g.pasta + '/';
-        } else {
-            prefix = 'pages/' + g.pasta + '/';
-        }
+        var basePath = g.basePath || g.pasta;
+        var prefix = isRoot ? 'pages/' + basePath + '/' : upToPages + basePath + '/';
 
         var isActiveGroup = (currentFolder === g.pasta) ||
             (g.subpastas && g.subpastas.indexOf(currentFolder) !== -1);
@@ -512,27 +560,18 @@ function buildMenu(currentPage, currentFolder, isSubFolder) {
 // FOOTER
 // ═══════════════════════════════════════════════════════════════════
 
-function buildFooter(currentFolder, isSubFolder) {
+function buildFooter(currentFolder, isSubFolder, depth) {
     var inner = document.getElementById('footer-inner');
     if (!inner) return;
+    var isRoot = (depth === 0);
+    var upToPages = '../'.repeat(depth);
 
     var html = '';
 
     for (var i = 0; i < FOOTER.episodios.length; i++) {
         var ep = FOOTER.episodios[i];
-        var prefix;
-
-        if (currentFolder === ep.pasta && isSubFolder) {
-            prefix = '../';
-        } else if (currentFolder === ep.pasta) {
-            prefix = '';
-        } else if (currentFolder !== '' && isSubFolder) {
-            prefix = '../../' + ep.pasta + '/';
-        } else if (currentFolder !== '') {
-            prefix = '../' + ep.pasta + '/';
-        } else {
-            prefix = 'pages/' + ep.pasta + '/';
-        }
+        var basePath = ep.basePath || ep.pasta;
+        var prefix = isRoot ? 'pages/' + basePath + '/' : upToPages + basePath + '/';
 
         html += '<div><h3>' + ep.grupo + '</h3>';
         for (var j = 0; j < ep.items.length; j++) {
