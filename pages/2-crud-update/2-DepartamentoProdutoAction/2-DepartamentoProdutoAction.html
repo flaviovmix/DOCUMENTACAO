@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoProdutoAction (UPDATE) — XT - Treinamento</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoProdutoAction <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="2-DepartamentoProdutoAction/audio/DepartamentoProdutoAction.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>O Action base ganha o método <code>id_produto()</code> — pré-requisito do Update. Enquanto o <code>proBean()</code> (que já existia do CREATE) lê dados do <strong>request</strong>, o <code>id_produto()</code> lê o ID do produto da <strong>sessão</strong>.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.xt.AppsRootAction;
+import br.xt.app.departamento.DepartamentoManager;
+
+public abstract class DepartamentoProdutoAction extends AppsRootAction {
+
+    private DepartamentoProdutoWBean wbean = null;
+    public DepartamentoProdutoWBean proWBean() throws Exception {
+        if (wbean == null)
+            wbean = (DepartamentoProdutoWBean) getManager().getInstance(DepartamentoProdutoWBean.class);
+        return wbean;
+    }
+
+    private DepartamentoProdutoBean bean = null;
+    public DepartamentoProdutoBean proBean() throws Exception {
+        if (bean == null)
+            bean = (DepartamentoProdutoBean) getManager().getInstance(DepartamentoProdutoBean.class);
+        return bean;
+    }
+
+    // ADICIONAR
+    public Integer id_produto() throws Exception {
+        return getSession().getInteger(ROOT.concat(DepartamentoProdutoBean.ID_PRODUTO));
+    }
+    // FIM
+
+    public static final String ROOT = DepartamentoManager.F_ACESSO_MODULO.concat("__PRODUTO/");
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudança nesta sequência:</strong> somente o método <code>id_produto()</code> (verde). O <code>proWBean()</code>, <code>proBean()</code> e a constante <code>ROOT</code> já existiam das sequências anteriores.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Request vs Sessão — por que dois mecanismos?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O <code>proBean()</code> e o <code>id_produto()</code> parecem fazer coisas parecidas — ambos dão acesso ao ID do produto. Mas usam fontes diferentes:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Método</th><th>Fonte</th><th>Quando usar</th></tr>
+    <tr><td><code>proBean().getId_produto()</code></td><td>Request (dados do formulário)</td><td>Quando os dados ACABARAM de chegar do browser (Insert, Update)</td></tr>
+    <tr><td><code>id_produto()</code></td><td>Sessão (ficha permanente)</td><td>Quando o ID foi guardado num request anterior (Update)</td></tr>
+</table>
+</div>
+
+<p><strong>Por que a sessão?</strong> No fluxo de edição, o ID chega no request do <code>ShowUpdate</code> (quando o usuário clica na linha da lista). O <code>ShowUpdate</code> guarda esse ID na sessão. Depois, quando o usuário clica "Salvar", o request NÃO traz o ID de novo — o <code>Update</code> precisa buscá-lo na sessão via <code>id_produto()</code>.</p>
+
+<p><strong>Fluxo:</strong></p>
+<ol>
+    <li><strong>ShowUpdate</strong> — recebe o ID do request → guarda na sessão</li>
+    <li><strong>Update / Delete</strong> — lê o ID da sessão via <code>id_produto()</code></li>
+</ol>
+
+<p>A sessão funciona como um "lembrete entre requests" — o agente do ShowUpdate anota, e o agente do Update lê a anotação.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">A chave da sessão — <code>ROOT.concat(ID_PRODUTO)</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>A sessão é um mapa de chave/valor compartilhado por todo o módulo. Pra evitar colisão entre entidades diferentes (ex: um <code>id_produto</code> de Produto vs um <code>id_produto</code> de outro módulo), a chave usa o prefixo <code>ROOT</code>:</p>
+
+<pre><code class="language-java">ROOT.concat(DepartamentoProdutoBean.ID_PRODUTO)
+// Resultado: "XT.PAINEL_CONTROLE.ACESSO_MODULO.DEPARTAMENTO__PRODUTO/id_produto"</code></pre>
+
+<p>Essa string longa e única identifica sem ambiguidade "o ID do produto que está sendo editado no módulo Departamento". Mesmo padrão usado pelo <code>FORM</code> (<code>ROOT.concat("__FORM")</code>) e pelo <code>FILTRO</code> na List.</p>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

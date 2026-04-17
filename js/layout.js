@@ -42,9 +42,9 @@ var MENU = [
             { label: 'READ',   href: 'crud-read.html' },
             { label: 'DELETE', href: '../2-crud-delete/crud-delete.html', pasta: '2-crud-delete' },
             { label: 'CREATE', href: '../2-crud-create/crud-create.html', pasta: '2-crud-create' },
-            { label: 'UPDATE', disabled: true }
+            { label: 'UPDATE', href: '../2-crud-update/crud-update.html', pasta: '2-crud-update' }
         ],
-        subpastas: ['2-crud-delete', '2-crud-create'],
+        subpastas: ['2-crud-delete', '2-crud-create', '2-crud-update'],
         pasta: '2-crud'
     },
     {
@@ -72,6 +72,20 @@ var MENU = [
             { label: '3 - DepartamentoManager',      arquivo: '3-DepartamentoManager/3-DepartamentoManager.html',      tipo: 'editar' }
         ],
         pasta: '2-crud-delete'
+    },
+    {
+        grupo: 'CRUD UPDATE',
+        pagina: 'crud-update.html',
+        parent: { label: 'CRUD', href: '../2-crud/crud.html' },
+        hidden: true,
+        items: [
+            { label: '1 - DepartamentoProdutoDAO + Model', arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html', tipo: 'editar' },
+            { label: '2 - DepartamentoProdutoAction',      arquivo: '2-DepartamentoProdutoAction/2-DepartamentoProdutoAction.html', tipo: 'editar' },
+            { label: '3 - DepartamentoProdutoForm',        arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html', tipo: 'editar' },
+            { label: '4 - DepartamentoProdutoList',        arquivo: '4-DepartamentoProdutoList/4-DepartamentoProdutoList.html', tipo: 'editar' },
+            { label: '5 - DepartamentoManager',            arquivo: '5-DepartamentoManager/5-DepartamentoManager.html', tipo: 'editar' }
+        ],
+        pasta: '2-crud-update'
     }
 ];
 
@@ -124,6 +138,17 @@ var FOOTER = {
                 { label: 'DepartamentoManager',      arquivo: '3-DepartamentoManager/3-DepartamentoManager.html' }
             ],
             pasta: '2-crud-delete'
+        },
+        {
+            grupo: 'CRUD UPDATE',
+            items: [
+                { label: 'DepartamentoProdutoDAO + Model', arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html' },
+                { label: 'DepartamentoProdutoAction',      arquivo: '2-DepartamentoProdutoAction/2-DepartamentoProdutoAction.html' },
+                { label: 'DepartamentoProdutoForm',        arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html' },
+                { label: 'DepartamentoProdutoList',        arquivo: '4-DepartamentoProdutoList/4-DepartamentoProdutoList.html' },
+                { label: 'DepartamentoManager',            arquivo: '5-DepartamentoManager/5-DepartamentoManager.html' }
+            ],
+            pasta: '2-crud-update'
         }
     ],
     extras: [

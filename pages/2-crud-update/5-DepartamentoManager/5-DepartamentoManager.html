@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoManager (UPDATE) — XT - Treinamento</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoManager <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="5-DepartamentoManager/audio/DepartamentoManager.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>Última edição da sequência UPDATE. Duas linhas <code>regAction</code> no <code>config()</code> pra registrar ShowUpdate e Update. Sem essas linhas, clicar numa linha da lista ou no botão Salvar do form daria "setor não encontrado".</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento;
+
+import br.xt.app.departamento.produto.DepartamentoProdutoForm;
+import br.xt.app.departamento.produto.DepartamentoProdutoList;
+import br.xt.app.painel.PnlManager;
+
+public class DepartamentoManager extends PnlManager {
+
+    public static final String F_ACESSO_MODULO = "XT.PAINEL_CONTROLE.ACESSO_MODULO.DEPARTAMENTO";
+
+    @Override
+    public void config() throws Exception {
+
+        regFun("PAINEL DE CONTROLE", "Acesso ao Módulo", "DEPARTAMENTO", F_ACESSO_MODULO);
+
+        regAction(DepartamentoHome.class);
+        regAction(DepartamentoHome.Title.class);
+        regAction(DepartamentoHome.MenuItem.class);
+        regAction(DepartamentoHome.MenuInicial.class);
+
+        regAction(DepartamentoProdutoList.class);
+        regAction(DepartamentoProdutoList.DeleteFromList.class);
+
+        regAction(DepartamentoProdutoForm.class);
+        regAction(DepartamentoProdutoForm.ShowInsert.class);
+        // ADICIONAR
+        regAction(DepartamentoProdutoForm.ShowUpdate.class);
+        // FIM
+        regAction(DepartamentoProdutoForm.Insert.class);
+        // ADICIONAR
+        regAction(DepartamentoProdutoForm.Update.class);
+        // FIM
+        regAction(DepartamentoProdutoForm.Cancelar.class);
+
+    }
+}</code></pre>
+
+<p class="info-note"><strong>Mudanças nesta sequência:</strong> 2 linhas <code>regAction</code> novas (verde). Nenhum import novo (o import do <code>DepartamentoProdutoForm</code> já existia da sequência CREATE).</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">2 novos setores — quem chama cada um</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="table-wrap">
+<table>
+    <tr><th><code>regAction</code></th><th>Classe</th><th>Acionada quando</th></tr>
+    <tr><td>+1</td><td><code>ShowUpdate</code></td><td>Clique numa linha da lista</td></tr>
+    <tr><td>+2</td><td><code>Update</code></td><td>Clique em "Salvar" no modo edição</td></tr>
+</table>
+</div>
+
+<p>Observe a organização: os novos <code>regAction</code> ficam intercalados com os existentes, agrupados por par lógico — <code>ShowInsert</code> + <code>ShowUpdate</code> juntos, <code>Insert</code> + <code>Update</code> + <code>Delete</code> juntos. Facilita a leitura.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Encerramento — sequência CRUD UPDATE completa</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Com estas linhas, a sequência CRUD UPDATE está pronta. Junto com as sequências anteriores, o CRUD completo do módulo Departamento está funcional:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Arquivo</th><th>Tipo</th><th>Edição nesta sequência</th></tr>
+    <tr><td><strong>DepartamentoProdutoDAO</strong></td><td>editar</td><td><code>daoSingle</code> + <code>daoUpdate</code></td></tr>
+    <tr><td><strong>DepartamentoProdutoModel</strong></td><td>editar</td><td>Wrapper <code>update(bean)</code></td></tr>
+    <tr><td><strong>DepartamentoProdutoAction</strong></td><td>editar</td><td>Método <code>id_produto()</code></td></tr>
+    <tr><td><strong>DepartamentoProdutoForm</strong></td><td>editar</td><td>2 inner classes (ShowUpdate, Update) + <code>br()</code> atualizado</td></tr>
+    <tr><td><strong>DepartamentoProdutoList</strong></td><td>editar</td><td><code>setOnclick</code> nas linhas</td></tr>
+    <tr><td><strong>DepartamentoManager</strong></td><td>editar</td><td>2 <code>regAction</code></td></tr>
+</table>
+</div>
+
+<p>Seis arquivos editados, nenhum arquivo novo. Resultado: clicar numa linha da lista abre o form preenchido, permite editar e salvar, ou excluir com confirmação. A lista atualiza automaticamente ao fechar o modal.</p>
+
+<p>Com o CRUD básico completo (READ + DELETE + CREATE + UPDATE), os próximos episódios vão adicionar features de conveniência: Quick Search, Sort, Tabs, paginação, insert_chk, Detail e LinkBox.</p>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
