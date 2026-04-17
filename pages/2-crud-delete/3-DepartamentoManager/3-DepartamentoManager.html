@@ -86,26 +86,7 @@ public class DepartamentoManager extends PnlManager {
 
 <p>Na fase "prédio acordando" — quando o sistema SOBE (antes de qualquer request). O framework cria uma instância temporária do <code>DepartamentoManager</code>, chama <code>config()</code>, cada <code>regAction</code> grava uma entrada no mapa global. Depois a instância temporária é descartada — só o mapa sobrevive.</p>
 
-<p>Quando o primeiro request chegar querendo <code>DeleteFromList</code>, o framework consulta o mapa, encontra a entrada, e o fluxo todo funciona. Ver o <a href="../../2-crud/6-getManager/6-getManager.html">episódio getManager</a> pra revisão das duas fases.</p>
-
-        </div>
-    </div>
-
-    <div class="info-row">
-        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-            <span class="info-row-title">Convenção de ordem no <code>config()</code></span>
-            <button class="info-row-btn">+</button>
-        </div>
-        <div class="info-row-body">
-
-<p>Pra o framework, a ORDEM não importa — no fim, o mapa tem todos os registros. Mas a convenção do projeto é agrupar por entidade e fase:</p>
-<ol>
-    <li>Primeiro as permissões (<code>regFun</code>)</li>
-    <li>Depois a recepção (<code>DepartamentoHome</code> + inner classes)</li>
-    <li>Depois cada entidade, com o setor principal primeiro e as inner classes logo abaixo</li>
-</ol>
-
-<p>A <code>DeleteFromList</code> fica LOGO ABAIXO da <code>DepartamentoProdutoList</code> porque é inner dela. Mantém a relação visualmente clara no código.</p>
+<p>Quando o primeiro request chegar querendo <code>DeleteFromList</code>, o framework consulta o mapa, encontra a entrada, e o fluxo todo funciona.</p>
 
         </div>
     </div>
@@ -123,7 +104,7 @@ public class DepartamentoManager extends PnlManager {
 <table>
     <tr><th>Arquivo</th><th>Edição</th></tr>
     <tr><td><strong>DepartamentoProdutoDAO</strong></td><td>Ganhou o método <code>daoDelete</code> (1 linha de lógica)</td></tr>
-    <tr><td><strong>DepartamentoProdutoList</strong></td><td>Coluna <code>col_del</code>, inner <code>DeleteFromList</code>, constante <code>CONFIRM_LIST</code></td></tr>
+    <tr><td><strong>DepartamentoProdutoList</strong></td><td>Coluna <code>col_del</code> com <code>IconButton</code>, inner <code>DeleteFromList</code>, constante <code>CONFIRM_LIST</code></td></tr>
     <tr><td><strong>DepartamentoManager</strong></td><td>Linha <code>regAction</code> da <code>DeleteFromList</code></td></tr>
 </table>
 </div>

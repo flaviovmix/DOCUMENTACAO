@@ -39,38 +39,39 @@ var MENU = [
         grupo: 'CRUD',
         pagina: 'crud.html',
         subgrupos: [
-            {
-                label: 'READ',
-                items: [
-                    { label: '1 - DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html',   tipo: 'novo' },
-                    { label: '2 - DepartamentoProdutoWBean',  arquivo: '2-DepartamentoProdutoWBean/2-DepartamentoProdutoWBean.html',  tipo: 'novo' },
-                    { label: '3 - DepartamentoProdutoDAO',    arquivo: '3-DepartamentoProdutoDAO/3-DepartamentoProdutoDAO.html',    tipo: 'novo' },
-                    { label: '4 - DepartamentoProdutoModel',  arquivo: '4-DepartamentoProdutoModel/4-DepartamentoProdutoModel.html',  tipo: 'novo' },
-                    { label: '5 - DepartamentoProdutoAction', arquivo: '5-DepartamentoProdutoAction/5-DepartamentoProdutoAction.html', tipo: 'novo' },
-                    { label: '6 - getManager',                arquivo: '6-getManager/6-getManager.html',                tipo: 'editar' },
-                    { label: '7 - DepartamentoMdFactory',     arquivo: '7-DepartamentoMdFactory/7-DepartamentoMdFactory.html',     tipo: 'editar' },
-                    { label: '8 - DepartamentoProdutoList',   arquivo: '8-DepartamentoProdutoList/8-DepartamentoProdutoList.html',   tipo: 'novo' },
-                    { label: '9 - DepartamentoHome',          arquivo: '9-DepartamentoHome/9-DepartamentoHome.html',          tipo: 'editar' }
-                ]
-            },
-            {
-                label: 'DELETE',
-                items: [
-                    { label: '1 - DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html',   tipo: 'editar' },
-                    { label: '2 - DepartamentoProdutoWBean',  arquivo: '2-DepartamentoProdutoWBean/2-DepartamentoProdutoWBean.html',  tipo: 'check' },
-                    { label: '3 - DepartamentoProdutoDAO',    arquivo: '3-DepartamentoProdutoDAO/3-DepartamentoProdutoDAO.html',    tipo: 'editar' },
-                    { label: '4 - DepartamentoProdutoModel',  arquivo: '4-DepartamentoProdutoModel/4-DepartamentoProdutoModel.html',  tipo: 'novo' },
-                    { label: '5 - DepartamentoProdutoAction', arquivo: '5-DepartamentoProdutoAction/5-DepartamentoProdutoAction.html', tipo: 'check' },
-                    { label: '6 - getManager',                arquivo: '6-getManager/6-getManager.html',                tipo: 'novo' },
-                    { label: '7 - DepartamentoMdFactory',     arquivo: '7-DepartamentoMdFactory/7-DepartamentoMdFactory.html',     tipo: 'check' },
-                    { label: '8 - DepartamentoProdutoList',   arquivo: '8-DepartamentoProdutoList/8-DepartamentoProdutoList.html',   tipo: 'editar' },
-                    { label: '9 - DepartamentoHome',          arquivo: '9-DepartamentoHome/9-DepartamentoHome.html',          tipo: 'novo' }
-                ]
-            },
-            { label: 'CREATE', items: [] },
-            { label: 'UPDATE', items: [] }
+            { label: 'READ',   href: 'crud-read.html' },
+            { label: 'DELETE', href: '../2-crud-delete/crud-delete.html', pasta: '2-crud-delete' },
+            { label: 'CREATE', href: '../2-crud-create/crud-create.html', pasta: '2-crud-create' },
+            { label: 'UPDATE', disabled: true }
         ],
+        subpastas: ['2-crud-delete', '2-crud-create'],
         pasta: '2-crud'
+    },
+    {
+        grupo: 'CRUD CREATE',
+        pagina: 'crud-create.html',
+        parent: { label: 'CRUD', href: '../2-crud/crud.html' },
+        hidden: true,
+        items: [
+            { label: '1 - DepartamentoProdutoDAO + Model', arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html', tipo: 'editar' },
+            { label: '2 - DepartamentoProdutoAction',      arquivo: '2-DepartamentoProdutoAction/2-DepartamentoProdutoAction.html', tipo: 'editar' },
+            { label: '3 - DepartamentoProdutoForm',        arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html', tipo: 'novo' },
+            { label: '4 - DepartamentoProdutoList',        arquivo: '4-DepartamentoProdutoList/4-DepartamentoProdutoList.html', tipo: 'editar' },
+            { label: '5 - DepartamentoManager',            arquivo: '5-DepartamentoManager/5-DepartamentoManager.html', tipo: 'editar' }
+        ],
+        pasta: '2-crud-create'
+    },
+    {
+        grupo: 'CRUD DELETE',
+        pagina: 'crud-delete.html',
+        parent: { label: 'CRUD', href: '../2-crud/crud.html' },
+        hidden: true,
+        items: [
+            { label: '1 - DepartamentoProdutoDAO',  arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html',  tipo: 'editar' },
+            { label: '2 - DepartamentoProdutoList',  arquivo: '2-DepartamentoProdutoList/2-DepartamentoProdutoList.html',  tipo: 'editar' },
+            { label: '3 - DepartamentoManager',      arquivo: '3-DepartamentoManager/3-DepartamentoManager.html',      tipo: 'editar' }
+        ],
+        pasta: '2-crud-delete'
     }
 ];
 
@@ -103,6 +104,26 @@ var FOOTER = {
                 { label: 'DepartamentoHome',          arquivo: '9-DepartamentoHome/9-DepartamentoHome.html' }
             ],
             pasta: '2-crud'
+        },
+        {
+            grupo: 'CRUD CREATE',
+            items: [
+                { label: 'DepartamentoProdutoDAO + Model', arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html' },
+                { label: 'DepartamentoProdutoAction',      arquivo: '2-DepartamentoProdutoAction/2-DepartamentoProdutoAction.html' },
+                { label: 'DepartamentoProdutoForm',         arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html' },
+                { label: 'DepartamentoProdutoList',        arquivo: '4-DepartamentoProdutoList/4-DepartamentoProdutoList.html' },
+                { label: 'DepartamentoManager',            arquivo: '5-DepartamentoManager/5-DepartamentoManager.html' }
+            ],
+            pasta: '2-crud-create'
+        },
+        {
+            grupo: 'CRUD DELETE',
+            items: [
+                { label: 'DepartamentoProdutoDAO',  arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html' },
+                { label: 'DepartamentoProdutoList',  arquivo: '2-DepartamentoProdutoList/2-DepartamentoProdutoList.html' },
+                { label: 'DepartamentoManager',      arquivo: '3-DepartamentoManager/3-DepartamentoManager.html' }
+            ],
+            pasta: '2-crud-delete'
         }
     ],
     extras: [
@@ -243,11 +264,19 @@ document.addEventListener('DOMContentLoaded', async function() {
     // ── Breadcrumb ──
     var breadcrumbHTML = '';
     if (!isRoot && section) {
+        var parentPrefix = '';
+        if (section.parent) {
+            var parentHref = (isSubFolder ? '../' : '') + section.parent.href;
+            parentPrefix = '<span class="breadcrumb-sep">\u203a</span>';
+            parentPrefix += '<a href="' + parentHref + '">' + section.parent.label + '</a>';
+        }
         breadcrumbHTML = '<nav class="breadcrumb-nav">';
         if (isSectionIndex) {
+            breadcrumbHTML += parentPrefix;
             breadcrumbHTML += '<span class="breadcrumb-sep">\u203a</span>';
             breadcrumbHTML += '<span class="breadcrumb-current">' + section.grupo + '</span>';
         } else {
+            breadcrumbHTML += parentPrefix;
             breadcrumbHTML += '<span class="breadcrumb-sep">\u203a</span>';
             breadcrumbHTML += '<a href="' + (isSubFolder ? '../' : '') + section.pagina + '">' + section.grupo + '</a>';
             breadcrumbHTML += '<span class="breadcrumb-sep">\u203a</span>';
@@ -361,6 +390,8 @@ function buildMenu(currentPage, currentFolder, isSubFolder) {
     var html = '';
     for (var i = 0; i < MENU.length; i++) {
         var g = MENU[i];
+        if (g.hidden) continue;
+
         var prefix;
 
         if (currentFolder === g.pasta && isSubFolder) {
@@ -375,7 +406,8 @@ function buildMenu(currentPage, currentFolder, isSubFolder) {
             prefix = 'pages/' + g.pasta + '/';
         }
 
-        var isActiveGroup = (currentFolder === g.pasta);
+        var isActiveGroup = (currentFolder === g.pasta) ||
+            (g.subpastas && g.subpastas.indexOf(currentFolder) !== -1);
         html += '<div class="menu-group' + (isActiveGroup ? '' : ' collapsed') + '">';
         html += '<div class="menu-group-header" onclick="toggleGroup(this)">';
         html += g.grupo;
@@ -406,6 +438,24 @@ function buildMenu(currentPage, currentFolder, isSubFolder) {
         if (g.subgrupos) {
             for (var s = 0; s < g.subgrupos.length; s++) {
                 var sub = g.subgrupos[s];
+
+                // Subgrupo-link (href) — renderiza como link simples
+                if (sub.href) {
+                    var subActive = (sub.pasta && currentFolder === sub.pasta) ||
+                        (!sub.pasta && currentPage === sub.href);
+                    html += '<a class="menu-item menu-subgroup-link' + (subActive ? ' active' : '') + '" href="' + prefix + sub.href + '">';
+                    html += sub.label;
+                    html += '</a>';
+                    continue;
+                }
+
+                // Subgrupo desabilitado (sem href, sem items)
+                if (sub.disabled) {
+                    html += '<span class="menu-item menu-subgroup-link disabled">' + sub.label + '</span>';
+                    continue;
+                }
+
+                // Subgrupo expandível (com items) — padrão original
                 var hasItems = sub.items && sub.items.length > 0;
                 var hasActive = false;
                 if (hasItems) {

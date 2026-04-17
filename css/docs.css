@@ -447,6 +447,17 @@ body.dark .breadcrumb-nav .breadcrumb-current { color: #cdd6f4; }
     color: #aaa;
     cursor: default;
 }
+.menu-subgroup-link {
+    font-size: 0.78em;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding-left: 24px !important;
+}
+.menu-subgroup-link.disabled {
+    color: #aaa;
+    cursor: default;
+    pointer-events: none;
+}
 .menu-subgroup-arrow {
     font-size: 0.7em;
     transition: transform 0.2s ease;
@@ -797,6 +808,7 @@ body.dark .menu-subgroup-label          { color: #6c7086; }
 body.dark .menu-subgroup-label:hover    { color: #a6adc8; background: #313244; }
 body.dark .menu-subgroup:not(.collapsed) > .menu-subgroup-label { color: #a6adc8; background: #313244; font-weight: bold !important; }
 body.dark .menu-subgroup-label.disabled { color: #585b70; }
+body.dark .menu-subgroup-link.disabled { color: #585b70; }
 body.dark #content                 { background: #181818; color: #cdd6f4; }
 body.dark #content h1              { border-bottom-color: #45475a; color: #cdd6f4; }
 body.dark #content h2              { border-left-color: #585b70; color: #cdd6f4; }

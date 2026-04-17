@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoProdutoList (CREATE) — XT - Treinamento</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoProdutoList <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="4-DepartamentoProdutoList/audio/DepartamentoProdutoList.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>A List ganha uma barra inferior com o botão "Novo Registro" que abre o Form em modal. Edição pontual: 3 imports novos, o método <code>br()</code> e uma linha extra no <code>window()</code>.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.ListColumn;
+import br.jasap.gui.ListLine;
+import br.jasap.gui.ListView;
+// ADICIONAR
+import br.jasap.gui.Bar;
+import br.jasap.gui.Button;
+// FIM
+import br.jasap.gui.Table;
+import br.jasap.gui.Toast;
+import br.jasap.util.JasapFunctions;
+import br.jasap.util.Js;
+// ADICIONAR
+import br.jasap.util.ModalConfig;
+// FIM
+import br.jasap.util.exceptions.SQLConstraintException;
+import br.xt.acore.view.IconButton;
+import br.xt.acore.view.XtPage;
+
+public class DepartamentoProdutoList extends DepartamentoProdutoAction {
+
+    @Override
+    public Effect execute() throws Exception {
+        render();
+        return new Response();
+    }
+
+    public void render() throws Exception {
+        XtPage page = new XtPage(getManager());
+        if (isAjaxCall()) {
+            update(JasapPage.DIV_WINDOW, page.content(window().toHtml()));
+        } else {
+            page.getTable()
+                    .setBorder(4)
+                    .rowC("100%")
+                    .setContent(page.content(window().toHtml()))
+                    .setStyle(ui().stretchBorder());
+            page.setWinTitle("Produtos");
+            getOutput().write(this, page);
+        }
+    }
+
+    public Table window() throws Exception {
+        Table w = new Table(getManager()).setSize("100%", "100%");
+        w.rowC("99%", JasapPage.DIV_WSPACE, lView());
+        w.rowC("1%",  null, ui().line());
+        // ADICIONAR
+        w.rowC("1%",  JasapPage.DIV_BOTTOM, br());
+        w.rowC("1%",  null, ui().line());
+        // FIM
+        return w;
+    }
+
+    // ADICIONAR
+    public Bar br() throws Exception {
+        Button cmd_novo = ui().button("&amp;nbsp;&amp;nbsp;Novo Registro&amp;nbsp;&amp;nbsp;")
+                .setCss("btn btn-success btn-lg").setNoSize()
+                .setOnClick(link(DepartamentoProdutoForm.ShowInsert.class)
+                        .modal(new ModalConfig().setWidth("750").setHeight("570")
+                                .setOnCloseURL(url(DepartamentoProdutoList.class))));
+
+        return ui().bar()
+                .addRight(cmd_novo);
+    }
+    // FIM
+
+    private ListView lv = null;
+    public ListView lView() throws Exception {
+        // ... (sem alteração — mesmo código da sequência DELETE)
+        if (lv == null) {
+            lv = ui().lView();
+
+            lv.setOrderBy(DepartamentoProdutoBean.NOME_PRODUTO);
+            lv.setPageSize(9999);
+
+            lv.setFiltro(getFiltro());
+            getFactory().departamento().proModel().daoList(lv.getData());
+
+            ListColumn col_nome = lv.newColumn("Nome").setWidth(220).setPadding(";padding:10 8 10 8;");
+            ListColumn col_vl   = lv.newColumn("Valor").setWidth(100).setPadding(";padding:10 8 10 8;").alignCenter();
+            ListColumn col_qtd  = lv.newColumn("Qtd").setWidth(80).setPadding(";padding:10 8 10 8;").alignCenter();
+            ListColumn col_obs  = lv.newColumn("Observação").setPadding(";padding:10 8 10 8;");
+            ListColumn col_del  = lv.newColumn("").setWidth(50).setPadding(";padding:6 4 6 4;").alignCenter();
+
+            while (lv.hasNext()) {
+                DepartamentoProdutoBean bean = (DepartamentoProdutoBean) lv.next();
+                ListLine line = lv.createLine();
+                col_nome.setContent(bean.getNome_produto());
+                col_vl.setContent(bean.getVl_produto());
+                col_qtd.setContent(bean.getQtd_produto());
+                col_obs.setContent(bean.getObs_produto());
+                col_del.setHtmlData(new IconButton("trash")
+                        .setColor("#d9534f")
+                        .setTitle("Excluir")
+                        .setOnclick(link(DeleteFromList.class).putInteger(DepartamentoProdutoBean.ID_PRODUTO, bean.getId_produto()).ajax())
+                        .toHtml());
+                lv.addLine(line);
+            }
+        }
+        return lv;
+    }
+
+    // ... getFiltro(), DeleteFromList, constantes (sem alteração)
+
+    public static final String LIST         = ROOT.concat("__LIST/");
+    public static final String FILTRO       = LIST.concat("__FILTRO");
+    public static final String CONFIRM_LIST = LIST.concat("__CONFIRM_LIST");
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudanças nesta sequência:</strong> 3 imports novos (<code>Bar</code>, <code>Button</code>, <code>ModalConfig</code>), 2 linhas no <code>window()</code>, e o método <code>br()</code> inteiro. Tudo o mais já existia das sequências READ e DELETE.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title"><code>ModalConfig</code> — abrindo o Form como modal</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O botão "Novo Registro" usa <code>link().modal(new ModalConfig()...)</code> pra abrir o Form:</p>
+
+<pre><code class="language-java">link(DepartamentoProdutoForm.ShowInsert.class)
+    .modal(new ModalConfig()
+        .setWidth("750")
+        .setHeight("570")
+        .setOnCloseURL(url(DepartamentoProdutoList.class)))</code></pre>
+
+<p>Três configurações:</p>
+<ul>
+    <li><strong><code>setWidth / setHeight</code></strong> — dimensões fixas do modal (750×570 pixels). O Form aparece como janela flutuante centralizada sobre a lista.</li>
+    <li><strong><code>setOnCloseURL</code></strong> — URL executada automaticamente quando o modal fecha. Aponta pra própria <code>DepartamentoProdutoList</code>, que re-renderiza a lista inteira — assim o produto recém-criado aparece na tabela.</li>
+</ul>
+
+<p>Comparação com a List (que abre em tela cheia): a List é chamada via <code>preAjax().modalMax()</code> no DepartamentoHome. O Form é chamado via <code>modal(new ModalConfig().setWidth().setHeight())</code> — modal com dimensões fixas, menor que a tela.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Posição do botão — por que embaixo?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O botão "Novo Registro" fica na barra inferior (<code>DIV_BOTTOM</code>), abaixo da lista — mesmo padrão do Laboratório. A barra é montada pelo <code>br()</code> e posicionada no <code>window()</code>:</p>
+
+<pre><code class="language-java">w.rowC("99%", JasapPage.DIV_WSPACE, lView());   // lista ocupa quase tudo
+w.rowC("1%",  null, ui().line());                // separador
+w.rowC("1%",  JasapPage.DIV_BOTTOM, br());       // barra com botão
+w.rowC("1%",  null, ui().line());                // separador final</code></pre>
+
+<p>Quando a lista tiver paginação (episódio futuro), a navegação de páginas também vai entrar nessa barra — <code>bar.addCenter(lv.nav(...))</code>. O botão "Novo Registro" fica à direita, a navegação no centro.</p>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

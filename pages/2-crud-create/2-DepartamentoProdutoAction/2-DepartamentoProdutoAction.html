@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoProdutoAction (CREATE) — XT - Treinamento</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoProdutoAction <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="2-DepartamentoProdutoAction/audio/DepartamentoProdutoAction.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>O Action base ganha o método <code>proBean()</code> — pré-requisito do Form. Enquanto o <code>proWBean()</code> (que já existia) serve pra filtros de busca, o <code>proBean()</code> serve pra ler e gravar dados de um produto individual.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.xt.AppsRootAction;
+import br.xt.app.departamento.DepartamentoManager;
+
+public abstract class DepartamentoProdutoAction extends AppsRootAction {
+
+    private DepartamentoProdutoWBean wbean = null;
+    public DepartamentoProdutoWBean proWBean() throws Exception {
+        if (wbean == null)
+            wbean = (DepartamentoProdutoWBean) getManager().getInstance(DepartamentoProdutoWBean.class);
+        return wbean;
+    }
+
+    // ADICIONAR
+    private DepartamentoProdutoBean bean = null;
+    public DepartamentoProdutoBean proBean() throws Exception {
+        if (bean == null)
+            bean = (DepartamentoProdutoBean) getManager().getInstance(DepartamentoProdutoBean.class);
+        return bean;
+    }
+    // FIM
+
+    public static final String ROOT = DepartamentoManager.F_ACESSO_MODULO.concat("__PRODUTO/");
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudança nesta sequência:</strong> somente <code>proBean()</code> e o campo <code>bean</code> (verde). O <code>proWBean()</code> e a constante <code>ROOT</code> já existiam da sequência CRUD READ.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que <code>getInstance</code> faz por baixo?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p><code>getManager().getInstance(DepartamentoProdutoBean.class)</code> faz duas coisas:</p>
+
+<ol>
+    <li><strong>Cria uma instância nova</strong> do Bean (via reflection, chamando o construtor vazio)</li>
+    <li><strong>Preenche automaticamente</strong> cada campo do Bean com os dados que vieram no request — se o formulário mandou <code>nome_produto=Teclado</code>, o Bean já volta com <code>getNome_produto()</code> retornando <code>"Teclado"</code></li>
+</ol>
+
+<p>Isso é o que conecta o formulário HTML ao Java. Cada campo do Form tem um <code>name</code> que bate com o nome do setter do Bean. O framework faz o match automaticamente.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Diferença: <code>proBean()</code> vs <code>proWBean()</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="table-wrap">
+<table>
+    <tr><th>Método</th><th>Retorna</th><th>Usa pra</th></tr>
+    <tr><td><code>proBean()</code></td><td><code>DepartamentoProdutoBean</code></td><td>Ler/gravar UM produto (Form: inserir, editar, exibir)</td></tr>
+    <tr><td><code>proWBean()</code></td><td><code>DepartamentoProdutoWBean</code></td><td>Filtros de busca na lista (WHERE do SQL)</td></tr>
+</table>
+</div>
+
+<p>O <code>WBean</code> ("Where Bean") estende o Bean e implementa <code>Criteria</code> — ele carrega filtros (status, datas, texto de busca) que o DAO usa pra montar o WHERE. Já existia desde o READ.</p>
+
+<p>O <code>Bean</code> puro carrega os dados de um registro individual — nome, valor, quantidade. É o que o Form precisa pra mostrar e gravar.</p>
+
+<p>Ambos usam <code>getInstance</code> com o mesmo padrão lazy (cria uma vez, reutiliza na mesma request).</p>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

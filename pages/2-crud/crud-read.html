@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD READ — XT - Treinamento</title>
+    <script src="../../js/layout.js"></script>
+</head>
+<body>
+
+    <div class="home-header">
+        <h1 class="home-title">CRUD READ</h1>
+        <p class="home-sub">Plugar a primeira entidade (Produto) e montar a tela de listagem</p>
+    </div>
+
+    <div class="audio-player" data-src="visaogeral.m4a">
+        <audio preload="metadata"></audio>
+        <button class="audio-btn" title="Play / Pause"></button>
+        <div class="audio-progress-wrap">
+            <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+            <div class="audio-progress-fill"></div>
+        </div>
+        <span class="audio-time">0:00 / 0:00</span>
+    </div>
+
+    <div class="info-accordion">
+        <div class="info-row">
+            <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+                <span class="info-row-title">VISÃO GERAL</span>
+                <span class="info-row-btn">+</span>
+            </div>
+            <div class="info-row-body">
+                <p>Na sequência <strong>Novo Módulo</strong> a gente construiu o esqueleto do Departamento — ele existe, mas o menu lateral está vazio. Agora vamos plugar a primeira entidade: <strong>Produto</strong>. E o CRUD começa pelo <strong>R</strong> — antes de criar, editar ou deletar, o usuário precisa conseguir <strong>ver</strong> uma listagem saindo do banco.</p>
+                <p>O áudio acompanha a <strong>jornada do agente</strong> quando o usuário clica em "Produtos" no menu lateral:</p>
+                <ul style="list-style:none; padding-left:0;">
+                    <li style="margin-bottom:16px;">
+                        <strong>1º agente — o encaminhador</strong><br>
+                        <span style="color:#666; font-size:0.92em;">Nasce na recepção do departamento (MenuItem), olha o número do guichê e escreve uma ordem pro browser: "abre a tela cheia da listagem de Produtos". Não busca nada — só escreve a ordem e é descartado.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Ajax dispara um novo pedido</strong><br>
+                        <span style="color:#666; font-size:0.92em;">O browser não troca a página inteira — pede só um recorte que vai ser colado por cima da recepção do departamento.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>2º agente nasce no setor de listagem</strong><br>
+                        <span style="color:#666; font-size:0.92em;">Cartão temporário novo, agente novo. Ele lê o procedimento afixado no setor (DepartamentoProdutoList): monta uma mesa de listagem, pega a ferramenta de Produto, busca no almoxarifado, monta as linhas, devolve o HTML.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Parada na ferramentaria local</strong><br>
+                        <span style="color:#666; font-size:0.92em;">O agente vai até o DepartamentoMdFactory e pede o ProdutoModel. Se for a primeira vez no pedido, a ferramentaria fabrica e guarda na prateleira pra reusar.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Parada no almoxarifado (banco)</strong><br>
+                        <span style="color:#666; font-size:0.92em;">Com a ferramenta na mão, o agente executa a query "select tudo, ordenado por nome". O almoxarifado devolve uma lista de fichas preenchidas — nome, valor, quantidade, observação.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Mesa de listagem montada</strong><br>
+                        <span style="color:#666; font-size:0.92em;">O agente cria as colunas (Nome, Valor, Quantidade, Observação) e percorre a lista de produtos um por um, montando cada linha da tabela.</span>
+                    </li>
+                    <li>
+                        <strong>Recorte HTML cola por cima</strong><br>
+                        <span style="color:#666; font-size:0.92em;">O agente embrulha tudo num recorte HTML, sai pelos guardas da saída, atravessa a internet e o browser cola a tela cheia por cima do que o usuário já estava vendo. Agente e cartão pro lixo.</span>
+                    </li>
+                </ul>
+                <p>No fim do áudio, o panorama dos <strong>9 arquivos</strong> que vão ser construídos nos próximos episódios — <strong>6 novos</strong> (Bean, WBean, DAO, Model, Action, List) e <strong>3 edits</strong> (MdFactory, Manager, Home) — na ordem de construção: de baixo pra cima.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="home-grid">
+
+        <div class="home-card" data-href="1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <p>Ficha em branco que representa um produto. POJO com os campos da tabela, getters e setters.</p>
+                </div>
+            </div>
+            <div class="home-card-img">
+                <img src="img/bean.png" alt="DepartamentoProdutoBean">
+            </div>
+            <div class="home-card-bar">
+                <a href="1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html" class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</a>
+            </div>
+        </div>
+
+        <div class="home-card" data-href="2-DepartamentoProdutoWBean/2-DepartamentoProdutoWBean.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <p>Versao da ficha preparada pra servir de filtro nas buscas do banco (WHERE do SQL).</p>
+                </div>
+            </div>
+            <div class="home-card-img">
+                <img src="img/wbean.png" alt="DepartamentoProdutoWBean">
+            </div>
+            <div class="home-card-bar">
+                <a href="2-DepartamentoProdutoWBean/2-DepartamentoProdutoWBean.html" class="home-card-tag" style="--tag-clr:#2563eb;">Ver docs</a>
+            </div>
+        </div>
+
+        <div class="home-card" data-href="3-DepartamentoProdutoDAO/3-DepartamentoProdutoDAO.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <p>Peca que sabe falar com o almoxarifado. SELECT, INSERT, UPDATE e DELETE moram aqui.</p>
+                </div>
+            </div>
+            <div class="home-card-img">
+                <img src="img/dao.png" alt="DepartamentoProdutoDAO">
+            </div>
+            <div class="home-card-bar">
+                <a href="3-DepartamentoProdutoDAO/3-DepartamentoProdutoDAO.html" class="home-card-tag" style="--tag-clr:#7A3E9D;">Ver docs</a>
+            </div>
+        </div>
+
+        <div class="home-card" data-href="4-DepartamentoProdutoModel/4-DepartamentoProdutoModel.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <p>Camada fina em cima do DAO onde vao morar as regras de negocio nas proximas sequencias.</p>
+                </div>
+            </div>
+            <div class="home-card-img">
+                <img src="img/model.png" alt="DepartamentoProdutoModel">
+            </div>
+            <div class="home-card-bar">
+                <a href="4-DepartamentoProdutoModel/4-DepartamentoProdutoModel.html" class="home-card-tag" style="--tag-clr:#0891b2;">Ver docs</a>
+            </div>
+        </div>
+
+        <div class="home-card" data-href="5-DepartamentoProdutoAction/5-DepartamentoProdutoAction.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <p>Classe base abstrata das actions de Produto. ROOT e proWBean() (lazy initialization da ficha de filtro).</p>
+                </div>
+            </div>
+            <div class="home-card-img">
+                <img src="img/action.png" alt="DepartamentoProdutoAction">
+            </div>
+            <div class="home-card-bar">
+                <a href="5-DepartamentoProdutoAction/5-DepartamentoProdutoAction.html" class="home-card-tag" style="--tag-clr:#059669;">Ver docs</a>
+            </div>
+        </div>
+
+        <div class="home-card" data-href="6-getManager/6-getManager.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <p>De onde vem o getManager(). O fio que conecta Action, XtPage, DAO, MdFactory e Model.</p>
+                </div>
+            </div>
+            <div class="home-card-img">
+                <img src="img/getmanager.png" alt="getManager()">
+            </div>
+            <div class="home-card-bar">
+                <a href="6-getManager/6-getManager.html" class="home-card-tag" style="--tag-clr:#dc2626;">Ver docs</a>
+            </div>
+        </div>
+
+        <div class="home-card" data-href="7-DepartamentoMdFactory/7-DepartamentoMdFactory.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <p>Edita a ferramentaria do departamento pra fabricar e guardar o ProdutoModel (lazy init).</p>
+                </div>
+            </div>
+            <div class="home-card-img">
+                <img src="img/mdfactory.png" alt="DepartamentoMdFactory">
+            </div>
+            <div class="home-card-bar">
+                <a href="7-DepartamentoMdFactory/7-DepartamentoMdFactory.html" class="home-card-tag" style="--tag-clr:#6366f1;">Ver docs</a>
+            </div>
+        </div>
+
+        <div class="home-card" data-href="8-DepartamentoProdutoList/8-DepartamentoProdutoList.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <p>Setor da listagem. Monta a mesa, pega a ferramenta, busca no almoxarifado, devolve o HTML.</p>
+                </div>
+            </div>
+            <div class="home-card-img">
+                <img src="img/list.png" alt="DepartamentoProdutoList">
+            </div>
+            <div class="home-card-bar">
+                <a href="8-DepartamentoProdutoList/8-DepartamentoProdutoList.html" class="home-card-tag" style="--tag-clr:#ea580c;">Ver docs</a>
+            </div>
+        </div>
+
+        <div class="home-card" data-href="9-DepartamentoHome/9-DepartamentoHome.html">
+            <div class="home-card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="home-card-info">
+                <div class="home-card-resumo">
+                    <p>Edita a recepcao do departamento: item Produto no sidebar, case no MenuItem e breadcrumb no Title.</p>
+                </div>
+            </div>
+            <div class="home-card-img">
+                <img src="img/home.png" alt="DepartamentoHome">
+            </div>
+            <div class="home-card-bar">
+                <a href="9-DepartamentoHome/9-DepartamentoHome.html" class="home-card-tag" style="--tag-clr:#db2777;">Ver docs</a>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
