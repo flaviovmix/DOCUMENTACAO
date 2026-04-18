@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insert Chk — XT - Treinamento</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>Insert Chk — Continuar inserindo <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="audio/insert-chk.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>O usuário precisa cadastrar vários produtos em sequência. Sem essa feature, a cada insert ele clica <strong>Salvar</strong>, o modal fecha, ele clica <strong>Novo Registro</strong> de novo, abre modal de novo, preenche, salva, repete. A feature <strong>Insert Chk</strong> resolve isso: uma caixinha "Continuar inserindo" no formulário. Marcada, o modal não fecha após salvar — limpa os campos e fica aberto pro próximo registro, com a lista por trás já atualizada.</p>
+
+<p>4 peças trabalhando juntas: campo transiente no Bean, checkbox no Form, lógica condicional no Insert, e ShowInsert recuperando o estado pra manter a caixinha marcada.</p>
+
+<div class="info-accordion">
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoProdutoBean                    -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoProdutoBean</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="private Integer insert_chk|public Integer getInsert_chk+1|public static String INSERT_CHK"><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.dao.DBInfo;
+import java.io.Serializable;
+
+public class DepartamentoProdutoBean implements Serializable {
+
+    public static String TABLE = "departamento.produto";
+
+    private Integer id_produto;
+    private String  nome_produto;
+    private Double  vl_produto;
+    private Integer qtd_produto;
+    private String  obs_produto;
+    private String  qs_produto;
+    private Integer insert_chk;
+
+    @DBInfo(serial=true, pk=true)
+    public Integer getId_produto() { return id_produto; }
+    public void setId_produto(Integer id_produto) { this.id_produto = id_produto; }
+
+    public String getNome_produto() { return nome_produto; }
+    public void setNome_produto(String nome_produto) { this.nome_produto = nome_produto; }
+
+    public Double getVl_produto() { return vl_produto; }
+    public void setVl_produto(Double vl_produto) { this.vl_produto = vl_produto; }
+
+    public Integer getQtd_produto() { return qtd_produto; }
+    public void setQtd_produto(Integer qtd_produto) { this.qtd_produto = qtd_produto; }
+
+    public String getObs_produto() { return obs_produto; }
+    public void setObs_produto(String obs_produto) { this.obs_produto = obs_produto; }
+
+    public String getQs_produto() { return qs_produto; }
+    public void setQs_produto(String qs_produto) { this.qs_produto = qs_produto; }
+
+    public Integer getInsert_chk() { return insert_chk; }
+    public void setInsert_chk(Integer insert_chk) { this.insert_chk = insert_chk; }
+
+    public static String ID_PRODUTO   = "id_produto";
+    public static String NOME_PRODUTO = "nome_produto";
+    public static String VL_PRODUTO   = "vl_produto";
+    public static String QTD_PRODUTO  = "qtd_produto";
+    public static String OBS_PRODUTO  = "obs_produto";
+    public static String QS_PRODUTO   = "qs_produto";
+    public static String INSERT_CHK   = "insert_chk";
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudanças nesta sequência:</strong> 1 campo <code>Integer insert_chk</code>, 1 par getter/setter e 1 constante <code>INSERT_CHK</code>. <strong>Não tem <code>@DBInfo</code></strong> — não é coluna do banco, é campo só de UI. Nenhum import novo.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoProdutoForm                    -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoProdutoForm</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="import br.jasap.gui.form.Check|import br.jasap.util.DomainValue|import br.jasap.util.JasapFunctions|import br.jasap.util.JasapList|proBean().setInsert_chk(getInput()|Integer chk = proBean().getInsert_chk()|proBean().setInsert_chk(null)|if (JasapFunctions.equals(chk, 1))+3|else+2|frm.line().add(insert_chk()|protected Check insert_chk = null|public Check insert_chk() throws Exception+10"><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.Bar;
+import br.jasap.gui.Button;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.Table;
+import br.jasap.gui.form.Check;
+import br.jasap.gui.form.Form;
+import br.jasap.gui.form.Text;
+import br.jasap.gui.form.Textarea;
+import br.jasap.util.DomainValue;
+import br.jasap.util.JasapFunctions;
+import br.jasap.util.JasapList;
+import br.jasap.util.Js;
+import br.jasap.util.filters.TransactionFilter;
+import br.xt.acore.view.XtPage;
+
+public class DepartamentoProdutoForm extends DepartamentoProdutoAction {
+
+    // ... execute() (sem alteração)
+
+    public static class ShowInsert extends DepartamentoProdutoForm {
+        @Override
+        public Effect execute() throws Exception {
+            setInsert(FORM);
+            getSession().remove(ROOT.concat(DepartamentoProdutoBean.ID_PRODUTO));
+            proBean().setInsert_chk(getInput().getInteger(DepartamentoProdutoBean.INSERT_CHK));
+            render();
+            return new Response();
+        }
+    }
+
+    public static class Insert extends DepartamentoProdutoAction {
+        public Insert() { super.getFilters().add(new TransactionFilter()); }
+        @Override
+        public Effect execute() throws Exception {
+            Integer chk = proBean().getInsert_chk();
+            proBean().setInsert_chk(null);
+            getFactory().departamento().proModel().insert(proBean());
+            if (JasapFunctions.equals(chk, 1)) {
+                eval(link(ShowInsert.class).putInteger(DepartamentoProdutoBean.INSERT_CHK, 1).noWait().ajax());
+                evalParent(link(DepartamentoProdutoList.Sort.class).noWait().ajax(false));
+            } else {
+                evalParent(Js.CLOSE_SUB_WINDOWS);
+            }
+            return new Response();
+        }
+    }
+
+    // ... ShowUpdate, Update, Cancelar (sem alteração)
+    // ... render(), window(), br() (sem alteração)
+
+    public String form() throws Exception {
+        Form frm = ui().form();
+        frm.addHidden(DepartamentoProdutoBean.ID_PRODUTO, proBean().getId_produto());
+
+        frm.line().add(nome_produto(), "150");
+        frm.line().add(vl_produto(),   "150");
+        frm.line().add(qtd_produto(),  "150");
+        frm.line().add(obs_produto(),  "150");
+        frm.line().add(insert_chk(),   "150");
+
+        return frm.getTable().toHtml();
+    }
+
+    // ... nome_produto(), vl_produto(), qtd_produto(), obs_produto() (sem alteração)
+
+    protected Check insert_chk = null;
+    public Check insert_chk() throws Exception {
+        if (insert_chk == null) {
+            JasapList aux = new JasapList();
+            aux.getList().add(new DomainValue(1, "Continuar inserindo"));
+            aux.setSelected(proBean().getInsert_chk());
+            insert_chk = new Check(getManager(), DepartamentoProdutoBean.INSERT_CHK)
+                    .setLabel("&nbsp;")
+                    .setLoad(isInsert(FORM))
+                    .setValue(aux);
+        }
+        return insert_chk;
+    }
+
+    public static String FORM = ROOT.concat("__FORM");
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudanças nesta sequência:</strong> 4 imports novos (<code>Check</code>, <code>DomainValue</code>, <code>JasapFunctions</code>, <code>JasapList</code>), 1 linha no <code>ShowInsert</code>, bloco do <code>Insert</code> expandido (4 linhas novas + <code>if/else</code>), 1 linha no <code>form()</code>, e o método <code>insert_chk()</code> completo.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- O mecanismo — 4 peças que fazem o Insert Chk funcionar       -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O mecanismo — 4 peças que fazem o Insert Chk funcionar</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>"Continuar inserindo" exige coordenação entre o Bean (guardar a escolha), o Form (mostrar o checkbox), a action de Insert (decidir fechar ou não), e a action de ShowInsert (manter a caixinha marcada ao reabrir).</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Peça</th><th>Onde</th><th>Papel</th></tr>
+    <tr><td><strong>Campo transiente <code>insert_chk</code></strong></td><td>Bean</td><td>Guarda o estado da caixinha (0 ou 1). Sem <code>@DBInfo</code> — não vai pro banco</td></tr>
+    <tr><td><strong>Checkbox <code>insert_chk()</code></strong></td><td>Form</td><td>Renderiza a caixinha, só no modo insert</td></tr>
+    <tr><td><strong>Lógica condicional</strong></td><td>Insert</td><td>Marcado → reabre form + atualiza lista; desmarcado → fecha modal</td></tr>
+    <tr><td><strong>Restauração do estado</strong></td><td>ShowInsert</td><td>Lê <code>INSERT_CHK</code> do input e pré-marca a caixinha</td></tr>
+</table>
+</div>
+
+<p>O fluxo completo (caixinha marcada):</p>
+
+<ol>
+    <li>Usuário clica <strong>Novo Registro</strong> → <code>ShowInsert</code> abre modal com form vazio, caixinha desmarcada</li>
+    <li>Preenche os campos, <strong>marca a caixinha</strong>, clica Salvar</li>
+    <li>Submit dispara <code>Insert</code> — salva no banco, vê <code>chk == 1</code></li>
+    <li><code>Insert</code> dispara 2 ações em paralelo (<code>noWait</code>):
+        <ul>
+            <li>No próprio iframe: abre nova <code>ShowInsert</code> com <code>INSERT_CHK=1</code> — form vazio, caixinha ainda marcada</li>
+            <li>No iframe pai: chama <code>Sort</code> — lista atrás do modal atualiza, mostra o produto recém-criado</li>
+        </ul>
+    </li>
+    <li>Modal continua aberto, pronto pro próximo registro</li>
+</ol>
+
+<p>Se desmarcar: <code>Insert</code> chama <code>evalParent(CLOSE_SUB_WINDOWS)</code> e o modal fecha normalmente — o <code>setOnCloseURL(url(Sort.class))</code> da lista dispara o refresh automático.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Peça 1 — Campo transiente no Bean                            -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Peça 1 — Campo transiente no Bean</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">private Integer insert_chk;
+
+public Integer getInsert_chk() { return insert_chk; }
+public void setInsert_chk(Integer insert_chk) { this.insert_chk = insert_chk; }
+
+public static String INSERT_CHK = "insert_chk";</code></pre>
+
+<p>Padrão idêntico aos outros campos — exceto por <strong>não ter</strong> <code>@DBInfo</code> no getter.</p>
+
+<p><strong>Por que Integer e não Boolean?</strong> Convenção do framework Jasap: <code>Check</code> usa <code>Integer</code> (0/1) porque o componente <code>JasapList</code> com <code>DomainValue</code> só trabalha com <code>Integer</code>. Facilita a serialização entre HTML, input e Bean.</p>
+
+<p><strong>Por que NÃO tem <code>@DBInfo</code>?</strong> <code>@DBInfo</code> marca um getter como coluna do banco. Sem ele, o framework deixa o campo em paz — não vai pro <code>INSERT</code>, não vai pro <code>UPDATE</code>. É puramente um carregador de estado entre Form e Insert, usado só em memória.</p>
+
+<p>O tipo <code>Integer</code> (em vez de <code>int</code>) é importante: aceita <code>null</code>. Quando a caixinha está desmarcada, <code>getInsert_chk()</code> retorna <code>null</code>, não zero. O <code>JasapFunctions.equals(chk, 1)</code> do Insert dá <code>false</code> pra null e pra zero — ambos levam ao fluxo "fechar modal".</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Peça 2 — O Checkbox                                          -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Peça 2 — O Checkbox (<code>Check</code> + <code>JasapList</code> + <code>DomainValue</code>)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">protected Check insert_chk = null;
+public Check insert_chk() throws Exception {
+    if (insert_chk == null) {
+        JasapList aux = new JasapList();
+        aux.getList().add(new DomainValue(1, "Continuar inserindo"));
+        aux.setSelected(proBean().getInsert_chk());
+        insert_chk = new Check(getManager(), DepartamentoProdutoBean.INSERT_CHK)
+                .setLabel("&nbsp;")
+                .setLoad(isInsert(FORM))
+                .setValue(aux);
+    }
+    return insert_chk;
+}</code></pre>
+
+<p>O <code>Check</code> do Jasap é uma caixa de seleção <strong>múltipla</strong> — renderiza uma ou mais checkboxes. Aqui usamos com uma única opção, que funciona igual a um checkbox simples.</p>
+
+<h3>JasapList + DomainValue — montando a opção</h3>
+
+<ul>
+    <li><strong><code>new JasapList()</code></strong> — container das opções da caixa.</li>
+    <li><strong><code>new DomainValue(1, "Continuar inserindo")</code></strong> — cria a única opção disponível. Valor interno <code>1</code> (o que vai pro Bean se marcado), texto <code>"Continuar inserindo"</code> (o que o usuário lê).</li>
+    <li><strong><code>aux.setSelected(proBean().getInsert_chk())</code></strong> — pré-marca a caixa se o Bean já tem <code>insert_chk = 1</code>. É isso que mantém a caixinha marcada quando o <code>ShowInsert</code> reabre o form depois de um insert.</li>
+</ul>
+
+<h3>Configurando o Check</h3>
+
+<ul>
+    <li><strong><code>new Check(getManager(), INSERT_CHK)</code></strong> — o nome do input no HTML será <code>insert_chk</code>. Esse é o nome que <code>getInput().getInteger(INSERT_CHK)</code> lê.</li>
+    <li><strong><code>.setLabel("&amp;nbsp;")</code></strong> — label vazio (espaço não quebrável). O texto "Continuar inserindo" já vem da <code>DomainValue</code>, então não precisa de label. O <code>&amp;nbsp;</code> mantém o alinhamento vertical do form — se fosse <code>""</code> literal, a linha ficaria desalinhada.</li>
+    <li><strong><code>.setLoad(isInsert(FORM))</code></strong> — só renderiza a caixinha no modo insert. No update não tem sentido "continuar inserindo", então some da tela.</li>
+    <li><strong><code>.setValue(aux)</code></strong> — passa o <code>JasapList</code> com a opção e o estado pré-marcado.</li>
+</ul>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Peça 3 — Lógica condicional no Insert                        -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Peça 3 — Lógica condicional no Insert</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">public static class Insert extends DepartamentoProdutoAction {
+    public Insert() { super.getFilters().add(new TransactionFilter()); }
+    @Override
+    public Effect execute() throws Exception {
+        Integer chk = proBean().getInsert_chk();
+        proBean().setInsert_chk(null);
+        getFactory().departamento().proModel().insert(proBean());
+        if (JasapFunctions.equals(chk, 1)) {
+            eval(link(ShowInsert.class).putInteger(DepartamentoProdutoBean.INSERT_CHK, 1).noWait().ajax());
+            evalParent(link(DepartamentoProdutoList.Sort.class).noWait().ajax(false));
+        } else {
+            evalParent(Js.CLOSE_SUB_WINDOWS);
+        }
+        return new Response();
+    }
+}</code></pre>
+
+<p>4 passos:</p>
+
+<h3>1. Salvar o <code>chk</code> antes do insert</h3>
+
+<pre><code class="language-java">Integer chk = proBean().getInsert_chk();</code></pre>
+
+<p>Lê o valor da caixinha do Bean. <strong>Tem que ser antes do insert</strong> — o passo 2 vai zerar o campo.</p>
+
+<h3>2. Limpar o campo</h3>
+
+<pre><code class="language-java">proBean().setInsert_chk(null);</code></pre>
+
+<p>Zera o <code>insert_chk</code> do Bean. Explicado em detalhe na próxima seção — resumo: é proteção contra o framework tentar persistir o campo.</p>
+
+<h3>3. Insert normal</h3>
+
+<pre><code class="language-java">getFactory().departamento().proModel().insert(proBean());</code></pre>
+
+<p>Chamada idêntica à versão anterior do Insert. O <code>TransactionFilter</code> no construtor garante rollback se qualquer coisa explodir.</p>
+
+<h3>4. Fluxo condicional</h3>
+
+<pre><code class="language-java">if (JasapFunctions.equals(chk, 1)) {
+    eval(link(ShowInsert.class).putInteger(DepartamentoProdutoBean.INSERT_CHK, 1).noWait().ajax());
+    evalParent(link(DepartamentoProdutoList.Sort.class).noWait().ajax(false));
+} else {
+    evalParent(Js.CLOSE_SUB_WINDOWS);
+}</code></pre>
+
+<p>Dois caminhos — detalhados na seção <strong>noWait + Sort</strong> abaixo.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Peça 4 — ShowInsert restaurando o estado                     -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Peça 4 — ShowInsert restaurando o estado</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">public static class ShowInsert extends DepartamentoProdutoForm {
+    @Override
+    public Effect execute() throws Exception {
+        setInsert(FORM);
+        getSession().remove(ROOT.concat(DepartamentoProdutoBean.ID_PRODUTO));
+        proBean().setInsert_chk(getInput().getInteger(DepartamentoProdutoBean.INSERT_CHK));
+        render();
+        return new Response();
+    }
+}</code></pre>
+
+<p>Só uma linha foi adicionada — mas é o que fecha o ciclo:</p>
+
+<pre><code class="language-java">proBean().setInsert_chk(getInput().getInteger(DepartamentoProdutoBean.INSERT_CHK));</code></pre>
+
+<p>Lê o parâmetro <code>INSERT_CHK</code> do input e grava no Bean. Dois cenários:</p>
+
+<ul>
+    <li><strong>Primeira abertura do form</strong> (usuário clica "Novo Registro" na lista): o input não tem <code>INSERT_CHK</code>. <code>getInteger()</code> retorna <code>null</code>. <code>setInsert_chk(null)</code> — Bean fica zerado, caixinha desmarcada.</li>
+    <li><strong>Reabertura após insert com chk marcado</strong>: o <code>Insert</code> chamou <code>link(ShowInsert.class).putInteger(INSERT_CHK, 1)</code>. Dessa vez o input tem <code>INSERT_CHK=1</code>. <code>setInsert_chk(1)</code> — Bean marcado, caixinha continua marcada.</li>
+</ul>
+
+<p>Como o <code>insert_chk()</code> do Form faz <code>aux.setSelected(proBean().getInsert_chk())</code>, essa uma linha do <code>ShowInsert</code> é tudo que precisa pra caixinha aparecer marcada.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- noWait + Sort — coordenação entre iframes                   -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title"><code>noWait</code> + <code>Sort</code> — coordenação entre iframe filho e pai</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O bloco condicional do Insert tem 2 chamadas em paralelo quando <code>chk == 1</code>:</p>
+
+<pre><code class="language-java">eval(link(ShowInsert.class).putInteger(DepartamentoProdutoBean.INSERT_CHK, 1).noWait().ajax());
+evalParent(link(DepartamentoProdutoList.Sort.class).noWait().ajax(false));</code></pre>
+
+<h3>Os dois iframes</h3>
+
+<ul>
+    <li><strong>Iframe filho</strong> — o modal do form, onde o Insert está rodando.</li>
+    <li><strong>Iframe pai</strong> — a janela da lista, por trás do modal.</li>
+</ul>
+
+<h3>A primeira linha — reabrir o form</h3>
+
+<pre><code class="language-java">eval(link(ShowInsert.class).putInteger(INSERT_CHK, 1).noWait().ajax());</code></pre>
+
+<ul>
+    <li><strong><code>eval</code></strong> — dispara JS no iframe filho (o do próprio form).</li>
+    <li><strong><code>link(ShowInsert.class)</code></strong> — cria link pra action <code>ShowInsert</code>.</li>
+    <li><strong><code>.putInteger(INSERT_CHK, 1)</code></strong> — passa o parâmetro <code>INSERT_CHK=1</code> no input. A Peça 4 lê isso.</li>
+    <li><strong><code>.noWait()</code></strong> — dispara sem bloquear a thread atual. Sem <code>noWait</code>, o Insert esperaria a resposta do ShowInsert antes de continuar, o que pode travar o fluxo porque as duas ações estão no mesmo ciclo de request.</li>
+    <li><strong><code>.ajax()</code></strong> — envia como AJAX (não abre nova janela, atualiza o iframe atual).</li>
+</ul>
+
+<p>Resultado: o form atual é substituído por um form novo e vazio, com a caixinha pré-marcada. Usuário vê a tela "piscando" pra um form em branco.</p>
+
+<h3>A segunda linha — atualizar a lista por trás</h3>
+
+<pre><code class="language-java">evalParent(link(DepartamentoProdutoList.Sort.class).noWait().ajax(false));</code></pre>
+
+<ul>
+    <li><strong><code>evalParent</code></strong> — dispara JS no iframe pai (a janela da lista). É por isso que o Sort roda na janela certa, mesmo a linha estando no código do Insert.</li>
+    <li><strong><code>link(Sort.class)</code></strong> — a inner class <code>Sort</code> da List atualiza header + body + navegação sem recarregar a página toda. Já explicada no episódio de Sort.</li>
+    <li><strong><code>.noWait()</code></strong> — dispara e segue.</li>
+    <li><strong><code>.ajax(false)</code></strong> — o parâmetro <code>false</code> aqui desliga o indicador de loading. Sem ele, o spinner apareceria na janela da lista cada vez que o usuário salva com chk marcado — incômodo visual desnecessário.</li>
+</ul>
+
+<p>Resultado: lista atrás do modal re-renderiza com o produto recém-criado, sem spinner.</p>
+
+<h3>O caso desmarcado</h3>
+
+<pre><code class="language-java">} else {
+    evalParent(Js.CLOSE_SUB_WINDOWS);
+}</code></pre>
+
+<p>Fluxo simples: <code>CLOSE_SUB_WINDOWS</code> é JS que fecha todos os modais abertos. Como a lista foi aberta com <code>setOnCloseURL(url(Sort.class))</code> no <code>link(ShowInsert).modal(...)</code>, o fechamento já dispara o Sort automaticamente. Não precisa de <code>evalParent(Sort)</code> separado.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Por que limpar insert_chk ANTES do insert                    -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que limpar <code>insert_chk</code> ANTES do insert</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">Integer chk = proBean().getInsert_chk();
+proBean().setInsert_chk(null);   // OBRIGATÓRIO
+getFactory().departamento().proModel().insert(proBean());</code></pre>
+
+<p>Parece redundante: o campo não tem <code>@DBInfo</code>, então o framework deveria ignorar. Por que limpar?</p>
+
+<p>Porque o <code>SqlInsert</code> do Jasap varre o Bean <strong>via reflection</strong>. Ele olha todos os getters, monta o <code>INSERT</code> incluindo cada campo que tem um valor não-null. <code>@DBInfo</code> é pra <em>customizar</em> o comportamento (marca PK, marca serial, renomeia coluna), não pra <em>habilitar</em> o campo.</p>
+
+<p>Com a caixinha marcada, <code>proBean().getInsert_chk() == 1</code>. Se deixarmos assim, o SQL gerado vira:</p>
+
+<pre><code class="language-sql">INSERT INTO departamento.produto
+(nome_produto, vl_produto, qtd_produto, obs_produto, qs_produto, insert_chk)
+VALUES (...)</code></pre>
+
+<p>Erro: <code>column "insert_chk" of relation "produto" does not exist</code>. O banco não tem essa coluna — ela é só estado de UI.</p>
+
+<p>Ao setar <code>null</code>, o <code>SqlInsert</code> vê o campo como "não tem valor" e omite do SQL. O <code>INSERT</code> roda limpo, só com as colunas reais.</p>
+
+<p><strong>Regra geral:</strong> todo campo transiente no Bean (sem <code>@DBInfo</code>, mas usado pra carregar estado de UI) tem que ser zerado antes de qualquer <code>insert</code> ou <code>update</code>.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Por que o checkbox só aparece no insert                      -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que o checkbox só aparece no insert (<code>setLoad</code>)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">insert_chk = new Check(getManager(), DepartamentoProdutoBean.INSERT_CHK)
+        .setLabel("&nbsp;")
+        .setLoad(isInsert(FORM))
+        .setValue(aux);</code></pre>
+
+<p><code>setLoad</code> é a chave do componente: se <code>false</code>, o <code>Check</code> <strong>não é renderizado</strong> — o <code>toHtml()</code> devolve string vazia.</p>
+
+<p><code>isInsert(FORM)</code> retorna <code>true</code> quando o form está no modo insert (foi aberto por <code>ShowInsert</code>) e <code>false</code> no modo update. A caixinha aparece no primeiro caso, some no segundo.</p>
+
+<p><strong>Por que ocultar no update?</strong> "Continuar inserindo" só tem sentido quando você está criando registros. No update você está editando <em>um</em> registro específico — ao salvar, o fluxo natural é voltar pra lista, não abrir outro form. Mostrar a caixinha ali geraria confusão sem benefício.</p>
+
+<p>Se preferir <strong>esconder via CSS</strong> (render + display:none), a caixinha ainda ocuparia espaço no DOM e apareceria em inspeção. <code>setLoad(false)</code> não renderiza nada — é mais limpo.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- O que NÃO faz parte do Insert Chk                            -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que NÃO faz parte do Insert Chk</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O Insert Chk isolado faz uma coisa: manter o modal aberto após salvar, limpando os campos. Algumas features <em>parecem</em> fazer parte mas são separadas:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Feature</th><th>Faz parte?</th><th>Porquê</th></tr>
+    <tr><td>Inner class <code>Sort</code> na List</td><td>Dependência</td><td>Já existia antes — o Insert Chk só <em>usa</em> o Sort pra atualizar a lista. Sem Sort não rolaria, por isso o Sort é pré-requisito.</td></tr>
+    <tr><td><code>setOnCloseURL(url(Sort.class))</code> no botão "Novo Registro"</td><td>Dependência</td><td>Garante que o fluxo desmarcado também atualize a lista. Também já existia.</td></tr>
+    <tr><td>Botão Delete no form</td><td>Não</td><td>Feature separada — o <code>Delete</code> é uma inner class própria, não tem relação com o ciclo de Insert.</td></tr>
+    <tr><td>Reset de página ao inserir</td><td>Não</td><td>Só faz sentido com paginação ativa — episódio de paginação.</td></tr>
+    <tr><td>Tabs de status</td><td>Não</td><td>Filtro por status — feature separada.</td></tr>
+    <tr><td>Validação de obrigatoriedade</td><td>Não</td><td>Já vem do <code>.setRequired(true)</code> nos campos — o <code>submit().validate()</code> barra o envio se qualquer required estiver vazio, independente do chk.</td></tr>
+</table>
+</div>
+
+<p>O Insert Chk que implementamos é o esqueleto: 4 peças, um if/else. As features acima estendem ou combinam com o fluxo de Insert, mas não dependem do chk e o chk não depende delas.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Resumo                                                       -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Resumo — o que mudou</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="table-wrap">
+<table>
+    <tr><th>Arquivo</th><th>Tipo</th><th>Edição</th></tr>
+    <tr><td><strong>DepartamentoProdutoBean</strong></td><td>editar</td><td>Campo <code>insert_chk</code> (sem <code>@DBInfo</code>), getter/setter, constante <code>INSERT_CHK</code></td></tr>
+    <tr><td><strong>DepartamentoProdutoForm</strong></td><td>editar</td><td>4 imports (<code>Check</code>, <code>DomainValue</code>, <code>JasapFunctions</code>, <code>JasapList</code>), linha no <code>ShowInsert</code>, bloco do <code>Insert</code> expandido, linha no <code>form()</code>, método <code>insert_chk()</code></td></tr>
+    <tr><td><strong>DepartamentoManager</strong></td><td>—</td><td>Nada muda — <code>Insert</code> e <code>ShowInsert</code> já estavam registrados</td></tr>
+</table>
+</div>
+
+<p>2 arquivos editados, nenhuma mudança no banco, nenhum arquivo Java novo. Resultado: caixinha "Continuar inserindo" funcionando — marcada mantém o modal aberto pro próximo registro com lista por trás atualizada; desmarcada fecha o modal normalmente.</p>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

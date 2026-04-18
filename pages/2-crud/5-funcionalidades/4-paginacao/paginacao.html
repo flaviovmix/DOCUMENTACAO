@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paginação — XT - Treinamento</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>Paginação — Dividir a lista em páginas <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="audio/paginacao.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>A tabela <code>departamento.produto</code> cresceu: 75 registros já em desenvolvimento, e isso vai escalar em produção. O <code>setPageSize(9999)</code> do CRUD básico despeja tudo de uma vez — renderização lenta, scroll infinito, experiência ruim. A <strong>Paginação</strong> resolve: <code>setPageSize(50)</code>, um navegador de páginas no rodapé, e integração com o QuickSearch pra voltar à página 1 a cada nova busca.</p>
+
+<p>4 mudanças pequenas em <strong>um único arquivo</strong> (<code>DepartamentoProdutoList</code>). Nada no Bean, nada no DAO, nada no Manager.</p>
+
+<div class="info-accordion">
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoProdutoList                    -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoProdutoList</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add=".setPageAction(url(Sort.class))|.setPage(getSession().getInteger(LIST.concat(lv.getPAGE())|lv.setPageSize(50)|.addCenter(lView().nav(lView().getNavForm()))|.putInteger(lView().getPAGE(), 0)"><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.ListColumn;
+import br.jasap.gui.ListLine;
+import br.jasap.gui.ListView;
+import br.jasap.gui.Bar;
+import br.jasap.gui.Button;
+import br.jasap.gui.Table;
+import br.jasap.gui.Toast;
+import br.jasap.gui.form.Text;
+import br.jasap.util.JasapFunctions;
+import br.jasap.util.Js;
+import br.jasap.util.ModalConfig;
+import br.jasap.util.exceptions.SQLConstraintException;
+import br.xt.acore.view.IconButton;
+import br.xt.acore.view.XtPage;
+
+public class DepartamentoProdutoList extends DepartamentoProdutoAction {
+
+    // ... execute(), render(), window() (sem alteração)
+
+    protected Text qs_produto = null;
+    public String qs_produto() throws Exception {
+        qs_produto = ui().text(DepartamentoProdutoBean.QS_PRODUTO)
+                .setLabel("Consulta")
+                .setStyle("width:400;height:30px;font-size:14px")
+                .setMaxlength(300)
+                .setValue(getFiltro().getQs_produto())
+                .setOnkeyup(Js.pressEnter(
+                        link(QuickSearch.class)
+                                .putScript(DepartamentoProdutoBean.QS_PRODUTO, Js.SELF_VALUE)
+                                .putInteger(lView().getPAGE(), 0)
+                                .ajax()));
+
+        // ... restante da barra de busca (sem alteração)
+    }
+
+    public Bar br() throws Exception {
+        Button cmd_novo = ui().button("&nbsp;&nbsp;Novo Registro&nbsp;&nbsp;").setCss("btn btn-success btn-lg").setNoSize()
+                .setOnClick(link(DepartamentoProdutoForm.ShowInsert.class)
+                        .modal(new ModalConfig().setWidth("750").setHeight("570")
+                                .setOnCloseURL(url(Sort.class))));
+
+        return ui().bar()
+                .addCenter(lView().nav(lView().getNavForm()))
+                .addRight(cmd_novo);
+    }
+
+    private ListView lv = null;
+    public ListView lView() throws Exception {
+        if (lv == null) {
+            lv = ui().lView();
+
+            String orderBy = getSession().getString(LIST.concat(lv.getORDER_BY()), getInput());
+            if (orderBy == null) orderBy = DepartamentoProdutoBean.NOME_PRODUTO;
+            lv.setSortAct(url(Sort.class))
+              .setPageAction(url(Sort.class))
+              .setPage(getSession().getInteger(LIST.concat(lv.getPAGE()), getInput()))
+              .setOrderBy(orderBy)
+              .setSort(getSession().getString(LIST.concat(lv.getSORT()), getInput()))
+              .ajax();
+
+            lv.setPageSize(50);
+
+            lv.setFiltro(getFiltro());
+            getFactory().departamento().proModel().daoList(lv.getData());
+
+            // ... colunas e while (sem alteração)
+        }
+        return lv;
+    }
+
+    // ... Sort, QuickSearch, DeleteFromList (sem alteração)
+
+    // ... constantes LIST, FILTRO, CONFIRM_LIST (sem alteração)
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudanças nesta sequência:</strong> 4 alterações no mesmo arquivo — <code>.putInteger(PAGE, 0)</code> no onkeyup do <code>qs_produto</code>, <code>.addCenter(...)</code> no <code>br()</code>, <code>.setPageAction</code> + <code>.setPage</code> na chain do <code>lv</code>, e <code>setPageSize(9999)</code> virou <code>setPageSize(50)</code>. Nenhum import novo.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- O mecanismo — 4 mudanças pra paginar                         -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O mecanismo — 4 mudanças pra paginar</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>A paginação é coordenação entre 3 coisas: <strong>quantos registros por página</strong>, <strong>qual página mostrar</strong>, e <strong>como navegar</strong>. A quarta mudança é uma integração com o QuickSearch — sem ela, buscar na página 3 mostraria resultados da página 3 da nova busca em vez de começar do início.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Mudança</th><th>Onde</th><th>Papel</th></tr>
+    <tr><td><strong><code>setPageSize(50)</code></strong></td><td><code>lView()</code></td><td>Define tamanho da página — antes era 9999 (uma "página" só)</td></tr>
+    <tr><td><strong><code>setPageAction</code> + <code>setPage</code></strong></td><td>chain do <code>lv</code></td><td>Registra a action que redesenha ao trocar de página e lê a página atual da sessão/input</td></tr>
+    <tr><td><strong><code>nav(getNavForm())</code></strong></td><td><code>br()</code></td><td>Renderiza os botões "Anterior / Próxima / N de M" no rodapé</td></tr>
+    <tr><td><strong><code>.putInteger(PAGE, 0)</code></strong></td><td>onkeyup do <code>qs_produto</code></td><td>Zera a página no momento em que o usuário digita a busca</td></tr>
+</table>
+</div>
+
+<p>As 3 primeiras mudanças fazem a paginação <em>existir</em>. A quarta garante que a paginação <em>se comporta bem</em> com a busca rápida.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 1 — setPageSize(50)                                  -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 1 — <code>setPageSize(9999)</code> → <code>setPageSize(50)</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">lv.setPageSize(50);</code></pre>
+
+<p>Uma linha, um número. Mas é a mudança mais fundamental — define quantos registros o DAO busca de uma vez e quantos o HTML renderiza.</p>
+
+<p><strong>Antes:</strong> <code>setPageSize(9999)</code> — truque do CRUD básico pra desligar a paginação. O DAO fazia <code>LIMIT 9999</code>, que na prática trazia tudo. Com 75 registros, trazia os 75. Com 10.000, traria 9.999 e silenciosamente perderia 1 — pior que paginar errado.</p>
+
+<p><strong>Depois:</strong> <code>setPageSize(50)</code> — DAO faz <code>LIMIT 50 OFFSET ?</code>. Com 75 registros, o framework calcula 2 páginas (50 + 25). O <code>getNavForm()</code> usa esse cálculo pra mostrar "Página 1 de 2".</p>
+
+<p><strong>Por que 50 e não 10 ou 100?</strong> Convenção do XT em produção (ver <code>CpesList</code>, <code>PusuList</code>, <code>LabProdutoList</code>). 50 é um equilíbrio: ocupa a tela bem em resoluções comuns, mantém o usuário rolando no máximo uma página, e não estoura na performance do DAO pra tabelas com índices razoáveis.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 2 — setPageAction + setPage                          -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 2 — <code>setPageAction</code> + <code>setPage</code> na chain do <code>lv</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">lv.setSortAct(url(Sort.class))
+  .setPageAction(url(Sort.class))
+  .setPage(getSession().getInteger(LIST.concat(lv.getPAGE()), getInput()))
+  .setOrderBy(orderBy)
+  .setSort(getSession().getString(LIST.concat(lv.getSORT()), getInput()))
+  .ajax();</code></pre>
+
+<p>Duas linhas adicionadas na chain do <code>lv</code>, logo depois do <code>setSortAct</code>. Ambas são o mínimo pra paginação funcionar.</p>
+
+<h3><code>.setPageAction(url(Sort.class))</code></h3>
+
+<p>Registra a action que será chamada <strong>ao trocar de página</strong>. Quando o usuário clica "Próxima" no <code>nav()</code>, o framework dispara essa action pra redesenhar a lista.</p>
+
+<p><strong>Por que <code>Sort.class</code>?</strong> Reaproveitamento. A inner class <code>Sort</code> já atualiza header + body + navegação — exatamente o que precisa acontecer ao trocar de página. Criar uma <code>ChangePage.class</code> separada seria duplicação — o <code>Sort</code> já faz o trabalho, só com input diferente (PAGE em vez de ORDER_BY/SORT).</p>
+
+<h3><code>.setPage(getSession().getInteger(LIST.concat(lv.getPAGE()), getInput()))</code></h3>
+
+<p>Lê a página atual em duas fontes: <strong>input</strong> (prioridade) e <strong>sessão</strong> (fallback).</p>
+
+<ul>
+    <li>O <code>lv.getPAGE()</code> retorna a string <code>"PAGE"</code> — o nome do parâmetro que o framework usa.</li>
+    <li><code>LIST.concat(lv.getPAGE())</code> gera <code>"XT.PAINEL_CONTROLE.ACESSO_MODULO.DEPARTAMENTO__PRODUTO/__LIST/PAGE"</code> — chave única por lista. Sem o namespace do <code>LIST</code>, duas listas na mesma tela colidiriam.</li>
+    <li><code>getSession().getInteger(chave, getInput())</code> — padrão Jasap: <em>primeiro</em> olha o input, <em>depois</em> a sessão. Se o usuário clica "Página 3", o link manda <code>PAGE=3</code> no input; o framework lê e grava na sessão. Próximo render, a sessão já tem o valor, mesmo sem input.</li>
+</ul>
+
+<p>É o mesmo padrão de <code>setOrderBy</code> e <code>setSort</code>. Qualquer estado de navegação da lista segue essa dupla camada.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 3 — nav() no br()                                    -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 3 — <code>lView().nav(...)</code> no <code>br()</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">public Bar br() throws Exception {
+    Button cmd_novo = ui().button("&nbsp;&nbsp;Novo Registro&nbsp;&nbsp;") /* ... */;
+
+    return ui().bar()
+            .addCenter(lView().nav(lView().getNavForm()))
+            .addRight(cmd_novo);
+}</code></pre>
+
+<p>O <code>br()</code> é a barra inferior da lista. Antes só tinha o botão "Novo Registro" à direita. Agora ganha um navegador de páginas no centro.</p>
+
+<h3><code>lView().getNavForm()</code></h3>
+
+<p>Retorna o <strong>ID do form HTML</strong> que o framework usa pra envolver os botões de navegação (<code>&lt;form id="navform_XXX"&gt;</code>). Esse ID é preciso pra que os botões "Anterior / Próxima" peguem o valor do <code>PAGE</code> corretamente no submit AJAX.</p>
+
+<h3><code>lView().nav(...)</code></h3>
+
+<p>Renderiza o componente visual: botões "Anterior", "Próxima", e texto "Página N de M". Bootstrap, estilo XT. Recebe o ID do form como parâmetro pra amarrar os cliques ao submit certo.</p>
+
+<h3><code>.addCenter(...)</code></h3>
+
+<p>O <code>Bar</code> tem 3 regiões: <code>addLeft</code>, <code>addCenter</code>, <code>addRight</code>. O navegador no centro, botão "Novo Registro" na direita — layout clássico de lista paginada.</p>
+
+<p><strong>Sem essa mudança:</strong> a paginação até funcionaria no backend (<code>setPageSize(50)</code> cortaria a lista), mas o usuário ficaria preso na página 1 — sem botão pra avançar. O <code>nav()</code> é a UI pra controlar o estado que a Mudança 2 lê.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 4 — putInteger(PAGE, 0) no onkeyup                   -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 4 — <code>.putInteger(PAGE, 0)</code> no onkeyup do <code>qs_produto</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">.setOnkeyup(Js.pressEnter(
+        link(QuickSearch.class)
+                .putScript(DepartamentoProdutoBean.QS_PRODUTO, Js.SELF_VALUE)
+                .putInteger(lView().getPAGE(), 0)
+                .ajax()));</code></pre>
+
+<p>Uma linha no link do <code>QuickSearch</code>: adiciona o parâmetro <code>PAGE=0</code> ao submit. Sem isso, a busca rápida teria um bug visual grave.</p>
+
+<h3>O cenário do bug (sem a mudança)</h3>
+
+<ol>
+    <li>Usuário está na <strong>página 3</strong> da lista, vendo produtos 101-150</li>
+    <li>Digita "notebook" na barra de busca rápida</li>
+    <li>O filtro corta drasticamente — só sobra 5 produtos no total</li>
+    <li>O framework recebe <code>qs_produto="notebook"</code> mas <strong>mantém</strong> <code>PAGE=3</code> (fonte: sessão, que ainda tem o valor antigo)</li>
+    <li>DAO faz <code>LIMIT 50 OFFSET 100</code> — offset maior que o total — retorna <strong>zero registros</strong></li>
+    <li>Usuário vê lista vazia, pensa "não tem notebook". Erro.</li>
+</ol>
+
+<h3>A correção</h3>
+
+<p><code>.putInteger(lView().getPAGE(), 0)</code> adiciona <code>PAGE=0</code> ao input do submit. Como o <code>setPage</code> da Mudança 2 prioriza input sobre sessão, o framework usa <code>0</code> — volta pra primeira página. A busca mostra os resultados começando do início.</p>
+
+<p><strong>Por que no onkeyup e não no <code>QuickSearch.execute()</code>?</strong> Duas abordagens possíveis:</p>
+
+<ul>
+    <li><strong>Via input (escolhido)</strong> — <code>.putInteger(PAGE, 0)</code> no link: explícito, visível no código do form, uma linha só.</li>
+    <li><strong>Via sessão</strong> — método <code>resetPage()</code> que grava uma flag, consumida no <code>lView()</code>: helper reutilizável, mas adiciona 3 elementos no código (método + constante + bloco consumer).</li>
+</ul>
+
+<p>Pra <strong>só a paginação</strong>, a via input é suficiente e minimalista. A via sessão só compensa quando múltiplas actions precisam resetar página (Tabs de status, filtros avançados) — aí o helper justifica o custo. Ver a seção "O que NÃO faz parte da Paginação" abaixo.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- O que NÃO faz parte da Paginação                             -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que NÃO faz parte da Paginação</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Três coisas <em>parecem</em> fazer parte da paginação, mas são infraestrutura pra features futuras:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Item</th><th>Faz parte?</th><th>Quando vem</th></tr>
+    <tr><td>Método <code>resetPage()</code></td><td>Não</td><td>Tabs de status</td></tr>
+    <tr><td>Constante <code>RESET_PAGE</code></td><td>Não</td><td>Tabs de status</td></tr>
+    <tr><td>Bloco consumer <code>if (isSet(RESET_PAGE))</code> no <code>lView()</code></td><td>Não</td><td>Tabs de status</td></tr>
+    <tr><td>Inner class <code>ChangePage</code></td><td>Não</td><td>Nunca — reaproveitamos <code>Sort</code></td></tr>
+    <tr><td>Registro no <code>Manager</code></td><td>Não</td><td>Nunca — <code>Sort</code> já está registrado</td></tr>
+</table>
+</div>
+
+<p><strong>Por que <code>resetPage()</code> não entrou aqui:</strong> o <code>.putInteger(PAGE, 0)</code> da Mudança 4 já resolve o único caso da paginação — reset na busca rápida. O <code>resetPage()</code> vira útil quando <em>outras</em> actions precisam resetar página sem conseguir injetar o parâmetro no link: tabs (<code>TabAtivos.execute()</code>), botões "Aplicar Filtros" / "Limpar Filtros", etc.</p>
+
+<p>Adicionar o helper agora, sem ter quem chame, deixaria código morto no projeto — o bloco consumer nunca dispararia, o método nunca seria chamado. Memória do curso: cada episódio só adiciona o que o escopo <em>exige</em>. O que vem a seguir adiciona o que a seguir exige.</p>
+
+<p><strong>Por que <code>ChangePage</code> não existe:</strong> nas primeiras versões de listas paginadas do XT, havia uma inner class específica pra trocar de página. Evoluiu pra reaproveitar o <code>Sort</code> — que já atualiza header + body + navegação. <code>ChangePage</code> seria duplicação. O atalho é <code>.setPageAction(url(Sort.class))</code>.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Resumo                                                       -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Resumo — o que mudou</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="table-wrap">
+<table>
+    <tr><th>Arquivo</th><th>Tipo</th><th>Edição</th></tr>
+    <tr><td><strong>DepartamentoProdutoList</strong></td><td>editar</td><td>4 mudanças — <code>.putInteger(PAGE, 0)</code> no onkeyup, <code>.addCenter(nav)</code> no <code>br()</code>, <code>.setPageAction</code> + <code>.setPage</code> na chain do <code>lv</code>, e <code>setPageSize(9999)</code> → <code>setPageSize(50)</code></td></tr>
+    <tr><td><strong>DepartamentoManager</strong></td><td>—</td><td>Nada — <code>Sort</code> já estava registrado desde a feature de ordenação</td></tr>
+    <tr><td><strong>DepartamentoProdutoBean</strong></td><td>—</td><td>Nada</td></tr>
+    <tr><td><strong>DepartamentoProdutoDAO</strong></td><td>—</td><td>Nada — o <code>LIMIT</code> / <code>OFFSET</code> é gerenciado pelo <code>ListView</code> automaticamente via <code>lv.getData()</code></td></tr>
+</table>
+</div>
+
+<p>1 arquivo editado, nenhuma mudança no banco, nenhum import novo, nenhum arquivo Java novo. Resultado: lista dividida em páginas de 50 registros, navegador "Anterior / Próxima" no rodapé, e busca rápida voltando à página 1 a cada pesquisa.</p>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
