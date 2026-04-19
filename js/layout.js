@@ -116,7 +116,8 @@ var MENU = [
         parent: { label: 'CRUD', href: '2-crud/crud.html' },
         hidden: true,
         items: [
-            { label: '1 - Sort', arquivo: '1-sort/sort.html', tipo: 'editar' }
+            { label: '1 - Sort',           arquivo: '1-sort/sort.html',                   tipo: 'editar' },
+            { label: '6 - Delete no Form', arquivo: '6-delete-form/delete-form.html', tipo: 'editar' }
         ],
         pasta: '5-funcionalidades',
         basePath: '2-crud/5-funcionalidades'
@@ -191,7 +192,8 @@ var FOOTER = {
         {
             grupo: 'FUNCIONALIDADES',
             items: [
-                { label: 'Sort', arquivo: '1-sort/sort.html' }
+                { label: 'Sort',           arquivo: '1-sort/sort.html' },
+                { label: 'Delete no Form', arquivo: '6-delete-form/delete-form.html' }
             ],
             pasta: '5-funcionalidades',
             basePath: '2-crud/5-funcionalidades'
@@ -244,6 +246,60 @@ var BASE = document.currentScript.getAttribute('src').replace('js/layout.js', ''
     hide.id = 'layout-hide';
     hide.textContent = 'body{visibility:hidden}';
     head.appendChild(hide);
+
+    // Loader: barra fina azul no topo (0 → 100%), página fica branca durante o load
+    var loaderStyle = document.createElement('style');
+    loaderStyle.id = 'page-loader-style';
+    loaderStyle.textContent =
+        '#page-loader{position:fixed;top:0;left:0;height:3px;width:0%;z-index:99999;' +
+        'background:linear-gradient(90deg,#3b82f6 0%,#2563eb 50%,#1d4ed8 100%);' +
+        'box-shadow:0 0 10px rgba(59,130,246,0.7),0 0 5px rgba(59,130,246,0.5);' +
+        'transition:width 0.2s ease-out,opacity 0.3s ease;opacity:1}' +
+        '#page-loader.done{opacity:0}';
+    head.appendChild(loaderStyle);
+
+    // Inicia o loader (barra) — funciona mesmo com body invisible porque fica no <html>
+    var addLoader = function() {
+        if (document.documentElement) {
+            window.__startPageLoader();
+        } else {
+            setTimeout(addLoader, 0);
+        }
+    };
+    // Funções globais para iniciar/finalizar o loader (também usadas na transição entre páginas)
+    window.__pageLoaderTrickle = null;
+    window.__startPageLoader = function() {
+        if (document.getElementById('page-loader')) return;
+        var loader = document.createElement('div');
+        loader.id = 'page-loader';
+        document.documentElement.appendChild(loader);
+        // Progresso simulado: cresce rápido no início, devagar perto de 90%
+        var progress = 0;
+        window.__pageLoaderTrickle = setInterval(function() {
+            var step;
+            if (progress < 30)      step = Math.random() * 10 + 5;
+            else if (progress < 60) step = Math.random() * 5 + 2;
+            else if (progress < 85) step = Math.random() * 2 + 0.5;
+            else                    step = Math.random() * 0.5;
+            progress += step;
+            if (progress > 90) progress = 90;
+            loader.style.width = progress + '%';
+        }, 180);
+    };
+    window.__finishPageLoader = function() {
+        var loader = document.getElementById('page-loader');
+        if (!loader) return;
+        if (window.__pageLoaderTrickle) {
+            clearInterval(window.__pageLoaderTrickle);
+            window.__pageLoaderTrickle = null;
+        }
+        loader.style.width = '100%';
+        setTimeout(function() {
+            loader.classList.add('done');
+            setTimeout(function() { if (loader.parentNode) loader.remove(); }, 300);
+        }, 150);
+    };
+    addLoader();
 
     // docs.css
     var css = document.createElement('link');
@@ -394,6 +450,16 @@ document.addEventListener('DOMContentLoaded', async function() {
             '<button id="hamburger" onclick="toggleDrawer()"><span></span><span></span><span></span></button>' +
             '<a id="topbar-title" href="' + BASE + 'index.html">XT - Treinamento</a>' +
             breadcrumbHTML +
+            '<a id="topbar-grafo" href="' + BASE + 'grafo.html" title="Ver grafo de páginas">' +
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                    '<circle cx="5" cy="12" r="3"/>' +
+                    '<circle cx="19" cy="5" r="3"/>' +
+                    '<circle cx="19" cy="19" r="3"/>' +
+                    '<line x1="7.5" y1="10.5" x2="16.5" y2="6.5"/>' +
+                    '<line x1="7.5" y1="13.5" x2="16.5" y2="17.5"/>' +
+                '</svg>' +
+                '<span>Gráfico</span>' +
+            '</a>' +
             zoomHTML +
         '</div>' +
         '<div id="layout">' +
@@ -420,6 +486,18 @@ document.addEventListener('DOMContentLoaded', async function() {
                 info.classList.toggle('aberto');
                 btn.classList.toggle('aberto');
             });
+        }
+
+        // Hover no botão "Ver docs" → mostra nome do card
+        var tag = card.querySelector('.home-card-tag');
+        var img = card.querySelector('.home-card-img img');
+        if (tag && img) {
+            var hoverName = (img.getAttribute('alt') || '').toUpperCase();
+            var originalText = tag.textContent;
+            if (hoverName && hoverName !== originalText.toUpperCase()) {
+                tag.addEventListener('mouseenter', function() { tag.textContent = hoverName; });
+                tag.addEventListener('mouseleave', function() { tag.textContent = originalText; });
+            }
         }
     });
 
@@ -459,7 +537,43 @@ document.addEventListener('DOMContentLoaded', async function() {
     var hideStyle = document.getElementById('layout-hide');
     if (hideStyle) hideStyle.remove();
     document.body.style.visibility = 'visible';
+
+    // ── Finalizar loader (0→100% + fade) ──
+    if (window.__finishPageLoader) window.__finishPageLoader();
 });
+
+// ═══════════════════════════════════════════════════════════════════
+// TRANSIÇÃO ENTRE PÁGINAS — reinsere loader ao clicar em link interno
+// ═══════════════════════════════════════════════════════════════════
+
+function showTransitionLoader() {
+    if (window.__startPageLoader) window.__startPageLoader();
+}
+
+document.addEventListener('click', function(e) {
+    if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+
+    // Link <a href=...>
+    var link = e.target.closest('a[href]');
+    if (link) {
+        var href = link.getAttribute('href');
+        if (!href) return;
+        if (href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:') ||
+            href.startsWith('javascript:') || /^https?:\/\//.test(href) || link.target === '_blank') return;
+        showTransitionLoader();
+        return;
+    }
+
+    // Card com data-href (caso tenha handler JS que navega)
+    var card = e.target.closest('[data-href]');
+    if (card && !e.target.closest('.btnMenuCard')) {
+        // Se clicou no menu de 3 bolinhas, ignora
+        var href2 = card.getAttribute('data-href');
+        if (href2 && !/^https?:\/\//.test(href2)) {
+            showTransitionLoader();
+        }
+    }
+}, true);
 
 // ═══════════════════════════════════════════════════════════════════
 // MENU LATERAL (DRAWER)

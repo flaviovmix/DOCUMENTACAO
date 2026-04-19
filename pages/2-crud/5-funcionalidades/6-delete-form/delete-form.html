@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete no Form — XT - Treinamento</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>Delete no Form — Excluir direto do formulário <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="audio/delete-form.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>A lista já tinha o botão de lixeira na coluna (<code>DeleteFromList</code>) desde o CRUD DELETE. Mas existe um segundo contexto natural pra excluir: quando o usuário <strong>já está com o registro aberto pra editar</strong> e decide, no meio da edição, que quer apagar em vez de salvar. Forçar ele a fechar o form e caçar o botão na lista é fricção desnecessária.</p>
+
+<p>A solução: um botão "Excluir" <strong>dentro do form</strong>, visível só em modo edição, que dispara um swalConfirm e — se confirmado — exclui, fecha o modal e atualiza a lista. 5 mudanças pequenas em <strong>dois arquivos</strong>: <code>DepartamentoProdutoForm</code> (4 mudanças) e <code>DepartamentoManager</code> (1 mudança).</p>
+
+<div class="info-accordion">
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoProdutoForm                    -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoProdutoForm</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="import br.jasap.gui.Toast;|import br.jasap.util.exceptions.SQLConstraintException;|Button excluir = ui().button+2|bar.addLeft(excluir);|public static class Delete extends DepartamentoProdutoAction+20|public static String CONFIRM = ROOT.concat"><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.Bar;
+import br.jasap.gui.Button;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.Table;
+import br.jasap.gui.Toast;
+import br.jasap.gui.form.Check;
+import br.jasap.gui.form.Form;
+import br.jasap.gui.form.Radio;
+import br.jasap.gui.form.Text;
+import br.jasap.gui.form.Textarea;
+import br.jasap.util.DomainValue;
+import br.jasap.util.JasapFunctions;
+import br.jasap.util.JasapList;
+import br.jasap.util.Js;
+import br.jasap.util.exceptions.SQLConstraintException;
+import br.jasap.util.filters.TransactionFilter;
+import br.xt.acore.view.XtPage;
+
+public class DepartamentoProdutoForm extends DepartamentoProdutoAction {
+
+    // ... execute(), ShowInsert, Insert, ShowUpdate, Update, Cancelar (sem alteração)
+
+    public static class Delete extends DepartamentoProdutoAction {
+        public Delete() { super.getFilters().add(new TransactionFilter()); }
+        @Override
+        public Effect execute() throws Exception {
+            try {
+                if (JasapFunctions.equals(getInput().getInteger(CONFIRM), 1)) {
+                    proBean().setId_produto(id_produto());
+                    getFactory().departamento().proModel().daoDelete(proBean());
+                    eval(new Toast("Registro excluído.").success());
+                    evalParent(Js.CLOSE_SUB_WINDOWS);
+                } else {
+                    eval(Js.swalConfirm("Confirma a exclusão desse registro?",
+                            link(Delete.class).putInteger(CONFIRM, 1).ajax(), ""));
+                }
+                return new Response();
+            } catch (SQLConstraintException e) {
+                eval(new Toast("Falha ao excluir: esse registro está sendo usado em outra tabela.").fail());
+                return new Response();
+            }
+        }
+    }
+
+    // ... render(), window() (sem alteração)
+
+    protected Bar br() throws Exception {
+        Button salvarInsert = ui().button("&nbsp;&nbsp;Salvar&nbsp;&nbsp;") /* ... */;
+        Button salvarUpdate = ui().button("&nbsp;&nbsp;Salvar&nbsp;&nbsp;") /* ... */;
+        Button cancelar = ui().button("&nbsp;&nbsp;Cancelar&nbsp;&nbsp;") /* ... */;
+
+        Button excluir = ui().button("&nbsp;&nbsp;Excluir&nbsp;&nbsp;").setCss("btn btn-danger btn-lg").setNoSize()
+                .setOnClick(link(Delete.class).ajax())
+                .setVisible(isUpdate(FORM));
+
+        Bar bar = ui().bar();
+        bar.addLeft(excluir);
+        bar.addRight(cancelar);
+        bar.addRight("&nbsp;");
+        bar.addRight(salvarInsert);
+        bar.addRight(salvarUpdate);
+        return bar;
+    }
+
+    // ... form() e getters dos campos (sem alteração)
+
+    public static String FORM = ROOT.concat("__FORM");
+    public static String CONFIRM = ROOT.concat("__CONFIRM");
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudanças neste arquivo:</strong> 2 imports novos (<code>Toast</code>, <code>SQLConstraintException</code>), botão <code>excluir</code> no <code>br()</code> + <code>bar.addLeft(excluir)</code>, inner class <code>Delete</code>, e constante <code>CONFIRM</code>. Nenhuma mudança nos métodos existentes.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoManager                        -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoManager</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="regAction(DepartamentoProdutoForm.Delete.class)"><code class="language-java">package br.xt.app.departamento;
+
+import br.xt.app.departamento.produto.DepartamentoProdutoForm;
+import br.xt.app.departamento.produto.DepartamentoProdutoList;
+import br.xt.app.painel.PnlManager;
+
+public class DepartamentoManager extends PnlManager {
+
+    public static final String F_ACESSO_MODULO = "XT.PAINEL_CONTROLE.ACESSO_MODULO.DEPARTAMENTO";
+
+    @Override
+    public void config() throws Exception {
+
+        regFun("PAINEL DE CONTROLE", "Acesso ao Módulo", "DEPARTAMENTO", F_ACESSO_MODULO);
+
+        regAction(DepartamentoHome.class);
+        regAction(DepartamentoHome.Title.class);
+        regAction(DepartamentoHome.MenuItem.class);
+        regAction(DepartamentoHome.MenuInicial.class);
+
+        regAction(DepartamentoProdutoList.class);
+        regAction(DepartamentoProdutoList.Sort.class);
+        regAction(DepartamentoProdutoList.QuickSearch.class);
+        regAction(DepartamentoProdutoList.TabAtivos.class);
+        regAction(DepartamentoProdutoList.TabInativos.class);
+        regAction(DepartamentoProdutoList.TabArquivados.class);
+        regAction(DepartamentoProdutoList.TabTodos.class);
+        regAction(DepartamentoProdutoList.DeleteFromList.class);
+
+        regAction(DepartamentoProdutoForm.class);
+        regAction(DepartamentoProdutoForm.ShowInsert.class);
+        regAction(DepartamentoProdutoForm.ShowUpdate.class);
+        regAction(DepartamentoProdutoForm.Insert.class);
+        regAction(DepartamentoProdutoForm.Update.class);
+        regAction(DepartamentoProdutoForm.Cancelar.class);
+        regAction(DepartamentoProdutoForm.Delete.class);
+
+    }
+}</code></pre>
+
+<p class="info-note"><strong>Mudança neste arquivo:</strong> uma única linha — registrar a nova inner class <code>Delete</code> no framework. Sem registro, o framework não sabe que a action existe e responde 404 ao clique do botão.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- O mecanismo                                                  -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O mecanismo — 5 mudanças pra deletar do Form</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>A mecânica é simples: o form em modo edição ganha um botão vermelho; clicar dispara a action <code>Delete</code>; a primeira execução pergunta (<code>swalConfirm</code>), a segunda (com <code>CONFIRM=1</code>) realmente apaga. Se o banco barrar por FK, um Toast vermelho explica em vez de quebrar a tela.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Mudança</th><th>Onde</th><th>Papel</th></tr>
+    <tr><td><strong>2 imports novos</strong></td><td><code>DepartamentoProdutoForm</code></td><td><code>Toast</code> (notificação) + <code>SQLConstraintException</code> (tratamento de FK)</td></tr>
+    <tr><td><strong>Botão "Excluir"</strong></td><td><code>br()</code></td><td>Visível só em <code>isUpdate(FORM)</code>, disparador da action <code>Delete</code></td></tr>
+    <tr><td><strong>Inner class <code>Delete</code></strong></td><td><code>DepartamentoProdutoForm</code></td><td>Ciclo composto: pergunta → apaga → fecha modal + Toast</td></tr>
+    <tr><td><strong>Constante <code>CONFIRM</code></strong></td><td>fim da classe</td><td>Distingue a 1ª chamada (sem confirm) da 2ª (<code>CONFIRM=1</code>)</td></tr>
+    <tr><td><strong><code>regAction(Delete.class)</code></strong></td><td><code>DepartamentoManager</code></td><td>Torna a action conhecida pelo framework</td></tr>
+</table>
+</div>
+
+<p>As 4 primeiras mudanças moram no Form. A 5ª é a formalidade no Manager — sem ela, o clique do botão dá 404.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 1 — imports                                          -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 1 — 2 imports novos</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">import br.jasap.gui.Toast;
+import br.jasap.util.exceptions.SQLConstraintException;</code></pre>
+
+<h3><code>Toast</code></h3>
+
+<p>Componente de notificação visual do Jasap. Aparece por alguns segundos no canto da tela e some sozinho. Dois métodos disponíveis: <code>success()</code> (verde, ícone de check) e <code>fail()</code> (vermelho, ícone de X). Usado aqui pra confirmar sucesso da exclusão e pra avisar se o banco barrou por FK.</p>
+
+<p>Sem interação — só informa. Diferente do <code>swalConfirm</code>, que <em>pede</em> resposta do usuário.</p>
+
+<h3><code>SQLConstraintException</code></h3>
+
+<p>Exceção específica lançada pelo driver JDBC (via Jasap) quando um <code>DELETE</code>/<code>UPDATE</code>/<code>INSERT</code> viola uma constraint — tipicamente uma foreign key referenciando o registro alvo. Pegar essa exceção no <code>catch</code> transforma uma stack trace no console numa mensagem amigável pro usuário.</p>
+
+<p><strong>Observação:</strong> o <code>JasapFunctions</code>, <code>Js</code> e <code>TransactionFilter</code> já estavam importados desde o CRUD CREATE. Apenas <code>Toast</code> e <code>SQLConstraintException</code> são novidade.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 2 — Botão Excluir no br()                            -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 2 — Botão "Excluir" no <code>br()</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">Button excluir = ui().button("&amp;nbsp;&amp;nbsp;Excluir&amp;nbsp;&amp;nbsp;").setCss("btn btn-danger btn-lg").setNoSize()
+        .setOnClick(link(Delete.class).ajax())
+        .setVisible(isUpdate(FORM));
+
+Bar bar = ui().bar();
+bar.addLeft(excluir);
+bar.addRight(cancelar);
+bar.addRight("&amp;nbsp;");
+bar.addRight(salvarInsert);
+bar.addRight(salvarUpdate);</code></pre>
+
+<h3><code>.setCss("btn btn-danger btn-lg")</code></h3>
+
+<p>Classe Bootstrap <code>btn-danger</code> — fundo vermelho. Sinalização visual: essa é a ação destrutiva, trate com cuidado. Mesma família do <code>btn-success</code> (Salvar) e <code>btn-primary</code> (Cancelar), mas com cor que comunica "perigo".</p>
+
+<h3><code>.setOnClick(link(Delete.class).ajax())</code></h3>
+
+<p><code>link(Delete.class)</code> gera a URL da action pelo nome da classe. <code>.ajax()</code> transforma em chamada AJAX — sem submit de form, sem reload de página. O framework envia a requisição, recebe o response (que contém os comandos AjaxBack), e o browser executa.</p>
+
+<p><strong>Por que não <code>submit</code>?</strong> O <code>submit</code> é pra quando o clique precisa enviar valores de campos preenchidos (Insert, Update). Delete não precisa de nada do form — só do <code>id_produto</code> já na sessão. <code>link</code> é mais leve e suficiente.</p>
+
+<h3><code>.setVisible(isUpdate(FORM))</code></h3>
+
+<p>Botão só aparece quando o form está em modo edição. Em modo inserção, não existe registro pra excluir — o botão some. É a mesma lógica do <code>salvarUpdate</code> (que também usa <code>isUpdate(FORM)</code>), invertida em relação ao <code>salvarInsert</code> (<code>isInsert(FORM)</code>).</p>
+
+<h3><code>bar.addLeft(excluir)</code></h3>
+
+<p>O <code>Bar</code> tem 3 regiões: <code>addLeft</code>, <code>addCenter</code>, <code>addRight</code>. Convenção XT: ação destrutiva à esquerda, ações de fluxo principal (Cancelar, Salvar) à direita. A distância visual é intencional — evita o clique acidental no botão vermelho quando o usuário está mirando "Salvar".</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 3 — Inner class Delete                               -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 3 — Inner class <code>Delete</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">public static class Delete extends DepartamentoProdutoAction {
+    public Delete() { super.getFilters().add(new TransactionFilter()); }
+    @Override
+    public Effect execute() throws Exception {
+        try {
+            if (JasapFunctions.equals(getInput().getInteger(CONFIRM), 1)) {
+                proBean().setId_produto(id_produto());
+                getFactory().departamento().proModel().daoDelete(proBean());
+                eval(new Toast("Registro excluído.").success());
+                evalParent(Js.CLOSE_SUB_WINDOWS);
+            } else {
+                eval(Js.swalConfirm("Confirma a exclusão desse registro?",
+                        link(Delete.class).putInteger(CONFIRM, 1).ajax(), ""));
+            }
+            return new Response();
+        } catch (SQLConstraintException e) {
+            eval(new Toast("Falha ao excluir: esse registro está sendo usado em outra tabela.").fail());
+            return new Response();
+        }
+    }
+}</code></pre>
+
+<h3><code>extends DepartamentoProdutoAction</code> (não <code>DepartamentoProdutoForm</code>)</h3>
+
+<p>Diferença sutil mas importante: <code>Insert</code> e <code>Update</code> também estendem <code>DepartamentoProdutoAction</code>, não o <code>Form</code>. O motivo é que essas actions <strong>não renderizam o form</strong> — elas apenas executam a operação no banco e devolvem comandos AjaxBack. Estender o <code>Form</code> carregaria o overhead dos getters dos campos (<code>nome_produto()</code>, <code>vl_produto()</code> etc.) sem usar nenhum deles.</p>
+
+<p><code>ShowInsert</code>, <code>ShowUpdate</code> e <code>Cancelar</code> estendem o <code>Form</code> porque precisam chamar <code>render()</code>. As actions de escrita (<code>Insert</code>, <code>Update</code>, <code>Delete</code>) estendem diretamente a <code>Action</code> base.</p>
+
+<h3><code>public Delete() { super.getFilters().add(new TransactionFilter()); }</code></h3>
+
+<p>Construtor que pluga o <code>TransactionFilter</code> na pilha de filtros da action. O filtro abre uma transação antes do <code>execute()</code> e — aqui está a parte crítica — faz <strong>rollback automático se qualquer Exception explodir</strong>. Se o <code>daoDelete</code> lança <code>SQLConstraintException</code>, o filtro vê a exception, desfaz a transação, e só depois a exception vira <code>catch</code>.</p>
+
+<p>Sem esse filtro, o delete poderia executar parcialmente e deixar o banco em estado inconsistente. É o mesmo padrão de <code>Insert</code> e <code>Update</code> — sempre que a action escreve no banco.</p>
+
+<h3>O <code>if (JasapFunctions.equals(getInput().getInteger(CONFIRM), 1))</code></h3>
+
+<p>A chave do ciclo composto: <strong>a mesma action é chamada duas vezes</strong>, e o input <code>CONFIRM</code> decide o comportamento.</p>
+
+<ul>
+    <li><strong>1ª chamada</strong> (clique no botão Excluir): <code>CONFIRM</code> é <code>null</code>, o <code>equals(null, 1)</code> retorna <code>false</code>, cai no <code>else</code> — dispara o <code>swalConfirm</code>.</li>
+    <li><strong>2ª chamada</strong> (clique "Sim, excluir" no swal): o link embutido traz <code>.putInteger(CONFIRM, 1)</code>, o <code>equals(1, 1)</code> retorna <code>true</code>, executa o delete.</li>
+</ul>
+
+<p><code>JasapFunctions.equals</code> é null-safe — não explode se o input vier <code>null</code>, só retorna <code>false</code>. Usar <code>.equals()</code> de Integer sem null-check quebraria com <code>NullPointerException</code>.</p>
+
+<h3><code>proBean().setId_produto(id_produto());</code></h3>
+
+<p><code>id_produto()</code> lê da sessão — o valor foi gravado lá pelo <code>ShowUpdate</code> quando o form abriu. Como o botão Excluir só aparece em modo edição, a sessão tem o valor garantido.</p>
+
+<p>Ler da sessão (em vez do input) tem vantagem: depois do swalConfirm, o 2º clique só precisa carregar <code>CONFIRM=1</code> — não precisa reenviar o <code>id_produto</code>. Menos superfície pra erro.</p>
+
+<h3><code>getFactory().departamento().proModel().daoDelete(proBean());</code></h3>
+
+<p>Dispara o <code>DELETE FROM departamento.produto WHERE id_produto = ?</code>. O <code>daoDelete</code> já existia desde o CRUD DELETE — o Form só está consumindo o que a List também consome pelo <code>DeleteFromList</code>.</p>
+
+<h3><code>eval(new Toast("Registro excluído.").success());</code></h3>
+
+<p>Toast verde no canto da tela. Confirma pro usuário que deu certo sem exigir ação dele (nada pra clicar, nada pra fechar — some sozinho).</p>
+
+<h3><code>evalParent(Js.CLOSE_SUB_WINDOWS);</code></h3>
+
+<p>Fecha o modal do form (que é o iframe "filho"). O <code>evalParent</code> executa o JS na janela pai. Ao fechar, o <code>setOnCloseURL(url(Sort.class))</code> configurado no <code>ShowUpdate</code> (lá na <code>List</code>) dispara automaticamente — e a lista se atualiza sem o registro excluído.</p>
+
+<p><strong>Detalhe bonito:</strong> o Form não precisa saber que existe uma lista esperando refresh. A lista definiu no momento em que abriu o modal ("quando fechar, chama <code>Sort</code>") e o Form só precisa fechar o modal. Desacoplamento correto.</p>
+
+<h3><code>eval(Js.swalConfirm("Confirma a exclusão desse registro?", link(Delete.class).putInteger(CONFIRM, 1).ajax(), ""));</code></h3>
+
+<p>Dispara o modal de confirmação (SweetAlert). Se o usuário clicar "Sim", executa o JS passado no 2º parâmetro — que é o link pra si mesmo com <code>CONFIRM=1</code>. Se clicar "Não", fecha sem fazer nada.</p>
+
+<p>O 3º parâmetro vazio (<code>""</code>) seria o JS a rodar ao cancelar — aqui não precisamos de nada.</p>
+
+<h3><code>catch (SQLConstraintException e)</code></h3>
+
+<p>Captura especificamente violações de constraint (FK). Outras exceptions (driver caiu, SQL inválido) propagam e são tratadas pelo filtro global <code>ErrorFilter</code>. Esse <code>catch</code> é só pra o caso <em>esperado</em> de "o usuário tá tentando excluir algo que tem filho" — cenário que não é bug, é regra de negócio.</p>
+
+<p>O Toast vermelho explica o motivo sem expor stack trace. O <code>TransactionFilter</code> já fez rollback antes do <code>catch</code> disparar, então o banco está limpo.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 4 — Constante CONFIRM                                -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 4 — Constante <code>CONFIRM</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">public static String FORM = ROOT.concat("__FORM");
+public static String CONFIRM = ROOT.concat("__CONFIRM");</code></pre>
+
+<p>Uma linha, junto à <code>FORM</code> no fim da classe. <code>ROOT</code> vem da action base — é o namespace do módulo (<code>"XT.PAINEL_CONTROLE.ACESSO_MODULO.DEPARTAMENTO__PRODUTO/"</code>). Concatenar garante chave única entre módulos — se dois módulos tivessem constante <code>"__CONFIRM"</code> sem o prefixo, colidiriam no input/sessão.</p>
+
+<h3>Por que uma constante separada em vez de string literal</h3>
+
+<p>O padrão Jasap evita strings mágicas no código. <code>getInput().getInteger("__CONFIRM")</code> compilaria, mas:</p>
+
+<ul>
+    <li>Typo passa batido (compila com <code>"__CONFIR"</code>, vira bug silencioso);</li>
+    <li>Refactor de busca não pega;</li>
+    <li>Sem o prefixo do <code>ROOT</code>, colide com outros módulos.</li>
+</ul>
+
+<p>A constante centraliza a chave. Mesmo padrão de <code>FORM</code>, <code>LIST</code>, <code>FILTRO</code>, <code>CONFIRM_LIST</code> — todas existem pela mesma razão.</p>
+
+<h3>Por que <code>CONFIRM</code> e não <code>CONFIRM_LIST</code></h3>
+
+<p>O <code>DeleteFromList</code> na <code>List</code> já usa <code>CONFIRM_LIST</code>. São contextos <strong>separados</strong>: um botão é da lista, outro é do form. Usar nomes diferentes deixa explícito e evita acoplamento — se amanhã alguém mudar a chave do List, o Form não é afetado.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 5 — regAction no Manager                             -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 5 — <code>regAction(Delete.class)</code> no Manager</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">regAction(DepartamentoProdutoForm.Cancelar.class);
+regAction(DepartamentoProdutoForm.Delete.class);</code></pre>
+
+<p>Uma linha no <code>config()</code> do <code>DepartamentoManager</code>, logo após <code>Cancelar</code>. Sem ela, o framework não sabe que a action <code>Delete</code> existe — o clique do botão bateria numa URL que o controller não reconhece, e a resposta seria 404.</p>
+
+<p>O <code>regAction</code> grava a classe no mapa de actions do módulo durante a inicialização da aplicação. É chamado uma única vez, quando o Tomcat sobe — depois o framework consulta o mapa a cada requisição. Sempre que uma inner class nova de action for criada, tem que aparecer aqui.</p>
+
+<p><strong>Padrão do projeto:</strong> manter a ordem dos <code>regAction</code> refletindo a ordem das inner classes no arquivo Java. Facilita revisar se algum registro foi esquecido — comparar visualmente as duas listas. Delete vem depois de Cancelar porque é a última inner class no Form.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- O ciclo composto — swalConfirm                               -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O ciclo composto — swalConfirm</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>A exclusão precisa de <strong>dois cliques do usuário</strong>: o primeiro no botão "Excluir", o segundo no "Sim, excluir" do swal. Entre esses dois cliques, duas requisições HTTP separadas viajam até o servidor e voltam. Do ponto de vista do backend, são <strong>duas execuções independentes</strong> da mesma action.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Passo</th><th>Quem dispara</th><th>O que chega no backend</th><th>Branch executado</th></tr>
+    <tr><td>1</td><td>Clique no botão Excluir</td><td><code>CONFIRM=null</code></td><td><code>else</code> — dispara <code>swalConfirm</code></td></tr>
+    <tr><td>2</td><td>Browser renderiza o modal SweetAlert</td><td>—</td><td>—</td></tr>
+    <tr><td>3</td><td>Clique em "Sim, excluir" no modal</td><td><code>CONFIRM=1</code> (via <code>.putInteger</code>)</td><td><code>if</code> — executa <code>daoDelete</code></td></tr>
+</table>
+</div>
+
+<h3>Por que não guardar estado entre as duas chamadas</h3>
+
+<p>O HTTP é sem estado — o servidor esquece tudo entre requisições. Cada execução da <code>Delete.execute()</code> nasce e morre isolada. Pra a 2ª chamada saber que veio de um swal confirmado, o <code>link(Delete.class).putInteger(CONFIRM, 1).ajax()</code> embute essa informação no próprio link. Quando o usuário clica "Sim", o browser dispara esse link com <code>CONFIRM=1</code>.</p>
+
+<p>É o padrão correto pra ciclos compostos: o <strong>estado viaja no link</strong>, não na sessão. A sessão é pra coisas que precisam persistir entre telas inteiras (usuário logado, filtros de lista). Um confirm de swal é efêmero — dura um clique.</p>
+
+<h3>E se o usuário fechar o swal?</h3>
+
+<p>Nada acontece. O 3º parâmetro do <code>swalConfirm</code> (JS a rodar no cancelamento) está vazio. Se o usuário clicar "Cancelar" ou pressionar Esc, o modal fecha e a aplicação fica no mesmo estado anterior — form aberto, nada apagado. A ação destrutiva nunca dispara sem a confirmação explícita.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- O que NÃO faz parte                                          -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que NÃO faz parte do Delete no Form</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Três coisas <em>parecem</em> relacionadas mas não são afetadas:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Item</th><th>Por que fica de fora</th></tr>
+    <tr><td><code>DeleteFromList</code> na <code>List</code></td><td>Continua existindo. É outro contexto — usuário que ainda não abriu o form, só quer apagar da linha. Ter as duas opções é conveniência, não redundância.</td></tr>
+    <tr><td><code>DepartamentoProdutoWBean</code></td><td>Nenhuma mudança. Filtros da lista não têm nada a ver com exclusão individual.</td></tr>
+    <tr><td><code>DepartamentoProdutoDAO</code></td><td>O método <code>daoDelete</code> já existia desde o CRUD DELETE. O Form só <strong>consome</strong> — não altera o DAO.</td></tr>
+</table>
+</div>
+
+<h3>Por que manter <code>DeleteFromList</code> em vez de migrar tudo pro Form</h3>
+
+<p>Dois fluxos reais de uso cobrem casos diferentes:</p>
+
+<ul>
+    <li><strong>DeleteFromList</strong> — "Essa lista tem 50 itens, quero apagar 3 rapidinho, sem abrir cada um." Clique-lixeira-confirma, clique-lixeira-confirma, em cima da lista.</li>
+    <li><strong>Delete no Form</strong> — "Abri o produto pra editar, mas analisei melhor e quero apagar em vez de salvar." Botão vermelho no fim do form, dentro do mesmo contexto de edição.</li>
+</ul>
+
+<p>Forçar um caminho só seria pior UX. Os dois podem coexistir porque dividem o <code>daoDelete</code> — a lógica de banco é única, só os pontos de entrada mudam.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Resumo                                                       -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Resumo — o que mudou</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="table-wrap">
+<table>
+    <tr><th>Arquivo</th><th>Tipo</th><th>Edição</th></tr>
+    <tr><td><strong>DepartamentoProdutoForm</strong></td><td>editar</td><td>2 imports (<code>Toast</code>, <code>SQLConstraintException</code>), botão <code>excluir</code> no <code>br()</code>, <code>bar.addLeft(excluir)</code>, inner class <code>Delete</code>, constante <code>CONFIRM</code></td></tr>
+    <tr><td><strong>DepartamentoManager</strong></td><td>editar</td><td><code>regAction(DepartamentoProdutoForm.Delete.class)</code></td></tr>
+    <tr><td><strong>DepartamentoProdutoBean</strong></td><td>—</td><td>Nada</td></tr>
+    <tr><td><strong>DepartamentoProdutoDAO</strong></td><td>—</td><td>Nada — <code>daoDelete</code> já existia do CRUD DELETE</td></tr>
+    <tr><td><strong>DepartamentoProdutoList</strong></td><td>—</td><td>Nada — <code>DeleteFromList</code> continua no ar</td></tr>
+    <tr><td><strong>Banco</strong></td><td>—</td><td>Nada</td></tr>
+</table>
+</div>
+
+<p>2 arquivos editados, nenhum arquivo novo, nenhuma mudança de schema. Resultado: botão "Excluir" vermelho no canto inferior esquerdo do formulário em modo edição, swalConfirm antes de apagar, Toast de confirmação (ou de erro se FK barrar), modal fecha e a lista se atualiza sem o registro excluído.</p>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

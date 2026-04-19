@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico - XT Treinamento</title>
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script src="js/layout.js"></script>
+    <style>
+        .grafo-header { margin-bottom: 12px; }
+        .grafo-header h1 {
+            margin: 0 0 4px 0;
+            font-size: 1.6em;
+            color: #1e293b;
+        }
+        .grafo-header p { margin: 0; color: #64748b; font-size: 0.9em; }
+
+        .grafo-legend {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin: 16px 0;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        .grafo-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8em;
+            color: #334155;
+        }
+        .grafo-legend-dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+        }
+
+        #grafo-container {
+            width: 100%;
+            height: calc(100vh - 280px);
+            min-height: 520px;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            background: radial-gradient(ellipse at center, #1b1d2e 0%, #0f1020 100%);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 0 80px rgba(0,0,0,0.3);
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .grafo-hint {
+            margin-top: 10px;
+            font-size: 0.8em;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        /* PREVIEW flutuante */
+        #grafo-preview {
+            position: fixed;
+            width: 420px;
+            height: 290px;
+            background: rgba(15, 16, 32, 0.95);
+            border: 1px solid rgba(99, 102, 241, 0.5);
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 300;
+            display: none;
+            pointer-events: none;
+            overflow: hidden;
+            backdrop-filter: blur(8px);
+        }
+        .grafo-preview-header {
+            padding: 8px 12px;
+            color: #e2e8f0;
+            font-size: 0.85em;
+            font-weight: 500;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+            background: rgba(30, 27, 46, 0.7);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .grafo-preview-header small {
+            color: #94a3b8;
+            font-weight: 400;
+            margin-left: 8px;
+            font-size: 0.85em;
+        }
+        .grafo-preview-body {
+            width: 100%;
+            height: calc(100% - 32px);
+            position: relative;
+            background: #fff;
+            overflow: hidden;
+        }
+        .grafo-preview-body iframe {
+            width: 1200px;
+            height: 740px;
+            border: none;
+            transform: scale(0.35);
+            transform-origin: 0 0;
+            pointer-events: none;
+        }
+        .grafo-preview-loading {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #64748b;
+            font-size: 0.85em;
+        }
+    </style>
+    <script>
+    // ─── Estrutura hierárquica do site ────────────────────────────────
+    // Cada página vira um nó. Arestas = relação pai/filho do menu.
+    var STRUCTURE = {
+        id: 'root', label: 'Home', group: 'root',
+        url: 'index.html',
+        children: [
+            {
+                id: 'nm', label: 'Novo Módulo', group: 'nm',
+                url: 'pages/1-novo-modulo/novo-modulo.html',
+                children: [
+                    { id: 'nm1', label: 'DepartamentoHome',       group: 'nm', url: 'pages/1-novo-modulo/1-DepartamentoHome/1-DepartamentoHome.html' },
+                    { id: 'nm2', label: 'DepartamentoManager',    group: 'nm', url: 'pages/1-novo-modulo/2-DepartamentoManager/2-DepartamentoManager.html' },
+                    { id: 'nm3', label: 'DepartamentoMdFactory',  group: 'nm', url: 'pages/1-novo-modulo/3-DepartamentoMdFactory/3-DepartamentoMdFactory.html' },
+                    { id: 'nm4', label: 'AppsRootModelFactory',   group: 'nm', url: 'pages/1-novo-modulo/4-AppsRootModelFactory/4-AppsRootModelFactory.html' },
+                    { id: 'nm5', label: 'PnlCfg',                 group: 'nm', url: 'pages/1-novo-modulo/5-PnlCfg/5-PnlCfg.html' },
+                    { id: 'nm6', label: 'RootManager',            group: 'nm', url: 'pages/1-novo-modulo/6-RootManager/6-RootManager.html' },
+                    { id: 'nm7', label: 'HomeDesk',               group: 'nm', url: 'pages/1-novo-modulo/7-HomeDesk/7-HomeDesk.html' }
+                ]
+            },
+            {
+                id: 'crud', label: 'CRUD', group: 'crud',
+                url: 'pages/2-crud/crud.html',
+                children: [
+                    {
+                        id: 'cr', label: 'Read', group: 'cr',
+                        url: 'pages/2-crud/1-crud-read/crud-read.html',
+                        children: [
+                            { id: 'cr1', label: 'DepartamentoProdutoBean',   group: 'cr', url: 'pages/2-crud/1-crud-read/1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html' },
+                            { id: 'cr2', label: 'DepartamentoProdutoWBean',  group: 'cr', url: 'pages/2-crud/1-crud-read/2-DepartamentoProdutoWBean/2-DepartamentoProdutoWBean.html' },
+                            { id: 'cr3', label: 'DepartamentoProdutoDAO',    group: 'cr', url: 'pages/2-crud/1-crud-read/3-DepartamentoProdutoDAO/3-DepartamentoProdutoDAO.html' },
+                            { id: 'cr4', label: 'DepartamentoProdutoModel',  group: 'cr', url: 'pages/2-crud/1-crud-read/4-DepartamentoProdutoModel/4-DepartamentoProdutoModel.html' },
+                            { id: 'cr5', label: 'DepartamentoProdutoAction', group: 'cr', url: 'pages/2-crud/1-crud-read/5-DepartamentoProdutoAction/5-DepartamentoProdutoAction.html' },
+                            { id: 'cr6', label: 'getManager',                group: 'cr', url: 'pages/2-crud/1-crud-read/6-getManager/6-getManager.html' },
+                            { id: 'cr7', label: 'DepartamentoMdFactory',     group: 'cr', url: 'pages/2-crud/1-crud-read/7-DepartamentoMdFactory/7-DepartamentoMdFactory.html' },
+                            { id: 'cr8', label: 'DepartamentoProdutoList',   group: 'cr', url: 'pages/2-crud/1-crud-read/8-DepartamentoProdutoList/8-DepartamentoProdutoList.html' },
+                            { id: 'cr9', label: 'DepartamentoHome',          group: 'cr', url: 'pages/2-crud/1-crud-read/9-DepartamentoHome/9-DepartamentoHome.html' }
+                        ]
+                    },
+                    {
+                        id: 'cd', label: 'Delete', group: 'cd',
+                        url: 'pages/2-crud/2-crud-delete/crud-delete.html',
+                        children: [
+                            { id: 'cd1', label: 'DepartamentoProdutoDAO',  group: 'cd', url: 'pages/2-crud/2-crud-delete/1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html' },
+                            { id: 'cd2', label: 'DepartamentoProdutoList', group: 'cd', url: 'pages/2-crud/2-crud-delete/2-DepartamentoProdutoList/2-DepartamentoProdutoList.html' },
+                            { id: 'cd3', label: 'DepartamentoManager',     group: 'cd', url: 'pages/2-crud/2-crud-delete/3-DepartamentoManager/3-DepartamentoManager.html' }
+                        ]
+                    },
+                    {
+                        id: 'cc', label: 'Create', group: 'cc',
+                        url: 'pages/2-crud/3-crud-create/crud-create.html',
+                        children: [
+                            { id: 'cc1', label: 'DepartamentoProdutoDAO',    group: 'cc', url: 'pages/2-crud/3-crud-create/1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html' },
+                            { id: 'cc2', label: 'DepartamentoProdutoAction', group: 'cc', url: 'pages/2-crud/3-crud-create/2-DepartamentoProdutoAction/2-DepartamentoProdutoAction.html' },
+                            { id: 'cc3', label: 'DepartamentoProdutoForm',   group: 'cc', url: 'pages/2-crud/3-crud-create/3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html' },
+                            { id: 'cc4', label: 'DepartamentoProdutoList',   group: 'cc', url: 'pages/2-crud/3-crud-create/4-DepartamentoProdutoList/4-DepartamentoProdutoList.html' },
+                            { id: 'cc5', label: 'DepartamentoManager',       group: 'cc', url: 'pages/2-crud/3-crud-create/5-DepartamentoManager/5-DepartamentoManager.html' }
+                        ]
+                    },
+                    {
+                        id: 'cu', label: 'Update', group: 'cu',
+                        url: 'pages/2-crud/4-crud-update/crud-update.html',
+                        children: [
+                            { id: 'cu1', label: 'DepartamentoProdutoDAO',    group: 'cu', url: 'pages/2-crud/4-crud-update/1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html' },
+                            { id: 'cu2', label: 'DepartamentoProdutoAction', group: 'cu', url: 'pages/2-crud/4-crud-update/2-DepartamentoProdutoAction/2-DepartamentoProdutoAction.html' },
+                            { id: 'cu3', label: 'DepartamentoProdutoForm',   group: 'cu', url: 'pages/2-crud/4-crud-update/3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html' },
+                            { id: 'cu4', label: 'DepartamentoProdutoList',   group: 'cu', url: 'pages/2-crud/4-crud-update/4-DepartamentoProdutoList/4-DepartamentoProdutoList.html' },
+                            { id: 'cu5', label: 'DepartamentoManager',       group: 'cu', url: 'pages/2-crud/4-crud-update/5-DepartamentoManager/5-DepartamentoManager.html' }
+                        ]
+                    },
+                    {
+                        id: 'cf', label: 'Funcionalidades', group: 'func',
+                        url: 'pages/2-crud/5-funcionalidades/funcionalidades.html',
+                        children: [
+                            { id: 'cf1', label: 'Sort',        group: 'func', url: 'pages/2-crud/5-funcionalidades/1-sort/sort.html' },
+                            { id: 'cf2', label: 'QuickSearch', group: 'func', url: 'pages/2-crud/5-funcionalidades/2-quicksearch/quicksearch.html' },
+                            { id: 'cf3', label: 'Insert Chk',  group: 'func', url: 'pages/2-crud/5-funcionalidades/3-insert-chk/insert-chk.html' },
+                            { id: 'cf4', label: 'Paginação',   group: 'func', url: 'pages/2-crud/5-funcionalidades/4-paginacao/paginacao.html' },
+                            { id: 'cf5', label: 'Tabs Status', group: 'func', url: 'pages/2-crud/5-funcionalidades/5-tabs-status/tabs-status.html' },
+                            { id: 'cf6', label: 'Delete Form', group: 'func', url: 'pages/2-crud/5-funcionalidades/6-delete-form/delete-form.html' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'ja', label: 'Jasap', group: 'jasap',
+                url: 'pages/3-jasap/jasap.html',
+                children: [
+                    { id: 'ja1', label: 'Manager', group: 'jasap', url: 'pages/3-jasap/1-Manager/1-Manager.html' }
+                ]
+            },
+            { id: 'sql', label: 'SQL',              group: 'sql', url: 'pages/4-sql/sql.html' },
+            { id: 'fj',  label: 'Fundamentos Java', group: 'fj',  url: 'pages/5-fundamentos-java/fundamentos-java.html' },
+            { id: 'hw',  label: 'Hardware',         group: 'hw',  url: 'pages/6-hardware/hardware.html' },
+            { id: 'ref', label: 'Referência',       group: 'ref', url: 'referencia/index.html' }
+        ]
+    };
+
+    // Percorre a árvore e gera nodes + edges
+    var RAW_NODES = [];
+    var RAW_EDGES = [];
+    (function flatten(node, parentId) {
+        RAW_NODES.push({
+            id: node.id,
+            label: node.label,
+            group: node.group,
+            url: node.url,
+            title: node.url
+        });
+        if (parentId) RAW_EDGES.push([parentId, node.id]);
+        (node.children || []).forEach(function(c) { flatten(c, node.id); });
+    })(STRUCTURE, null);
+
+    // Conta quantos descendentes cada nó tem (recursivo)
+    var DESCENDANTS = {};
+    (function countDesc(node) {
+        var total = 0;
+        (node.children || []).forEach(function(c) {
+            total += 1 + countDesc(c);
+        });
+        DESCENDANTS[node.id] = total;
+        return total;
+    })(STRUCTURE);
+
+    // ─── Espera container + lib ────────────────────────────────────────
+    window.addEventListener('DOMContentLoaded', function() {
+        var tries = 0;
+        var interval = setInterval(function() {
+            var container = document.getElementById('grafo-container');
+            if (container && typeof vis !== 'undefined') {
+                clearInterval(interval);
+                renderGrafo(container);
+            } else if (++tries > 100) {
+                clearInterval(interval);
+                console.error('Grafo: container ou vis-network não carregaram.');
+            }
+        }, 50);
+    });
+
+    function renderGrafo(container) {
+        // Seções top-level do site (filhos diretos do root) — ganham boost
+        // mesmo sem sub-páginas, porque são "assuntos grandes" por mérito próprio.
+        var TOP_LEVEL = {};
+        (STRUCTURE.children || []).forEach(function(c) { TOP_LEVEL[c.id] = true; });
+
+        // Tamanho baseado em nº de descendentes + boost pra top-level
+        var nodes = new vis.DataSet(RAW_NODES.map(function(n) {
+            var d = DESCENDANTS[n.id] || 0;
+            var topBoost = TOP_LEVEL[n.id] ? 8 : 0;   // garante visibilidade
+            return Object.assign({}, n, {
+                size:  10 + Math.sqrt(d) * 7 + topBoost,
+                font: { size: 11 + Math.sqrt(d) * 1.2 + (TOP_LEVEL[n.id] ? 1 : 0) },
+                mass: TOP_LEVEL[n.id] ? 2 : 1          // mais massa = menos empurrados
+            });
+        }));
+
+        var edges = new vis.DataSet(RAW_EDGES.map(function(e, i) {
+            return {
+                id: 'e' + i,
+                from: e[0],
+                to: e[1],
+                color: { color: 'rgba(148, 163, 184, 0.4)', highlight: '#ffffff' },
+                width: 1,
+                smooth: { type: 'dynamic', roundness: 0.5 }
+            };
+        }));
+
+        var options = {
+            nodes: {
+                shape: 'dot',
+                borderWidth: 0,
+                font: {
+                    color: '#e2e8f0',
+                    face: 'Segoe UI, sans-serif',
+                    strokeWidth: 0
+                },
+                shadow: { enabled: true, size: 14, x: 0, y: 0, color: 'rgba(99, 102, 241, 0.3)' }
+            },
+            edges: {
+                arrows: { to: { enabled: false } },
+                smooth: { type: 'dynamic', roundness: 0.5 },
+                hoverWidth: 1.5,
+                selectionWidth: 2
+            },
+            groups: {
+                root:  { color: { background: '#fbbf24', border: '#f59e0b' }, font: { color: '#1e293b' } },
+                nm:    { color: { background: '#a855f7', border: '#c084fc' } },
+                crud:  { color: { background: '#3b82f6', border: '#60a5fa' } },
+                cr:    { color: { background: '#22d3ee', border: '#67e8f9' }, font: { color: '#0f172a' } },
+                cd:    { color: { background: '#f43f5e', border: '#fb7185' } },
+                cc:    { color: { background: '#22c55e', border: '#4ade80' }, font: { color: '#0f172a' } },
+                cu:    { color: { background: '#f59e0b', border: '#fbbf24' }, font: { color: '#0f172a' } },
+                func:  { color: { background: '#6366f1', border: '#818cf8' } },
+                jasap: { color: { background: '#f97316', border: '#fb923c' } },
+                sql:   { color: { background: '#ec4899', border: '#f472b6' } },
+                fj:    { color: { background: '#14b8a6', border: '#2dd4bf' } },
+                hw:    { color: { background: '#64748b', border: '#94a3b8' } },
+                ref:   { color: { background: '#cbd5e1', border: '#e2e8f0' }, font: { color: '#0f172a' } }
+            },
+            physics: {
+                enabled: true,
+                barnesHut: {
+                    gravitationalConstant: -9000,
+                    centralGravity: 0.2,
+                    springLength: 130,
+                    springConstant: 0.015,
+                    damping: 0.2,
+                    avoidOverlap: 0.5
+                },
+                minVelocity: 0.01,
+                stabilization: { iterations: 300 }
+            },
+            interaction: {
+                hover: true,
+                tooltipDelay: 150,
+                navigationButtons: false,
+                keyboard: true,
+                zoomView: true,
+                dragNodes: true,
+                dragView: true
+            }
+        };
+
+        var network = new vis.Network(container, { nodes: nodes, edges: edges }, options);
+
+        // ─── Hover "holofote" ──────────────────────────────────────
+        var allNodeIds = nodes.getIds();
+        var allEdgeIds = edges.getIds();
+
+        function applyHighlight(hoveredId) {
+            var connected = new Set(network.getConnectedNodes(hoveredId));
+            connected.add(hoveredId);
+
+            nodes.update(allNodeIds.map(function(id) {
+                var active = connected.has(id);
+                return { id: id, opacity: active ? 1 : 0.12 };
+            }));
+
+            edges.update(allEdgeIds.map(function(id) {
+                var ed = edges.get(id);
+                var active = (ed.from === hoveredId || ed.to === hoveredId);
+                return {
+                    id: id,
+                    color: {
+                        color: active ? '#ffffff' : 'rgba(148, 163, 184, 0.06)',
+                        highlight: '#ffffff'
+                    },
+                    width: active ? 2 : 1
+                };
+            }));
+        }
+
+        function resetHighlight() {
+            nodes.update(allNodeIds.map(function(id) { return { id: id, opacity: 1 }; }));
+            edges.update(allEdgeIds.map(function(id) {
+                return {
+                    id: id,
+                    color: { color: 'rgba(148, 163, 184, 0.4)', highlight: '#ffffff' },
+                    width: 1
+                };
+            }));
+        }
+
+        network.on('hoverNode', function(params) { applyHighlight(params.node); });
+        network.on('blurNode',  function(params) { resetHighlight(); });
+
+        // ─── Preview flutuante (iframe) ──────────────────────────
+        var previewEl     = document.getElementById('grafo-preview');
+        var previewHeader = previewEl.querySelector('.grafo-preview-header');
+        var previewBody   = previewEl.querySelector('.grafo-preview-body');
+        var previewFrame  = previewEl.querySelector('iframe');
+        var previewLoader = previewEl.querySelector('.grafo-preview-loading');
+        var previewDelay  = null;
+        var lastMouseX = 0, lastMouseY = 0;
+
+        function positionPreview() {
+            var pad = 20;
+            var w = 420, h = 290;
+            var x = lastMouseX + pad;
+            var y = lastMouseY + pad;
+            if (x + w > window.innerWidth)  x = lastMouseX - pad - w;
+            if (y + h > window.innerHeight) y = window.innerHeight - h - pad;
+            if (y < pad) y = pad;
+            previewEl.style.left = x + 'px';
+            previewEl.style.top  = y + 'px';
+        }
+
+        document.addEventListener('mousemove', function(e) {
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+            if (previewEl.style.display === 'block') positionPreview();
+        });
+
+        previewFrame.addEventListener('load', function() {
+            previewLoader.style.display = 'none';
+        });
+
+        network.on('hoverNode', function(params) {
+            var node = nodes.get(params.node);
+            if (!node || !node.url) return;
+
+            // Cabeçalho mostra label + grupo (aparece instantaneamente)
+            previewHeader.innerHTML = node.label + ' <small>' + node.url + '</small>';
+            previewEl.style.display = 'block';
+            positionPreview();
+
+            // iframe carrega após 300ms (evita peso em hovers rápidos)
+            clearTimeout(previewDelay);
+            previewDelay = setTimeout(function() {
+                if (previewFrame.getAttribute('src') !== node.url) {
+                    previewLoader.style.display = 'block';
+                    previewFrame.src = node.url;
+                }
+            }, 300);
+        });
+
+        network.on('blurNode', function() {
+            clearTimeout(previewDelay);
+            previewEl.style.display = 'none';
+        });
+
+        // ─── Duplo-clique abre a página ──────────────────────────
+        network.on('doubleClick', function(params) {
+            if (params.nodes.length === 0) return;
+            var n = nodes.get(params.nodes[0]);
+            if (n && n.url) window.location.href = n.url;
+        });
+
+        // ─── Movimento vivo (perturbação de velocidade) ───────────
+        var jitterInterval = null;
+        var dragging = false;
+
+        var nodePhases = {};
+        RAW_NODES.forEach(function(n) {
+            nodePhases[n.id] = {
+                px: Math.random() * Math.PI * 2,
+                py: Math.random() * Math.PI * 2,
+                fx: 0.0008 + Math.random() * 0.0012,
+                fy: 0.0008 + Math.random() * 0.0012
+            };
+        });
+
+        function startJitter() {
+            if (jitterInterval) return;
+            jitterInterval = setInterval(function() {
+                if (dragging) return;
+                var bodyNodes = network.body.nodes;
+                var now = Date.now();
+                Object.keys(bodyNodes).forEach(function(id) {
+                    var n = bodyNodes[id];
+                    var ph = nodePhases[id];
+                    if (!n || typeof n.vx !== 'number' || !ph) return;
+                    n.vx += Math.sin(now * ph.fx + ph.px) * 60.0;
+                    n.vy += Math.cos(now * ph.fy + ph.py) * 60.0;
+                    n.vx += (Math.random() - 0.5) * 4.0;
+                    n.vy += (Math.random() - 0.5) * 4.0;
+                });
+            }, 50);
+        }
+
+        network.once('stabilizationIterationsDone', function() {
+            network.fit({ animation: { duration: 600, easingFunction: 'easeInOutQuad' } });
+            startJitter();
+        });
+        setTimeout(function() {
+            try { network.fit({ animation: true }); } catch (e) {}
+            startJitter();
+        }, 3000);
+
+        network.on('dragStart', function() { dragging = true; });
+        network.on('dragEnd',   function() { dragging = false; });
+    }
+    </script>
+</head>
+<body>
+
+    <div class="grafo-header">
+        <h1>Gráfico do site</h1>
+        <p>Mapa de todas as páginas da documentação (<span id="grafo-count"></span> páginas). Duplo-clique numa bolinha pra abrir.</p>
+    </div>
+
+    <div class="grafo-legend">
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#fbbf24"></span>Home</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#a855f7"></span>Novo Módulo</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#3b82f6"></span>CRUD</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#22d3ee"></span>Read</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#f43f5e"></span>Delete</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#22c55e"></span>Create</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#f59e0b"></span>Update</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#6366f1"></span>Funcionalidades</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#f97316"></span>Jasap</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#ec4899"></span>SQL</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#14b8a6"></span>Fund. Java</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#64748b"></span>Hardware</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#cbd5e1"></span>Referência</div>
+    </div>
+
+    <div id="grafo-container"></div>
+
+    <div id="grafo-preview">
+        <div class="grafo-preview-header"></div>
+        <div class="grafo-preview-body">
+            <div class="grafo-preview-loading">carregando…</div>
+            <iframe></iframe>
+        </div>
+    </div>
+
+    <p class="grafo-hint">Arraste · scroll pra zoom · hover acende conexões e mostra prévia · duplo-clique abre a página</p>
+
+    <script>
+        // Atualiza contador de páginas no header
+        document.addEventListener('DOMContentLoaded', function() {
+            var wait = setInterval(function() {
+                var el = document.getElementById('grafo-count');
+                if (el) {
+                    el.textContent = RAW_NODES.length;
+                    clearInterval(wait);
+                }
+            }, 50);
+        });
+    </script>
+
+</body>
+</html>
