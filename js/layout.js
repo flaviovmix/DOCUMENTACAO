@@ -117,10 +117,46 @@ var MENU = [
         hidden: true,
         items: [
             { label: '1 - Sort',           arquivo: '1-sort/sort.html',                   tipo: 'editar' },
-            { label: '6 - Delete no Form', arquivo: '6-delete-form/delete-form.html', tipo: 'editar' }
+            { label: '6 - Delete no Form', arquivo: '6-delete-form/delete-form.html', tipo: 'editar' },
+            { label: '7 - LinkBox',        arquivo: '7-linkbox/linkbox.html',             tipo: 'check' },
+            { label: '8 - Master/Detail',  arquivo: '8-master-detail/master-detail.html', tipo: 'check' }
         ],
         pasta: '5-funcionalidades',
         basePath: '2-crud/5-funcionalidades'
+    },
+    {
+        grupo: 'CRUD LINKBOX',
+        pagina: 'linkbox.html',
+        parent: { label: 'FUNCIONALIDADES', href: '2-crud/5-funcionalidades/funcionalidades.html' },
+        hidden: true,
+        items: [
+            { label: 'Visão Geral',                 arquivo: 'linkbox.html',                                                    tipo: 'check' },
+            { label: '1 - DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html',     tipo: 'editar' },
+            { label: '2 - DepartamentoPessoaSelect',  arquivo: '2-DepartamentoPessoaSelect/2-DepartamentoPessoaSelect.html',   tipo: 'novo' },
+            { label: '3 - DepartamentoProdutoForm',   arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html',     tipo: 'editar' },
+            { label: '4 - DepartamentoManager',       arquivo: '4-DepartamentoManager/4-DepartamentoManager.html',             tipo: 'editar' }
+        ],
+        pasta: '7-linkbox',
+        basePath: '2-crud/5-funcionalidades/7-linkbox'
+    },
+    {
+        grupo: 'CRUD MASTER/DETAIL',
+        pagina: 'master-detail.html',
+        parent: { label: 'FUNCIONALIDADES', href: '2-crud/5-funcionalidades/funcionalidades.html' },
+        hidden: true,
+        items: [
+            { label: 'Visão Geral', arquivo: 'master-detail.html', tipo: 'check' }
+        ],
+        pasta: '8-master-detail',
+        basePath: '2-crud/5-funcionalidades/8-master-detail'
+    },
+    {
+        grupo: 'OBSIDIAN',
+        pagina: 'obsidian.html',
+        items: [
+            { label: 'Notas do vault', arquivo: 'obsidian.html', tipo: 'check' }
+        ],
+        pasta: '7-obsidian'
     }
 ];
 
@@ -197,6 +233,25 @@ var FOOTER = {
             ],
             pasta: '5-funcionalidades',
             basePath: '2-crud/5-funcionalidades'
+        },
+        {
+            grupo: 'CRUD LINKBOX',
+            items: [
+                { label: 'DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html' },
+                { label: 'DepartamentoPessoaSelect',  arquivo: '2-DepartamentoPessoaSelect/2-DepartamentoPessoaSelect.html' },
+                { label: 'DepartamentoProdutoForm',   arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html' },
+                { label: 'DepartamentoManager',       arquivo: '4-DepartamentoManager/4-DepartamentoManager.html' }
+            ],
+            pasta: '7-linkbox',
+            basePath: '2-crud/5-funcionalidades/7-linkbox'
+        },
+        {
+            grupo: 'CRUD MASTER/DETAIL',
+            items: [
+                { label: 'Visão Geral', arquivo: 'master-detail.html' }
+            ],
+            pasta: '8-master-detail',
+            basePath: '2-crud/5-funcionalidades/8-master-detail'
         }
     ],
     extras: [
@@ -466,9 +521,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             '<div id="drawer"><div id="drawer-inner"></div></div>' +
             '<div id="content">' +
                 '<div id="content-inner">' + content + '</div>' +
-                '<div id="footer"><div id="footer-inner"></div></div>' +
             '</div>' +
-        '</div>';
+        '</div>' +
+        '<div id="footer"><div id="footer-inner"></div></div>';
 
     // ── Menu lateral ──
     buildMenu(currentFile, currentFolder, isSubFolder, depth);
@@ -488,15 +543,16 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
         }
 
-        // Hover no botão "Ver docs" → mostra nome do card
+        // Padrão: nome do card (alt da imagem). Hover: texto original ("Ver docs" / "Ver notas")
         var tag = card.querySelector('.home-card-tag');
         var img = card.querySelector('.home-card-img img');
         if (tag && img) {
-            var hoverName = (img.getAttribute('alt') || '').toUpperCase();
-            var originalText = tag.textContent;
-            if (hoverName && hoverName !== originalText.toUpperCase()) {
-                tag.addEventListener('mouseenter', function() { tag.textContent = hoverName; });
-                tag.addEventListener('mouseleave', function() { tag.textContent = originalText; });
+            var cardName = (img.getAttribute('alt') || '').toUpperCase();
+            var hoverText = tag.textContent;
+            if (cardName && cardName !== hoverText.toUpperCase()) {
+                tag.textContent = cardName;
+                tag.addEventListener('mouseenter', function() { tag.textContent = hoverText; });
+                tag.addEventListener('mouseleave', function() { tag.textContent = cardName; });
             }
         }
     });
@@ -517,12 +573,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     initCopyButtons(inner);
     initAudioPlayers(inner);
     await initCarousel(inner);
+    initInfoRowPersist(inner);
     initSideNav(inner);
 
     // ── Restaurar estado do drawer ──
     if (localStorage.getItem('drawerOpen') === 'true') {
         document.getElementById('drawer').classList.add('open');
         document.getElementById('hamburger').classList.add('open');
+        document.body.classList.add('drawer-open');
         if (window.innerWidth <= 768) {
             createDrawerOverlay(true);
         }
@@ -728,6 +786,7 @@ function toggleDrawer() {
     var drawer = document.getElementById('drawer');
     var isOpen = drawer.classList.toggle('open');
     document.getElementById('hamburger').classList.toggle('open');
+    document.body.classList.toggle('drawer-open', isOpen);
     localStorage.setItem('drawerOpen', isOpen);
 
     if (window.innerWidth <= 768) {
@@ -1390,6 +1449,27 @@ function initTopnav(inner) {
     }
 }
 
+// ── Persistência do estado aberto/fechado dos info-row ──
+
+function initInfoRowPersist(inner) {
+    var rows = inner.querySelectorAll('.info-row');
+    if (rows.length === 0) return;
+
+    rows.forEach(function(row, i) {
+        if (!row.id) row.id = 'section-' + i;
+        var key = 'infoRow:' + location.pathname + ':' + row.id;
+        var saved = localStorage.getItem(key);
+        if (saved === 'open') row.classList.add('open');
+        else if (saved === 'closed') row.classList.remove('open');
+
+        var header = row.querySelector('.info-row-header');
+        if (!header) return;
+        header.addEventListener('click', function() {
+            localStorage.setItem(key, row.classList.contains('open') ? 'open' : 'closed');
+        });
+    });
+}
+
 // ── SideNav (índice lateral para páginas com info-row) ──
 
 function initSideNav(inner) {
@@ -1410,7 +1490,9 @@ function initSideNav(inner) {
 
         var a = document.createElement('a');
         a.href = '#' + row.id;
-        a.textContent = titleEl.textContent;
+        var fullText = titleEl.textContent;
+        var dashIdx = fullText.indexOf(' — ');
+        a.textContent = dashIdx > 0 ? fullText.substring(0, dashIdx) : fullText;
 
         a.addEventListener('click', function(e) {
             e.preventDefault();
@@ -1439,6 +1521,7 @@ function initSideNav(inner) {
     arrow.addEventListener('click', function() {
         var isOpen = nav.classList.toggle('open');
         arrow.classList.toggle('open', isOpen);
+        document.body.classList.toggle('sidenav-open', isOpen);
         localStorage.setItem('sidenavOpen', isOpen);
     });
     document.body.appendChild(arrow);
@@ -1447,6 +1530,7 @@ function initSideNav(inner) {
     if (localStorage.getItem('sidenavOpen') !== 'false') {
         nav.classList.add('open');
         arrow.classList.add('open');
+        document.body.classList.add('sidenav-open');
     }
 
     // Scroll spy

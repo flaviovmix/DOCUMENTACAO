@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoProdutoForm (LINKBOX) — XT - Treinamento</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoProdutoForm <span class="badge badge-edit">editar</span></h1>
+
+<div class="audio-player" data-src="audio/DepartamentoProdutoForm.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Arquivo central da sequência do LinkBox. O Form do Produto ganha um campo novo no formulário — o <strong>"Responsável"</strong> — representado por um componente <code>LinkBox</code>: um input de leitura com um botão verde ao lado que abre o modal <code>DepartamentoPessoaSelect</code>. Ao escolher uma pessoa lá, o Form recebe o callback numa inner class nova (<code>Fk_pessoa_produto</code>), atualiza o valor no bean e o texto no campo.</p>
+
+<p>Do ponto de vista de quem já viu CRUD CREATE e UPDATE, são 4 adições pequenas: 2 imports, 1 linha no <code>form()</code>, o método <code>fk_pessoa_produto()</code> (monta o componente) e a inner class <code>Fk_pessoa_produto</code> (processa o callback).</p>
+
+<div class="info-accordion">
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="import br.jasap.gui.form.LinkBox|import br.xt.app.departamento.pessoa.DepartamentoPessoaBean|import br.xt.app.departamento.pessoa.DepartamentoPessoaSelect|frm.line().add(fk_pessoa_produto()|private LinkBox fk_pessoa_produto = null;|public LinkBox fk_pessoa_produto()|if (fk_pessoa_produto == null)|if (proBean().getFk_pessoa_produto() != null)|getFactory().departamento().pesModel().daoSingle(proBean().getPessoa())|fk_pessoa_produto = ui().linkBox|.setLabel(&quot;Responsável&quot;)|.setValue(proBean().getPessoa().getNome_pessoa())|.setWidth(250)|.addKey(DepartamentoProdutoBean.FK_PESSOA_PRODUTO|.setSelectLnk(link(DepartamentoPessoaSelect.class)).setCallBackID(&quot;_PESSOA&quot;)|.setCallBackURL(url(Fk_pessoa_produto.class))|public static class Fk_pessoa_produto|proBean().setFk_pessoa_produto(getInput().getInteger(DepartamentoPessoaBean.ID_PESSOA))|if (proBean().getFk_pessoa_produto() != null)|updateParent(&quot;FK_PESSOA&quot;, fk_pessoa_produto().textValue())|update(&quot;FK_PESSOA&quot;, fk_pessoa_produto().textValue())"><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.Bar;
+import br.jasap.gui.Button;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.Table;
+import br.jasap.gui.Toast;
+import br.jasap.gui.form.Check;
+import br.jasap.gui.form.Form;
+import br.jasap.gui.form.LinkBox;
+import br.jasap.gui.form.Radio;
+import br.jasap.gui.form.Text;
+import br.jasap.gui.form.Textarea;
+import br.jasap.util.DomainValue;
+import br.jasap.util.JasapFunctions;
+import br.jasap.util.JasapList;
+import br.jasap.util.Js;
+import br.jasap.util.exceptions.SQLConstraintException;
+import br.jasap.util.filters.TransactionFilter;
+import br.xt.acore.view.XtPage;
+import br.xt.app.departamento.pessoa.DepartamentoPessoaBean;
+import br.xt.app.departamento.pessoa.DepartamentoPessoaSelect;
+
+public class DepartamentoProdutoForm extends DepartamentoProdutoAction {
+
+    @Override
+    public Effect execute() throws Exception {
+        render();
+        return new Response();
+    }
+
+    // ... ShowInsert, Insert, ShowUpdate, Update, Cancelar, Delete, render(), window(), br() ...
+
+    public String form() throws Exception {
+        Form frm = ui().form();
+        frm.addHidden(DepartamentoProdutoBean.ID_PRODUTO, proBean().getId_produto());
+
+        frm.line().add(nome_produto(),       "150");
+        frm.line().add(vl_produto(),         "150");
+        frm.line().add(qtd_produto(),        "150");
+        frm.line().add(st_produto(),         "150");
+        frm.line().add(fk_pessoa_produto(),  "150");
+        frm.line().add(obs_produto(),        "150");
+        frm.line().add(insert_chk(),         "150");
+
+        return frm.getTable().toHtml();
+    }
+
+    // ... nome_produto(), vl_produto(), qtd_produto(), st_produto(), obs_produto() ...
+
+    private LinkBox fk_pessoa_produto = null;
+    public LinkBox fk_pessoa_produto() throws Exception {
+        if (fk_pessoa_produto == null) {
+            if (proBean().getFk_pessoa_produto() != null) {
+                getFactory().departamento().pesModel().daoSingle(proBean().getPessoa());
+            }
+            fk_pessoa_produto = ui().linkBox("FK_PESSOA", "500", "400")
+                    .setLabel("Responsável")
+                    .setValue(proBean().getPessoa().getNome_pessoa())
+                    .setWidth(250)
+                    .addKey(DepartamentoProdutoBean.FK_PESSOA_PRODUTO, proBean().getFk_pessoa_produto())
+                    .setSelectLnk(link(DepartamentoPessoaSelect.class)).setCallBackID("_PESSOA")
+                    .setCallBackURL(url(Fk_pessoa_produto.class));
+        }
+        return fk_pessoa_produto;
+    }
+
+    public static class Fk_pessoa_produto extends DepartamentoProdutoForm {
+        @Override
+        public Effect execute() throws Exception {
+            proBean().setFk_pessoa_produto(getInput().getInteger(DepartamentoPessoaBean.ID_PESSOA));
+            if (proBean().getFk_pessoa_produto() != null) {
+                updateParent("FK_PESSOA", fk_pessoa_produto().textValue());
+                evalParent(Js.CLOSE_SUB_WINDOWS);
+            } else {
+                update("FK_PESSOA", fk_pessoa_produto().textValue());
+            }
+            return new Response();
+        }
+    }
+
+    // ... insert_chk(), constantes FORM e CONFIRM ...
+
+}</code></pre>
+
+<p><em>Os blocos em verde são as adições desta sequência. O resto do arquivo (Show/Insert, Update, Cancelar, Delete, render, window, br, nome_produto, vl_produto, etc) fica igual — já foi coberto em sequências anteriores.</em></p>
+
+        </div>
+    </div>
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Visão Geral — o que entra de novo</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Quatro adições no arquivo, todas pequenas:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Adição</th><th>Onde</th><th>O que faz</th></tr>
+    <tr><td>3 imports novos</td><td>topo do arquivo</td><td><code>LinkBox</code> (componente), <code>DepartamentoPessoaBean</code> (bean da entidade pai) e <code>DepartamentoPessoaSelect</code> (modal de seleção)</td></tr>
+    <tr><td>1 linha no <code>form()</code></td><td>entre <code>st_produto</code> e <code>obs_produto</code></td><td><code>frm.line().add(fk_pessoa_produto(), "150")</code> — chama o método que monta o LinkBox e o coloca no layout</td></tr>
+    <tr><td>método <code>fk_pessoa_produto()</code></td><td>junto com os outros campos</td><td>Monta o componente LinkBox: carrega o nome da pessoa (via <code>daoSingle</code>), configura callback e retorna</td></tr>
+    <tr><td>inner class <code>Fk_pessoa_produto</code></td><td>logo abaixo do método</td><td>Action chamada pelo Select ao clicar numa pessoa. Recebe o <code>id_pessoa</code>, grava no bean e atualiza o texto no formulário</td></tr>
+</table>
+</div>
+
+<p>O ciclo visual é: o usuário clica no botão verde do LinkBox → abre o modal do <code>DepartamentoPessoaSelect</code> → escolhe uma pessoa → o Select chama <code>Fk_pessoa_produto</code> via callback → o método atualiza o campo na tela e fecha o modal. Quando o usuário salva o produto, o <code>Update</code> já tá com a FK preenchida no bean e grava junto com o resto.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Conceito — O componente LinkBox</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O <code>LinkBox</code> é o componente do Jasap pra representar uma FK 1-N vista do lado do <strong>filho</strong>. Na tela aparece como um input de texto com o nome do registro vinculado + um pequeno botão verde ao lado. O usuário não digita nele — só clica no botão, escolhe no modal e o texto aparece preenchido.</p>
+
+<p>Três peças formam o circuito:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Peça</th><th>Papel</th></tr>
+    <tr><td><strong>LinkBox</strong> no Form do filho</td><td>O input visual + botão. Guarda a FK num campo hidden e guarda o texto (nome do pai) visível</td></tr>
+    <tr><td><strong>Select</strong> do pai</td><td>Modal que lista os candidatos e chama o callback ao escolher um</td></tr>
+    <tr><td><strong>Action de callback</strong> no Form do filho</td><td>Recebe o ID escolhido, grava no bean e atualiza a tela</td></tr>
+</table>
+</div>
+
+<p>O LinkBox sozinho não "conversa" com o Select — quem faz a ponte é a <strong>sessão HTTP</strong>: o LinkBox grava a URL do callback numa chave que o Select consegue ler. Os dois lados combinam a chave via <code>setCallBackID("_PESSOA")</code>.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">fk_pessoa_produto() — o método que monta o LinkBox</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">private LinkBox fk_pessoa_produto = null;
+public LinkBox fk_pessoa_produto() throws Exception {
+    if (fk_pessoa_produto == null) {
+        if (proBean().getFk_pessoa_produto() != null) {
+            getFactory().departamento().pesModel().daoSingle(proBean().getPessoa());
+        }
+        fk_pessoa_produto = ui().linkBox("FK_PESSOA", "500", "400")
+                .setLabel("Responsável")
+                .setValue(proBean().getPessoa().getNome_pessoa())
+                .setWidth(250)
+                .addKey(DepartamentoProdutoBean.FK_PESSOA_PRODUTO, proBean().getFk_pessoa_produto())
+                .setSelectLnk(link(DepartamentoPessoaSelect.class)).setCallBackID("_PESSOA")
+                .setCallBackURL(url(Fk_pessoa_produto.class));
+    }
+    return fk_pessoa_produto;
+}</code></pre>
+
+<p>Lazy init como todos os outros campos do form (<code>nome_produto</code>, <code>vl_produto</code>, etc): cria o objeto na primeira chamada e reaproveita nas seguintes.</p>
+
+<h4 style="margin-top:20px;">Carregar o nome antes de mostrar</h4>
+<pre><code class="language-java">if (proBean().getFk_pessoa_produto() != null) {
+    getFactory().departamento().pesModel().daoSingle(proBean().getPessoa());
+}</code></pre>
+<p>Se o produto já tem responsável (estamos em update), vai no banco buscar os dados da pessoa vinculada. O <code>daoSingle</code> recebe o objeto pessoa (que já tem o <code>id_pessoa</code> preenchido, graças à delegação da FK no Bean) e enche os outros campos — inclusive o <code>nome_pessoa</code>, que é o que o LinkBox vai exibir.</p>
+<p>Se a FK é <code>null</code> (produto sem responsável), pula — não tem o que carregar.</p>
+
+<h4 style="margin-top:20px;">Configurar o LinkBox</h4>
+<div class="table-wrap">
+<table>
+    <tr><th>Trecho</th><th>O que faz</th></tr>
+    <tr><td><code>ui().linkBox("FK_PESSOA", "500", "400")</code></td><td>Cria o LinkBox com ID <code>FK_PESSOA</code> (usado nos <code>update</code>/<code>updateParent</code>) e tamanho do modal 500×400</td></tr>
+    <tr><td><code>.setLabel("Responsável")</code></td><td>Texto que aparece à esquerda do campo</td></tr>
+    <tr><td><code>.setValue(proBean().getPessoa().getNome_pessoa())</code></td><td>Pré-preenche o texto com o nome da pessoa (ou <code>null</code> se ainda não tem)</td></tr>
+    <tr><td><code>.setWidth(250)</code></td><td>Largura do campo de texto (não do modal)</td></tr>
+    <tr><td><code>.addKey(FK_PESSOA_PRODUTO, getFk_pessoa_produto())</code></td><td>Adiciona um hidden com a FK. Quando o Form for submetido, esse hidden vai junto — e o <code>populateBean</code> do Update usa pra setar a FK no bean antes do UPDATE</td></tr>
+    <tr><td><code>.setSelectLnk(link(DepartamentoPessoaSelect.class))</code></td><td>Link chamado ao clicar no botão verde — abre o Select da Pessoa</td></tr>
+    <tr><td><code>.setCallBackID("_PESSOA")</code></td><td>Identificador do canal de sessão entre esse LinkBox e o Select. Veja a nota abaixo</td></tr>
+    <tr><td><code>.setCallBackURL(url(Fk_pessoa_produto.class))</code></td><td>URL que o Select vai chamar ao escolher uma pessoa. O LinkBox grava essa URL na sessão sob a chave <code>LinkBox.CALLBACK_URL + "_PESSOA"</code></td></tr>
+</table>
+</div>
+
+<p><em>Detalhe importante do <code>setCallBackID</code>:</em> é um sufixo que o LinkBox anexa à chave <code>LinkBox.CALLBACK_URL</code> ao salvar na sessão. O Select da Pessoa lê essa chave — as duas pontas precisam combinar o mesmo sufixo, senão não se encontram. Convenção: use o nome da entidade em maiúsculas, com underline na frente (<code>_PESSOA</code>).</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Fk_pessoa_produto — a inner class que fecha o ciclo</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">public static class Fk_pessoa_produto extends DepartamentoProdutoForm {
+    @Override
+    public Effect execute() throws Exception {
+        proBean().setFk_pessoa_produto(getInput().getInteger(DepartamentoPessoaBean.ID_PESSOA));
+        if (proBean().getFk_pessoa_produto() != null) {
+            updateParent("FK_PESSOA", fk_pessoa_produto().textValue());
+            evalParent(Js.CLOSE_SUB_WINDOWS);
+        } else {
+            update("FK_PESSOA", fk_pessoa_produto().textValue());
+        }
+        return new Response();
+    }
+}</code></pre>
+
+<p>Esta action é o "outro lado" do LinkBox. Ela é chamada pelo <code>DepartamentoPessoaSelect</code> quando o usuário clica numa pessoa da lista.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Linha</th><th>O que faz</th></tr>
+    <tr><td><code>proBean().setFk_pessoa_produto(getInput().getInteger(ID_PESSOA))</code></td><td>Lê o <code>id_pessoa</code> que o Select passou como parâmetro e grava no bean do produto. Graças à delegação no Bean, isso também preenche <code>getPessoa().setId_pessoa(...)</code></td></tr>
+    <tr><td><code>if (proBean().getFk_pessoa_produto() != null)</code></td><td>Trata os dois cenários: pessoa escolhida vs. LinkBox limpo</td></tr>
+    <tr><td><code>updateParent("FK_PESSOA", fk_pessoa_produto().textValue())</code></td><td>Atualiza o texto do campo na janela pai (o Form que ficou aberto atrás do modal)</td></tr>
+    <tr><td><code>evalParent(Js.CLOSE_SUB_WINDOWS)</code></td><td>Fecha o modal do Select (retorna o foco pro Form)</td></tr>
+    <tr><td><code>update("FK_PESSOA", fk_pessoa_produto().textValue())</code> <em>(no else)</em></td><td>Caso em que a FK veio <code>null</code> — só atualiza local, sem fechar modal (cenário raro: botão "limpar" custom do LinkBox)</td></tr>
+    <tr><td><code>extends DepartamentoProdutoForm</code></td><td>Herda o método <code>fk_pessoa_produto()</code> (e <code>proBean()</code>, <code>textValue()</code>). Essencial pra montar o componente de novo pra pegar o texto atualizado</td></tr>
+</table>
+</div>
+
+<p><code>textValue()</code> é o método do LinkBox que retorna o HTML do campo pra ser injetado via <code>update</code>. Como o <code>setValue</code> já foi feito lá dentro do <code>fk_pessoa_produto()</code> com o novo nome, o HTML já vem com o texto correto.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">A linha no form() — posicionamento do campo</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">frm.line().add(nome_produto(),       "150");
+frm.line().add(vl_produto(),         "150");
+frm.line().add(qtd_produto(),        "150");
+frm.line().add(st_produto(),         "150");
+frm.line().add(fk_pessoa_produto(),  "150");   // ← ADICIONADA
+frm.line().add(obs_produto(),        "150");
+frm.line().add(insert_chk(),         "150");</code></pre>
+
+<p>A única mudança no método <code>form()</code>: uma linha inserida entre <code>st_produto</code> (Status) e <code>obs_produto</code> (Observações). Posição escolhida pela lógica visual — campos obrigatórios/fundamentais em cima, campos descritivos (observações) e operacionais (<code>insert_chk</code>) embaixo. <code>fk_pessoa_produto</code> cabe bem no meio, junto com Status.</p>
+
+<p>O argumento <code>"150"</code> é o valor de <code>labelWidth</code> em pixels — mesmo padrão dos outros campos pra alinhar os rótulos.</p>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

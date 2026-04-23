@@ -14,13 +14,13 @@
     </div>
 
     <div class="info-accordion">
-        <div class="info-row">
+        <div class="info-row open">
             <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-                <span class="info-row-title">Visão Geral — Parte 1: Como funciona um pedido na aplicação</span>
+                <span class="info-row-title">Visão Geral — Como o prédio funciona + Panorama dos 7 arquivos</span>
                 <span class="info-row-btn">+</span>
             </div>
             <div class="info-row-body">
-                <div class="audio-player" data-src="visaogeralparte1.m4a">
+                <div class="audio-player" data-src="visaogeral.m4a">
                     <audio preload="metadata"></audio>
                     <button class="audio-btn" title="Play / Pause"></button>
                     <div class="audio-progress-wrap">
@@ -29,7 +29,10 @@
                     </div>
                     <span class="audio-time">0:00 / 0:00</span>
                 </div>
-                <p>Antes de criar um módulo, é preciso entender <strong>como o prédio recebe e atende um pedido</strong>. Acompanhamos o caminho do clique do usuário até a tela aparecer:</p>
+
+                <p>Antes de criar um módulo, é preciso entender <strong>como o prédio funciona por dentro</strong> e depois <strong>quais arquivos precisam ser construídos</strong>.</p>
+
+                <h3 style="margin-top:24px;">Como o prédio funciona</h3>
                 <ul style="list-style:none; padding-left:0;">
                     <li style="margin-bottom:16px;">
                         <strong>Internet sem estado</strong><br>
@@ -41,7 +44,7 @@
                     </li>
                     <li style="margin-bottom:16px;">
                         <strong>6 Guardas na Entrada</strong> — Filtros Globais<br>
-                        <span style="color:#666; font-size:0.92em;">Todo pedido passa por 6 guardas em fila antes de entrar: abrem a conexão com o banco, medem tempo, verificam autenticação, conferem permissões. Nenhum pedido entra sem passar por todos.</span>
+                        <span style="color:#666; font-size:0.92em;">DataBaseFilter (abre conexão com o banco), PerfFilter (mede tempo), EffectFilter (gerencia Ajax), AAFilter (sessão/autenticação), ErrorFilter (captura erros), PermissaoFilter (checa acesso ao módulo). Nenhum pedido entra sem passar por todos.</span>
                     </li>
                     <li style="margin-bottom:16px;">
                         <strong>Ficha Permanente</strong> — Sessão do Usuário<br>
@@ -52,61 +55,55 @@
                         <span style="color:#666; font-size:0.92em;">Montado fresco a cada pedido com 3 camadas encaixadas (AppManager + PnlManager + ManagerDoDepartamento). Carrega todo o contexto: conexão com o banco, sessão do usuário, acesso à ferramentaria, ao ui(), às permissões.</span>
                     </li>
                     <li style="margin-bottom:16px;">
-                        <strong>Atendente usa o cartão em cada parada</strong><br>
-                        <span style="color:#666; font-size:0.92em;">Pegar a ferramentaria, fabricar a ferramenta, acessar o banco, criar componentes visuais. Sem cartão, o atendente não faz nada — o cartão é o personagem principal do framework.</span>
+                        <strong>Agente usa o cartão em cada parada</strong><br>
+                        <span style="color:#666; font-size:0.92em;">Pegar a ferramentaria, fabricar a ferramenta, acessar o banco, criar componentes visuais. Sem cartão, o agente não faz nada — o cartão é o personagem principal do framework.</span>
                     </li>
                     <li>
                         <strong>Permissões linha por linha</strong><br>
-                        <span style="color:#666; font-size:0.92em;">Para cada produto da lista, o atendente pergunta ao cartão "esse usuário pode deletar?" antes de desenhar o botão. A tela é montada dinamicamente, baseada em quem está logado.</span>
+                        <span style="color:#666; font-size:0.92em;">Para cada produto da lista, o agente pergunta ao cartão "esse usuário pode deletar?" antes de desenhar o botão. A tela é montada dinamicamente, baseada em quem está logado.</span>
                     </li>
                 </ul>
-            </div>
-        </div>
 
-        <div class="info-row">
-            <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-                <span class="info-row-title">Visão Geral — Parte 2: Como criar um departamento novo</span>
-                <span class="info-row-btn">+</span>
-            </div>
-            <div class="info-row-body">
-                <div class="audio-player" data-src="visaogeralparte2.m4a">
-                    <audio preload="metadata"></audio>
-                    <button class="audio-btn" title="Play / Pause"></button>
-                    <div class="audio-progress-wrap">
-                        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
-                        <div class="audio-progress-fill"></div>
-                    </div>
-                    <span class="audio-time">0:00 / 0:00</span>
-                </div>
-                <p><strong>7 arquivos</strong> — 3 novos + 4 edições — formam a cadeia para criar um módulo:</p>
+                <h3 style="margin-top:32px;">Os 7 arquivos em 3 fases</h3>
+                <p><strong>3 arquivos novos + 4 edições</strong> formam a cadeia para criar um módulo.</p>
+
+                <p style="margin-top:16px;"><strong style="color:#2563eb;">Fase 1 — Construção isolada</strong> (elevador de serviço, em sigilo):</p>
                 <ul style="list-style:none; padding-left:0;">
                     <li style="margin-bottom:16px;">
-                        <strong>NovoModuloHome</strong> <span class="badge-new">novo</span> — Recepção<br>
+                        <strong>Departamento Home</strong> <span class="badge-new">novo</span> — Recepção<br>
                         <span style="color:#666; font-size:0.92em;">Tela principal do módulo com sidebar e breadcrumb. É o primeiro lugar que o usuário vê ao entrar no departamento.</span>
                     </li>
                     <li style="margin-bottom:16px;">
-                        <strong>DepartamentoManager</strong> <span class="badge-new">novo</span> — Gerente do Departamento<br>
-                        <span style="color:#666; font-size:0.92em;">Registra todas as actions e define os crachás de permissão. Prepara o andar antes de todo mundo chegar.</span>
+                        <strong>Departamento Manager</strong> <span class="badge-new">novo</span> — Estrutura do Departamento<br>
+                        <span style="color:#666; font-size:0.92em;">Registra todas as actions via regAction e define os crachás de permissão via regFun. Grava na lista telefônica do prédio no startup.</span>
                     </li>
                     <li style="margin-bottom:16px;">
-                        <strong>NovoModuloMdFactory</strong> <span class="badge-new">novo</span> — Ferramentaria<br>
-                        <span style="color:#666; font-size:0.92em;">Fabrica os models sob encomenda e guarda pra reusar. As ferramentas que as actions usam para acessar o banco de dados.</span>
+                        <strong>Departamento Md Factory</strong> <span class="badge-new">novo</span> — Ferramentaria Local<br>
+                        <span style="color:#666; font-size:0.92em;">Fabrica os models sob encomenda e guarda pra reusar (lazy init). As ferramentas que as actions usam para acessar o banco de dados.</span>
+                    </li>
+                </ul>
+
+                <p style="margin-top:16px;"><strong style="color:#059669;">Fase 2 — Conectar ao prédio</strong>:</p>
+                <ul style="list-style:none; padding-left:0;">
+                    <li style="margin-bottom:16px;">
+                        <strong>Apps Root Model Factory</strong> <span class="badge-edit">editar</span> — Ferramentaria Central<br>
+                        <span style="color:#666; font-size:0.92em;">Conecta a ferramentaria do módulo ao getFactory() global. Sem isso, a central responde "não conheço" quando o agente pede a local.</span>
                     </li>
                     <li style="margin-bottom:16px;">
-                        <strong>AppsRootModelFactory</strong> <span class="badge-edit">editar</span> — Ferramentaria Central<br>
-                        <span style="color:#666; font-size:0.92em;">Conecta a ferramentaria do módulo ao sistema. Sem isso, nenhum outro departamento acessa suas ferramentas.</span>
-                    </li>
-                    <li style="margin-bottom:16px;">
-                        <strong>PnlCfg</strong> <span class="badge-edit">editar</span> — Cabine do Avião<br>
-                        <span style="color:#666; font-size:0.92em;">Painel com 500 botões. Plugamos um cabo e saímos de fininho — adiciona o checkbox para ativar/desativar o módulo.</span>
-                    </li>
-                    <li style="margin-bottom:16px;">
-                        <strong>RootManager</strong> <span class="badge-edit">editar</span> — Gerente Geral<br>
-                        <span style="color:#666; font-size:0.92em;">Uma linha é suficiente para o Jasap saber que o departamento existe.</span>
+                        <strong>Pnl Cfg</strong> <span class="badge-edit">editar</span> — Quadro de Disjuntores<br>
+                        <span style="color:#666; font-size:0.92em;">Cada disjuntor liga ou desliga um módulo para um cliente específico. Editar instala o disjuntor novo do Departamento.</span>
                     </li>
                     <li>
-                        <strong>HomeDesk</strong> <span class="badge-edit">editar</span> — Saguão de Entrada<br>
-                        <span style="color:#666; font-size:0.92em;">Adiciona o card do módulo no menu principal. Só aparece se o interruptor do PnlCfg está ligado.</span>
+                        <strong>Root Manager</strong> <span class="badge-edit">editar</span> — Configuração Geral<br>
+                        <span style="color:#666; font-size:0.92em;">Classe separada que, no startup, chama cada módulo para se configurar. Uma linha é suficiente para o framework saber que o departamento existe.</span>
+                    </li>
+                </ul>
+
+                <p style="margin-top:16px;"><strong style="color:#d97706;">Fase 3 — Ativar para os clientes</strong>:</p>
+                <ul style="list-style:none; padding-left:0;">
+                    <li>
+                        <strong>Home Desk</strong> <span class="badge-edit">editar</span> — Saguão Principal<br>
+                        <span style="color:#666; font-size:0.92em;">Adiciona a placa do módulo no saguão após o login. Só aparece se o usuário tem permissão (Fase 1) E o disjuntor do PnlCfg está ligado (Fase 2).</span>
                     </li>
                 </ul>
             </div>
@@ -125,7 +122,7 @@
                 </div>
             </div>
             <div class="home-card-img">
-                <img src="img/home.png" alt="DepartamentoHome">
+                <img src="img/home.png" alt="Home">
             </div>
             <div class="home-card-bar">
                 <a href="1-DepartamentoHome/1-DepartamentoHome.html" class="home-card-tag" style="--tag-clr:#2563eb;">Ver docs</a>
@@ -142,7 +139,7 @@
                 </div>
             </div>
             <div class="home-card-img">
-                <img src="img/manager.png" alt="DepartamentoManager">
+                <img src="img/manager.png" alt="Manager">
             </div>
             <div class="home-card-bar">
                 <a href="2-DepartamentoManager/2-DepartamentoManager.html" class="home-card-tag" style="--tag-clr:#7A3E9D;">Ver docs</a>
@@ -159,7 +156,7 @@
                 </div>
             </div>
             <div class="home-card-img">
-                <img src="img/mdfactory.png" alt="DepartamentoMdFactory">
+                <img src="img/mdfactory.png" alt="Md Factory">
             </div>
             <div class="home-card-bar">
                 <a href="3-DepartamentoMdFactory/3-DepartamentoMdFactory.html" class="home-card-tag" style="--tag-clr:#0891b2;">Ver docs</a>
@@ -176,7 +173,7 @@
                 </div>
             </div>
             <div class="home-card-img">
-                <img src="img/appsroot.png" alt="AppsRootModelFactory">
+                <img src="img/appsroot.png" alt="Apps Root Model Factory">
             </div>
             <div class="home-card-bar">
                 <a href="4-AppsRootModelFactory/4-AppsRootModelFactory.html" class="home-card-tag" style="--tag-clr:#059669;">Ver docs</a>
@@ -193,7 +190,7 @@
                 </div>
             </div>
             <div class="home-card-img">
-                <img src="img/pnlcfg.png" alt="PnlCfg">
+                <img src="img/pnlcfg.png" alt="Pnl Cfg">
             </div>
             <div class="home-card-bar">
                 <a href="5-PnlCfg/5-PnlCfg.html" class="home-card-tag" style="--tag-clr:#d97706;">Ver docs</a>
@@ -210,7 +207,7 @@
                 </div>
             </div>
             <div class="home-card-img">
-                <img src="img/rootmanager.png" alt="RootManager">
+                <img src="img/rootmanager.png" alt="Root Manager">
             </div>
             <div class="home-card-bar">
                 <a href="6-RootManager/6-RootManager.html" class="home-card-tag" style="--tag-clr:#dc2626;">Ver docs</a>
@@ -227,13 +224,25 @@
                 </div>
             </div>
             <div class="home-card-img">
-                <img src="img/homedesk.png" alt="HomeDesk">
+                <img src="img/homedesk.png" alt="Home Desk">
             </div>
             <div class="home-card-bar">
                 <a href="7-HomeDesk/7-HomeDesk.html" class="home-card-tag" style="--tag-clr:#6366f1;">Ver docs</a>
             </div>
         </div>
 
+    </div>
+
+    <h2 style="margin-top:48px;">Jornada Completa — o agente em ação</h2>
+    <p>Depois de conhecer cada peça do prédio e construir os 7 arquivos um a um, volta o olhar sistêmico. Um usuário acessa o site, faz login, chega no saguão, clica no departamento, clica em produtos. Em cada clique, um agente novo nasce, usa o cartão temporário em cada parada, e some. Este áudio amarra cada setor do trajeto ao arquivo que você construiu.</p>
+    <div class="audio-player" data-src="jornadacompleta.m4a">
+        <audio preload="metadata"></audio>
+        <button class="audio-btn" title="Play / Pause"></button>
+        <div class="audio-progress-wrap">
+            <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+            <div class="audio-progress-fill"></div>
+        </div>
+        <span class="audio-time">0:00 / 0:00</span>
     </div>
 
 </body>

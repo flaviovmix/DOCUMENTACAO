@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoPessoaSelect — XT - Treinamento</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoPessoaSelect <span class="badge badge-new">novo arquivo</span></h1>
+
+<div class="audio-player" data-src="audio/DepartamentoPessoaSelect.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Arquivo <strong>novo</strong> e o maior da sequência do LinkBox. É o modal que abre quando o usuário clica no botão do campo "Responsável" no form do Produto: uma lista de pessoas com ordenação, busca rápida e paginação. Ao clicar numa pessoa, o Select chama de volta uma URL informada pelo LinkBox (o <em>callback</em>) e o Form do Produto recebe o <code>id_pessoa</code> pra gravar no Bean.</p>
+
+<p>Parece grande, mas quase tudo é um padrão repetido do Jasap pra "Select de entidade": ListView configurada pra chamar um callback ao clicar numa linha, filtro salvo em sessão pra lembrar a busca entre reordenações, e 3 actions (principal, Sort, QuickSearch) pra cobrir os três cenários de renderização.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.pessoa;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.Bar;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.ListColumn;
+import br.jasap.gui.ListLine;
+import br.jasap.gui.ListView;
+import br.jasap.gui.Table;
+import br.jasap.gui.form.LinkBox;
+import br.jasap.gui.form.Text;
+import br.jasap.util.JasapList;
+import br.jasap.util.Js;
+import br.xt.acore.view.XtPage;
+
+public class DepartamentoPessoaSelect extends DepartamentoPessoaAction {
+
+    @Override
+    public Effect execute() throws Exception {
+        getSession().remove(S_ROOT);
+        render();
+        return new Response();
+    }
+
+    public static class Sort extends DepartamentoPessoaSelect {
+        @Override
+        public Effect execute() throws Exception {
+            update(listV().getDIV_HEADER(),   listV().getHeader());
+            update(listV().getDIV_BODY(),     listV().getBody());
+            update(listV().getDIV_NAVIGATE(), listV().getNavForm());
+            return new Response();
+        }
+    }
+
+    public static class QuickSearch extends DepartamentoPessoaSelect {
+        @Override
+        public Effect execute() throws Exception {
+            getFiltroS().setQs_pessoa(getInput().getString(DepartamentoPessoaBean.QS_PESSOA));
+            update(listV().getDIV_BODY(),     listV().getBody());
+            update(listV().getDIV_NAVIGATE(), listV().getNavForm());
+            return new Response();
+        }
+    }
+
+    public void render() throws Exception {
+        XtPage page = new XtPage(getManager());
+        if (isAjaxCall()) {
+            update(JasapPage.DIV_WINDOW, page.content(window().toHtml()));
+            eval(Js.CLOSE_SUB_WINDOWS);
+        } else {
+            page.getTable().setBorder(4).rowC("100%")
+                    .setContent(page.content(window().toHtml()))
+                    .setStyle(ui().modalBorder());
+            page.setWinTitle("Selecionar Pessoa");
+            getOutput().write(this, page);
+        }
+    }
+
+    public Table window() throws Exception {
+        Table w = new Table(getManager()).setSize("100%", "100%");
+        w.rowC("1%",  JasapPage.DIV_TITLE, ui().title("SELEÇÃO DE PESSOA"));
+        w.rowC("99%").setId(JasapPage.DIV_MASTER).setContent(listV()).table();
+        w.rowC("1%",  null, ui().line());
+        w.rowC("1%",  null, qs_pessoa());
+        w.rowC("1%",  JasapPage.DIV_BOTTOM, br());
+        return w;
+    }
+
+    public String qs_pessoa() throws Exception {
+        Text qs = ui().text(DepartamentoPessoaBean.QS_PESSOA)
+                .setLabel("Consulta")
+                .setStyle("width:300")
+                .setMaxlength(300)
+                .setValue(getFiltroS().getQs_pessoa())
+                .setOnkeyup(Js.pressEnter(
+                        link(QuickSearch.class)
+                                .putScript(DepartamentoPessoaBean.QS_PESSOA, Js.SELF_VALUE)
+                                .putInteger(listV().getPAGE(), 0)
+                                .ajax()));
+
+        Table aux = new Table(getManager(), "100%", "30")
+                .setStyle(ui().bgDark())
+                .rowC()
+                .setAlign(Table.ALIGN_CENTER)
+                .setVerticalAlign(Table.ALIGN_MIDDLE)
+                .setContent(qs)
+                .table();
+
+        return aux.toHtml();
+    }
+
+    private Bar br() throws Exception {
+        return ui().bar().addCenter(listV().nav(listV().getNavForm()));
+    }
+
+    private ListView lv = null;
+    public ListView listV() throws Exception {
+        if (lv == null) {
+            lv = ui().lView();
+            lv.setCallBackURL(getSession().getString(LinkBox.CALLBACK_URL.concat("_PESSOA"), getInput()))
+                    .setSortAct(url(Sort.class))
+                    .setPageAction(url(Sort.class))
+                    .setPage(getSession().getInteger(S_LIST.concat(lv.getPAGE()), getInput()))
+                    .setOrderBy(getSession().getString(S_LIST.concat(lv.getORDER_BY()), getInput()))
+                    .setSort(getSession().getString(S_LIST.concat(lv.getSORT()), getInput()))
+                    .ajax();
+
+            if (lv.getData().getOrderBy() == null) {
+                lv.getData().setOrderBy(DepartamentoPessoaBean.NOME_PESSOA);
+                lv.getData().setSort(JasapList.SORT_ASC);
+            }
+
+            lv.setFiltro(getFiltroS());
+            getFactory().departamento().pesModel().daoList(lv.getData());
+
+            ListColumn col_nome    = lv.newColumn("Nome").setOrderBy(DepartamentoPessoaBean.NOME_PESSOA).setPadding(";padding:10 8 10 8;");
+            ListColumn col_apelido = lv.newColumn("Apelido").setOrderBy(DepartamentoPessoaBean.APELIDO_PESSOA).setWidth(180).setPadding(";padding:10 8 10 8;");
+
+            while (lv.hasNext()) {
+                DepartamentoPessoaBean lb = (DepartamentoPessoaBean) lv.next();
+                ListLine line = lv.createLine()
+                        .setOnclick(link(lv.getCallBackURL())
+                                .putInteger(DepartamentoPessoaBean.ID_PESSOA, lb.getId_pessoa())
+                                .noWait().ajax());
+                col_nome.setContent(lb.getNome_pessoa());
+                col_apelido.setContent(lb.getApelido_pessoa());
+                lv.addLine(line);
+            }
+        }
+        return lv;
+    }
+
+    public DepartamentoPessoaWBean getFiltroS() throws Exception {
+        DepartamentoPessoaWBean filtro = (DepartamentoPessoaWBean) getSession().getObject(S_FILTRO);
+        if (filtro == null) {
+            filtro = pesWBean();
+            getSession().addObj(S_FILTRO, filtro);
+        }
+        return filtro;
+    }
+
+    public static final String S_ROOT   = ROOT.concat("__PESSOA_SELECT/");
+    public static final String S_LIST   = S_ROOT.concat("__LIST/");
+    public static final String S_FILTRO = S_LIST.concat("__FILTRO");
+
+}</code></pre>
+
+        </div>
+    </div>
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Visão Geral — a anatomia de um Select</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Um Select no Jasap é uma <strong>ListView em miniatura dentro de um modal</strong>. Parecido com uma List comum (tem ordenação, paginação e busca), mas com duas diferenças importantes:</p>
+
+<ul>
+    <li>Ao clicar numa linha, em vez de abrir o Form daquela linha, chama uma <strong>URL de callback</strong> informada por quem abriu o Select (no nosso caso, o LinkBox do Form do Produto)</li>
+    <li>A ordenação/busca/página ficam salvas em <strong>sessão</strong>, num namespace próprio (<code>S_ROOT</code>) — pra não conflitar com a List principal da entidade nem com outros Selects</li>
+</ul>
+
+<p>O arquivo tem 3 entry points (actions acessíveis por URL):</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Action</th><th>Quando é chamada</th><th>O que faz</th></tr>
+    <tr><td><code>DepartamentoPessoaSelect</code> (principal)</td><td>Quando o LinkBox abre o modal pela primeira vez</td><td>Limpa a sessão do Select (zera busca/página anteriores) e renderiza o modal cheio</td></tr>
+    <tr><td><code>.Sort</code></td><td>Ao clicar no cabeçalho duma coluna ou trocar de página</td><td>Re-renderiza só a ListView (header, body, navegação) via Ajax — não redesenha o modal inteiro</td></tr>
+    <tr><td><code>.QuickSearch</code></td><td>Ao pressionar Enter no campo de busca</td><td>Grava o termo no filtro em sessão e re-renderiza body + navegação</td></tr>
+</table>
+</div>
+
+<p>O resto do arquivo são os métodos auxiliares que montam a tela: <code>render()</code>, <code>window()</code>, <code>qs_pessoa()</code>, <code>br()</code>, <code>listV()</code> e <code>getFiltroS()</code>. Plus 3 constantes de namespace de sessão.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Conceito — Como o Select conversa com o LinkBox (callback)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O LinkBox no Form do Produto, ao ser renderizado, grava na sessão a URL que deve ser chamada quando o usuário selecionar uma pessoa. A chave de sessão é <code>LinkBox.CALLBACK_URL + "_PESSOA"</code> (o sufixo <code>"_PESSOA"</code> vem do <code>setCallBackID("_PESSOA")</code> no LinkBox).</p>
+
+<p>Quando o Select monta a ListView, ele <strong>lê</strong> essa URL da sessão:</p>
+
+<pre><code class="language-java">lv.setCallBackURL(getSession().getString(LinkBox.CALLBACK_URL.concat("_PESSOA"), getInput()))</code></pre>
+
+<p>E cada linha da ListView tem um <code>onclick</code> que dispara essa URL passando o <code>id_pessoa</code>:</p>
+
+<pre><code class="language-java">.setOnclick(link(lv.getCallBackURL())
+        .putInteger(DepartamentoPessoaBean.ID_PESSOA, lb.getId_pessoa())
+        .noWait().ajax());</code></pre>
+
+<p>Do lado do Produto, a URL apontada é a inner class <code>Fk_pessoa_produto</code> — ela recebe o <code>id_pessoa</code>, grava no bean e atualiza o texto do campo no form. Veja a próxima página da sequência.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>Papel no fluxo</th></tr>
+    <tr><td><code>setCallBackID("_PESSOA")</code> no LinkBox</td><td>Define a "chave" de conexão entre LinkBox e Select</td></tr>
+    <tr><td><code>setCallBackURL(url(Fk_pessoa_produto))</code> no LinkBox</td><td>Define a URL que o Select vai chamar ao clicar numa linha</td></tr>
+    <tr><td><code>LinkBox.CALLBACK_URL.concat("_PESSOA")</code> no Select</td><td>Chave de sessão onde o LinkBox gravou a URL. O Select lê daqui</td></tr>
+    <tr><td><code>link(lv.getCallBackURL()).putInteger(ID_PESSOA, ...)</code></td><td>Monta o link de cada linha com a URL do callback + id da pessoa</td></tr>
+</table>
+</div>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Conceito — Filtro cacheado em sessão (getFiltroS)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">public DepartamentoPessoaWBean getFiltroS() throws Exception {
+    DepartamentoPessoaWBean filtro = (DepartamentoPessoaWBean) getSession().getObject(S_FILTRO);
+    if (filtro == null) {
+        filtro = pesWBean();
+        getSession().addObj(S_FILTRO, filtro);
+    }
+    return filtro;
+}</code></pre>
+
+<p>O filtro (o WBean) fica <strong>salvo em sessão</strong> sob a chave <code>S_FILTRO</code>. O padrão é:</p>
+
+<ol>
+    <li>Primeira chamada ao Select → filtro não existe → cria um novo (<code>pesWBean()</code>) e salva</li>
+    <li>Chamadas seguintes (Sort, QuickSearch, paginação) → retorna o filtro já salvo</li>
+</ol>
+
+<p>Isso permite que a busca digitada no <code>QuickSearch</code> persista quando o usuário reordena uma coluna ou muda de página. Sem o cache, cada clique recriaria um filtro em branco e a busca sumiria.</p>
+
+<p>A chave <code>S_FILTRO</code> é reinicializada na primeira ação (a principal <code>DepartamentoPessoaSelect.execute()</code> chama <code>getSession().remove(S_ROOT)</code> — como <code>S_FILTRO</code> começa com <code>S_ROOT</code>, ele é apagado junto). Assim, cada vez que o LinkBox abre o Select do zero, a busca anterior não vaza.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">execute() principal — a entrada do Select</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">@Override
+public Effect execute() throws Exception {
+    getSession().remove(S_ROOT);
+    render();
+    return new Response();
+}</code></pre>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Linha</th><th>O que faz</th></tr>
+    <tr><td><code>getSession().remove(S_ROOT)</code></td><td>Apaga toda a sub-árvore de sessão do Select (inclui <code>S_LIST</code> e <code>S_FILTRO</code>). Zera ordenação, página, busca e filtro de chamadas anteriores</td></tr>
+    <tr><td><code>render()</code></td><td>Desenha o modal completo — título, ListView, campo de busca e barra de navegação</td></tr>
+    <tr><td><code>return new Response()</code></td><td>Contrato padrão do Jasap: toda action retorna um <code>Effect</code></td></tr>
+</table>
+</div>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Inner classes Sort e QuickSearch — re-renderização parcial</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>As duas inner classes existem pra atualizar só pedaços da ListView sem redesenhar o modal inteiro. Isso deixa a interação fluida — o cabeçalho do modal, o campo de busca e os botões não precisam ser re-enviados só porque o usuário clicou numa coluna pra reordenar.</p>
+
+<pre><code class="language-java">public static class Sort extends DepartamentoPessoaSelect {
+    @Override
+    public Effect execute() throws Exception {
+        update(listV().getDIV_HEADER(),   listV().getHeader());
+        update(listV().getDIV_BODY(),     listV().getBody());
+        update(listV().getDIV_NAVIGATE(), listV().getNavForm());
+        return new Response();
+    }
+}</code></pre>
+
+<p>A <code>Sort</code> recarrega 3 pedaços: cabeçalho das colunas (setinhas de ordenação), corpo (linhas) e navegação (botões de página). O <code>Sort</code> também é usado como ação de paginação — por isso atualiza a navegação.</p>
+
+<pre><code class="language-java">public static class QuickSearch extends DepartamentoPessoaSelect {
+    @Override
+    public Effect execute() throws Exception {
+        getFiltroS().setQs_pessoa(getInput().getString(DepartamentoPessoaBean.QS_PESSOA));
+        update(listV().getDIV_BODY(),     listV().getBody());
+        update(listV().getDIV_NAVIGATE(), listV().getNavForm());
+        return new Response();
+    }
+}</code></pre>
+
+<p>A <code>QuickSearch</code> grava o termo digitado no filtro em sessão (<code>getFiltroS().setQs_pessoa(...)</code>) e recarrega só corpo + navegação. O cabeçalho das colunas não muda — a ordem continua a mesma.</p>
+
+<p><code>extends DepartamentoPessoaSelect</code> permite que essas inner classes usem os mesmos métodos (<code>listV()</code>, <code>getFiltroS()</code>) e constantes (<code>S_LIST</code>, <code>S_FILTRO</code>) da classe pai.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">render() e window() — renderização e layout</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">public void render() throws Exception {
+    XtPage page = new XtPage(getManager());
+    if (isAjaxCall()) {
+        update(JasapPage.DIV_WINDOW, page.content(window().toHtml()));
+        eval(Js.CLOSE_SUB_WINDOWS);
+    } else {
+        page.getTable().setBorder(4).rowC("100%")
+                .setContent(page.content(window().toHtml()))
+                .setStyle(ui().modalBorder());
+        page.setWinTitle("Selecionar Pessoa");
+        getOutput().write(this, page);
+    }
+}</code></pre>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Cenário</th><th>O que acontece</th></tr>
+    <tr><td><strong>Chamada Ajax</strong> (o LinkBox sempre abre o Select em Ajax)</td><td>Injeta o HTML do modal no <code>DIV_WINDOW</code> da página pai e fecha qualquer modal aberto antes (<code>Js.CLOSE_SUB_WINDOWS</code>)</td></tr>
+    <tr><td><strong>Chamada full page</strong> (URL digitada direto no navegador)</td><td>Monta a página inteira com borda de modal e título da aba "Selecionar Pessoa"</td></tr>
+</table>
+</div>
+
+<pre><code class="language-java">public Table window() throws Exception {
+    Table w = new Table(getManager()).setSize("100%", "100%");
+    w.rowC("1%",  JasapPage.DIV_TITLE, ui().title("SELEÇÃO DE PESSOA"));
+    w.rowC("99%").setId(JasapPage.DIV_MASTER).setContent(listV()).table();
+    w.rowC("1%",  null, ui().line());
+    w.rowC("1%",  null, qs_pessoa());
+    w.rowC("1%",  JasapPage.DIV_BOTTOM, br());
+    return w;
+}</code></pre>
+
+<p><code>window()</code> monta o layout visual do modal: uma tabela com 5 linhas.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Linha da tabela</th><th>Conteúdo</th></tr>
+    <tr><td>1% — <code>DIV_TITLE</code></td><td>Barra escura no topo com o título "SELEÇÃO DE PESSOA"</td></tr>
+    <tr><td>99% — <code>DIV_MASTER</code></td><td>A ListView (ocupa todo o espaço disponível)</td></tr>
+    <tr><td>1%</td><td>Uma linha horizontal de separação</td></tr>
+    <tr><td>1%</td><td>Campo de busca (<code>qs_pessoa()</code>)</td></tr>
+    <tr><td>1% — <code>DIV_BOTTOM</code></td><td>Barra de navegação (botões de página) via <code>br()</code></td></tr>
+</table>
+</div>
+
+<p>Os percentuais (<code>1%</code> / <code>99%</code>) não são literais — são <strong>pesos relativos</strong>. Linhas com <code>1%</code> ocupam só o espaço necessário pro conteúdo; a linha com <code>99%</code> estica pra preencher o resto.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">qs_pessoa() — o campo de busca</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">public String qs_pessoa() throws Exception {
+    Text qs = ui().text(DepartamentoPessoaBean.QS_PESSOA)
+            .setLabel("Consulta")
+            .setStyle("width:300")
+            .setMaxlength(300)
+            .setValue(getFiltroS().getQs_pessoa())
+            .setOnkeyup(Js.pressEnter(
+                    link(QuickSearch.class)
+                            .putScript(DepartamentoPessoaBean.QS_PESSOA, Js.SELF_VALUE)
+                            .putInteger(listV().getPAGE(), 0)
+                            .ajax()));
+
+    Table aux = new Table(getManager(), "100%", "30")
+            .setStyle(ui().bgDark())
+            .rowC()
+            .setAlign(Table.ALIGN_CENTER)
+            .setVerticalAlign(Table.ALIGN_MIDDLE)
+            .setContent(qs)
+            .table();
+
+    return aux.toHtml();
+}</code></pre>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Trecho</th><th>O que faz</th></tr>
+    <tr><td><code>ui().text(DepartamentoPessoaBean.QS_PESSOA)</code></td><td>Cria um input de texto com o nome do campo <code>qs_pessoa</code></td></tr>
+    <tr><td><code>.setValue(getFiltroS().getQs_pessoa())</code></td><td>Pré-preenche com o termo atual do filtro (persiste entre reordenações)</td></tr>
+    <tr><td><code>.setOnkeyup(Js.pressEnter(...))</code></td><td>Quando o usuário pressionar Enter, dispara o link</td></tr>
+    <tr><td><code>link(QuickSearch.class)</code></td><td>URL da action <code>QuickSearch</code></td></tr>
+    <tr><td><code>.putScript(QS_PESSOA, Js.SELF_VALUE)</code></td><td>Passa o valor digitado como parâmetro <code>qs_pessoa</code></td></tr>
+    <tr><td><code>.putInteger(listV().getPAGE(), 0)</code></td><td>Reseta pra página 1 (se estava na página 5 e digitou uma busca, volta pra 1)</td></tr>
+    <tr><td><code>.ajax()</code></td><td>Chama sem recarregar a página</td></tr>
+    <tr><td>Tabela <code>aux</code> (100% × 30px)</td><td>Envelopa o campo com fundo escuro (<code>bgDark()</code>), centralizado</td></tr>
+</table>
+</div>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">listV() — a ListView do Select (o coração do arquivo)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">private ListView lv = null;
+public ListView listV() throws Exception {
+    if (lv == null) {
+        lv = ui().lView();
+        lv.setCallBackURL(getSession().getString(LinkBox.CALLBACK_URL.concat("_PESSOA"), getInput()))
+                .setSortAct(url(Sort.class))
+                .setPageAction(url(Sort.class))
+                .setPage(getSession().getInteger(S_LIST.concat(lv.getPAGE()), getInput()))
+                .setOrderBy(getSession().getString(S_LIST.concat(lv.getORDER_BY()), getInput()))
+                .setSort(getSession().getString(S_LIST.concat(lv.getSORT()), getInput()))
+                .ajax();
+
+        if (lv.getData().getOrderBy() == null) {
+            lv.getData().setOrderBy(DepartamentoPessoaBean.NOME_PESSOA);
+            lv.getData().setSort(JasapList.SORT_ASC);
+        }
+
+        lv.setFiltro(getFiltroS());
+        getFactory().departamento().pesModel().daoList(lv.getData());
+
+        ListColumn col_nome    = lv.newColumn("Nome").setOrderBy(DepartamentoPessoaBean.NOME_PESSOA).setPadding(";padding:10 8 10 8;");
+        ListColumn col_apelido = lv.newColumn("Apelido").setOrderBy(DepartamentoPessoaBean.APELIDO_PESSOA).setWidth(180).setPadding(";padding:10 8 10 8;");
+
+        while (lv.hasNext()) {
+            DepartamentoPessoaBean lb = (DepartamentoPessoaBean) lv.next();
+            ListLine line = lv.createLine()
+                    .setOnclick(link(lv.getCallBackURL())
+                            .putInteger(DepartamentoPessoaBean.ID_PESSOA, lb.getId_pessoa())
+                            .noWait().ajax());
+            col_nome.setContent(lb.getNome_pessoa());
+            col_apelido.setContent(lb.getApelido_pessoa());
+            lv.addLine(line);
+        }
+    }
+    return lv;
+}</code></pre>
+
+<p>O <strong>padrão memoization</strong> (<code>if (lv == null)</code>) garante que a ListView é montada <em>uma única vez</em> por requisição. Sort, QuickSearch e render() podem chamar <code>listV()</code> várias vezes e recebem sempre o mesmo objeto já configurado.</p>
+
+<h4 style="margin-top:20px;">Configuração inicial</h4>
+<div class="table-wrap">
+<table>
+    <tr><th>Trecho</th><th>O que faz</th></tr>
+    <tr><td><code>setCallBackURL(getSession().getString(LinkBox.CALLBACK_URL + "_PESSOA"))</code></td><td>Lê da sessão a URL gravada pelo LinkBox. É pra onde cada linha vai chamar ao ser clicada</td></tr>
+    <tr><td><code>setSortAct(url(Sort.class))</code></td><td>URL chamada ao clicar no cabeçalho duma coluna</td></tr>
+    <tr><td><code>setPageAction(url(Sort.class))</code></td><td>URL chamada ao trocar de página (reaproveita a mesma action <code>Sort</code>)</td></tr>
+    <tr><td><code>setPage / setOrderBy / setSort</code></td><td>Restaura página, coluna e direção da ordenação a partir da sessão</td></tr>
+    <tr><td><code>.ajax()</code></td><td>Todas as interações são via Ajax</td></tr>
+</table>
+</div>
+
+<h4 style="margin-top:20px;">Ordenação padrão</h4>
+<pre><code class="language-java">if (lv.getData().getOrderBy() == null) {
+    lv.getData().setOrderBy(DepartamentoPessoaBean.NOME_PESSOA);
+    lv.getData().setSort(JasapList.SORT_ASC);
+}</code></pre>
+<p>Se é a primeira vez que abre o Select (sessão vazia), ordena por nome ascendente. Nas próximas, respeita o que o usuário escolheu.</p>
+
+<h4 style="margin-top:20px;">Consulta ao banco</h4>
+<pre><code class="language-java">lv.setFiltro(getFiltroS());
+getFactory().departamento().pesModel().daoList(lv.getData());</code></pre>
+<p>Passa o filtro (com a busca, se houver) pra ListView e delega ao <code>DepartamentoPessoaModel</code> pra executar o SELECT. O resultado fica em <code>lv.getData()</code>.</p>
+
+<h4 style="margin-top:20px;">Colunas e linhas</h4>
+<div class="table-wrap">
+<table>
+    <tr><th>Trecho</th><th>O que faz</th></tr>
+    <tr><td><code>newColumn("Nome").setOrderBy(NOME_PESSOA)</code></td><td>Cria a coluna Nome, ordenável (clicar no cabeçalho dispara <code>Sort</code>)</td></tr>
+    <tr><td><code>newColumn("Apelido").setOrderBy(APELIDO_PESSOA).setWidth(180)</code></td><td>Coluna Apelido com largura fixa 180px</td></tr>
+    <tr><td><code>while (lv.hasNext())</code></td><td>Percorre os registros retornados pelo banco</td></tr>
+    <tr><td><code>createLine().setOnclick(link(lv.getCallBackURL())...)</code></td><td>Cada linha tem onclick que dispara o callback do LinkBox com o ID</td></tr>
+    <tr><td><code>col_nome.setContent(lb.getNome_pessoa())</code></td><td>Preenche a coluna Nome da linha atual</td></tr>
+    <tr><td><code>lv.addLine(line)</code></td><td>Adiciona a linha à ListView</td></tr>
+</table>
+</div>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">br() — barra de navegação</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">private Bar br() throws Exception {
+    return ui().bar().addCenter(listV().nav(listV().getNavForm()));
+}</code></pre>
+
+<p>Monta a barra inferior do modal com os botões de navegação da ListView (<strong>‹ 1 de 3 ›</strong>). <code>listV().nav(...)</code> retorna o HTML dos botões de página; <code>addCenter()</code> centraliza na barra.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Constantes S_ROOT / S_LIST / S_FILTRO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">public static final String S_ROOT   = ROOT.concat("__PESSOA_SELECT/");
+public static final String S_LIST   = S_ROOT.concat("__LIST/");
+public static final String S_FILTRO = S_LIST.concat("__FILTRO");</code></pre>
+
+<p>Namespace de sessão em árvore pra isolar o estado do Select. <code>ROOT</code> vem do <code>DepartamentoPessoaAction</code>.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Constante</th><th>Onde é usada</th><th>O que guarda</th></tr>
+    <tr><td><code>S_ROOT</code></td><td><code>execute()</code> do principal — <code>remove(S_ROOT)</code></td><td>Raiz da sub-árvore. Apagar essa chave apaga tudo abaixo (S_LIST, S_FILTRO e descendentes)</td></tr>
+    <tr><td><code>S_LIST</code></td><td><code>listV()</code> — prefixa <code>PAGE</code>, <code>ORDER_BY</code>, <code>SORT</code></td><td>Subárvore dos parâmetros da ListView (página, coluna, direção)</td></tr>
+    <tr><td><code>S_FILTRO</code></td><td><code>getFiltroS()</code></td><td>O WBean cacheado com o termo de busca</td></tr>
+</table>
+</div>
+
+<p>A árvore é hierárquica justamente pra que <code>remove(S_ROOT)</code> limpe todo o estado do Select de uma vez — garantindo que reabrir o modal começa sempre do zero, sem vazamento entre aberturas.</p>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD MASTER/DETAIL — XT - Treinamento</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>CRUD MASTER/DETAIL — Pessoa exibe os produtos que lhe pertencem <span class="badge badge-edit">4 edits, 0 arquivos novos</span></h1>
+
+<div class="audio-player" data-src="audio/master-detail.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>No LinkBox, o <strong>filho</strong> (Produto) apontava pro <strong>pai</strong> (Pessoa) — o form do Produto tinha um campo "Responsável" com o nome da pessoa vinculada. Master/Detail é a <strong>visão inversa</strong> da mesma FK: agora é o form da Pessoa que exibe, em baixo, a lista de produtos que ela controla, com botões pra associar produto existente, criar produto novo já vinculado, e lixeirinha pra desvincular.</p>
+
+<p>A FK <code>fk_pessoa_produto</code> já existe desde o LinkBox — nada muda no banco. Não tem tabela de associação nova, não é N-N. O que entra é só a <strong>leitura e manipulação dessa FK a partir do lado do pai</strong>. 4 arquivos editados, 0 arquivos novos: o ProdutoDAO ganha 2 métodos SQL, o PessoaForm é o grosso da feature (5 inner actions + <code>produtoDetail()</code> + divisão da window em master/detail), o ProdutoForm ganha um ajuste de 3 linhas pra pré-preencher a FK quando vier do detail, e o Manager registra as 5 actions novas.</p>
+
+<div class="info-accordion">
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoProdutoDAO                     -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoProdutoDAO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/master-detail-DAO.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<pre data-add="public void daoLinkPessoa(Integer id_produto, Integer id_pessoa) throws Exception+7|public void daoUnlinkPessoa(Integer id_produto) throws Exception+7"><code class="language-java">// ... daoList, daoInsert, daoSingle, daoUpdate, daoDelete, qs_produto, daoWhere (sem alteração) ...
+
+// Métodos novos:
+public void daoLinkPessoa(Integer id_produto, Integer id_pessoa) throws Exception {
+    String sql = "UPDATE " + DepartamentoProdutoBean.TABLE
+            + " SET " + DepartamentoProdutoBean.FK_PESSOA_PRODUTO + "=" + SQL.value(id_pessoa)
+            + " WHERE " + DepartamentoProdutoBean.ID_PRODUTO + "=" + SQL.value(id_produto);
+    Query query = getDataBase().getQuery(sql);
+    getDataBase().executeUpdate(query);
+    query.release();
+}
+
+public void daoUnlinkPessoa(Integer id_produto) throws Exception {
+    String sql = "UPDATE " + DepartamentoProdutoBean.TABLE
+            + " SET " + DepartamentoProdutoBean.FK_PESSOA_PRODUTO + "=NULL"
+            + " WHERE " + DepartamentoProdutoBean.ID_PRODUTO + "=" + SQL.value(id_produto);
+    Query query = getDataBase().getQuery(sql);
+    getDataBase().executeUpdate(query);
+    query.release();
+}
+</code></pre>
+
+<p class="info-note"><strong>Mudanças neste arquivo:</strong> 2 métodos novos. Um <code>UPDATE</code> com FK preenchida (linkar), outro com FK=NULL (desvincular). Nenhuma tabela nova, nenhum import novo — <code>Query</code>, <code>SQL</code> e <code>DepartamentoProdutoBean</code> já eram usados.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoPessoaForm                     -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoPessoaForm (apenas blocos novos)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/master-detail-PessoaForm.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<pre><code class="language-java">// Imports novos:
+import br.jasap.gui.ListColumn;
+import br.jasap.gui.ListLine;
+import br.jasap.gui.ListView;
+import br.jasap.gui.form.LinkBox;
+import br.jasap.util.ModalConfig;
+import br.xt.app.departamento.produto.DepartamentoProdutoBean;
+import br.xt.app.departamento.produto.DepartamentoProdutoForm;
+import br.xt.app.departamento.produto.DepartamentoProdutoSelect;
+import br.xt.app.departamento.produto.DepartamentoProdutoWBean;
+
+// ... ShowInsert, Insert, ShowUpdate, Update, Cancelar, Delete (sem alteração) ...
+
+// 5 inner classes novas:
+public static class AddExistingProduto extends DepartamentoPessoaForm {
+    public AddExistingProduto() { super.getFilters().add(new TransactionFilter()); }
+    @Override
+    public Effect execute() throws Exception {
+        Integer id_produto = getInput().getInteger(DepartamentoProdutoBean.ID_PRODUTO);
+        getFactory().departamento().proModel().daoLinkPessoa(id_produto, id_pessoa());
+        updateParent(JasapPage.DIV_DETAIL, produtoDetail());
+        evalParent(Js.CLOSE_SUB_WINDOWS);
+        return new Response();
+    }
+}
+
+public static class RefreshDetail extends DepartamentoPessoaForm {
+    @Override
+    public Effect execute() throws Exception {
+        update(JasapPage.DIV_DETAIL, produtoDetail());
+        return new Response();
+    }
+}
+
+public static class SearchProduto extends DepartamentoPessoaForm {
+    @Override
+    public Effect execute() throws Exception {
+        getSession().addObj(S_QS_PRODUTO, getInput().getString(DepartamentoProdutoBean.QS_PRODUTO));
+        update(JasapPage.DIV_DETAIL, produtoDetail());
+        return new Response();
+    }
+}
+
+public static class DetailChangePage extends DepartamentoPessoaForm {
+    @Override
+    public Effect execute() throws Exception {
+        update(JasapPage.DIV_DETAIL, produtoDetail());
+        return new Response();
+    }
+}
+
+public static class DesvincularProduto extends DepartamentoPessoaForm {
+    public DesvincularProduto() { super.getFilters().add(new TransactionFilter()); }
+    @Override
+    public Effect execute() throws Exception {
+        Integer id_produto = getInput().getInteger(DepartamentoProdutoBean.ID_PRODUTO);
+        if (JasapFunctions.equals(getInput().getInteger(CONFIRM), 1)) {
+            getFactory().departamento().proModel().daoUnlinkPessoa(id_produto);
+            update(JasapPage.DIV_DETAIL, produtoDetail());
+        } else {
+            eval(Js.swalConfirm("Deseja desvincular esse produto?",
+                    link(DesvincularProduto.class)
+                            .putInteger(CONFIRM, 1)
+                            .putInteger(DepartamentoProdutoBean.ID_PRODUTO, id_produto)
+                            .ajax(), ""));
+        }
+        return new Response();
+    }
+}
+
+// ... render() (sem alteração) ...
+
+// window() alterado — divide em master + detail quando em modo update:
+public Table window() throws Exception {
+    Table w = new Table(getManager()).setSize("100%", "100%");
+    w.rowC("1%",  JasapPage.DIV_TITLE, ui().title("CADASTRO DE PESSOA"));
+    w.rowC("1%",  null, ui().line());
+    if (isUpdate(FORM)) {
+        w.rowC("1%").setId(JasapPage.DIV_MASTER).setContent(form()).table();
+        w.rowC("1%",  null, ui().line());
+        w.rowC("99%").setId(JasapPage.DIV_DETAIL).setContent(produtoDetail()).table();
+    } else {
+        w.rowC("auto").setId(JasapPage.DIV_MASTER).setContent(form()).table();
+        w.rowC("1%",  null, ui().line());
+        w.rowC("99%", JasapPage.DIV_DETAIL, "&lt;div style='padding:20px;color:#aaa;font-size:14px;font-style:italic;'&gt;Salve o registro para associar produtos a essa pessoa.&lt;/div&gt;");
+    }
+    w.rowC("1%",  null, ui().line());
+    w.rowC("1%",  JasapPage.DIV_BOTTOM, br());
+    return w;
+}
+
+// Método novo — monta a ListView do detail:
+public Table produtoDetail() throws Exception {
+    ListView lv = ui().lView();
+    lv.setPageAction(url(DetailChangePage.class))
+            .setPage(getSession().getInteger(S_DET.concat(lv.getPAGE()), getInput()))
+            .ajax();
+
+    String qs = (String) getSession().getObject(S_QS_PRODUTO);
+    DepartamentoProdutoWBean filtro = new DepartamentoProdutoWBean();
+    filtro.setFk_pessoa_produto(id_pessoa());
+    if (qs != null && !qs.isEmpty()) filtro.setQs_produto(qs);
+    lv.setFiltro(filtro);
+    getFactory().departamento().proModel().daoList(lv.getData());
+
+    ListColumn col_nome = lv.newColumn("Nome").setWidth(300).setPadding(";padding:10 8 10 8;");
+    ListColumn col_vl   = lv.newColumn("Valor").setWidth(100).setPadding(";padding:10 8 10 8;").alignCenter();
+    ListColumn col_qtd  = lv.newColumn("Qtd").setWidth(80).setPadding(";padding:10 8 10 8;").alignCenter();
+    ListColumn col_obs  = lv.newColumn("Observação").setPadding(";padding:10 8 10 8;");
+    ListColumn col_del  = lv.newColumn("").setWidth(50).setPadding(";padding:6 4 6 4;").alignCenter();
+
+    while (lv.hasNext()) {
+        DepartamentoProdutoBean bean = (DepartamentoProdutoBean) lv.next();
+        ListLine line = lv.createLine()
+            .setOnclick(link(DepartamentoProdutoForm.ShowUpdate.class)
+                .putInteger(DepartamentoProdutoBean.ID_PRODUTO, bean.getId_produto())
+                .modal(new ModalConfig().setWidth("752").setHeight("570").setOnCloseURL(url(RefreshDetail.class))));
+        col_nome.setContent(bean.getNome_produto());
+        col_vl.setContent(d2(bean.getVl_produto()));
+        col_qtd.setContent(bean.getQtd_produto());
+        col_obs.setContent(bean.getObs_produto());
+        col_del.setHtmlData("&lt;button type='button' class='close' style='opacity:0.6;font-size:20px;color:#e8820c;float:none;' title='Desvincular' onclick=\"event.stopPropagation();" + link(DesvincularProduto.class).putInteger(DepartamentoProdutoBean.ID_PRODUTO, bean.getId_produto()).ajax() + "\"&gt;&amp;times;&lt;/button&gt;");
+        lv.addLine(line);
+    }
+
+    Button cmd_add = ui().button("&amp;nbsp;&amp;nbsp;Associar Produto&amp;nbsp;&amp;nbsp;").setCss("btn btn-primary btn-lg").setNoSize()
+            .setOnClick(link(DepartamentoProdutoSelect.class)
+                .putString(LinkBox.CALLBACK_URL.concat("_PRODUTO"), url(AddExistingProduto.class))
+                .modal(new ModalConfig().setWidth("750").setHeight("550").setOnCloseURL(url(RefreshDetail.class))));
+
+    Button cmd_novo = ui().button("&lt;span style='color:white'&gt;&amp;nbsp;&amp;nbsp;Novo Produto&amp;nbsp;&amp;nbsp;&lt;/span&gt;").setCss("btn btn-warning btn-lg").setNoSize()
+            .setOnClick(link(DepartamentoProdutoForm.ShowInsert.class)
+                .putInteger(DepartamentoProdutoForm.S_FROM_PESSOA, id_pessoa())
+                .modal(new ModalConfig().setWidth("752").setHeight("570").setOnCloseURL(url(RefreshDetail.class))));
+
+    Text qs_field = ui().text(DepartamentoProdutoBean.QS_PRODUTO)
+            .setStyle("width:500; height:32")
+            .setMaxlength(300)
+            .setValue(qs)
+            .setOnkeyup(Js.pressEnter(link(SearchProduto.class)
+                            .putScript(DepartamentoProdutoBean.QS_PRODUTO, Js.SELF_VALUE)
+                            .ajax()));
+
+    // ... monta a tabela auxiliar com barra de botões, linha, ListView, campo de busca e nav ...
+
+    return aux;
+}
+
+// Constantes novas:
+public static String S_QS_PRODUTO = ROOT.concat("__S_QS_PRODUTO");
+public static String S_DET        = ROOT.concat("__S_DET");
+</code></pre>
+
+<p class="info-note"><strong>Mudanças neste arquivo:</strong> 9 imports novos, 5 inner classes novas, <code>window()</code> alterado pra dividir em master/detail quando em update (e placeholder em insert), método novo <code>produtoDetail()</code>, 2 constantes de sessão. ShowInsert/Insert/ShowUpdate/Update/Cancelar/Delete existentes ficam inalterados.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoProdutoForm                    -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoProdutoForm (apenas blocos novos)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/master-detail-ProdutoForm.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<pre data-add="Integer fromPessoa = getInput().getInteger(S_FROM_PESSOA);|if (fromPessoa != null) proBean().setFk_pessoa_produto(fromPessoa);|public static String S_FROM_PESSOA = ROOT.concat"><code class="language-java">public static class ShowInsert extends DepartamentoProdutoForm {
+    @Override
+    public Effect execute() throws Exception {
+        setInsert(FORM);
+        getSession().remove(ROOT.concat(DepartamentoProdutoBean.ID_PRODUTO));
+        Integer fromPessoa = getInput().getInteger(S_FROM_PESSOA);   // ADICIONADO
+        if (fromPessoa != null) proBean().setFk_pessoa_produto(fromPessoa);   // ADICIONADO
+        proBean().setInsert_chk(getInput().getInteger(DepartamentoProdutoBean.INSERT_CHK));
+        render();
+        return new Response();
+    }
+}
+
+// ... Insert, ShowUpdate, Update, Cancelar, Delete (sem alteração) ...
+// ... render(), window(), br(), form(), getters, Fk_pessoa_produto (sem alteração) ...
+
+// Constante nova:
+public static String S_FROM_PESSOA = ROOT.concat("__FROM_PESSOA");
+</code></pre>
+
+<p class="info-note"><strong>Mudanças neste arquivo:</strong> 2 linhas no <code>ShowInsert</code> + 1 constante. Se a URL chegar com <code>S_FROM_PESSOA</code>, o form já nasce com a FK preenchida. É o que faz o botão "Novo Produto" do detail abrir o form do Produto já com o Responsável preenchido.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoManager                        -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoManager</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/master-detail-Manager.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<pre data-add="regAction(DepartamentoPessoaForm.AddExistingProduto.class);|regAction(DepartamentoPessoaForm.RefreshDetail.class);|regAction(DepartamentoPessoaForm.SearchProduto.class);|regAction(DepartamentoPessoaForm.DetailChangePage.class);|regAction(DepartamentoPessoaForm.DesvincularProduto.class);"><code class="language-java">// ... regActions do Home, ProdutoList, ProdutoForm, PessoaList (sem alteração) ...
+
+// Bloco do PessoaForm — 5 regActions novas adicionadas ao final:
+regAction(DepartamentoPessoaForm.class);
+regAction(DepartamentoPessoaForm.ShowInsert.class);
+regAction(DepartamentoPessoaForm.ShowUpdate.class);
+regAction(DepartamentoPessoaForm.Insert.class);
+regAction(DepartamentoPessoaForm.Update.class);
+regAction(DepartamentoPessoaForm.Cancelar.class);
+regAction(DepartamentoPessoaForm.Delete.class);
+regAction(DepartamentoPessoaForm.AddExistingProduto.class);
+regAction(DepartamentoPessoaForm.RefreshDetail.class);
+regAction(DepartamentoPessoaForm.SearchProduto.class);
+regAction(DepartamentoPessoaForm.DetailChangePage.class);
+regAction(DepartamentoPessoaForm.DesvincularProduto.class);
+
+// ... bloco do PessoaSelect e ProdutoSelect (sem alteração) ...
+</code></pre>
+
+<p class="info-note"><strong>Mudanças neste arquivo:</strong> 5 <code>regAction</code> novas, todas inner classes do <code>DepartamentoPessoaForm</code>. Nenhum import novo — a classe do Form já era importada desde o CRUD da Pessoa.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- O mecanismo — master + detail                                -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O mecanismo — como o detail mora dentro do form</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>A tela da Pessoa em modo update fica dividida em duas regiões empilhadas:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Região</th><th>Div ID</th><th>O que tem</th></tr>
+    <tr><td><strong>Master (topo)</strong></td><td><code>JasapPage.DIV_MASTER</code></td><td>Form da Pessoa — nome, apelido, CPF, status, observações. Idêntico ao que já existia antes</td></tr>
+    <tr><td><strong>Detail (baixo)</strong></td><td><code>JasapPage.DIV_DETAIL</code></td><td>ListView paginada dos produtos vinculados + barra de busca rápida + 2 botões (Associar/Novo) + lixeirinha de desvínculo por linha</td></tr>
+</table>
+</div>
+
+<p>Em modo insert a região <code>DIV_DETAIL</code> mostra apenas um placeholder ("Salve o registro para associar produtos a essa pessoa.") — só depois de existir o <code>id_pessoa</code> é que faz sentido pendurar filhos nele.</p>
+
+<h3>Por que os IDs (DIV_MASTER / DIV_DETAIL) importam</h3>
+
+<p>São os <strong>pontos de ancoragem</strong> que as actions de refresh usam pra injetar HTML novo sem redesenhar a tela inteira. Quando <code>RefreshDetail</code>, <code>SearchProduto</code> ou <code>DetailChangePage</code> executam, fazem:</p>
+
+<pre><code class="language-java">update(JasapPage.DIV_DETAIL, produtoDetail());</code></pre>
+
+<p>O framework localiza o div com esse ID na página aberta e substitui o conteúdo interno. O Master (form da Pessoa) não é tocado — o usuário mantém os campos que digitou.</p>
+
+<h3>Cenários que disparam refresh do detail</h3>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Ação do usuário</th><th>Action chamada</th><th>Antes do update</th></tr>
+    <tr><td>Clica "Associar Produto" → escolhe no Select → Select chama callback</td><td><code>AddExistingProduto</code></td><td>Executa <code>daoLinkPessoa</code>, depois <code>updateParent(DIV_DETAIL, ...)</code></td></tr>
+    <tr><td>Abre o form de um produto via detail → edita → fecha modal</td><td><code>RefreshDetail</code> (via <code>setOnCloseURL</code>)</td><td>Nada — só recarrega a lista (dados podem ter mudado no form)</td></tr>
+    <tr><td>Digita busca no campo → pressiona Enter</td><td><code>SearchProduto</code></td><td>Grava <code>qs_produto</code> em <code>S_QS_PRODUTO</code> na sessão</td></tr>
+    <tr><td>Clica na paginação ("‹ 1 de 3 ›")</td><td><code>DetailChangePage</code></td><td>Framework grava a página destino em <code>S_DET</code>, action só recarrega o conteúdo</td></tr>
+    <tr><td>Clica lixeirinha laranja → confirma no swal</td><td><code>DesvincularProduto</code></td><td>Executa <code>daoUnlinkPessoa</code>, depois <code>update(DIV_DETAIL, ...)</code></td></tr>
+</table>
+</div>
+
+<p>A única que precisa de <code>updateParent</code> (não <code>update</code>) é <code>AddExistingProduto</code> — porque ela roda <em>dentro</em> do modal do Select, então o Detail está na janela pai.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 1 — ProdutoDAO                                       -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 1 — ProdutoDAO: <code>daoLinkPessoa</code> e <code>daoUnlinkPessoa</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">public void daoLinkPessoa(Integer id_produto, Integer id_pessoa) throws Exception {
+    String sql = "UPDATE " + DepartamentoProdutoBean.TABLE
+            + " SET " + DepartamentoProdutoBean.FK_PESSOA_PRODUTO + "=" + SQL.value(id_pessoa)
+            + " WHERE " + DepartamentoProdutoBean.ID_PRODUTO + "=" + SQL.value(id_produto);
+    Query query = getDataBase().getQuery(sql);
+    getDataBase().executeUpdate(query);
+    query.release();
+}
+
+public void daoUnlinkPessoa(Integer id_produto) throws Exception {
+    String sql = "UPDATE " + DepartamentoProdutoBean.TABLE
+            + " SET " + DepartamentoProdutoBean.FK_PESSOA_PRODUTO + "=NULL"
+            + " WHERE " + DepartamentoProdutoBean.ID_PRODUTO + "=" + SQL.value(id_produto);
+    Query query = getDataBase().getQuery(sql);
+    getDataBase().executeUpdate(query);
+    query.release();
+}</code></pre>
+
+<p>A base SQL da feature. Dois métodos praticamente idênticos — o único diferencial é o valor da coluna: um seta com o ID, outro com NULL.</p>
+
+<h3>Por que não reaproveitar <code>daoUpdate</code>?</h3>
+
+<p><code>daoUpdate(bean)</code> existe e grava o bean inteiro via <code>update().execute(bean, TABLE)</code>. Isso significaria:</p>
+
+<ul>
+    <li>Precisar carregar o bean completo do banco primeiro (<code>daoSingle</code>)</li>
+    <li>Alterar só o campo <code>fk_pessoa_produto</code></li>
+    <li>Gravar o bean todo de volta</li>
+</ul>
+
+<p>Dois roundtrips no banco pra trocar 1 campo. Os métodos cirúrgicos (<code>daoLinkPessoa</code>/<code>daoUnlinkPessoa</code>) fazem em 1 roundtrip. Mesma técnica que o <code>DeleteFromList</code> usa — SQL direto pra operações pontuais que não precisam do bean inteiro.</p>
+
+<h3>Uso de <code>SQL.value(...)</code> — contra SQL injection</h3>
+
+<p><code>SQL.value(id_pessoa)</code> e <code>SQL.value(id_produto)</code> escapam o valor antes de concatenar na string SQL. Protege contra SQL injection mesmo em método cujo parâmetro vem do usuário (via <code>getInput().getInteger()</code>). Sem isso, uma string mal-intencionada no input poderia sair a string SQL quebrando a query.</p>
+
+<h3>Por que <code>query.release()</code></h3>
+
+<p>Libera o <code>Statement</code> JDBC e o cursor no banco. Sem release, em alta carga o pool de conexões do PostgreSQL fica retendo recursos. É padrão em todos os métodos do DAO — contrato do Jasap.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 2 — PessoaForm: window() master+detail              -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 2 — PessoaForm: <code>window()</code> divide em master + detail</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">public Table window() throws Exception {
+    Table w = new Table(getManager()).setSize("100%", "100%");
+    w.rowC("1%",  JasapPage.DIV_TITLE, ui().title("CADASTRO DE PESSOA"));
+    w.rowC("1%",  null, ui().line());
+    if (isUpdate(FORM)) {
+        w.rowC("1%").setId(JasapPage.DIV_MASTER).setContent(form());
+        w.rowC("1%",  null, ui().line());
+        w.rowC("99%").setId(JasapPage.DIV_DETAIL).setContent(produtoDetail());
+    } else {
+        w.rowC("auto").setId(JasapPage.DIV_MASTER).setContent(form()).table();
+        w.rowC("1%",  null, ui().line());
+        w.rowC("99%", JasapPage.DIV_DETAIL, "&lt;div style='padding:20px;color:#aaa;font-size:14px;font-style:italic;'&gt;Salve o registro para associar produtos a essa pessoa.&lt;/div&gt;");
+    }
+    w.rowC("1%",  null, ui().line());
+    w.rowC("1%",  JasapPage.DIV_BOTTOM, br());
+    return w;
+}</code></pre>
+
+<p>A única mudança no <code>window()</code>: o <code>if (isUpdate(FORM))</code> no meio. Antes do Master/Detail, o <code>window()</code> só tinha uma linha central com o form. Agora tem uma bifurcação:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Modo</th><th>Layout</th></tr>
+    <tr><td><strong>Update</strong></td><td>Form compacto em cima (peso <code>1%</code>), linha separadora, detail ocupando o resto (peso <code>99%</code>)</td></tr>
+    <tr><td><strong>Insert</strong></td><td>Form auto-sized em cima, linha separadora, placeholder cinza italico avisando pra salvar antes</td></tr>
+</table>
+</div>
+
+<p>O modo Insert não chama <code>produtoDetail()</code> de propósito: sem <code>id_pessoa</code> gravado, a consulta de produtos vinculados ainda não tem critério válido — retornaria tudo ou nada, confundindo o usuário.</p>
+
+<h3>Por que <code>DIV_MASTER</code> e <code>DIV_DETAIL</code> em vez de IDs soltos?</h3>
+
+<p>Constantes do framework (<code>br.jasap.gui.JasapPage</code>). Usadas em várias partes do Jasap pra marcar regiões atualizáveis — ListView da List principal também usa <code>DIV_MASTER</code>, modais usam <code>DIV_WINDOW</code>. Padronizar os IDs facilita o framework localizar as regiões em operações de update Ajax.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 3 — PessoaForm: produtoDetail()                      -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 3 — PessoaForm: <code>produtoDetail()</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Método que monta a ListView do detail. Parece grande, mas é o mesmo esqueleto do <code>listV()</code> do Select do LinkBox com pequenas adaptações.</p>
+
+<h3>Filtro com FK fixa + busca rápida opcional</h3>
+
+<pre><code class="language-java">String qs = (String) getSession().getObject(S_QS_PRODUTO);
+DepartamentoProdutoWBean filtro = new DepartamentoProdutoWBean();
+filtro.setFk_pessoa_produto(id_pessoa());
+if (qs != null && !qs.isEmpty()) filtro.setQs_produto(qs);
+lv.setFiltro(filtro);
+getFactory().departamento().proModel().daoList(lv.getData());</code></pre>
+
+<p>O filtro sempre tem <code>fk_pessoa_produto = id_pessoa()</code> — só traz produtos dessa pessoa. Se o usuário digitou algo na busca rápida, soma o <code>qs_produto</code>. O <code>daoWhere</code> do ProdutoDAO (que já existia) aplica as duas condições com <code>AND</code>.</p>
+
+<h3>Linha clicável abre o form do Produto num modal</h3>
+
+<pre><code class="language-java">ListLine line = lv.createLine()
+    .setOnclick(link(DepartamentoProdutoForm.ShowUpdate.class)
+        .putInteger(DepartamentoProdutoBean.ID_PRODUTO, bean.getId_produto())
+        .modal(new ModalConfig().setWidth("752").setHeight("570").setOnCloseURL(url(RefreshDetail.class))));</code></pre>
+
+<p>Detalhe importante: <code>setOnCloseURL(url(RefreshDetail.class))</code>. Quando o usuário fecha o modal do produto (ou salva e o modal fecha sozinho), o framework dispara a URL de <code>RefreshDetail</code> — que re-renderiza o detail. Assim qualquer edição que o usuário fez no produto (ex: mudou o nome, o valor) aparece refletida na linha.</p>
+
+<h3>Lixeirinha por linha</h3>
+
+<pre><code class="language-java">col_del.setHtmlData("&lt;button ... onclick=\"event.stopPropagation();"
+    + link(DesvincularProduto.class)
+        .putInteger(DepartamentoProdutoBean.ID_PRODUTO, bean.getId_produto())
+        .ajax() + "\"&gt;&amp;times;&lt;/button&gt;");</code></pre>
+
+<p>HTML custom injetado na coluna via <code>setHtmlData</code>. O <code>event.stopPropagation()</code> impede que o clique na lixeira propague pra linha (senão abriria o form do produto junto).</p>
+
+<h3>Dois botões de adicionar</h3>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Botão</th><th>O que faz</th></tr>
+    <tr><td><strong>Associar Produto</strong> (azul)</td><td>Abre o <code>DepartamentoProdutoSelect</code> num modal. O Select chama de volta <code>AddExistingProduto</code> com o <code>id_produto</code> escolhido. Pra vincular um produto que já existe</td></tr>
+    <tr><td><strong>Novo Produto</strong> (laranja)</td><td>Abre o <code>DepartamentoProdutoForm.ShowInsert</code> num modal, passando <code>S_FROM_PESSOA=id_pessoa()</code>. O Form nasce já com a FK preenchida. Pra criar um produto novo e já associar numa tacada</td></tr>
+</table>
+</div>
+
+<p>Os dois modais usam <code>setOnCloseURL(url(RefreshDetail.class))</code> — qualquer que seja o caminho, o detail é recarregado ao fechar.</p>
+
+<h3>Busca rápida com Enter</h3>
+
+<pre><code class="language-java">.setOnkeyup(Js.pressEnter(link(SearchProduto.class)
+                .putScript(DepartamentoProdutoBean.QS_PRODUTO, Js.SELF_VALUE)
+                .ajax()));</code></pre>
+
+<p>Padrão já conhecido do Sort + QuickSearch. Pressiona Enter → dispara <code>SearchProduto</code> com o valor digitado → grava em <code>S_QS_PRODUTO</code> → re-renderiza o detail com o filtro aplicado.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 4 — PessoaForm: 5 inner actions                      -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 4 — PessoaForm: 5 inner actions do detail</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Todas as 5 estendem <code>DepartamentoPessoaForm</code> (e não <code>DepartamentoPessoaAction</code>) porque precisam do método <code>produtoDetail()</code> pra montar o HTML de resposta. Herdam também <code>pesBean()</code>, <code>id_pessoa()</code>, <code>url()</code>, <code>link()</code>.</p>
+
+<h3>AddExistingProduto — vincular produto existente</h3>
+
+<pre><code class="language-java">public static class AddExistingProduto extends DepartamentoPessoaForm {
+    public AddExistingProduto() { super.getFilters().add(new TransactionFilter()); }
+    @Override
+    public Effect execute() throws Exception {
+        Integer id_produto = getInput().getInteger(DepartamentoProdutoBean.ID_PRODUTO);
+        getFactory().departamento().proModel().daoLinkPessoa(id_produto, id_pessoa());
+        updateParent(JasapPage.DIV_DETAIL, produtoDetail());
+        evalParent(Js.CLOSE_SUB_WINDOWS);
+        return new Response();
+    }
+}</code></pre>
+
+<p>É o <strong>callback</strong> do Select de Produto — análogo ao <code>Fk_pessoa_produto</code> do LinkBox, mas no sentido inverso (aqui é a pessoa recebendo o produto escolhido). <code>updateParent</code> em vez de <code>update</code> porque a action roda dentro do modal do Select; o detail está na janela pai. <code>TransactionFilter</code> porque escreve no banco — se o UPDATE falhar por qualquer motivo, rollback automático.</p>
+
+<h3>RefreshDetail — recarregar após fechar modais</h3>
+
+<pre><code class="language-java">public static class RefreshDetail extends DepartamentoPessoaForm {
+    @Override
+    public Effect execute() throws Exception {
+        update(JasapPage.DIV_DETAIL, produtoDetail());
+        return new Response();
+    }
+}</code></pre>
+
+<p>A mais simples: só recarrega o detail. É chamada pelo <code>setOnCloseURL</code> de vários modais (linha do detail, botão Associar, botão Novo). Nenhum acesso ao banco de escrita, nenhum filtro — só garante que o detail reflita o estado atual da tabela.</p>
+
+<h3>SearchProduto — busca rápida dentro do detail</h3>
+
+<pre><code class="language-java">public static class SearchProduto extends DepartamentoPessoaForm {
+    @Override
+    public Effect execute() throws Exception {
+        getSession().addObj(S_QS_PRODUTO, getInput().getString(DepartamentoProdutoBean.QS_PRODUTO));
+        update(JasapPage.DIV_DETAIL, produtoDetail());
+        return new Response();
+    }
+}</code></pre>
+
+<p>Grava o termo digitado em <code>S_QS_PRODUTO</code> antes de re-renderizar. O <code>produtoDetail()</code> lê essa chave de volta e adiciona ao filtro.</p>
+
+<h3>DetailChangePage — paginação</h3>
+
+<pre><code class="language-java">public static class DetailChangePage extends DepartamentoPessoaForm {
+    @Override
+    public Effect execute() throws Exception {
+        update(JasapPage.DIV_DETAIL, produtoDetail());
+        return new Response();
+    }
+}</code></pre>
+
+<p>O framework grava o número da página destino em <code>S_DET</code> (prefixo da chave do <code>PAGE</code>) antes de disparar a action. A action em si só recarrega o detail — o <code>produtoDetail()</code> lê a página de volta via <code>setPage(getSession().getInteger(S_DET.concat(lv.getPAGE()), getInput()))</code>.</p>
+
+<h3>DesvincularProduto — lixeirinha com confirmação</h3>
+
+<pre><code class="language-java">public static class DesvincularProduto extends DepartamentoPessoaForm {
+    public DesvincularProduto() { super.getFilters().add(new TransactionFilter()); }
+    @Override
+    public Effect execute() throws Exception {
+        Integer id_produto = getInput().getInteger(DepartamentoProdutoBean.ID_PRODUTO);
+        if (JasapFunctions.equals(getInput().getInteger(CONFIRM), 1)) {
+            getFactory().departamento().proModel().daoUnlinkPessoa(id_produto);
+            update(JasapPage.DIV_DETAIL, produtoDetail());
+        } else {
+            eval(Js.swalConfirm("Deseja desvincular esse produto?",
+                    link(DesvincularProduto.class)
+                            .putInteger(CONFIRM, 1)
+                            .putInteger(DepartamentoProdutoBean.ID_PRODUTO, id_produto)
+                            .ajax(), ""));
+        }
+        return new Response();
+    }
+}</code></pre>
+
+<p>Mesmo padrão do <code>Delete</code> do form de edição: 1ª chamada mostra swal, 2ª chamada (com <code>CONFIRM=1</code>) desvincula. Detalhe: o link de confirmação precisa transportar o <code>id_produto</code> também — senão a 2ª chamada não sabe qual produto desvincular.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 5 — ProdutoForm: ShowInsert lê S_FROM_PESSOA         -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 5 — ProdutoForm: <code>ShowInsert</code> lê <code>S_FROM_PESSOA</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">public static class ShowInsert extends DepartamentoProdutoForm {
+    @Override
+    public Effect execute() throws Exception {
+        setInsert(FORM);
+        getSession().remove(ROOT.concat(DepartamentoProdutoBean.ID_PRODUTO));
+        Integer fromPessoa = getInput().getInteger(S_FROM_PESSOA);   // ADICIONADO
+        if (fromPessoa != null) proBean().setFk_pessoa_produto(fromPessoa);   // ADICIONADO
+        proBean().setInsert_chk(getInput().getInteger(DepartamentoProdutoBean.INSERT_CHK));
+        render();
+        return new Response();
+    }
+}
+
+public static String S_FROM_PESSOA = ROOT.concat("__FROM_PESSOA");   // NOVA CONSTANTE</code></pre>
+
+<p>Ajuste pequeno mas de UX. Quando o usuário clica "Novo Produto" no detail do PessoaForm, o link embutido passa <code>S_FROM_PESSOA=id_pessoa()</code>. O <code>ShowInsert</code> lê esse input e, se veio, pré-preenche a FK no bean — o LinkBox "Responsável" do Form do Produto já aparece com o nome da pessoa atual, economizando um clique.</p>
+
+<h3>Por que input e não sessão?</h3>
+
+<p>Input viaja apenas nessa requisição — depois some. Se fosse sessão, sobreviveria entre chamadas: se o usuário abrisse o form normalmente (via lista de Produtos), ainda veria a FK pré-preenchida de uma interação anterior no detail. Seria bug sutil. Input é efêmero e escopado ao caminho exato ("clicou em Novo Produto no detail desta pessoa agora").</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 6 — Manager: 5 regActions                            -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 6 — Manager: 5 <code>regAction</code> novas</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">regAction(DepartamentoPessoaForm.AddExistingProduto.class);
+regAction(DepartamentoPessoaForm.RefreshDetail.class);
+regAction(DepartamentoPessoaForm.SearchProduto.class);
+regAction(DepartamentoPessoaForm.DetailChangePage.class);
+regAction(DepartamentoPessoaForm.DesvincularProduto.class);</code></pre>
+
+<p>5 linhas novas, todas no bloco do <code>DepartamentoPessoaForm</code> (logo após o <code>Delete</code>). Sem elas, todas as 5 inner classes seriam "fantasmas" — existem em código mas 404 quando chamadas. Sintomas:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Esqueceu</th><th>Sintoma</th></tr>
+    <tr><td><code>AddExistingProduto</code></td><td>Escolher pessoa no Select não vincula produto</td></tr>
+    <tr><td><code>RefreshDetail</code></td><td>Fechar modal de edição do produto não atualiza o detail</td></tr>
+    <tr><td><code>SearchProduto</code></td><td>Digitar na busca do detail e pressionar Enter não filtra</td></tr>
+    <tr><td><code>DetailChangePage</code></td><td>Botões de paginação do detail não respondem</td></tr>
+    <tr><td><code>DesvincularProduto</code></td><td>Lixeirinha laranja não abre swal</td></tr>
+</table>
+</div>
+
+<p>Todos falham silenciosos — compila, o link é gerado, só não funciona. Checklist obrigatório ao adicionar inner class de action: <strong>registrou no Manager?</strong></p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- O que NÃO faz parte                                          -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que NÃO faz parte do Master/Detail</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Cinco coisas que <em>parecem</em> relacionadas mas não são tocadas:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Item</th><th>Por que fica de fora</th></tr>
+    <tr><td><strong>Banco (DDL)</strong></td><td>A FK <code>fk_pessoa_produto</code> já existia desde o LinkBox. Nenhum <code>ALTER TABLE</code>, nenhuma tabela de associação. Se fosse N-N, precisaria de uma — mas a regra de negócio aqui é 1-N (um produto → uma pessoa)</td></tr>
+    <tr><td><strong>DepartamentoProdutoBean</strong></td><td>Inalterado. O objeto Pessoa embutido do LinkBox já basta — o detail lê os produtos inteiros, não precisa de novas propriedades no Bean</td></tr>
+    <tr><td><strong>DepartamentoProdutoWBean</strong></td><td>O filtro <code>fk_pessoa_produto</code> já existia desde o LinkBox (usado no <code>daoWhere</code>). O detail só reusa</td></tr>
+    <tr><td><strong>DepartamentoProdutoList</strong></td><td>Lista principal de produtos continua idêntica. O detail usa uma ListView separada montada no PessoaForm</td></tr>
+    <tr><td><strong>DepartamentoProdutoSelect</strong></td><td>Reaproveitado do LinkBox sem mudanças. O "Associar Produto" do detail abre o mesmo modal que o LinkBox do Form do Produto — só muda o callback (<code>AddExistingProduto</code> em vez de <code>Fk_pessoa_produto</code>)</td></tr>
+</table>
+</div>
+
+<p>A economia vem da FK 1-N do LinkBox. Se esta sequência fosse implementada antes do LinkBox (ou com relacionamento N-N), o escopo dobraria: DDL, tabela de associação, métodos de join no DAO, reorganização do Bean.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Resumo                                                       -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Resumo — o que mudou</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="table-wrap">
+<table>
+    <tr><th>Arquivo</th><th>Tipo</th><th>Edição</th></tr>
+    <tr><td><strong>DepartamentoProdutoDAO</strong></td><td>editar</td><td>2 métodos novos: <code>daoLinkPessoa</code> (UPDATE com FK preenchida) e <code>daoUnlinkPessoa</code> (UPDATE com FK=NULL)</td></tr>
+    <tr><td><strong>DepartamentoPessoaForm</strong></td><td>editar</td><td>9 imports, 5 inner classes (<code>AddExistingProduto</code>, <code>RefreshDetail</code>, <code>SearchProduto</code>, <code>DetailChangePage</code>, <code>DesvincularProduto</code>), <code>window()</code> divide em master/detail, método <code>produtoDetail()</code>, 2 constantes (<code>S_QS_PRODUTO</code>, <code>S_DET</code>)</td></tr>
+    <tr><td><strong>DepartamentoProdutoForm</strong></td><td>editar</td><td>2 linhas no <code>ShowInsert</code> pra ler <code>S_FROM_PESSOA</code> e pré-preencher a FK + 1 constante <code>S_FROM_PESSOA</code></td></tr>
+    <tr><td><strong>DepartamentoManager</strong></td><td>editar</td><td>5 <code>regAction</code> novas, todas inner classes do PessoaForm</td></tr>
+    <tr><td><strong>Banco</strong></td><td>—</td><td>Nada — FK já existia</td></tr>
+</table>
+</div>
+
+<p>4 arquivos editados, 0 arquivos novos, nenhuma mudança de schema. Resultado: tela da Pessoa em modo edição passa a mostrar uma lista de produtos vinculados embaixo do form, com busca, paginação, botões de "Associar Produto" (modal de seleção) e "Novo Produto" (form pré-preenchido), e lixeirinha de desvínculo em cada linha. Todas as interações mantêm o form da Pessoa intacto em cima — só o detail é re-renderizado via Ajax.</p>
+
+        </div>
+    </div>
+
+</div>
+
+<h2 style="margin-top:3em;">Jornada Completa — o agente em ação</h2>
+<p>Agora que cada peça foi construída, escute o agente percorrendo o prédio e usando tudo que a gente montou. 5 cenários: abertura do form em edit, Associar Produto existente, Desvincular com swalConfirm, Novo Produto com <code>S_FROM_PESSOA</code>, e o padrão de refresh (Buscar, Paginar, Editar inline).</p>
+<div class="audio-player" data-src="audio/master-detail-Jornada.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+</body>
+</html>
