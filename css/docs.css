@@ -869,7 +869,7 @@ body.dark #footer a.sub:hover      { color: #cba6f7; }
 .home-sub {
     color: #888;
     font-size: 0.95em;
-    margin: 0;
+    margin: -20px 0px 22px 0px;
 }
 
 .home-grid {
