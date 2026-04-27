@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus — O Health Endpoint — XT - Treinamento</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>Nexus — O Health Endpoint <span class="badge badge-new">episódio 7</span></h1>
+
+<div class="audio-player" data-src="audio/health-endpoint.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>O primeiro endpoint REST do projeto e o que o Spring faz por baixo.</p>
+
+<p>Cobre por que <code>/health</code>, a classe inteira em quinze linhas, <code>@RestController</code> (anotação composta), <code>@GetMapping</code> e os atalhos por verbo, retorno <code>Map</code> vs DTO (e por que Map serve aqui), <code>Instant</code> vs <code>LocalDateTime</code>/<code>Date</code>, e o caminho completo do request por dentro do Spring. Esse é o "AHA do Spring Boot" — uma anotação na classe + outra no método + um retorno Java vira uma resposta HTTP completa SEM código de serialização escrito.</p>
+
+</body>
+</html>

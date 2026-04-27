@@ -157,6 +157,47 @@ var MENU = [
             { label: 'Notas do vault', arquivo: 'obsidian.html', tipo: 'check' }
         ],
         pasta: '7-obsidian'
+    },
+    {
+        grupo: 'NEXUS',
+        pagina: 'nexus.html',
+        subgrupos: [
+            { label: 'COMPONENTES', href: '1-componentes/componentes.html', pasta: '1-componentes' },
+            { label: 'FASE 0',      href: '2-fase-0/fase-0.html',           pasta: '2-fase-0' }
+        ],
+        subpastas: ['1-componentes', '2-fase-0'],
+        pasta: '8-nexus'
+    },
+    {
+        grupo: 'COMPONENTES',
+        pagina: 'componentes.html',
+        parent: { label: 'NEXUS', href: '8-nexus/nexus.html' },
+        hidden: true,
+        items: [
+            { label: '1 - TOC', arquivo: '1-toc/toc.html', tipo: 'check' }
+        ],
+        pasta: '1-componentes',
+        basePath: '8-nexus/1-componentes'
+    },
+    {
+        grupo: 'FASE 0',
+        pagina: 'fase-0.html',
+        parent: { label: 'NEXUS', href: '8-nexus/nexus.html' },
+        hidden: true,
+        items: [
+            { label: '1 - Visão Geral',           arquivo: '1-visao-geral/1-visao-geral.html',                         tipo: 'check' },
+            { label: '2 - Setup do Ambiente',     arquivo: '2-setup-ambiente/2-setup-ambiente.html',                   tipo: 'check' },
+            { label: '3 - Spring Initializr',     arquivo: '3-spring-initializr/3-spring-initializr.html',             tipo: 'check' },
+            { label: '4 - application.yml',       arquivo: '4-application-yml/4-application-yml.html',                 tipo: 'check' },
+            { label: '5 - Virtual Threads',       arquivo: '5-virtual-threads/5-virtual-threads.html',                 tipo: 'check' },
+            { label: '6 - Spring Security',       arquivo: '6-spring-security-inicial/6-spring-security-inicial.html', tipo: 'check' },
+            { label: '7 - Health Endpoint',       arquivo: '7-health-endpoint/7-health-endpoint.html',                 tipo: 'check' },
+            { label: '8 - SvelteKit Setup',       arquivo: '8-sveltekit-setup/8-sveltekit-setup.html',                 tipo: 'check' },
+            { label: '9 - Integração Fim a Fim',  arquivo: '9-integracao-fim-a-fim/9-integracao-fim-a-fim.html',       tipo: 'check' },
+            { label: '10 - Carta do Claude',      arquivo: '10-carta-do-claude/10-carta-do-claude.html',               tipo: 'check' }
+        ],
+        pasta: '2-fase-0',
+        basePath: '8-nexus/2-fase-0'
     }
 ];
 
@@ -356,6 +397,14 @@ var BASE = document.currentScript.getAttribute('src').replace('js/layout.js', ''
     };
     addLoader();
 
+    // Promise que resolve quando um <link> termina de carregar (sucesso ou erro)
+    var linkReady = function(link) {
+        return new Promise(function(resolve) {
+            link.addEventListener('load', resolve);
+            link.addEventListener('error', resolve);
+        });
+    };
+
     // docs.css
     var css = document.createElement('link');
     css.rel = 'stylesheet';
@@ -388,6 +437,11 @@ var BASE = document.currentScript.getAttribute('src').replace('js/layout.js', ''
         hljsLight.disabled = true;
         hljsDark.disabled = false;
     }
+
+    // Espera docs.css + font-awesome + hljs (tema ativo) antes de mostrar o body
+    // — evita FOUC em páginas que não têm 'pre code' (ex: index.html)
+    var activeHljs = hljsLight.disabled ? hljsDark : hljsLight;
+    window.__stylesheetsReady = Promise.all([linkReady(css), linkReady(fa), linkReady(activeHljs)]);
 })();
 
 // ─── Helpers ───────────────────────────────────────────────────────
@@ -532,9 +586,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     buildFooter(currentFolder, isSubFolder, depth);
 
     // ── Home cards — menu info toggle ──
-    document.querySelectorAll('.home-card').forEach(function(card) {
+    document.querySelectorAll('.card').forEach(function(card) {
         var btn = card.querySelector('.btnMenuCard');
-        var info = card.querySelector('.home-card-info');
+        var info = card.querySelector('.card-info');
 
         if (btn && info) {
             btn.addEventListener('click', function(e) {
@@ -543,16 +597,36 @@ document.addEventListener('DOMContentLoaded', async function() {
             });
         }
 
-        // Padrão: nome do card (alt da imagem). Hover: texto original ("Ver docs" / "Ver notas")
-        var tag = card.querySelector('.home-card-tag');
-        var img = card.querySelector('.home-card-img img');
-        if (tag && img) {
-            var cardName = (img.getAttribute('alt') || '').toUpperCase();
+        // Padrão: nome do card (alt da imagem ou data-name do vídeo). Hover: texto original ("Ver docs" / "Ver notas")
+        var tag = card.querySelector('.card-tag');
+        var media = card.querySelector('.card-img img, .card-img video');
+        if (tag && media) {
+            var cardName = (media.getAttribute('alt') || media.getAttribute('data-name') || '').toUpperCase();
             var hoverText = tag.textContent;
             if (cardName && cardName !== hoverText.toUpperCase()) {
                 tag.textContent = cardName;
                 tag.addEventListener('mouseenter', function() { tag.textContent = hoverText; });
                 tag.addEventListener('mouseleave', function() { tag.textContent = cardName; });
+            }
+        }
+
+        // Vídeo no card: começa pausado, SÓ o primeiro hover dá play; depois disso o controle é do botão
+        var video = card.querySelector('.card-img video');
+        if (video) {
+            card.addEventListener('mouseenter', function() {
+                video.play().catch(function() {});
+            }, { once: true });
+
+            // Botão pause/play (canto superior esquerdo)
+            var pauseBtn = card.querySelector('.btnPauseCard');
+            if (pauseBtn) {
+                pauseBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (video.paused) video.play().catch(function() {});
+                    else video.pause();
+                });
+                video.addEventListener('play',  function() { pauseBtn.classList.add('playing'); });
+                video.addEventListener('pause', function() { pauseBtn.classList.remove('playing'); });
             }
         }
     });
@@ -575,6 +649,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     await initCarousel(inner);
     initInfoRowPersist(inner);
     initSideNav(inner);
+    initPageToc(inner);
 
     // ── Restaurar estado do drawer ──
     if (localStorage.getItem('drawerOpen') === 'true') {
@@ -590,6 +665,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (localStorage.getItem('theme') === 'dark') {
         document.getElementById('theme-toggle').innerHTML = '&#9790;';
     }
+
+    // ── Esperar stylesheets críticos (docs.css, font-awesome, hljs) terminarem ──
+    // sem isso, páginas sem 'pre code' (ex: index.html) mostram FOUC
+    if (window.__stylesheetsReady) await window.__stylesheetsReady;
 
     // ── Mostrar body ──
     var hideStyle = document.getElementById('layout-hide');
@@ -1473,6 +1552,9 @@ function initInfoRowPersist(inner) {
 // ── SideNav (índice lateral para páginas com info-row) ──
 
 function initSideNav(inner) {
+    // Se a página tem <nav class="page-toc">, o componente TOC substitui o sidenav
+    if (document.querySelector('.page-toc')) return;
+
     var rows = inner.querySelectorAll('.info-row');
     if (rows.length === 0) return;
 
@@ -1542,6 +1624,139 @@ function initSideNav(inner) {
     }, { rootMargin: '-80px 0px -70% 0px', threshold: 0 });
 
     rows.forEach(function(row) { observer.observe(row); });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PAGE TOC — Table of Contents lateral auto-gerado a partir dos <h2>
+// Ativado pela presença de <nav class="page-toc"></nav> vazia no HTML.
+// Suporta override: se o nav já tiver conteúdo, preserva.
+// Atributos opcionais no <h2>:
+//   data-sub="..."         → subtítulo menor em cinza claro
+//   data-toc-title="..."   → título no TOC (se diferente do h2)
+// ═══════════════════════════════════════════════════════════════════
+
+function initPageToc(inner) {
+    var nav = document.querySelector('.page-toc');
+    if (!nav) return;
+
+    // Override manual: se já tem conteúdo, não sobrescreve
+    if (nav.children.length > 0) return;
+
+    // Fonte primária: <h2> da página. Fallback: .info-row (quando a página usa info-accordion).
+    var items = [];
+    var h2s = inner.querySelectorAll('h2');
+    if (h2s.length >= 2) {
+        h2s.forEach(function(h2, i) {
+            if (!h2.id) {
+                var slug = h2.textContent.trim().toLowerCase()
+                    .replace(/[^\w\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .substring(0, 40);
+                h2.id = slug || ('sec-' + (i + 1));
+            }
+            if (!h2.style.scrollMarginTop) h2.style.scrollMarginTop = '80px';
+            items.push({
+                id: h2.id,
+                title: h2.dataset.tocTitle || h2.textContent.trim(),
+                sub: h2.dataset.sub || ''
+            });
+        });
+    } else {
+        // Fallback: usa os .info-row como seções (compatível com info-accordion)
+        // Ignora info-rows aninhados dentro de outros info-rows (ex: Resumo/Material dentro de cada episódio)
+        var rows = Array.from(inner.querySelectorAll('.info-row')).filter(function(r) {
+            return !r.parentElement.closest('.info-row');
+        });
+        if (rows.length < 2) return;
+        rows.forEach(function(row, i) {
+            var titleEl = row.querySelector('.info-row-title');
+            if (!titleEl) return;
+            if (!row.id) row.id = 'row-' + (i + 1);
+            if (!row.style.scrollMarginTop) row.style.scrollMarginTop = '80px';
+            var fullText = titleEl.textContent.trim();
+            var dashIdx = fullText.indexOf(' — ');
+            items.push({
+                id: row.id,
+                title: row.dataset.tocTitle || (dashIdx > 0 ? fullText.substring(0, dashIdx) : fullText),
+                sub: row.dataset.tocSub || (dashIdx > 0 ? fullText.substring(dashIdx + 3).trim() : '')
+            });
+        });
+    }
+
+    if (items.length < 2) return;
+
+    var ulHtml = '<ul>';
+    ulHtml += '<li><a href="#" data-toc-top="1">Topo</a></li>';
+    items.forEach(function(item) {
+        var subHtml = item.sub ? '<span class="toc-sub">' + item.sub + '</span>' : '';
+        ulHtml += '<li><a href="#' + item.id + '">' + item.title + subHtml + '</a></li>';
+    });
+    ulHtml += '<li><a href="#" data-toc-bottom="1">Rodapé</a></li>';
+    ulHtml += '</ul>';
+
+    nav.innerHTML = '<div class="page-toc-title">Nesta página</div>' + ulHtml;
+
+    // Delays em cascata (0.25s base pra esperar a barra entrar + 0.05s por item)
+    var lis = nav.querySelectorAll('li');
+    lis.forEach(function(li, i) {
+        li.style.animationDelay = (0.25 + i * 0.05) + 's';
+    });
+
+    // Botão toggle (hamburger / X)
+    var btn = document.createElement('button');
+    btn.className = 'page-toc-toggle active';
+    btn.setAttribute('aria-label', 'Alternar menu');
+    btn.innerHTML =
+        '<svg class="toc-icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">' +
+            '<line x1="3" y1="6" x2="21" y2="6"/>' +
+            '<line x1="3" y1="12" x2="21" y2="12"/>' +
+            '<line x1="3" y1="18" x2="21" y2="18"/>' +
+        '</svg>' +
+        '<svg class="toc-icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">' +
+            '<line x1="18" y1="6" x2="6" y2="18"/>' +
+            '<line x1="6" y1="6" x2="18" y2="18"/>' +
+        '</svg>';
+    btn.addEventListener('click', function() {
+        this.classList.toggle('active');
+        nav.classList.toggle('collapsed');
+    });
+    nav.parentNode.insertBefore(btn, nav);
+
+    // Em tela <=1440px, menu começa escondido — hamburger fica visível pra abrir sob demanda
+    if (window.innerWidth <= 1440) {
+        nav.classList.add('collapsed');
+        btn.classList.remove('active');
+    }
+
+    // Em tela <=1440px, clicar num link fecha o menu automaticamente
+    // (menu sobrepõe conteúdo; depois de escolher a seção, some pra revelar)
+    nav.querySelectorAll('a').forEach(function(a) {
+        a.addEventListener('click', function(e) {
+            if (a.dataset.tocTop) {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (a.dataset.tocBottom) {
+                e.preventDefault();
+                window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+            } else {
+                // Se o target é (ou está dentro de) um info-row fechado, abre antes do scroll
+                var href = a.getAttribute('href');
+                if (href && href.length > 1 && href.charAt(0) === '#') {
+                    var target = document.getElementById(href.substring(1));
+                    if (target) {
+                        var row = target.classList.contains('info-row') ? target : target.closest('.info-row');
+                        if (row && !row.classList.contains('open')) {
+                            row.classList.add('open');
+                        }
+                    }
+                }
+            }
+            if (window.innerWidth <= 1440) {
+                nav.classList.add('collapsed');
+                btn.classList.remove('active');
+            }
+        });
+    });
 }
 
 })();

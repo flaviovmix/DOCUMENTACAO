@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus — application.yml e profiles — XT - Treinamento</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>Nexus — application.yml e profiles <span class="badge badge-new">episódio 4</span></h1>
+
+<div class="audio-player" data-src="audio/application-yml.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>O arquivo de configuração externalizada do Spring Boot — pequeno, mas com decisões grandes escondidas em poucas linhas.</p>
+
+<p>Cobre datasource, JPA com <code>ddl-auto=validate</code> (porque Flyway é dono do schema), <code>open-in-view=false</code> (a armadilha silenciosa), Flyway, virtual threads (com pointer pro próximo episódio), porta e logging, profiles (o que tem hoje vs o que vai ter) e o que conscientemente não está no arquivo.</p>
+
+</body>
+</html>
