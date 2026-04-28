@@ -876,7 +876,7 @@ body.dark #footer a.sub:hover      { color: #cba6f7; }
     display: flex;
     flex-wrap: wrap;
     gap: 24px;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 /* --- Card --- */
@@ -1496,7 +1496,7 @@ body.dark .carousel-dot.active { background: #89b4fa; }
 }
 
 .info-row-btn:hover { color: #2563eb; }
-.info-row.open .info-row-btn { transform: rotate(45deg); color: #555; }
+.info-row.open > .info-row-header > .info-row-btn { transform: rotate(45deg); color: #555; }
 
 .info-row-body {
     overflow: hidden;
@@ -1505,7 +1505,7 @@ body.dark .carousel-dot.active { background: #89b4fa; }
     padding-bottom: 0;
 }
 
-.info-row.open .info-row-body {
+.info-row.open > .info-row-body {
     max-height: 9999px;
     padding-bottom: 16px;
     padding-top: 4px;
@@ -1556,7 +1556,7 @@ body.dark .carousel-dot.active { background: #89b4fa; }
 body.dark .info-row                { border-color: #45475a; }
 body.dark .info-row-title          { color: #cdd6f4; }
 body.dark .info-row-btn            { color: #6c7086; }
-body.dark .info-row.open .info-row-btn { color: #9399b2; }
+body.dark .info-row.open > .info-row-header > .info-row-btn { color: #9399b2; }
 body.dark .info-row-body p,
 body.dark .info-row-body ul,
 body.dark .info-row-body a         { color: #9399b2; }

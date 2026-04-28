@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fase 0 — XT - Treinamento</title>
+    <title>Fase 0 — Nexus</title>
     <script src="../../../js/layout.js"></script>
     <style>
         .ep-sub {
@@ -11,21 +11,6 @@
             font-style: italic;
             margin: 0 0 12px 0;
             font-size: 0.92em;
-        }
-        .ep-full-text {
-            margin: 0;
-            background: #fafbfc;
-            border: 1px solid #eaecef;
-            border-radius: 6px;
-            padding: 16px 18px;
-            font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-            font-size: 0.78em;
-            line-height: 1.65;
-            color: #333;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            max-height: 520px;
-            overflow-y: auto;
         }
         .tags { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
         .tag {
@@ -66,26 +51,20 @@
                 <span class="audio-time">0:00 / 0:00</span>
             </div>
 
+            <h3>Resumo</h3>
+            <p>Nexus é projeto pessoal do Flávio com <strong>dois propósitos casados</strong>: veículo de aprendizado (stack moderna pra praticar o que projeto real exige) e consolidação de informação hoje espalhada em Notion, Todoist, Obsidian, notas, Keep, emails e XTtreinamento.</p>
+            <p>Stack: <strong>Java 25 + Spring Boot 3.5 + JPA/Hibernate + Flyway + Spring Security + virtual threads</strong> no backend; <strong>SvelteKit + Svelte 5 + TypeScript + Vite</strong> no frontend; PostgreSQL 16; deploy planejado em Railway (backend) + Vercel (frontend).</p>
+            <p>Decisão consciente contra a moda: <strong>NÃO usar WebFlux</strong> (curva brutal, JPA não funciona, Nexus é single-user). Virtual threads do Java 25 cobrem concorrência sem trocar paradigma. Spring sobre Jasap pra alinhar com mercado (~95% das vagas Java).</p>
+            <div class="tags"><span class="tag">contexto</span><span class="tag">stack</span><span class="tag">decisões</span></div>
+
             <div class="info-accordion">
-                <div class="info-row open">
-                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Resumo</span>
-                        <button class="info-row-btn">+</button>
-                    </div>
-                    <div class="info-row-body">
-                    <p>Nexus é projeto pessoal do Flávio com <strong>dois propósitos casados</strong>: veículo de aprendizado (stack moderna pra praticar o que projeto real exige) e consolidação de informação hoje espalhada em Notion, Todoist, Obsidian, notas, Keep, emails e XTtreinamento.</p>
-                    <p>Stack: <strong>Java 25 + Spring Boot 3.5 + JPA/Hibernate + Flyway + Spring Security + virtual threads</strong> no backend; <strong>SvelteKit + Svelte 5 + TypeScript + Vite</strong> no frontend; PostgreSQL 16; deploy planejado em Railway (backend) + Vercel (frontend).</p>
-                    <p>Decisão consciente contra a moda: <strong>NÃO usar WebFlux</strong> (curva brutal, JPA não funciona, Nexus é single-user). Virtual threads do Java 25 cobrem concorrência sem trocar paradigma. Spring sobre Jasap pra alinhar com mercado (~95% das vagas Java).</p>
-                        <div class="tags"><span class="tag">contexto</span><span class="tag">stack</span><span class="tag">decisões</span></div>
-                    </div>
-                </div>
                 <div class="info-row">
                     <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Material completo (Nexus_Overview.txt)</span>
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
                         <button class="info-row-btn">+</button>
                     </div>
                     <div class="info-row-body">
-                        <pre class="ep-full-text" data-tpl="tpl-01"></pre>
+                        <pre><code class="language-plaintext" data-tpl="tpl-01"></code></pre>
                     </div>
                 </div>
             </div>
@@ -110,26 +89,20 @@
                 <span class="audio-time">0:00 / 0:00</span>
             </div>
 
+            <h3>Resumo</h3>
+            <p><strong>Instalado:</strong> JDK 25 (Oracle, LTS até ~2033), PostgreSQL 16 como serviço Windows (porta 5432, db <code>nexus</code>, user <code>nexus</code>), Git, VS Code (Extension Pack for Java + Svelte), Node.js/npm.</p>
+            <p><strong>Sem Docker em dev</strong> — decisão consciente registrada no nexus.md §13. Manter foco no que era novo (Spring Boot) sem adicionar runtime de container ao mesmo tempo. Postgres direto resolve o mesmo problema com menos camadas. Docker volta na Fase 1 passo 5 (Deploy), porque o Railway aceita imagem.</p>
+            <p><code>JAVA_HOME</code> apontando pro JDK, <code>%JAVA_HOME%\bin</code> no PATH. Maven vem do wrapper (<code>mvnw</code>), não global. WSL não, pgAdmin opcional.</p>
+            <div class="tags"><span class="tag">JDK 25</span><span class="tag">PostgreSQL 16</span><span class="tag">sem Docker</span></div>
+
             <div class="info-accordion">
-                <div class="info-row open">
-                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Resumo</span>
-                        <button class="info-row-btn">+</button>
-                    </div>
-                    <div class="info-row-body">
-                    <p><strong>Instalado:</strong> JDK 25 (Oracle, LTS até ~2033), PostgreSQL 16 como serviço Windows (porta 5432, db <code>nexus</code>, user <code>nexus</code>), Git, VS Code (Extension Pack for Java + Svelte), Node.js/npm.</p>
-                    <p><strong>Sem Docker em dev</strong> — decisão consciente registrada no nexus.md §13. Manter foco no que era novo (Spring Boot) sem adicionar runtime de container ao mesmo tempo. Postgres direto resolve o mesmo problema com menos camadas. Docker volta na Fase 1 passo 5 (Deploy), porque o Railway aceita imagem.</p>
-                    <p><code>JAVA_HOME</code> apontando pro JDK, <code>%JAVA_HOME%\bin</code> no PATH. Maven vem do wrapper (<code>mvnw</code>), não global. WSL não, pgAdmin opcional.</p>
-                        <div class="tags"><span class="tag">JDK 25</span><span class="tag">PostgreSQL 16</span><span class="tag">sem Docker</span></div>
-                    </div>
-                </div>
                 <div class="info-row">
                     <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Material completo (Nexus_Overview.txt)</span>
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
                         <button class="info-row-btn">+</button>
                     </div>
                     <div class="info-row-body">
-                        <pre class="ep-full-text" data-tpl="tpl-02"></pre>
+                        <pre><code class="language-plaintext" data-tpl="tpl-02"></code></pre>
                     </div>
                 </div>
             </div>
@@ -154,26 +127,20 @@
                 <span class="audio-time">0:00 / 0:00</span>
             </div>
 
+            <h3>Resumo</h3>
+            <p>Esqueleto gerado em <strong>start.spring.io</strong>: Maven, Java 25, Spring Boot 3.5.13, package <code>io.nexus</code>, JAR (Tomcat embarcado).</p>
+            <p>Seis dependências: <strong>Spring Web</strong> (Spring MVC + Tomcat + Jackson), <strong>Spring Data JPA</strong> (Hibernate + JpaRepository + HikariCP), <strong>Flyway</strong> (com flyway-database-postgresql separado), <strong>Spring Security</strong>, <strong>Validation</strong> (Bean Validation 3), <strong>PostgreSQL Driver</strong>.</p>
+            <p>A classe <code>NexusApplication</code> tem só o <code>main</code> com <code>@SpringBootApplication</code> — que junta <code>@Configuration</code> + <code>@EnableAutoConfiguration</code> + <code>@ComponentScan</code>. Auto-configure liga Tomcat, Jackson, DataSource, Hibernate, Flyway e Security por estarem no classpath. Maven escolhido sobre Gradle por familiaridade.</p>
+            <div class="tags"><span class="tag">Maven</span><span class="tag">starters</span><span class="tag">auto-configure</span></div>
+
             <div class="info-accordion">
-                <div class="info-row open">
-                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Resumo</span>
-                        <button class="info-row-btn">+</button>
-                    </div>
-                    <div class="info-row-body">
-                    <p>Esqueleto gerado em <strong>start.spring.io</strong>: Maven, Java 25, Spring Boot 3.5.13, package <code>io.nexus</code>, JAR (Tomcat embarcado).</p>
-                    <p>Seis dependências: <strong>Spring Web</strong> (Spring MVC + Tomcat + Jackson), <strong>Spring Data JPA</strong> (Hibernate + JpaRepository + HikariCP), <strong>Flyway</strong> (com flyway-database-postgresql separado), <strong>Spring Security</strong>, <strong>Validation</strong> (Bean Validation 3), <strong>PostgreSQL Driver</strong>.</p>
-                    <p>A classe <code>NexusApplication</code> tem só o <code>main</code> com <code>@SpringBootApplication</code> — que junta <code>@Configuration</code> + <code>@EnableAutoConfiguration</code> + <code>@ComponentScan</code>. Auto-configure liga Tomcat, Jackson, DataSource, Hibernate, Flyway e Security por estarem no classpath. Maven escolhido sobre Gradle por familiaridade.</p>
-                        <div class="tags"><span class="tag">Maven</span><span class="tag">starters</span><span class="tag">auto-configure</span></div>
-                    </div>
-                </div>
                 <div class="info-row">
                     <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Material completo (Nexus_Overview.txt)</span>
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
                         <button class="info-row-btn">+</button>
                     </div>
                     <div class="info-row-body">
-                        <pre class="ep-full-text" data-tpl="tpl-03"></pre>
+                        <pre><code class="language-plaintext" data-tpl="tpl-03"></code></pre>
                     </div>
                 </div>
             </div>
@@ -198,27 +165,21 @@
                 <span class="audio-time">0:00 / 0:00</span>
             </div>
 
+            <h3>Resumo</h3>
+            <p>Properties renomeado pra YAML (mais legível pra estrutura aninhada). Configura datasource (URL JDBC, user/senha), JPA, Flyway, virtual threads, server.port e logging.</p>
+            <p>Decisão crítica: <code>ddl-auto: validate</code>. Quem cria schema é o <strong>Flyway</strong>, não o Hibernate — dois donos causariam conflito. Validate só confere que entidades batem com o schema; falha cedo se divergir.</p>
+            <p>Outra armadilha: <code>open-in-view: false</code>. O default true mantém sessão JPA aberta até serializar resposta — esconde queries N+1 e prolonga transação. False força disciplina: tudo carrega no service, controller só vê dado materializado.</p>
+            <p>Profiles dev/prod ainda não separados — sintaxe <code>${VAR:default}</code> permite override por env var, suficiente pra Fase 0.</p>
+            <div class="tags"><span class="tag">YAML</span><span class="tag">ddl-auto validate</span><span class="tag">open-in-view false</span></div>
+
             <div class="info-accordion">
-                <div class="info-row open">
-                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Resumo</span>
-                        <button class="info-row-btn">+</button>
-                    </div>
-                    <div class="info-row-body">
-                    <p>Properties renomeado pra YAML (mais legível pra estrutura aninhada). Configura datasource (URL JDBC, user/senha), JPA, Flyway, virtual threads, server.port e logging.</p>
-                    <p>Decisão crítica: <code>ddl-auto: validate</code>. Quem cria schema é o <strong>Flyway</strong>, não o Hibernate — dois donos causariam conflito. Validate só confere que entidades batem com o schema; falha cedo se divergir.</p>
-                    <p>Outra armadilha: <code>open-in-view: false</code>. O default true mantém sessão JPA aberta até serializar resposta — esconde queries N+1 e prolonga transação. False força disciplina: tudo carrega no service, controller só vê dado materializado.</p>
-                    <p>Profiles dev/prod ainda não separados — sintaxe <code>${VAR:default}</code> permite override por env var, suficiente pra Fase 0.</p>
-                        <div class="tags"><span class="tag">YAML</span><span class="tag">ddl-auto validate</span><span class="tag">open-in-view false</span></div>
-                    </div>
-                </div>
                 <div class="info-row">
                     <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Material completo (Nexus_Overview.txt)</span>
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
                         <button class="info-row-btn">+</button>
                     </div>
                     <div class="info-row-body">
-                        <pre class="ep-full-text" data-tpl="tpl-04"></pre>
+                        <pre><code class="language-plaintext" data-tpl="tpl-04"></code></pre>
                     </div>
                 </div>
             </div>
@@ -243,26 +204,20 @@
                 <span class="audio-time">0:00 / 0:00</span>
             </div>
 
+            <h3>Resumo</h3>
+            <p><strong>Platform thread</strong> = 1-pra-1 com thread do SO, ~1MB por stack, pool fixo de centenas. <strong>Virtual thread</strong> = leve (KB), milhões concorrentes, suspende quando bloqueia liberando a platform thread debaixo. Modelo "uma thread por request" volta a fazer sentido.</p>
+            <p><strong>WebFlux foi descartado</strong>: curva brutal (Mono/Flux, stack traces ilegíveis, thread local quebra), <strong>JPA não funciona</strong> (precisa R2DBC, ecossistema pequeno), várias libs Spring têm versão reactive separada. Nexus é single-user — escala extrema é over-engineering.</p>
+            <p>Virtual threads dão o melhor dos dois: código bloqueante normal (<code>userRepository.findById</code>) + concorrência alta de graça. <strong>Uma linha</strong> no YAML (<code>spring.threads.virtual.enabled: true</code>) liga em todos os endpoints, @Async e ThreadPoolTaskExecutor. Aprendizado também: stack mainstream + modernidade essencial, sem triplicar complexidade.</p>
+            <div class="tags"><span class="tag">Java 25</span><span class="tag">concorrência</span><span class="tag">não-WebFlux</span></div>
+
             <div class="info-accordion">
-                <div class="info-row open">
-                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Resumo</span>
-                        <button class="info-row-btn">+</button>
-                    </div>
-                    <div class="info-row-body">
-                    <p><strong>Platform thread</strong> = 1-pra-1 com thread do SO, ~1MB por stack, pool fixo de centenas. <strong>Virtual thread</strong> = leve (KB), milhões concorrentes, suspende quando bloqueia liberando a platform thread debaixo. Modelo "uma thread por request" volta a fazer sentido.</p>
-                    <p><strong>WebFlux foi descartado</strong>: curva brutal (Mono/Flux, stack traces ilegíveis, thread local quebra), <strong>JPA não funciona</strong> (precisa R2DBC, ecossistema pequeno), várias libs Spring têm versão reactive separada. Nexus é single-user — escala extrema é over-engineering.</p>
-                    <p>Virtual threads dão o melhor dos dois: código bloqueante normal (<code>userRepository.findById</code>) + concorrência alta de graça. <strong>Uma linha</strong> no YAML (<code>spring.threads.virtual.enabled: true</code>) liga em todos os endpoints, @Async e ThreadPoolTaskExecutor. Aprendizado também: stack mainstream + modernidade essencial, sem triplicar complexidade.</p>
-                        <div class="tags"><span class="tag">Java 25</span><span class="tag">concorrência</span><span class="tag">não-WebFlux</span></div>
-                    </div>
-                </div>
                 <div class="info-row">
                     <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Material completo (Nexus_Overview.txt)</span>
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
                         <button class="info-row-btn">+</button>
                     </div>
                     <div class="info-row-body">
-                        <pre class="ep-full-text" data-tpl="tpl-05"></pre>
+                        <pre><code class="language-plaintext" data-tpl="tpl-05"></code></pre>
                     </div>
                 </div>
             </div>
@@ -287,26 +242,20 @@
                 <span class="audio-time">0:00 / 0:00</span>
             </div>
 
+            <h3>Resumo</h3>
+            <p>Só de ter o starter no pom, o Security <strong>fecha tudo</strong>: senha aleatória no log, usuário <code>user</code> default, CSRF ligado, autenticação obrigatória. Pra REST stateless usado por SPA, esse default não serve.</p>
+            <p>SecurityConfig da Fase 0 cobre 4 coisas: <strong>(1)</strong> CORS pra origem <code>http://localhost:5173</code> (sem isso o navegador bloqueia); <strong>(2)</strong> CSRF desligado (não acrescenta proteção em auth via header Bearer JWT); <strong>(3)</strong> sessão STATELESS (sem HttpSession, casa com JWT e escala horizontal); <strong>(4)</strong> <code>/health</code> e <code>/auth/**</code> em <code>permitAll()</code>, resto authenticated.</p>
+            <p><strong>Padrão restritivo</strong> — tudo bloqueado por default, abrir só o público. Preflight OPTIONS aparece no log antes de cada DELETE/PUT — comportamento normal do CORS pra requests não-simples.</p>
+            <div class="tags"><span class="tag">filter chain</span><span class="tag">CORS</span><span class="tag">stateless</span></div>
+
             <div class="info-accordion">
-                <div class="info-row open">
-                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Resumo</span>
-                        <button class="info-row-btn">+</button>
-                    </div>
-                    <div class="info-row-body">
-                    <p>Só de ter o starter no pom, o Security <strong>fecha tudo</strong>: senha aleatória no log, usuário <code>user</code> default, CSRF ligado, autenticação obrigatória. Pra REST stateless usado por SPA, esse default não serve.</p>
-                    <p>SecurityConfig da Fase 0 cobre 4 coisas: <strong>(1)</strong> CORS pra origem <code>http://localhost:5173</code> (sem isso o navegador bloqueia); <strong>(2)</strong> CSRF desligado (não acrescenta proteção em auth via header Bearer JWT); <strong>(3)</strong> sessão STATELESS (sem HttpSession, casa com JWT e escala horizontal); <strong>(4)</strong> <code>/health</code> e <code>/auth/**</code> em <code>permitAll()</code>, resto authenticated.</p>
-                    <p><strong>Padrão restritivo</strong> — tudo bloqueado por default, abrir só o público. Preflight OPTIONS aparece no log antes de cada DELETE/PUT — comportamento normal do CORS pra requests não-simples.</p>
-                        <div class="tags"><span class="tag">filter chain</span><span class="tag">CORS</span><span class="tag">stateless</span></div>
-                    </div>
-                </div>
                 <div class="info-row">
                     <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Material completo (Nexus_Overview.txt)</span>
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
                         <button class="info-row-btn">+</button>
                     </div>
                     <div class="info-row-body">
-                        <pre class="ep-full-text" data-tpl="tpl-06"></pre>
+                        <pre><code class="language-plaintext" data-tpl="tpl-06"></code></pre>
                     </div>
                 </div>
             </div>
@@ -331,26 +280,20 @@
                 <span class="audio-time">0:00 / 0:00</span>
             </div>
 
+            <h3>Resumo</h3>
+            <p><code>HealthController</code> com <code>@RestController</code> + <code>@GetMapping("/health")</code> retornando um <code>Map.of("status","ok", "service","nexus-backend", "timestamp", Instant.now().toString())</code>.</p>
+            <p><code>@RestController</code> = <code>@Controller</code> + <code>@ResponseBody</code> implícito — qualquer retorno vira corpo HTTP. Jackson (vindo com spring-web) serializa Map em JSON automaticamente. Sem código manual.</p>
+            <p>Map ad-hoc em vez de DTO porque endpoint trivial; <code>Instant</code> em vez de LocalDateTime (UTC absoluto, ISO-8601 com Z). Pacote <code>io.nexus.common</code> (estrutura por feature, não por camada). Sem Actuator por enquanto — entra se precisar de healthcheck robusto que pingue banco.</p>
+            <div class="tags"><span class="tag">@RestController</span><span class="tag">Jackson</span><span class="tag">Instant</span></div>
+
             <div class="info-accordion">
-                <div class="info-row open">
-                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Resumo</span>
-                        <button class="info-row-btn">+</button>
-                    </div>
-                    <div class="info-row-body">
-                    <p><code>HealthController</code> com <code>@RestController</code> + <code>@GetMapping("/health")</code> retornando um <code>Map.of("status","ok", "service","nexus-backend", "timestamp", Instant.now().toString())</code>.</p>
-                    <p><code>@RestController</code> = <code>@Controller</code> + <code>@ResponseBody</code> implícito — qualquer retorno vira corpo HTTP. Jackson (vindo com spring-web) serializa Map em JSON automaticamente. Sem código manual.</p>
-                    <p>Map ad-hoc em vez de DTO porque endpoint trivial; <code>Instant</code> em vez de LocalDateTime (UTC absoluto, ISO-8601 com Z). Pacote <code>io.nexus.common</code> (estrutura por feature, não por camada). Sem Actuator por enquanto — entra se precisar de healthcheck robusto que pingue banco.</p>
-                        <div class="tags"><span class="tag">@RestController</span><span class="tag">Jackson</span><span class="tag">Instant</span></div>
-                    </div>
-                </div>
                 <div class="info-row">
                     <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Material completo (Nexus_Overview.txt)</span>
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
                         <button class="info-row-btn">+</button>
                     </div>
                     <div class="info-row-body">
-                        <pre class="ep-full-text" data-tpl="tpl-07"></pre>
+                        <pre><code class="language-plaintext" data-tpl="tpl-07"></code></pre>
                     </div>
                 </div>
             </div>
@@ -375,26 +318,20 @@
                 <span class="audio-time">0:00 / 0:00</span>
             </div>
 
+            <h3>Resumo</h3>
+            <p>Frontend criado por <code>npx sv create frontend</code> (comando novo do Svelte 5). Skeleton + TypeScript + Prettier + ESLint, sem testes por enquanto.</p>
+            <p><strong>Rotas file-based</strong>: <code>src/routes/+page.svelte</code> = <code>/</code>, <code>+layout.svelte</code> envolve subárvore, <code>+page.server.ts</code> roda no SSR, <code>+page.ts</code> universal.</p>
+            <p><strong>Svelte 5 runes</strong> — maior mudança da linguagem desde 3: <code>$state</code> declara estado reativo (explícito agora, não mais mágico), <code>$derived</code> computa de outros, <code>$effect</code> roda na montagem e quando deps mudam, <code>$props</code> declara props. Vite serve dev (HMR sub-100ms), produção empacota com Rollup. <code>adapter-auto</code> detecta Vercel/Netlify/Cloudflare sozinho.</p>
+            <div class="tags"><span class="tag">Svelte 5</span><span class="tag">runes</span><span class="tag">Vite</span></div>
+
             <div class="info-accordion">
-                <div class="info-row open">
-                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Resumo</span>
-                        <button class="info-row-btn">+</button>
-                    </div>
-                    <div class="info-row-body">
-                    <p>Frontend criado por <code>npx sv create frontend</code> (comando novo do Svelte 5). Skeleton + TypeScript + Prettier + ESLint, sem testes por enquanto.</p>
-                    <p><strong>Rotas file-based</strong>: <code>src/routes/+page.svelte</code> = <code>/</code>, <code>+layout.svelte</code> envolve subárvore, <code>+page.server.ts</code> roda no SSR, <code>+page.ts</code> universal.</p>
-                    <p><strong>Svelte 5 runes</strong> — maior mudança da linguagem desde 3: <code>$state</code> declara estado reativo (explícito agora, não mais mágico), <code>$derived</code> computa de outros, <code>$effect</code> roda na montagem e quando deps mudam, <code>$props</code> declara props. Vite serve dev (HMR sub-100ms), produção empacota com Rollup. <code>adapter-auto</code> detecta Vercel/Netlify/Cloudflare sozinho.</p>
-                        <div class="tags"><span class="tag">Svelte 5</span><span class="tag">runes</span><span class="tag">Vite</span></div>
-                    </div>
-                </div>
                 <div class="info-row">
                     <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Material completo (Nexus_Overview.txt)</span>
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
                         <button class="info-row-btn">+</button>
                     </div>
                     <div class="info-row-body">
-                        <pre class="ep-full-text" data-tpl="tpl-08"></pre>
+                        <pre><code class="language-plaintext" data-tpl="tpl-08"></code></pre>
                     </div>
                 </div>
             </div>
@@ -419,26 +356,20 @@
                 <span class="audio-time">0:00 / 0:00</span>
             </div>
 
+            <h3>Resumo</h3>
+            <p>Frontend monta → <code>$effect</code> dispara <code>checkHealth</code> → <code>fetch</code> cross-origin (5173 → 8080) → navegador adiciona header <code>Origin</code> → Tomcat recebe → CorsFilter avalia origem → <code>permitAll()</code> deixa passar /health → controller retorna Map → Jackson serializa → resposta volta com <code>Access-Control-Allow-Origin</code> → <code>$state</code> atualiza, Svelte re-renderiza. Tudo em milissegundos.</p>
+            <p><strong>Por que 2 servers em portas diferentes:</strong> ciclos de dev incompatíveis. Frontend tem HMR sub-100ms; backend tem "compila e reinicia" em segundos. Misturar destrói a velocidade do front. Em produção continuam separados (Vercel + Railway).</p>
+            <p><strong>Erros comuns:</strong> "Failed to fetch" (backend off), "No Access-Control-Allow-Origin" (CORS mal configurado), 401 (rota não em permitAll), 404 (controller fora do scan).</p>
+            <div class="tags"><span class="tag">CORS</span><span class="tag">cross-origin</span><span class="tag">Same-Origin Policy</span></div>
+
             <div class="info-accordion">
-                <div class="info-row open">
-                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Resumo</span>
-                        <button class="info-row-btn">+</button>
-                    </div>
-                    <div class="info-row-body">
-                    <p>Frontend monta → <code>$effect</code> dispara <code>checkHealth</code> → <code>fetch</code> cross-origin (5173 → 8080) → navegador adiciona header <code>Origin</code> → Tomcat recebe → CorsFilter avalia origem → <code>permitAll()</code> deixa passar /health → controller retorna Map → Jackson serializa → resposta volta com <code>Access-Control-Allow-Origin</code> → <code>$state</code> atualiza, Svelte re-renderiza. Tudo em milissegundos.</p>
-                    <p><strong>Por que 2 servers em portas diferentes:</strong> ciclos de dev incompatíveis. Frontend tem HMR sub-100ms; backend tem "compila e reinicia" em segundos. Misturar destrói a velocidade do front. Em produção continuam separados (Vercel + Railway).</p>
-                    <p><strong>Erros comuns:</strong> "Failed to fetch" (backend off), "No Access-Control-Allow-Origin" (CORS mal configurado), 401 (rota não em permitAll), 404 (controller fora do scan).</p>
-                        <div class="tags"><span class="tag">CORS</span><span class="tag">cross-origin</span><span class="tag">Same-Origin Policy</span></div>
-                    </div>
-                </div>
                 <div class="info-row">
                     <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Material completo (Nexus_Overview.txt)</span>
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
                         <button class="info-row-btn">+</button>
                     </div>
                     <div class="info-row-body">
-                        <pre class="ep-full-text" data-tpl="tpl-09"></pre>
+                        <pre><code class="language-plaintext" data-tpl="tpl-09"></code></pre>
                     </div>
                 </div>
             </div>
@@ -463,26 +394,20 @@
                 <span class="audio-time">0:00 / 0:00</span>
             </div>
 
+            <h3>Resumo</h3>
+            <p>Episódio diferente: não-técnico, reflexivo. O Flávio pediu carta branca pro Claude expressar a perspectiva dele, encenada por dois apresentadores no NotebookLM.</p>
+            <p><strong>Observações principais:</strong> nexus.md é raro (registra <em>porquê</em> de cada decisão); a escolha "Spring + JPA + virtual threads" é corajosa contra a moda do reactive; obsessão com o porquê é o que diferencia trabalho útil de palpite genérico (e ajuda o próprio Flávio do futuro); pausar o deploy conscientemente é vitória — mostra que projeto é maratona, não sprint; podcast no NotebookLM é workflow incomum que muda relação com material técnico.</p>
+            <p><strong>Preocupações honestas:</strong> nexus.md vai ficar grande, vai precisar quebrar; tentação de cobrir tudo pode virar ruído; Fase 1 muito linear pode ficar inflexível. <strong>Sobre IA:</strong> 20 minutos escrevendo CLAUDE.md bom valem mais que cem prompts bem feitos.</p>
+            <div class="tags"><span class="tag">reflexão</span><span class="tag">meta</span><span class="tag">fechamento</span></div>
+
             <div class="info-accordion">
-                <div class="info-row open">
-                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Resumo</span>
-                        <button class="info-row-btn">+</button>
-                    </div>
-                    <div class="info-row-body">
-                    <p>Episódio diferente: não-técnico, reflexivo. O Flávio pediu carta branca pro Claude expressar a perspectiva dele, encenada por dois apresentadores no NotebookLM.</p>
-                    <p><strong>Observações principais:</strong> nexus.md é raro (registra <em>porquê</em> de cada decisão); a escolha "Spring + JPA + virtual threads" é corajosa contra a moda do reactive; obsessão com o porquê é o que diferencia trabalho útil de palpite genérico (e ajuda o próprio Flávio do futuro); pausar o deploy conscientemente é vitória — mostra que projeto é maratona, não sprint; podcast no NotebookLM é workflow incomum que muda relação com material técnico.</p>
-                    <p><strong>Preocupações honestas:</strong> nexus.md vai ficar grande, vai precisar quebrar; tentação de cobrir tudo pode virar ruído; Fase 1 muito linear pode ficar inflexível. <strong>Sobre IA:</strong> 20 minutos escrevendo CLAUDE.md bom valem mais que cem prompts bem feitos.</p>
-                        <div class="tags"><span class="tag">reflexão</span><span class="tag">meta</span><span class="tag">fechamento</span></div>
-                    </div>
-                </div>
                 <div class="info-row">
                     <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
-                        <span class="info-row-title">Material completo (Nexus_Overview.txt)</span>
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
                         <button class="info-row-btn">+</button>
                     </div>
                     <div class="info-row-body">
-                        <pre class="ep-full-text" data-tpl="tpl-10"></pre>
+                        <pre><code class="language-plaintext" data-tpl="tpl-10"></code></pre>
                     </div>
                 </div>
             </div>
@@ -2653,9 +2578,9 @@ construiu". É um respiro antes da Fase 1 começar.
 
 <script>
 // Injeta conteúdo dos templates nos pre.ep-full-text correspondentes
-document.querySelectorAll('.ep-full-text').forEach(function(pre) {
-    var tpl = document.getElementById(pre.dataset.tpl);
-    if (tpl) pre.textContent = tpl.textContent.trim();
+document.querySelectorAll('pre code[data-tpl]').forEach(function(code) {
+    var tpl = document.getElementById(code.dataset.tpl);
+    if (tpl) code.textContent = tpl.textContent.trim();
 });
 </script>
 

@@ -1,5 +1,5 @@
 // =====================================================================
-// LAYOUT.JS — Estrutura completa da documentação XT - Treinamento
+// LAYOUT.JS — Estrutura completa da documentação Nexus
 //
 // Único script necessário em cada HTML. Faz tudo:
 //   1. Injeta CSS (docs.css, highlight.js themes, font-awesome)
@@ -496,8 +496,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         depth = afterPages.split('/').length - 1;
     }
 
-    // Extrair título da tag <title> (remove sufixo " — XT - Treinamento")
-    var pageTitle = document.title.replace(/\s*[—–-]\s*XT\s*-\s*Treinamento\s*$/, '').trim();
+    // Extrair título da tag <title> (remove sufixo " — Nexus")
+    var pageTitle = document.title.replace(/\s*[—–-]\s*Nexus\s*$/, '').trim();
 
     // Salvar conteúdo original do body
     var content = document.body.innerHTML;
@@ -550,6 +550,10 @@ document.addEventListener('DOMContentLoaded', async function() {
                 '</div>' +
             '</span>' +
             '<button onclick="changeZoom(0.1)" title="Aumentar zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 8px;line-height:1;" onmouseover="this.style.color=\'#2563eb\'" onmouseout="this.style.color=\'#555\'">+</button>' +
+            '<button id="toggle-all-videos" onclick="toggleAllVideos()" title="Pausar/tocar todos os vídeos" style="display:none;background:none;border:none;cursor:pointer;color:#555;padding:4px 8px;line-height:0;border-radius:4px;margin-left:8px;align-items:center;justify-content:center;" onmouseover="this.style.color=\'#2563eb\'" onmouseout="this.style.color=\'#555\'">' +
+                '<svg id="ic-pause-all" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="display:none;"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>' +
+                '<svg id="ic-play-all" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>' +
+            '</button>' +
             '<button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color=\'#2563eb\'" onmouseout="this.style.color=\'#555\'">&#9788;</button>' +
         '</div>';
 
@@ -557,7 +561,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.body.innerHTML =
         '<div id="topbar">' +
             '<button id="hamburger" onclick="toggleDrawer()"><span></span><span></span><span></span></button>' +
-            '<a id="topbar-title" href="' + BASE + 'index.html">XT - Treinamento</a>' +
+            '<a id="topbar-title" href="' + BASE + 'index.html">Nexus</a>' +
             breadcrumbHTML +
             '<a id="topbar-grafo" href="' + BASE + 'grafo.html" title="Ver grafo de páginas">' +
                 '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
@@ -584,6 +588,26 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // ── Footer ──
     buildFooter(currentFolder, isSubFolder, depth);
+
+    // ── Botão global pausar/tocar todos os vídeos ──
+    var allVideos = document.querySelectorAll('.card-img video');
+    var globalBtn = document.getElementById('toggle-all-videos');
+    if (allVideos.length && globalBtn) {
+        globalBtn.style.display = 'inline-flex';
+        var icPause = document.getElementById('ic-pause-all');
+        var icPlay  = document.getElementById('ic-play-all');
+        // Toggle puro: estado começa "play" (todos pausados pra usuário). Independe do hover dos cards.
+        var globalPlaying = false;
+        window.toggleAllVideos = function() {
+            globalPlaying = !globalPlaying;
+            allVideos.forEach(function(v) {
+                if (globalPlaying) v.play().catch(function() {});
+                else               v.pause();
+            });
+            icPause.style.display = globalPlaying ? 'block' : 'none';
+            icPlay.style.display  = globalPlaying ? 'none'  : 'block';
+        };
+    }
 
     // ── Home cards — menu info toggle ──
     document.querySelectorAll('.card').forEach(function(card) {
