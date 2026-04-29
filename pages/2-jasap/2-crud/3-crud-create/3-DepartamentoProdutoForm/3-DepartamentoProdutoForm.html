@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoProdutoForm (CREATE) — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoProdutoForm <span class="badge badge-new">novo arquivo</span></h1>
+
+<div class="audio-player" data-src="audio/DepartamentoProdutoFormVisaoGeral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>Arquivo central e mais extenso da sequência CREATE. O <code>DepartamentoProdutoForm</code> é o formulário de cadastro de produtos — a primeira tela do módulo que RECEBE dados do usuário (até agora só exibíamos dados na List). Formulário completo com 4 campos, botões Salvar e Cancelar, e 3 inner classes: <code>ShowInsert</code>, <code>Insert</code> (com <code>TransactionFilter</code>) e <code>Cancelar</code>.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.Bar;
+import br.jasap.gui.Button;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.Table;
+import br.jasap.gui.form.Form;
+import br.jasap.gui.form.Text;
+import br.jasap.gui.form.Textarea;
+import br.jasap.util.Js;
+import br.jasap.util.filters.TransactionFilter;
+import br.xt.acore.view.XtPage;
+
+public class DepartamentoProdutoForm extends DepartamentoProdutoAction {
+
+    @Override
+    public Effect execute() throws Exception {
+        render();
+        return new Response();
+    }
+
+    public static class ShowInsert extends DepartamentoProdutoForm {
+        @Override
+        public Effect execute() throws Exception {
+            setInsert(FORM);
+            getSession().remove(ROOT.concat(DepartamentoProdutoBean.ID_PRODUTO));
+            render();
+            return new Response();
+        }
+    }
+
+    public static class Insert extends DepartamentoProdutoAction {
+        public Insert() { super.getFilters().add(new TransactionFilter()); }
+        @Override
+        public Effect execute() throws Exception {
+            getFactory().departamento().proModel().insert(proBean());
+            evalParent(Js.CLOSE_SUB_WINDOWS);
+            return new Response();
+        }
+    }
+
+    public static class Cancelar extends DepartamentoProdutoForm {
+        @Override
+        public Effect execute() throws Exception {
+            evalParent(Js.CLOSE_SUB_WINDOWS);
+            return new Response();
+        }
+    }
+
+    public void render() throws Exception {
+        XtPage page = new XtPage(getManager());
+        if (isAjaxCall()) {
+            update(JasapPage.DIV_WINDOW, page.content(window().toHtml()));
+            eval(Js.CLOSE_SUB_WINDOWS);
+        } else {
+            page.getTable().setBorder(4).rowC("100%")
+                    .setContent(page.content(window().toHtml()))
+                    .setStyle(ui().modalBorder());
+            page.setWinTitle("Produto");
+            getOutput().write(this, page);
+        }
+    }
+
+    public Table window() throws Exception {
+        Table w = new Table(getManager()).setSize("100%", "100%");
+        w.rowC("1%",  JasapPage.DIV_TITLE, ui().title("CADASTRO DE PRODUTO"));
+        w.rowC("1%",  null, ui().line());
+        w.rowC("auto").setId(JasapPage.DIV_MASTER).setContent(form()).table();
+        w.rowC("1%",  null, ui().line());
+        w.rowC("1%",  JasapPage.DIV_BOTTOM, br());
+        return w;
+    }
+
+    protected Bar br() throws Exception {
+        Button salvar = ui().button("&amp;nbsp;&amp;nbsp;Salvar&amp;nbsp;&amp;nbsp;")
+                .setCss("btn btn-success btn-lg").setNoSize()
+                .setOnClick(submit(Insert.class).validate().toHtml())
+                .setVisible(isInsert(FORM));
+
+        Button cancelar = ui().button("&amp;nbsp;&amp;nbsp;Cancelar&amp;nbsp;&amp;nbsp;")
+                .setCss("btn btn-primary btn-lg").setNoSize()
+                .setOnClick(link(Cancelar.class).ajax());
+
+        Bar bar = ui().bar();
+        bar.addRight(cancelar);
+        bar.addRight("&amp;nbsp;");
+        bar.addRight(salvar);
+        return bar;
+    }
+
+    public String form() throws Exception {
+        Form frm = ui().form();
+        frm.addHidden(DepartamentoProdutoBean.ID_PRODUTO, proBean().getId_produto());
+
+        frm.line().add(nome_produto(), "150");
+        frm.line().add(vl_produto(),   "150");
+        frm.line().add(qtd_produto(),  "150");
+        frm.line().add(obs_produto(),  "150");
+
+        return frm.getTable().toHtml();
+    }
+
+    protected Text nome_produto = null;
+    public Text nome_produto() throws Exception {
+        if (nome_produto == null) {
+            nome_produto = ui().text(DepartamentoProdutoBean.NOME_PRODUTO)
+                    .setLabel("Nome")
+                    .setStyle("width:350;height:25")
+                    .setMaxlength(100)
+                    .setRequired(true)
+                    .setValue(proBean().getNome_produto());
+        }
+        return nome_produto;
+    }
+
+    protected Text vl_produto = null;
+    public Text vl_produto() throws Exception {
+        if (vl_produto == null) {
+            vl_produto = ui().text(DepartamentoProdutoBean.VL_PRODUTO)
+                    .setLabel("Valor")
+                    .setStyle("width:120;text-align:right;height:25")
+                    .setValue(proBean().getVl_produto());
+        }
+        return vl_produto;
+    }
+
+    protected Text qtd_produto = null;
+    public Text qtd_produto() throws Exception {
+        if (qtd_produto == null) {
+            qtd_produto = ui().text(DepartamentoProdutoBean.QTD_PRODUTO)
+                    .setLabel("Quantidade")
+                    .setStyle("width:80;text-align:right;height:25")
+                    .setValue(proBean().getQtd_produto());
+        }
+        return qtd_produto;
+    }
+
+    protected Textarea obs_produto = null;
+    public Textarea obs_produto() throws Exception {
+        if (obs_produto == null) {
+            obs_produto = ui().textArea(DepartamentoProdutoBean.OBS_PRODUTO, "width:530;height:80")
+                    .setLabel("Observações")
+                    .setValue(proBean().getObs_produto());
+        }
+        return obs_produto;
+    }
+
+    public static String FORM = ROOT.concat("__FORM");
+
+}</code></pre>
+
+<p class="info-note"><strong>Arquivo novo</strong> — todo o código é desta sequência (CRUD CREATE).</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Estrutura visual — render, window, form, br, campos</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/DepartamentoProdutoFormEstrutura.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<h2 data-nav="render()"><code>render()</code> — dois caminhos de entrega</h2>
+
+<p>O <code>render()</code> do Form tem dois branches — o mesmo padrão da List, mas com diferenças importantes:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th></th><th>Branch Ajax (<code>isAjaxCall</code>)</th><th>Branch primeira carga</th></tr>
+    <tr><td><strong>Quando</strong></td><td>Form já está aberto, atualiza conteúdo</td><td>Form abrindo pela primeira vez</td></tr>
+    <tr><td><strong>Faz</strong></td><td><code>update(DIV_WINDOW, ...)</code> + <code>eval(CLOSE_SUB_WINDOWS)</code></td><td><code>getOutput().write(this, page)</code></td></tr>
+    <tr><td><strong>Borda</strong></td><td>—</td><td><code>modalBorder()</code> (modal flutuante)</td></tr>
+</table>
+</div>
+
+<p>Comparação com a List: a List usa <code>stretchBorder()</code> (tela cheia), o Form usa <code>modalBorder()</code> (janela flutuante). É isso que faz o formulário abrir como popup dentro do iframe da lista.</p>
+
+<p>O <code>eval(Js.CLOSE_SUB_WINDOWS)</code> no branch Ajax fecha qualquer sub-janela que estivesse aberta antes de atualizar — evita janelas órfãs empilhadas.</p>
+
+<h2 data-nav="window()"><code>window()</code> — a montagem vertical</h2>
+
+<p>O <code>window()</code> monta a estrutura vertical do formulário, de cima pra baixo:</p>
+
+<pre><code class="language-java">w.rowC("1%",  JasapPage.DIV_TITLE,  ui().title("CADASTRO DE PRODUTO"));  // título escuro
+w.rowC("1%",  null,                 ui().line());                         // separador
+w.rowC("auto").setId(JasapPage.DIV_MASTER).setContent(form()).table();    // campos
+w.rowC("1%",  null,                 ui().line());                         // separador
+w.rowC("1%",  JasapPage.DIV_BOTTOM, br());                               // botões</code></pre>
+
+<p>Cada <code>rowC</code> é uma linha da tabela vertical. O <code>"auto"</code> na linha do <code>form()</code> faz ela ocupar o espaço restante — os campos ficam centralizados entre o título e os botões.</p>
+
+<p>Os IDs (<code>DIV_TITLE</code>, <code>DIV_MASTER</code>, <code>DIV_BOTTOM</code>) são constantes do <code>JasapPage</code>. São usados quando o framework precisa atualizar parcialmente uma dessas áreas via Ajax.</p>
+
+<h2 data-nav="form()"><code>form()</code> — campos e hidden</h2>
+
+<p>O método <code>form()</code> monta o formulário HTML usando a API <code>ui().form()</code>:</p>
+
+<pre><code class="language-java">Form frm = ui().form();
+frm.addHidden(DepartamentoProdutoBean.ID_PRODUTO, proBean().getId_produto());
+
+frm.line().add(nome_produto(), "150");
+frm.line().add(vl_produto(),   "150");
+frm.line().add(qtd_produto(),  "150");
+frm.line().add(obs_produto(),  "150");</code></pre>
+
+<p><strong><code>addHidden</code></strong> — campo invisível que viaja com o submit. Na inserção, o ID é <code>null</code> (o banco gera via serial). Na edição futura (UPDATE), terá o ID do registro sendo editado.</p>
+
+<p><strong><code>frm.line().add(campo, "150")</code></strong> — cada chamada cria uma linha no form com o label na largura indicada (150px) e o campo do lado. O <code>"150"</code> é a largura da coluna do label, não do campo.</p>
+
+<h2 data-nav="Campos">Campos — <code>Text</code> e <code>Textarea</code></h2>
+
+<p>Cada campo segue o padrão lazy (cria uma vez, reutiliza). Exemplo do <code>nome_produto</code>:</p>
+
+<pre><code class="language-java">nome_produto = ui().text(DepartamentoProdutoBean.NOME_PRODUTO)  // name HTML = "nome_produto"
+        .setLabel("Nome")                                       // label visível
+        .setStyle("width:350;height:25")                        // dimensões do input
+        .setMaxlength(100)                                      // limite de caracteres
+        .setRequired(true)                                      // validação obrigatória
+        .setValue(proBean().getNome_produto());                  // valor atual do Bean</code></pre>
+
+<p>O <code>name</code> do campo (<code>NOME_PRODUTO = "nome_produto"</code>) é o que conecta o HTML ao Java. Quando o formulário é submetido, o framework faz match: <code>nome_produto</code> do input → <code>setNome_produto()</code> do Bean.</p>
+
+<p><code>setRequired(true)</code> marca o campo como obrigatório — o <code>submit().validate()</code> do botão Salvar valida no browser antes de enviar. Se estiver vazio, mostra aviso e NÃO envia o request.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Campo</th><th>Componente</th><th>Características</th></tr>
+    <tr><td>Nome</td><td><code>Text</code></td><td>350px, obrigatório, max 100 chars</td></tr>
+    <tr><td>Valor</td><td><code>Text</code></td><td>120px, alinhado à direita (numérico)</td></tr>
+    <tr><td>Quantidade</td><td><code>Text</code></td><td>80px, alinhado à direita (numérico)</td></tr>
+    <tr><td>Observações</td><td><code>Textarea</code></td><td>530×80px, multilinha</td></tr>
+</table>
+</div>
+
+<h2 data-nav="br()"><code>br()</code> — barra de botões</h2>
+
+<p><strong><code>submit(Insert.class).validate()</code></strong> — ao clicar Salvar, o browser primeiro valida os campos obrigatórios (<code>setRequired</code>). Se passar, faz submit dos dados do formulário pro setor <code>Insert</code>. Diferente do <code>link()</code> que só manda uma URL, o <code>submit()</code> coleta TODOS os campos do form e manda junto.</p>
+
+<p><strong><code>isInsert(FORM)</code></strong> — o Salvar só aparece quando o form está em modo inserção. Na sequência UPDATE, vai ter um segundo botão Salvar visível só no modo edição.</p>
+
+<p><strong><code>link(Cancelar.class).ajax()</code></strong> — cancelar não precisa de submit (não coleta dados), só manda a URL do setor Cancelar.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Inner classes — ShowInsert, Insert, Cancelar</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/DepartamentoProdutoFormActions.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<h2 data-nav="ShowInsert"><code>ShowInsert</code> — preparar o terreno</h2>
+
+<p>Executada quando o usuário clica "Novo Registro" na lista. Faz duas coisas antes de montar a tela:</p>
+
+<pre><code class="language-java">setInsert(FORM);
+getSession().remove(ROOT.concat(DepartamentoProdutoBean.ID_PRODUTO));</code></pre>
+
+<p><strong><code>setInsert(FORM)</code></strong> — liga a flag "modo inserção" na sessão. É essa flag que o <code>isInsert(FORM)</code> verifica pra decidir quais botões mostrar. Sem ela, o botão Salvar não aparece.</p>
+
+<p><strong><code>getSession().remove(...)</code></strong> — limpa qualquer ID de produto que estivesse na sessão de uma operação anterior. Garante que o form abre limpo, sem resquícios.</p>
+
+<p>Depois chama <code>render()</code> — que monta o formulário com campos em branco (porque <code>proBean()</code> cria um Bean novo, sem dados).</p>
+
+<p><strong>Herda de <code>DepartamentoProdutoForm</code></strong> — por isso tem acesso a <code>render()</code>, <code>window()</code>, <code>form()</code>, <code>br()</code>, e todos os campos. É como um "modo de operação" do form.</p>
+
+<h2 data-nav="Insert"><code>Insert</code> — gravar com transação</h2>
+
+<p>Executada quando o usuário clica "Salvar". Duas coisas críticas:</p>
+
+<p><strong>1. <code>TransactionFilter</code> no construtor:</strong></p>
+
+<pre><code class="language-java">public Insert() { super.getFilters().add(new TransactionFilter()); }</code></pre>
+
+<p>O <code>TransactionFilter</code> envolve o <code>execute()</code> numa transação de banco. Se tudo der certo → <code>COMMIT</code>. Se qualquer Exception acontecer → <code>ROLLBACK</code> automático. É obrigatório em qualquer action que altera dados no banco.</p>
+
+<p>O filter é adicionado no <strong>construtor</strong> (não no <code>execute</code>). Isso porque o framework monta a cadeia de filtros ANTES de chamar <code>execute()</code> — os filtros precisam estar registrados na hora da construção.</p>
+
+<p><strong>2. O <code>execute()</code> em si:</strong></p>
+
+<pre><code class="language-java">getFactory().departamento().proModel().insert(proBean());
+evalParent(Js.CLOSE_SUB_WINDOWS);</code></pre>
+
+<p><code>proBean()</code> já vem preenchido com os dados do formulário (via <code>getInstance</code> que fez o match automático). O <code>insert(proBean())</code> desce pelas camadas: Model → DAO → banco.</p>
+
+<p><code>evalParent(Js.CLOSE_SUB_WINDOWS)</code> — manda ordem pro browser fechar o modal. O <code>Parent</code> é a janela da lista que está por trás. Ao fechar, o <code>setOnCloseURL</code> que a List configurou dispara automaticamente e a lista atualiza.</p>
+
+<p><strong>Herda de <code>DepartamentoProdutoAction</code></strong> (não de Form) — porque não precisa de <code>render()</code>, <code>window()</code>, nem de nenhum campo visual. Só precisa do <code>proBean()</code> e da conexão com o banco.</p>
+
+<h2 data-nav="Cancelar"><code>Cancelar</code> — fechar sem gravar</h2>
+
+<p>A mais simples das três. Só fecha o modal — não grava nada, não altera sessão. O <code>evalParent</code> manda a ordem pra janela pai (lista) fechar todas as sub-janelas.</p>
+
+<h2 data-nav="submit vs link"><code>submit</code> vs <code>link</code> — quando usar cada um</h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th></th><th><code>submit(Class)</code></th><th><code>link(Class)</code></th></tr>
+    <tr><td><strong>Coleta dados?</strong></td><td>SIM — pega todos os campos do form</td><td>NÃO — só manda a URL</td></tr>
+    <tr><td><strong>Valida?</strong></td><td>SIM (com <code>.validate()</code>)</td><td>NÃO</td></tr>
+    <tr><td><strong>Usado em</strong></td><td>Salvar (precisa dos dados)</td><td>Cancelar, navegação, refresh</td></tr>
+    <tr><td><strong>No HTML</strong></td><td>Gera <code>&lt;form&gt;</code> submit com POST</td><td>Gera chamada Ajax GET</td></tr>
+</table>
+</div>
+
+<p>Regra prática: se a action precisa dos dados do formulário (insert, update), usa <code>submit</code>. Se não precisa (cancelar, abrir modal, refresh), usa <code>link</code>.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Fluxo do usuário — do clique ao banco</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O ciclo completo de criar um produto envolve <strong>3 requests</strong> (3 agentes distintos):</p>
+
+<ol>
+    <li><strong>Clique em "Novo Registro"</strong> na List → request chega → agente vai pro setor <code>ShowInsert</code> → seta modo inserção → monta o formulário vazio → response volta pro browser → modal abre com campos em branco</li>
+    <li><strong>Usuário preenche e clica "Salvar"</strong> → request chega com os dados dos campos → agente vai pro setor <code>Insert</code> → <code>TransactionFilter</code> abre transação → <code>proBean()</code> preenche o Bean automaticamente → <code>model.insert(bean)</code> grava → transação fecha → response manda fechar o modal</li>
+    <li><strong>Modal fecha</strong> → <code>setOnCloseURL</code> dispara request automático → agente re-renderiza a List → usuário vê o produto novo na tabela</li>
+</ol>
+
+<p>Cada um desses requests é um agente novo, cartão novo, tudo do zero. O encadeamento lógico vive no código (ShowInsert prepara, Insert grava, List atualiza), não na memória de nenhum agente.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que o Form NÃO tem nesta sequência</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Este é o Form <strong>mínimo</strong> — só o necessário pro INSERT funcionar. Funcionalidades que virão em sequências futuras:</p>
+
+<ul>
+    <li><strong>ShowUpdate / Update / Delete</strong> — editar e excluir pelo formulário (sequência CRUD UPDATE)</li>
+    <li><strong>insert_chk</strong> — checkbox "Continuar inserindo" (episódio próprio)</li>
+    <li><strong>Quick Search / Sort / Tabs / Paginação</strong> — na List (episódios próprios)</li>
+</ul>
+
+<p>Cada feature ganha seu próprio episódio com foco pedagógico claro. Nesta sequência, o objetivo é um: abrir o form, preencher, salvar, ver na lista.</p>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

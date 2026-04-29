@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoProdutoAction — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoProdutoAction <span class="badge badge-new">novo arquivo</span></h1>
+
+<div class="audio-player" data-src="audio/DepartamentoProdutoAction.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>Classe base <strong>abstrata</strong> de todas as actions de Produto. Centraliza o que <code>DepartamentoProdutoList</code> (e futuras actions concretas) vão precisar compartilhar: o prefixo <code>ROOT</code> de permissão e o objeto WBean da requisição. <strong>Quinto arquivo</strong> da sequência CRUD READ.</p>
+
+<p class="info-note"><strong>Nota:</strong> nesta fase CRUD READ a Action base tem só o <code>ROOT</code> e o <code>proWBean()</code> — é o mínimo que a List precisa. Nas próximas sequências (CREATE, UPDATE, DELETE), ela pode ganhar um <code>proBean()</code> e um helper <code>id_produto()</code> pra formulário compartilhar estado via sessão.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.xt.AppsRootAction;
+import br.xt.app.departamento.DepartamentoManager;
+
+public abstract class DepartamentoProdutoAction extends AppsRootAction {
+
+    <span class="line-add">private DepartamentoProdutoWBean wbean = null;</span>
+    <span class="line-add">public DepartamentoProdutoWBean proWBean() throws Exception {</span>
+    <span class="line-add">    if (wbean == null)</span>
+    <span class="line-add">        wbean = (DepartamentoProdutoWBean) getManager().getInstance(DepartamentoProdutoWBean.class);</span>
+    <span class="line-add">    return wbean;</span>
+    <span class="line-add">}</span>
+
+    <span class="line-add">public static final String ROOT = DepartamentoManager.F_ACESSO_MODULO.concat("__PRODUTO/");</span>
+
+}</code></pre>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que é <code>abstract</code>?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Uma classe <code>abstract</code> em Java é uma classe que NÃO pode ser instanciada direto — não dá pra fazer <code>new DepartamentoProdutoAction()</code>. Ela só existe pra ser ESTENDIDA por outras classes.</p>
+
+<p>A ideia: a <code>DepartamentoProdutoAction</code> é só um "MOLDE" de comportamento comum. As actions concretas (como <code>DepartamentoProdutoList</code>) estendem dela e ganham esse comportamento de graça.</p>
+
+<p>Ao tornar a classe abstrata, o Java impede que alguém crie uma instância dela por acidente. Isso força o aluno a sempre ter uma classe CONCRETA (List, Form, DeleteFromList, etc.) como destino do pedido do agente.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que é <code>ROOT</code> e pra que serve?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p><code>ROOT</code> é uma constante que guarda o PREFIXO das chaves de permissão e sessão específicas da entidade Produto dentro do módulo Departamento.</p>
+
+<pre><code>ROOT = "XT.PAINEL_CONTROLE.ACESSO_MODULO.DEPARTAMENTO__PRODUTO/"</code></pre>
+
+<p>Todas as actions concretas de Produto (<code>List</code>, futuras <code>Form</code>, <code>DeleteFromList</code>, etc.) usam <code>ROOT</code> como base:</p>
+<ul>
+    <li>Chaves de permissão: <code>ROOT.concat("__EXCLUIR")</code> — vira <code>"...DEPARTAMENTO__PRODUTO/__EXCLUIR"</code></li>
+    <li>Chaves de sessão: <code>LIST = ROOT.concat("__LIST/")</code> — vira <code>"...DEPARTAMENTO__PRODUTO/__LIST/"</code></li>
+</ul>
+
+<p>Ter o <code>ROOT</code> centralizado aqui evita repetição. Se um dia o nome do módulo ou da entidade mudar, basta atualizar o <code>ROOT</code> e tudo se ajusta.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que o <code>proWBean()</code> guarda o WBean em cache?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Em uma requisição, o WBean pode ser consultado várias vezes — a List chama no <code>getFiltro()</code>, depois no <code>setFiltro()</code>, depois pode chamar de novo em alguma subaction. Criar um WBean novo a cada chamada seria desperdício.</p>
+
+<p>O atributo privado <code>wbean</code> começa <code>null</code>. Na primeira chamada ao <code>proWBean()</code>, o framework cria uma instância via <code>getManager().getInstance(...)</code> e guarda no atributo. Nas chamadas seguintes, devolve a mesma instância.</p>
+
+<p>Esse padrão se chama <strong>lazy initialization</strong>: cria quando precisa, reusa depois. Importante: a instância é CACHED POR REQUISIÇÃO, não entre requisições — a Action inteira é descartada no fim do request (junto com o wbean).</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que <code>getManager().getInstance()</code> em vez de <code>new DepartamentoProdutoWBean()</code>?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Poderia ser <code>new</code>. Mas o framework Jasap tem um <code>getInstance()</code> que faz a mesma coisa — instancia — e de quebra deixa ganchos pra o framework injetar coisas se precisar (ex: configurar o manager no bean, aplicar regras de proxy, etc.).</p>
+
+<p>Usar <code>getManager().getInstance(Class)</code> é a <strong>convenção do projeto</strong>. Todo WBean do projeto é criado assim. Ao seguir a convenção, você ganha comportamento padrão do framework de graça sem precisar entender o detalhe.</p>
+
+        </div>
+    </div>
+</div>
+
+<h2><code class="explicacao">public abstract class DepartamentoProdutoAction extends AppsRootAction</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>public</code></td><td>Actions concretas de outros pacotes vão estender</td></tr>
+    <tr><td><code>abstract</code></td><td>Classe não pode ser instanciada diretamente — só serve como molde pras actions concretas (List, futura Form, DeleteFromList)</td></tr>
+    <tr><td><code>extends AppsRootAction</code></td><td>Herda toda infraestrutura de action do projeto: <code>ui()</code>, <code>getFactory()</code>, <code>preAjax()</code>, <code>getUser()</code>, <code>ok()</code>, <code>d2()..d7()</code>, etc.</td></tr>
+</table>
+</div>
+
+<h2><code class="explicacao">proWBean() — lazy initialization do WBean</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Linha</th><th>O que faz</th></tr>
+    <tr><td><code>private DepartamentoProdutoWBean wbean = null</code></td><td>Campo privado de cache. Começa null — nenhum WBean criado ainda</td></tr>
+    <tr><td><code>if (wbean == null)</code></td><td>Primeira chamada: cria o WBean. Chamadas seguintes: pula o if e devolve o que já foi criado</td></tr>
+    <tr><td><code>getManager().getInstance(DepartamentoProdutoWBean.class)</code></td><td>Convenção do projeto — cria instância via framework em vez de <code>new</code></td></tr>
+    <tr><td><code>return wbean</code></td><td>Devolve a instância (recém-criada ou cacheada)</td></tr>
+</table>
+</div>
+
+<h2><code class="explicacao">ROOT — prefixo de permissões e sessão</code></h2>
+<p>Constante que monta o caminho raiz a partir do <code>F_ACESSO_MODULO</code> do Manager do Departamento. Concatena com <code>"__PRODUTO/"</code>. Todas as chaves específicas da entidade Produto (permissões, sessão, constantes de tela) partem desse prefixo.</p>
+
+<pre><code>ROOT                  = "...DEPARTAMENTO__PRODUTO/"
+LIST                  = "...DEPARTAMENTO__PRODUTO/__LIST/"
+LIST + "__FILTRO"     = "...DEPARTAMENTO__PRODUTO/__LIST/__FILTRO"
+ROOT + "__EXCLUIR"    = "...DEPARTAMENTO__PRODUTO/__EXCLUIR"</code></pre>
+
+</body>
+</html>

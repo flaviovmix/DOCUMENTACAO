@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD DETAIL RECÍPROCO — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>CRUD DETAIL RECÍPROCO — Produto mostra as pessoas que recebem ele <span class="badge badge-edit">9 edits, 0 arquivos novos</span></h1>
+
+<p>No <strong>Master/Detail</strong> a Pessoa exibia, dentro do próprio form, a lista de produtos que tinha recebido — a navegação do vínculo N-N era de cima pra baixo (Pessoa → Produtos). Detail Recíproco é o <strong>caminho inverso</strong>: agora o form do Produto exibe, em baixo, a lista de pessoas que receberam aquele produto. Mais a lista principal de produtos ganha uma coluna "Pessoas" mostrando quantas pessoas estão vinculadas a cada item.</p>
+
+<p>O conceito-chave é <strong>simetria</strong>: a tabela de junção <code>departamento.produto_pessoa</code> não tem dono. O vínculo pode ser navegado dos dois lados. O que aprendi no Master/Detail (pessoa puxando produtos) vale espelhado pro produto puxando pessoas — <code>fk_pessoa</code> vira <code>fk_produto</code>, <code>qt_recebida</code> permanece em ambos os lados, a estrutura do detail é a mesma trocando colunas.</p>
+
+<p>9 arquivos editados, 0 novos. Nenhuma alteração no banco — a tabela de junção já existia. O que entra é só leitura espelhada (subqueries, filtros, ListView), mais 3 bugs descobertos no caminho que ganharam soluções genéricas pro Jasap.</p>
+
+<div class="info-accordion">
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoProdutoBean                    -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoProdutoBean</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="private Integer ct_pessoas;|public Integer getCt_pessoas() { return ct_pessoas; }|public void setCt_pessoas(Integer ct_pessoas) { this.ct_pessoas = ct_pessoas; }|public static String CT_PESSOAS   = &quot;ct_pessoas&quot;;"><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.dao.DBInfo;
+import br.jasap.util.DomainValue;
+import br.jasap.util.JasapList;
+import java.io.Serializable;
+
+public class DepartamentoProdutoBean implements Serializable {
+
+    public static String TABLE                = "departamento.produto";
+    public static String TABLE_PRODUTO_PESSOA = "departamento.produto_pessoa";
+
+    private Integer id_produto;
+    private String  nome_produto;
+    private Double  vl_produto;
+    private Integer qtd_produto;
+    private String  obs_produto;
+    private String  qs_produto;
+    private Integer st_produto;
+    private Integer insert_chk;
+    private Integer qt_recebida;
+    private Integer ct_pessoas;
+
+    @DBInfo(serial=true, pk=true)
+    public Integer getId_produto() { return id_produto; }
+    public void setId_produto(Integer id_produto) { this.id_produto = id_produto; }
+
+    public String getNome_produto() { return nome_produto; }
+    public void setNome_produto(String nome_produto) { this.nome_produto = nome_produto; }
+
+    public Double getVl_produto() { return vl_produto; }
+    public void setVl_produto(Double vl_produto) { this.vl_produto = vl_produto; }
+
+    public Integer getQtd_produto() { return qtd_produto; }
+    public void setQtd_produto(Integer qtd_produto) { this.qtd_produto = qtd_produto; }
+
+    public String getObs_produto() { return obs_produto; }
+    public void setObs_produto(String obs_produto) { this.obs_produto = obs_produto; }
+
+    public String getQs_produto() { return qs_produto; }
+    public void setQs_produto(String qs_produto) { this.qs_produto = qs_produto; }
+
+    public Integer getSt_produto() { return st_produto; }
+    public void setSt_produto(Integer st_produto) { this.st_produto = st_produto; }
+
+    public Integer getInsert_chk() { return insert_chk; }
+    public void setInsert_chk(Integer insert_chk) { this.insert_chk = insert_chk; }
+
+    public Integer getQt_recebida() { return qt_recebida; }
+    public void setQt_recebida(Integer qt_recebida) { this.qt_recebida = qt_recebida; }
+
+    public Integer getCt_pessoas() { return ct_pessoas; }
+    public void setCt_pessoas(Integer ct_pessoas) { this.ct_pessoas = ct_pessoas; }
+
+    public static class ProPessoaBean implements Serializable {
+        private Integer fk_produto;
+        private Integer fk_pessoa;
+        private Integer qt_recebida;
+
+        @DBInfo(pk=true)
+        public Integer getFk_produto() { return fk_produto; }
+        public void setFk_produto(Integer v) { fk_produto = v; }
+
+        @DBInfo(pk=true)
+        public Integer getFk_pessoa() { return fk_pessoa; }
+        public void setFk_pessoa(Integer v) { fk_pessoa = v; }
+
+        public Integer getQt_recebida() { return qt_recebida; }
+        public void setQt_recebida(Integer v) { qt_recebida = v; }
+    }
+
+    public static class DomStatus {
+        public static final Integer ATIVO     = 1;
+        public static final Integer INATIVO   = 2;
+        public static final Integer ARQUIVADO = 3;
+
+        public static JasapList domain() {
+            JasapList list = new JasapList();
+            list.getList().add(new DomainValue(ATIVO,     "Ativo"));
+            list.getList().add(new DomainValue(INATIVO,   "Inativo"));
+            list.getList().add(new DomainValue(ARQUIVADO, "Arquivado"));
+            return list;
+        }
+    }
+
+    public static String ID_PRODUTO   = "id_produto";
+    public static String NOME_PRODUTO = "nome_produto";
+    public static String VL_PRODUTO   = "vl_produto";
+    public static String QTD_PRODUTO  = "qtd_produto";
+    public static String OBS_PRODUTO  = "obs_produto";
+    public static String QS_PRODUTO   = "qs_produto";
+    public static String ST_PRODUTO   = "st_produto";
+    public static String INSERT_CHK   = "insert_chk";
+    public static String QT_RECEBIDA  = "qt_recebida";
+    public static String CT_PESSOAS   = "ct_pessoas";
+    public static String FK_PRODUTO   = "fk_produto";
+    public static String FK_PESSOA    = "fk_pessoa";
+
+}
+</code></pre>
+
+<p class="info-note"><strong>Adições:</strong> campo transient <code>ct_pessoas</code> + getter/setter + constante <code>CT_PESSOAS</code>. Sem <code>@DBInfo</code> — não corresponde a coluna física.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoProdutoDAO                     -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoProdutoDAO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="String ctPessoasCol = &quot;, (SELECT COUNT(*) FROM &quot; + DepartamentoProdutoBean.TABLE_PRODUTO_PESSOA|&quot; pp WHERE pp.fk_produto = a.id_produto) AS ct_pessoas&quot;;|sql.append(&quot;select a.*&quot; + qtRecebidaCol + ctPessoasCol + &quot; from &quot;"><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.AppManager;
+import br.jasap.dao.Query;
+import br.jasap.dao.SQL;
+import br.jasap.util.JasapFunctions;
+import br.jasap.util.JasapList;
+import br.xt.AppsRootDAO;
+
+public class DepartamentoProdutoDAO extends AppsRootDAO {
+
+    public DepartamentoProdutoDAO() {
+    }
+
+    public DepartamentoProdutoDAO(AppManager manager) {
+        setManager(manager);
+        setDataBase(manager.getDataBase());
+    }
+
+    public void daoList(JasapList list) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        DepartamentoProdutoWBean filtro = (DepartamentoProdutoWBean) list.getFiltro();
+        String qtRecebidaCol = "";
+        if (filtro != null && filtro.getFk_pessoa() != null) {
+            qtRecebidaCol = ", (SELECT pp.qt_recebida FROM " + DepartamentoProdutoBean.TABLE_PRODUTO_PESSOA
+                          + " pp WHERE pp.fk_produto = a.id_produto AND pp.fk_pessoa = " + SQL.value(filtro.getFk_pessoa())
+                          + ") AS qt_recebida";
+        }
+        String ctPessoasCol = ", (SELECT COUNT(*) FROM " + DepartamentoProdutoBean.TABLE_PRODUTO_PESSOA
+                            + " pp WHERE pp.fk_produto = a.id_produto) AS ct_pessoas";
+        sql.append("select a.*" + qtRecebidaCol + ctPessoasCol + " from " + DepartamentoProdutoBean.TABLE + " a");
+        sql.append(" where 1=1 &lt;where&gt; &lt;orderby&gt;");
+
+        Query query = getDataBase().getQuery(sql.toString());
+        daoWhere(list.getFiltro());
+        select().executeList(query, list);
+
+        while (query.next()) {
+            DepartamentoProdutoBean bean = new DepartamentoProdutoBean();
+            query.populateBean(bean);
+            list.getList().add(bean);
+        }
+        query.release();
+    }
+
+    public void daoInsert(DepartamentoProdutoBean bean) throws Exception {
+        qs_produto(bean);
+        insert().execute(bean, DepartamentoProdutoBean.TABLE);
+    }
+
+    public void daoSingle(DepartamentoProdutoBean bean) throws Exception {
+        select().execute(bean, DepartamentoProdutoBean.TABLE);
+    }
+
+    public void daoUpdate(DepartamentoProdutoBean bean) throws Exception {
+        qs_produto(bean);
+        update().execute(bean, DepartamentoProdutoBean.TABLE);
+    }
+
+    public void daoDelete(DepartamentoProdutoBean bean) throws Exception {
+        delete().execute(bean, DepartamentoProdutoBean.TABLE);
+    }
+
+    public void daoLinkPessoa(Integer id_produto, Integer id_pessoa, Integer qt_recebida) throws Exception {
+        DepartamentoProdutoBean.ProPessoaBean b = new DepartamentoProdutoBean.ProPessoaBean();
+        b.setFk_produto(id_produto);
+        b.setFk_pessoa(id_pessoa);
+        b.setQt_recebida(qt_recebida);
+        insert().execute(b, DepartamentoProdutoBean.TABLE_PRODUTO_PESSOA);
+        daoBaixaEstoque(id_produto, qt_recebida);
+    }
+
+    public void daoUnlinkPessoa(Integer id_produto, Integer id_pessoa) throws Exception {
+        Integer qt = daoSingleVinculo(id_produto, id_pessoa);
+        DepartamentoProdutoBean.ProPessoaBean b = new DepartamentoProdutoBean.ProPessoaBean();
+        b.setFk_produto(id_produto);
+        b.setFk_pessoa(id_pessoa);
+        delete().execute(b, DepartamentoProdutoBean.TABLE_PRODUTO_PESSOA);
+        if (qt != null &amp;&amp; qt &gt; 0) daoBaixaEstoque(id_produto, -qt);
+    }
+
+    public Integer daoSingleVinculo(Integer id_produto, Integer id_pessoa) throws Exception {
+        Query query = getDataBase().getQuery(
+            "select qt_recebida from " + DepartamentoProdutoBean.TABLE_PRODUTO_PESSOA +
+            " where fk_produto=" + SQL.value(id_produto) +
+            "   and fk_pessoa=" + SQL.value(id_pessoa) + " &lt;where&gt; &lt;orderby&gt;");
+        select().executeList(query, new JasapList());
+        Integer qt = null;
+        if (query.next()) qt = query.getInteger("qt_recebida");
+        query.release();
+        return qt;
+    }
+
+    public void daoUpdateVinculo(Integer id_produto, Integer id_pessoa, Integer qt_nova) throws Exception {
+        Integer qt_antiga = daoSingleVinculo(id_produto, id_pessoa);
+        if (qt_antiga == null) qt_antiga = 0;
+        Integer delta = qt_nova - qt_antiga;
+        Query upd = getDataBase().getQuery(
+            "update " + DepartamentoProdutoBean.TABLE_PRODUTO_PESSOA +
+            "   set qt_recebida=" + SQL.value(qt_nova) +
+            " where fk_produto=" + SQL.value(id_produto) +
+            "   and fk_pessoa=" + SQL.value(id_pessoa));
+        getDataBase().executeUpdate(upd);
+        if (delta != 0) daoBaixaEstoque(id_produto, delta);
+    }
+
+    private void daoBaixaEstoque(Integer id_produto, Integer delta) throws Exception {
+        if (delta == 0) return;
+        String op = delta &gt; 0 ? " - " : " + ";
+        Integer abs = Math.abs(delta);
+        Query upd = getDataBase().getQuery(
+            "update " + DepartamentoProdutoBean.TABLE +
+            "   set " + DepartamentoProdutoBean.QTD_PRODUTO +
+                " = COALESCE(" + DepartamentoProdutoBean.QTD_PRODUTO + ", 0)" + op + SQL.value(abs) +
+            " where " + DepartamentoProdutoBean.ID_PRODUTO + "=" + SQL.value(id_produto));
+        getDataBase().executeUpdate(upd);
+    }
+
+    public Integer daoEstoqueAtual(Integer id_produto) throws Exception {
+        Query query = getDataBase().getQuery(
+            "select " + DepartamentoProdutoBean.QTD_PRODUTO + " as qtd from " + DepartamentoProdutoBean.TABLE +
+            " where " + DepartamentoProdutoBean.ID_PRODUTO + "=" + SQL.value(id_produto) + " &lt;where&gt; &lt;orderby&gt;");
+        select().executeList(query, new JasapList());
+        Integer qt = null;
+        if (query.next()) qt = query.getInteger("qtd");
+        query.release();
+        return qt != null ? qt : 0;
+    }
+
+    public Integer daoCountPessoasVinculadas(Integer id_produto) throws Exception {
+        JasapList list = new JasapList();
+        Query query = getDataBase().getQuery(
+            "select count(*) as qt from " + DepartamentoProdutoBean.TABLE_PRODUTO_PESSOA +
+            " where fk_produto=" + SQL.value(id_produto) + " &lt;where&gt; &lt;orderby&gt;");
+        select().executeList(query, list);
+        if (query.next()) {
+            Integer qt = query.getInteger("qt");
+            query.release();
+            return qt != null ? qt : 0;
+        }
+        query.release();
+        return 0;
+    }
+
+    public void qs_produto(DepartamentoProdutoBean bean) throws Exception {
+        bean.setQs_produto(JasapFunctions.searchString(
+                bean.getNome_produto() + " " +
+                bean.getObs_produto()
+        ));
+    }
+
+    public void daoWhere(Object objWhere) throws Exception {
+        String where = "";
+        if (objWhere != null) {
+            DepartamentoProdutoWBean filtro = (DepartamentoProdutoWBean) objWhere;
+
+            if (filtro.getSt_produto() != null)
+                where = SQL.and(where, SQL.equals(SQL.column(DepartamentoProdutoBean.ST_PRODUTO), SQL.value(filtro.getSt_produto())));
+
+            if (filtro.getFk_pessoa() != null)
+                where = SQL.and(where, "a." + DepartamentoProdutoBean.ID_PRODUTO + " IN (SELECT fk_produto FROM " + DepartamentoProdutoBean.TABLE_PRODUTO_PESSOA + " WHERE fk_pessoa=" + SQL.value(filtro.getFk_pessoa()) + ")");
+
+            if (filtro.getQs_produto() != null &amp;&amp; !JasapFunctions.equals(filtro.getQs_produto(), "")) {
+                String[] cols = { SQL.column(DepartamentoProdutoBean.QS_PRODUTO) };
+                where = where + qsWhere(filtro.getQs_produto(), cols);
+            }
+
+            filtro.setWhere(where);
+        }
+    }
+
+}
+</code></pre>
+
+<p class="info-note"><strong>Adições:</strong> subquery <code>COUNT</code> sempre presente no <code>daoList</code>, populando <code>ct_pessoas</code>. Diferente do <code>qtRecebidaCol</code> (condicional ao filtro), o <code>ctPessoasCol</code> é fixo: toda listagem de produto traz a contagem.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoProdutoList                    -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoProdutoList</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="ListColumn col_pessoas = lv.newColumn(&quot;Pessoas&quot;).setWidth(80).setPadding(&quot;;padding:10 8 10 8;&quot;).alignCenter();|col_pessoas.setContent(bean.getCt_pessoas());|.modal(new ModalConfig().setWidth(&quot;1000&quot;).setHeight(&quot;720&quot;)"><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.ListColumn;
+import br.jasap.gui.ListLine;
+import br.jasap.gui.ListView;
+import br.jasap.gui.Bar;
+import br.jasap.gui.Button;
+import br.jasap.gui.TabStrip;
+import br.jasap.gui.Table;
+import br.jasap.gui.Toast;
+import br.jasap.gui.form.Text;
+import br.jasap.util.JasapFunctions;
+import br.jasap.util.Js;
+import br.jasap.util.ModalConfig;
+import br.jasap.util.exceptions.SQLConstraintException;
+import br.xt.acore.view.IconButton;
+import br.xt.acore.view.XtPage;
+
+public class DepartamentoProdutoList extends DepartamentoProdutoAction {
+
+    @Override
+    public Effect execute() throws Exception {
+        if (getSession().getObject(TBL) == null) {
+            getSession().addStr(TBL, TBL_ATIVOS);
+            getFiltro().setSt_produto(DepartamentoProdutoBean.DomStatus.ATIVO);
+        }
+        render();
+        return new Response();
+    }
+
+    public void render() throws Exception {
+        XtPage page = new XtPage(getManager());
+        if (isAjaxCall()) {
+            update(JasapPage.DIV_WINDOW, page.content(window().toHtml()));
+        } else {
+            page.getTable()
+                    .setBorder(4)
+                    .rowC("100%")
+                    .setContent(page.content(window().toHtml()))
+                    .setStyle(ui().stretchBorder());
+            page.setWinTitle("Produtos");
+            getOutput().write(this, page);
+        }
+    }
+
+    public Table window() throws Exception {
+        Table w = new Table(getManager()).setSize("100%", "100%");
+        w.rowC("1%",  JasapPage.DIV_TABSTRIP, tbs());
+        w.rowC("99%", JasapPage.DIV_WSPACE, lView());
+        w.rowC("1%",  null, ui().line());
+        w.rowC("1%",  null, qs_produto());
+        w.rowC("1%",  JasapPage.DIV_BOTTOM, br());
+        w.rowC("1%",  null, ui().line());
+        return w;
+    }
+
+    private TabStrip tbs = null;
+    public TabStrip tbs() throws Exception {
+        if (tbs == null) {
+            tbs = ui().tabStrip().setSelectedKey(getSession().getString(TBL, getInput()));
+            tbs.createTab(TBL_ATIVOS,     "Ativos")    .setOnclick(link(TabAtivos.class).ajax());
+            tbs.createTab(TBL_INATIVOS,   "Inativos")  .setOnclick(link(TabInativos.class).ajax());
+            tbs.createTab(TBL_ARQUIVADOS, "Arquivados").setOnclick(link(TabArquivados.class).ajax());
+            tbs.createTab(TBL_TODOS,      "Todos")     .setOnclick(link(TabTodos.class).ajax());
+        }
+        return tbs;
+    }
+
+    public void resetPage() {
+        getSession().addInt(RESET_PAGE, 1);
+    }
+
+    protected Text qs_produto = null;
+    public String qs_produto() throws Exception {
+        qs_produto = ui().text(DepartamentoProdutoBean.QS_PRODUTO)
+                .setLabel("Consulta")
+                .setStyle("width:400;height:30px;font-size:14px")
+                .setMaxlength(300)
+                .setValue(getFiltro().getQs_produto())
+                .setOnkeyup(Js.pressEnter(
+                        link(QuickSearch.class)
+                                .putScript(DepartamentoProdutoBean.QS_PRODUTO, Js.SELF_VALUE)
+                                .ajax()));
+
+        Table aux = new Table(getManager(), "100%", "45")
+                .setStyle(ui().bgDark())
+                .rowC()
+                .setAlign(Table.ALIGN_CENTER)
+                .setVerticalAlign(Table.ALIGN_MIDDLE)
+                .setContent(qs_produto.toHtml() + "&lt;span class=\"glyphicon glyphicon-search xt-ico-white\"&gt;&lt;/span&gt;")
+                .table();
+
+        return aux.toHtml();
+    }
+
+    public Bar br() throws Exception {
+        Button cmd_novo = ui().button("&amp;nbsp;&amp;nbsp;Novo Registro&amp;nbsp;&amp;nbsp;").setCss("btn btn-success btn-lg").setNoSize()
+                .setOnClick(link(DepartamentoProdutoForm.ShowInsert.class)
+                        .modal(new ModalConfig().setWidth("750").setHeight("570")
+                                .setOnCloseURL(url(Sort.class))));
+
+        return ui().bar()
+                .addCenter(lView().nav(lView().getNavForm()))
+                .addRight(cmd_novo);
+    }
+
+    private ListView lv = null;
+    public ListView lView() throws Exception {
+        if (lv == null) {
+            lv = ui().lView();
+
+            String orderBy = getSession().getString(LIST.concat(lv.getORDER_BY()), getInput());
+            if (orderBy == null) orderBy = DepartamentoProdutoBean.NOME_PRODUTO;
+            lv.setSortAct(url(Sort.class))
+              .setPageAction(url(Sort.class))
+              .setPage(getSession().getInteger(LIST.concat(lv.getPAGE()), getInput()))
+              .setOrderBy(orderBy)
+              .setSort(getSession().getString(LIST.concat(lv.getSORT()), getInput()))
+              .ajax();
+
+            lv.setPageSize(50);
+
+            if (getSession().isSet(RESET_PAGE)) {
+                lv.setPage(1);
+                getSession().remove(RESET_PAGE);
+            }
+
+            lv.setFiltro(getFiltro());
+            getFactory().departamento().proModel().daoList(lv.getData());
+
+            ListColumn col_nome    = lv.newColumn("Nome").setOrderBy(DepartamentoProdutoBean.NOME_PRODUTO).setWidth(220).setPadding(";padding:10 8 10 8;");
+            ListColumn col_vl      = lv.newColumn("Valor").setOrderBy(DepartamentoProdutoBean.VL_PRODUTO).setWidth(100).setPadding(";padding:10 8 10 8;").alignCenter();
+            ListColumn col_qtd     = lv.newColumn("Qtd").setOrderBy(DepartamentoProdutoBean.QTD_PRODUTO).setWidth(80).setPadding(";padding:10 8 10 8;").alignCenter();
+            ListColumn col_pessoas = lv.newColumn("Pessoas").setWidth(80).setPadding(";padding:10 8 10 8;").alignCenter();
+            ListColumn col_obs     = lv.newColumn("Observação").setOrderBy(DepartamentoProdutoBean.OBS_PRODUTO).setPadding(";padding:10 8 10 8;");
+            ListColumn col_del     = lv.newColumn("").setWidth(50).setPadding(";padding:6 4 6 4;").alignCenter();
+
+            while (lv.hasNext()) {
+                DepartamentoProdutoBean bean = (DepartamentoProdutoBean) lv.next();
+                ListLine line = lv.createLine();
+                line.setOnclick(link(DepartamentoProdutoForm.ShowUpdate.class)
+                        .putInteger(DepartamentoProdutoBean.ID_PRODUTO, bean.getId_produto())
+                        .modal(new ModalConfig().setWidth("1000").setHeight("720")
+                                .setOnCloseURL(url(Sort.class))));
+                col_nome.setContent(bean.getNome_produto());
+                col_vl.setContent(bean.getVl_produto());
+                col_qtd.setContent(bean.getQtd_produto());
+                col_pessoas.setContent(bean.getCt_pessoas());
+                col_obs.setContent(bean.getObs_produto());
+                col_del.setHtmlData(new IconButton("trash")
+                        .setColor("#d9534f")
+                        .setTitle("Excluir")
+                        .setOnclick(link(DeleteFromList.class).putInteger(DepartamentoProdutoBean.ID_PRODUTO, bean.getId_produto()).ajax())
+                        .toHtml());
+                lv.addLine(line);
+            }
+        }
+        return lv;
+    }
+
+    public DepartamentoProdutoWBean getFiltro() throws Exception {
+        DepartamentoProdutoWBean filtro = (DepartamentoProdutoWBean) getSession().getObject(FILTRO);
+        if (filtro == null) {
+            filtro = proWBean();
+            getSession().addObj(FILTRO, filtro);
+        }
+        return filtro;
+    }
+
+    public static class Sort extends DepartamentoProdutoList { /* ... */ }
+    public static class QuickSearch extends DepartamentoProdutoList { /* ... */ }
+    public static class TabAtivos extends DepartamentoProdutoList { /* ... */ }
+    public static class TabInativos extends DepartamentoProdutoList { /* ... */ }
+    public static class TabArquivados extends DepartamentoProdutoList { /* ... */ }
+    public static class TabTodos extends DepartamentoProdutoList { /* ... */ }
+    public static class DeleteFromList extends DepartamentoProdutoList { /* ... */ }
+
+    public static final String LIST           = ROOT.concat("__LIST/");
+    public static final String FILTRO         = LIST.concat("__FILTRO");
+    public static final String RESET_PAGE     = LIST.concat("__RESET_PAGE");
+    public static final String TBL            = LIST.concat("__TBL");
+    public static final String TBL_ATIVOS     = "__ATIVOS";
+    public static final String TBL_INATIVOS   = "__INATIVOS";
+    public static final String TBL_ARQUIVADOS = "__ARQUIVADOS";
+    public static final String TBL_TODOS      = "__TODOS";
+    public static final String CONFIRM_LIST   = LIST.concat("__CONFIRM_LIST");
+
+}
+</code></pre>
+
+<p class="info-note"><strong>Adições:</strong> 1 coluna nova "Pessoas" entre Qtd e Observação (sem orderBy — coluna calculada via subquery), modal do <code>ShowUpdate</code> aumentado pra 1000×720 pra caber o detail. As inner classes (Sort, QuickSearch, TabAtivos, etc.) ficam idênticas — omitidas pra economia visual.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoPessoaBean                     -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoPessoaBean</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="private Integer fk_produto;|private Integer qt_recebida;|public Integer getFk_produto() { return fk_produto; }|public Integer getQt_recebida() { return qt_recebida; }|public static String FK_PRODUTO     = &quot;fk_produto&quot;;|public static String QT_RECEBIDA    = &quot;qt_recebida&quot;;"><code class="language-java">package br.xt.app.departamento.pessoa;
+
+import br.jasap.dao.DBInfo;
+import br.jasap.util.DomainValue;
+import br.jasap.util.JasapList;
+import java.io.Serializable;
+
+public class DepartamentoPessoaBean implements Serializable {
+
+    public static String TABLE = "departamento.pessoa";
+
+    private Integer id_pessoa;
+    private String  nome_pessoa;
+    private String  apelido_pessoa;
+    private String  cpf_pessoa;
+    private String  obs_pessoa;
+    private String  qs_pessoa;
+    private Integer st_pessoa;
+    private Integer insert_chk;
+    private Integer fk_produto;
+    private Integer qt_recebida;
+
+    @DBInfo(serial=true, pk=true)
+    public Integer getId_pessoa() { return id_pessoa; }
+    public void setId_pessoa(Integer id_pessoa) { this.id_pessoa = id_pessoa; }
+
+    public String getNome_pessoa() { return nome_pessoa; }
+    public void setNome_pessoa(String nome_pessoa) { this.nome_pessoa = nome_pessoa; }
+
+    public String getApelido_pessoa() { return apelido_pessoa; }
+    public void setApelido_pessoa(String apelido_pessoa) { this.apelido_pessoa = apelido_pessoa; }
+
+    public String getCpf_pessoa() { return cpf_pessoa; }
+    public void setCpf_pessoa(String cpf_pessoa) { this.cpf_pessoa = cpf_pessoa; }
+
+    public String getObs_pessoa() { return obs_pessoa; }
+    public void setObs_pessoa(String obs_pessoa) { this.obs_pessoa = obs_pessoa; }
+
+    public String getQs_pessoa() { return qs_pessoa; }
+    public void setQs_pessoa(String qs_pessoa) { this.qs_pessoa = qs_pessoa; }
+
+    public Integer getSt_pessoa() { return st_pessoa; }
+    public void setSt_pessoa(Integer st_pessoa) { this.st_pessoa = st_pessoa; }
+
+    public Integer getInsert_chk() { return insert_chk; }
+    public void setInsert_chk(Integer insert_chk) { this.insert_chk = insert_chk; }
+
+    public Integer getFk_produto() { return fk_produto; }
+    public void setFk_produto(Integer fk_produto) { this.fk_produto = fk_produto; }
+
+    public Integer getQt_recebida() { return qt_recebida; }
+    public void setQt_recebida(Integer qt_recebida) { this.qt_recebida = qt_recebida; }
+
+    public static class DomStatus {
+        public static final Integer ATIVO     = 1;
+        public static final Integer INATIVO   = 2;
+        public static final Integer ARQUIVADO = 3;
+
+        public static JasapList domain() {
+            JasapList list = new JasapList();
+            list.getList().add(new DomainValue(ATIVO,     "Ativo"));
+            list.getList().add(new DomainValue(INATIVO,   "Inativo"));
+            list.getList().add(new DomainValue(ARQUIVADO, "Arquivado"));
+            return list;
+        }
+    }
+
+    public static String ID_PESSOA      = "id_pessoa";
+    public static String NOME_PESSOA    = "nome_pessoa";
+    public static String APELIDO_PESSOA = "apelido_pessoa";
+    public static String CPF_PESSOA     = "cpf_pessoa";
+    public static String OBS_PESSOA     = "obs_pessoa";
+    public static String QS_PESSOA      = "qs_pessoa";
+    public static String ST_PESSOA      = "st_pessoa";
+    public static String INSERT_CHK     = "insert_chk";
+    public static String FK_PRODUTO     = "fk_produto";
+    public static String QT_RECEBIDA    = "qt_recebida";
+
+}
+</code></pre>
+
+<p class="info-note"><strong>Adições:</strong> 2 campos transient — <code>fk_produto</code> (filtro) e <code>qt_recebida</code> (subquery). Sem <code>@DBInfo</code> — não correspondem a colunas físicas da tabela <code>departamento.pessoa</code>.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoPessoaDAO                      -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoPessoaDAO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="import br.xt.app.departamento.produto.DepartamentoProdutoBean;|String qtRecebidaCol = &quot;&quot;;|qtRecebidaCol = &quot;, (SELECT pp.qt_recebida FROM &quot;|if (filtro.getFk_produto() != null)|where = SQL.and(where, &quot;a.&quot; + DepartamentoPessoaBean.ID_PESSOA"><code class="language-java">package br.xt.app.departamento.pessoa;
+
+import br.jasap.core.AppManager;
+import br.jasap.dao.Query;
+import br.jasap.dao.SQL;
+import br.jasap.util.JasapFunctions;
+import br.jasap.util.JasapList;
+import br.xt.AppsRootDAO;
+import br.xt.app.departamento.produto.DepartamentoProdutoBean;
+
+public class DepartamentoPessoaDAO extends AppsRootDAO {
+
+    public DepartamentoPessoaDAO() {
+    }
+
+    public DepartamentoPessoaDAO(AppManager manager) {
+        setManager(manager);
+        setDataBase(manager.getDataBase());
+    }
+
+    public void daoList(JasapList list) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        DepartamentoPessoaWBean filtro = (DepartamentoPessoaWBean) list.getFiltro();
+        String qtRecebidaCol = "";
+        if (filtro != null &amp;&amp; filtro.getFk_produto() != null) {
+            qtRecebidaCol = ", (SELECT pp.qt_recebida FROM " + DepartamentoProdutoBean.TABLE_PRODUTO_PESSOA
+                          + " pp WHERE pp.fk_pessoa = a.id_pessoa AND pp.fk_produto = " + SQL.value(filtro.getFk_produto())
+                          + ") AS qt_recebida";
+        }
+        sql.append("select a.*" + qtRecebidaCol + " from " + DepartamentoPessoaBean.TABLE + " a");
+        sql.append(" where 1=1 &lt;where&gt; &lt;orderby&gt;");
+
+        Query query = getDataBase().getQuery(sql.toString());
+        daoWhere(list.getFiltro());
+        select().executeList(query, list);
+
+        while (query.next()) {
+            DepartamentoPessoaBean bean = new DepartamentoPessoaBean();
+            query.populateBean(bean);
+            list.getList().add(bean);
+        }
+        query.release();
+    }
+
+    public void daoInsert(DepartamentoPessoaBean bean) throws Exception {
+        qs_pessoa(bean);
+        insert().execute(bean, DepartamentoPessoaBean.TABLE);
+    }
+
+    public void daoSingle(DepartamentoPessoaBean bean) throws Exception {
+        select().execute(bean, DepartamentoPessoaBean.TABLE);
+    }
+
+    public void daoUpdate(DepartamentoPessoaBean bean) throws Exception {
+        qs_pessoa(bean);
+        update().execute(bean, DepartamentoPessoaBean.TABLE);
+    }
+
+    public void daoDelete(DepartamentoPessoaBean bean) throws Exception {
+        delete().execute(bean, DepartamentoPessoaBean.TABLE);
+    }
+
+    public void qs_pessoa(DepartamentoPessoaBean bean) throws Exception {
+        bean.setQs_pessoa(JasapFunctions.searchString(
+                bean.getNome_pessoa()    + " " +
+                bean.getApelido_pessoa() + " " +
+                bean.getCpf_pessoa()     + " " +
+                bean.getObs_pessoa()
+        ));
+    }
+
+    public void daoWhere(Object objWhere) throws Exception {
+        String where = "";
+        if (objWhere != null) {
+            DepartamentoPessoaWBean filtro = (DepartamentoPessoaWBean) objWhere;
+
+            if (filtro.getSt_pessoa() != null)
+                where = SQL.and(where, SQL.equals(SQL.column(DepartamentoPessoaBean.ST_PESSOA), SQL.value(filtro.getSt_pessoa())));
+
+            if (filtro.getFk_produto() != null)
+                where = SQL.and(where, "a." + DepartamentoPessoaBean.ID_PESSOA + " IN (SELECT fk_pessoa FROM " + DepartamentoProdutoBean.TABLE_PRODUTO_PESSOA + " WHERE fk_produto=" + SQL.value(filtro.getFk_produto()) + ")");
+
+            if (filtro.getQs_pessoa() != null &amp;&amp; !JasapFunctions.equals(filtro.getQs_pessoa(), "")) {
+                String[] cols = { SQL.column(DepartamentoPessoaBean.QS_PESSOA) };
+                where = where + qsWhere(filtro.getQs_pessoa(), cols);
+            }
+
+            filtro.setWhere(where);
+        }
+    }
+
+}
+</code></pre>
+
+<p class="info-note"><strong>Adições:</strong> import do <code>DepartamentoProdutoBean</code>, subquery <code>qt_recebida</code> condicional ao filtro <code>fk_produto</code>, filtro <code>IN (SELECT ...)</code> no <code>daoWhere</code>. Espelho das adições do ProdutoDAO, índices trocados.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoProdutoForm                    -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoProdutoForm</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="import br.jasap.gui.ListColumn;|import br.jasap.gui.ListLine;|import br.jasap.gui.ListView;|import br.jasap.util.ModalConfig;|import br.xt.app.departamento.pessoa.DepartamentoPessoaBean;|import br.xt.app.departamento.pessoa.DepartamentoPessoaForm;|import br.xt.app.departamento.pessoa.DepartamentoPessoaWBean;|public static class RefreshDetail extends DepartamentoProdutoForm {|public static class DetailChangePage extends DepartamentoProdutoForm {|public static class DesvincularPes extends DepartamentoProdutoForm {|if (fromPessoa != null) {|getSession().addInt(DepartamentoPessoaForm.S_CONTINUAR_FROM_PESSOA, 1);|onCloseUrl = url(DepartamentoPessoaForm.AfterEntregaContinuar.class);|onCloseUrl = url(DepartamentoPessoaForm.RefreshDetail.class);|evalParent(Js.CLOSE_SUB_WINDOWS + &quot; &quot; + link(DepartamentoVinculoForm.ShowInsert.class)|public Table pesDetail() throws Exception {|public static String S_DET          = ROOT.concat(&quot;__DET/&quot;);"><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.Bar;
+import br.jasap.gui.Button;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.ListColumn;
+import br.jasap.gui.ListLine;
+import br.jasap.gui.ListView;
+import br.jasap.gui.Table;
+import br.jasap.gui.Toast;
+import br.jasap.gui.form.Check;
+import br.jasap.gui.form.Form;
+import br.jasap.gui.form.Radio;
+import br.jasap.gui.form.Text;
+import br.jasap.gui.form.Textarea;
+import br.jasap.util.DomainValue;
+import br.jasap.util.JasapFunctions;
+import br.jasap.util.JasapList;
+import br.jasap.util.Js;
+import br.jasap.util.ModalConfig;
+import br.jasap.util.exceptions.SQLConstraintException;
+import br.jasap.util.filters.TransactionFilter;
+import br.xt.acore.view.XtPage;
+import br.xt.app.departamento.pessoa.DepartamentoPessoaBean;
+import br.xt.app.departamento.pessoa.DepartamentoPessoaForm;
+import br.xt.app.departamento.pessoa.DepartamentoPessoaWBean;
+
+public class DepartamentoProdutoForm extends DepartamentoProdutoAction {
+
+    @Override
+    public Effect execute() throws Exception { render(); return new Response(); }
+
+    public static class ShowInsert extends DepartamentoProdutoForm {
+        @Override
+        public Effect execute() throws Exception {
+            setInsert(FORM);
+            getSession().remove(ROOT.concat(DepartamentoProdutoBean.ID_PRODUTO));
+            Integer fromPessoa = getInput().getInteger(S_FROM_PESSOA);
+            if (fromPessoa != null) getSession().addInt(S_FROM_PESSOA, fromPessoa);
+            else getSession().remove(S_FROM_PESSOA);
+            proBean().setInsert_chk(getInput().getInteger(DepartamentoProdutoBean.INSERT_CHK));
+            render();
+            return new Response();
+        }
+    }
+
+    public static class Insert extends DepartamentoProdutoAction {
+        public Insert() { super.getFilters().add(new TransactionFilter()); }
+        @Override
+        public Effect execute() throws Exception {
+            Integer chk = proBean().getInsert_chk();
+            proBean().setInsert_chk(null);
+            getFactory().departamento().proModel().insert(proBean());
+            Integer fromPessoa = getSession().getInteger(S_FROM_PESSOA);
+            if (fromPessoa != null) {
+                getSession().remove(S_FROM_PESSOA);
+                String onCloseUrl;
+                if (JasapFunctions.equals(chk, 1)) {
+                    getSession().addInt(DepartamentoPessoaForm.S_CONTINUAR_FROM_PESSOA, 1);
+                    onCloseUrl = url(DepartamentoPessoaForm.AfterEntregaContinuar.class);
+                } else {
+                    onCloseUrl = url(DepartamentoPessoaForm.RefreshDetail.class);
+                }
+                evalParent(Js.CLOSE_SUB_WINDOWS + " " + link(DepartamentoVinculoForm.ShowInsert.class)
+                    .putInteger(DepartamentoProdutoBean.ID_PRODUTO, proBean().getId_produto())
+                    .putInteger(DepartamentoPessoaBean.ID_PESSOA, fromPessoa)
+                    .modal(new ModalConfig().setWidth("520").setHeight("420").setOnCloseURL(onCloseUrl)));
+                return new Response();
+            }
+            if (JasapFunctions.equals(chk, 1)) {
+                eval(link(ShowInsert.class).putInteger(DepartamentoProdutoBean.INSERT_CHK, 1).noWait().ajax());
+                evalParent(link(DepartamentoProdutoList.Sort.class).noWait().ajax(false));
+            } else {
+                evalParent(Js.CLOSE_SUB_WINDOWS);
+            }
+            return new Response();
+        }
+    }
+
+    public static class ShowUpdate extends DepartamentoProdutoForm {
+        @Override
+        public Effect execute() throws Exception {
+            setUpdate(FORM);
+            proBean().setId_produto(getInput().getInteger(DepartamentoProdutoBean.ID_PRODUTO));
+            getSession().addInt(ROOT.concat(DepartamentoProdutoBean.ID_PRODUTO), proBean().getId_produto());
+            getFactory().departamento().proModel().daoSingle(proBean());
+            render();
+            return new Response();
+        }
+    }
+
+    public static class RefreshDetail extends DepartamentoProdutoForm {
+        @Override
+        public Effect execute() throws Exception {
+            update(JasapPage.DIV_DETAIL, pesDetail());
+            return new Response();
+        }
+    }
+
+    public static class DetailChangePage extends DepartamentoProdutoForm {
+        @Override
+        public Effect execute() throws Exception {
+            update(JasapPage.DIV_DETAIL, pesDetail());
+            return new Response();
+        }
+    }
+
+    public static class DesvincularPes extends DepartamentoProdutoForm {
+        public DesvincularPes() { super.getFilters().add(new TransactionFilter()); }
+        @Override
+        public Effect execute() throws Exception {
+            Integer id_pessoa = getInput().getInteger(DepartamentoPessoaBean.ID_PESSOA);
+            if (JasapFunctions.equals(getInput().getInteger(CONFIRM), 1)) {
+                getFactory().departamento().proModel().daoUnlinkPessoa(id_produto(), id_pessoa);
+                update(JasapPage.DIV_DETAIL, pesDetail());
+            } else {
+                Integer qt = getFactory().departamento().proModel().daoSingleVinculo(id_produto(), id_pessoa);
+                if (qt == null) qt = 0;
+                eval(Js.swalConfirm("Desvincular essa pessoa? Devolverá " + qt + " unidade(s) ao estoque.",
+                        submit(DesvincularPes.class)
+                                .putInteger(CONFIRM, 1)
+                                .putInteger(DepartamentoPessoaBean.ID_PESSOA, id_pessoa)
+                                .ajax().toHtml(), ""));
+            }
+            return new Response();
+        }
+    }
+
+    public static class Update extends DepartamentoProdutoAction { /* ... */ }
+    public static class Cancelar extends DepartamentoProdutoForm { /* ... */ }
+    public static class Delete extends DepartamentoProdutoAction { /* ... */ }
+
+    public void render() throws Exception {
+        XtPage page = new XtPage(getManager());
+        if (isAjaxCall()) {
+            update(JasapPage.DIV_WINDOW, page.content(window().toHtml()));
+            eval(Js.CLOSE_SUB_WINDOWS);
+        } else {
+            page.getTable().setBorder(4).rowC("100%")
+                    .setContent(page.content(window().toHtml()))
+                    .setStyle(ui().modalBorder());
+            page.setWinTitle("Produto");
+            getOutput().write(this, page);
+        }
+    }
+
+    public Table window() throws Exception {
+        Table w = new Table(getManager()).setSize("100%", "100%");
+        w.rowC("1%",  JasapPage.DIV_TITLE, ui().title("CADASTRO DE PRODUTO"));
+        w.rowC("1%",  null, ui().line());
+        w.rowC("1%",  JasapPage.DIV_BOTTOM, br());
+        w.rowC("1%",  null, ui().line());
+
+        if (isUpdate(FORM)) {
+            w.rowC("1%").setId(JasapPage.DIV_MASTER).setContent(form());
+            w.rowC("1%", null, ui().line());
+            w.rowC("99%").setId(JasapPage.DIV_DETAIL).setContent(pesDetail());
+        } else {
+            w.rowC("auto").setId(JasapPage.DIV_MASTER).setContent(form()).table();
+        }
+        return w;
+    }
+
+    public Table pesDetail() throws Exception {
+        ListView lv = ui().lView();
+        lv.setPageAction(url(DetailChangePage.class))
+                .setPage(getSession().getInteger(S_DET.concat(lv.getPAGE()), getInput()))
+                .ajax();
+
+        DepartamentoPessoaWBean filtro = new DepartamentoPessoaWBean();
+        filtro.setFk_produto(id_produto());
+        lv.setFiltro(filtro);
+        getFactory().departamento().pesModel().daoList(lv.getData());
+
+        ListColumn col_nome     = lv.newColumn("Nome").setWidth(220).setPadding(";padding:10 8 10 8;");
+        ListColumn col_apelido  = lv.newColumn("Apelido").setWidth(150).setPadding(";padding:10 8 10 8;");
+        ListColumn col_cpf      = lv.newColumn("CPF").setWidth(120).setPadding(";padding:10 8 10 8;").alignCenter();
+        ListColumn col_recebida = lv.newColumn("Recebida").setWidth(80).setPadding(";padding:10 8 10 8;").alignCenter();
+        ListColumn col_obs      = lv.newColumn("Observação").setPadding(";padding:10 8 10 8;");
+        ListColumn col_del      = lv.newColumn("").setWidth(50).setPadding(";padding:6 4 6 4;").alignCenter();
+
+        while (lv.hasNext()) {
+            DepartamentoPessoaBean bean = (DepartamentoPessoaBean) lv.next();
+            ListLine line = lv.createLine();
+            col_nome.setContent(bean.getNome_pessoa());
+            col_apelido.setContent(bean.getApelido_pessoa());
+            col_cpf.setContent(bean.getCpf_pessoa());
+            col_recebida.setContent(bean.getQt_recebida());
+            col_obs.setContent(bean.getObs_pessoa());
+            col_del.setHtmlData("&lt;button type='button' class='close' style='opacity:0.6;font-size:20px;color:#e8820c;float:none;' title='Desvincular' onclick=\"event.stopPropagation();" + link(DesvincularPes.class).putInteger(DepartamentoPessoaBean.ID_PESSOA, bean.getId_pessoa()).ajax() + "\"&gt;&amp;times;&lt;/button&gt;");
+            lv.addLine(line);
+        }
+
+        Table aux = new Table(getManager()).setSize("100%", "100%");
+        aux.rowC("99%", null, lv);
+        aux.rowC("1%", null, ui().bar().addCenter(lv.nav(lv.getNavForm())).toHtml());
+        return aux;
+    }
+
+    /* ... br(), form(), getters de campo (nome_produto, vl_produto, qtd_produto, st_produto, obs_produto, insert_chk) — sem alteração ... */
+
+    public static String FORM           = ROOT.concat("__FORM");
+    public static String CONFIRM        = ROOT.concat("__CONFIRM");
+    public static String S_FROM_PESSOA  = ROOT.concat("__FROM_PESSOA");
+    public static String S_DET          = ROOT.concat("__DET/");
+
+}
+</code></pre>
+
+<p class="info-note"><strong>Adições:</strong> 7 imports, 3 inner classes (<code>RefreshDetail</code>, <code>DetailChangePage</code>, <code>DesvincularPes</code>), <code>Insert</code> alterado pra desviar fluxo "Novo Produto via Pessoa", <code>window()</code> divide em master/detail no update, método novo <code>pesDetail()</code>, 1 constante. Métodos secundários (<code>br()</code>, <code>form()</code> e os getters de campo) ficam idênticos — omitidos.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoVinculoForm                    -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoVinculoForm</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="import br.xt.app.departamento.pessoa.DepartamentoPessoaForm;|.setTarget(&quot;parent&quot;)|.setId(&quot;IMODAL_EDIT_PRO&quot;)|.setOnCloseURL(url(DepartamentoPessoaForm.RefreshDetail.class))|background-color:#eee;color:#666;cursor:not-allowed"><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.Bar;
+import br.jasap.gui.Button;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.Table;
+import br.jasap.gui.Toast;
+import br.jasap.gui.form.Form;
+import br.jasap.gui.form.Text;
+import br.jasap.util.JasapFunctions;
+import br.jasap.util.Js;
+import br.jasap.util.ModalConfig;
+import br.jasap.util.filters.TransactionFilter;
+import br.xt.AppsRootAction;
+import br.xt.acore.view.XtPage;
+import br.xt.app.departamento.DepartamentoManager;
+import br.xt.app.departamento.pessoa.DepartamentoPessoaBean;
+import br.xt.app.departamento.pessoa.DepartamentoPessoaForm;
+
+public class DepartamentoVinculoForm extends AppsRootAction {
+
+    public static final String ROOT = DepartamentoManager.F_ACESSO_MODULO.concat("__VINCULO/");
+
+    public Integer id_produto() throws Exception { return getSession().getInteger(ROOT.concat(DepartamentoProdutoBean.ID_PRODUTO)); }
+    public Integer id_pessoa()  throws Exception { return getSession().getInteger(ROOT.concat(DepartamentoPessoaBean.ID_PESSOA)); }
+
+    @Override
+    public Effect execute() throws Exception { render(); return new Response(); }
+
+    public static class ShowInsert extends DepartamentoVinculoForm { /* ... carrega produto, qt=1, render ... */ }
+    public static class ShowUpdate extends DepartamentoVinculoForm { /* ... carrega produto + qt existente, render ... */ }
+    public static class Save extends DepartamentoVinculoForm { /* ... valida qt, daoLinkPessoa OU daoUpdateVinculo, close ... */ }
+    public static class Delete extends DepartamentoVinculoForm { /* ... swalConfirm, daoUnlinkPessoa, close ... */ }
+    public static class Cancelar extends DepartamentoVinculoForm { /* ... close ... */ }
+    public static class RefreshAfterEditProduto extends DepartamentoVinculoForm { /* ... */ }
+
+    public void render() throws Exception { /* ... XtPage + window + modalBorder ... */ }
+    public Table window() throws Exception { /* ... title + line + master + line + bottom ... */ }
+    public String form() throws Exception { /* ... nome_produto + estoque_atual + qt_recebida ... */ }
+
+    protected Bar br() throws Exception {
+        Button salvar = ui().button("&amp;nbsp;&amp;nbsp;Salvar&amp;nbsp;&amp;nbsp;").setCss("btn btn-success btn-lg").setNoSize()
+                .setOnClick(submit(Save.class).validate().toHtml());
+
+        Button excluir = ui().button("&amp;nbsp;&amp;nbsp;Desvincular&amp;nbsp;&amp;nbsp;").setCss("btn btn-danger btn-lg").setNoSize()
+                .setOnClick(link(Delete.class).ajax())
+                .setVisible(isUpdate(FORM));
+
+        Button cancelar = ui().button("&amp;nbsp;&amp;nbsp;Cancelar&amp;nbsp;&amp;nbsp;").setCss("btn btn-primary btn-lg").setNoSize()
+                .setOnClick(link(Cancelar.class).ajax());
+
+        Button editProd = ui().button("&amp;nbsp;&amp;nbsp;Editar Produto&amp;nbsp;&amp;nbsp;").setCss("btn btn-warning btn-lg").setNoSize()
+                .setOnClick(link(DepartamentoProdutoForm.ShowUpdate.class)
+                    .putInteger(DepartamentoProdutoBean.ID_PRODUTO, id_produto())
+                    .setTarget("parent")
+                    .modal(new ModalConfig().setId("IMODAL_EDIT_PRO").setWidth("1000").setHeight("720").setOnCloseURL(url(DepartamentoPessoaForm.RefreshDetail.class))));
+
+        Bar bar = ui().bar();
+        bar.addLeft(editProd);
+        bar.addRight(cancelar);
+        bar.addRight("&amp;nbsp;");
+        bar.addRight(excluir);
+        bar.addRight("&amp;nbsp;");
+        bar.addRight(salvar);
+        return bar;
+    }
+
+    /* ... getProduto(), getVinculo() — sem alteração ... */
+
+    protected Text nome_produto = null;
+    public Text nome_produto() throws Exception {
+        if (nome_produto == null) {
+            nome_produto = ui().text("__nome_produto_readonly")
+                    .setLabel("Produto")
+                    .setStyle("width:350;height:25;background-color:#eee;color:#666;cursor:not-allowed")
+                    .setValue(getProduto().getNome_produto())
+                    .setReadonly(true);
+        }
+        return nome_produto;
+    }
+
+    protected Text estoque_atual = null;
+    public Text estoque_atual() throws Exception {
+        if (estoque_atual == null) {
+            estoque_atual = ui().text("__estoque_atual_readonly")
+                    .setLabel("Estoque atual")
+                    .setStyle("width:80;text-align:right;height:25;background-color:#eee;color:#666;cursor:not-allowed")
+                    .setValue(getProduto().getQtd_produto())
+                    .setReadonly(true);
+        }
+        return estoque_atual;
+    }
+
+    /* ... qt_recebida() — sem alteração ... */
+
+    public static String FORM     = ROOT.concat("__FORM");
+    public static String CONFIRM  = ROOT.concat("__CONFIRM");
+    public static String QT_FIELD = "qt_recebida";
+
+}
+</code></pre>
+
+<p class="info-note"><strong>Adições:</strong> 1 import, <code>setTarget("parent")</code> + <code>setId("IMODAL_EDIT_PRO")</code> + <code>setOnCloseURL</code> trocado no botão "Editar Produto" (resolvem os 3 bugs do modal aninhado), CSS readonly visual nos campos <code>nome_produto</code> e <code>estoque_atual</code>. Inner classes (<code>ShowInsert</code>, <code>ShowUpdate</code>, <code>Save</code>, <code>Delete</code>, <code>Cancelar</code>, <code>RefreshAfterEditProduto</code>) e os métodos <code>render()</code>/<code>window()</code>/<code>form()</code> ficam idênticos — omitidos.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoPessoaForm                     -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoPessoaForm</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="public static class AfterEntregaContinuar extends DepartamentoPessoaForm {|Integer continuar = getSession().getInteger(S_CONTINUAR_FROM_PESSOA);|getSession().remove(S_CONTINUAR_FROM_PESSOA);|evalParent(new Toast(&quot;Produto já vinculado a esta pessoa.&quot;).fail() + &quot;; &quot; + Js.CLOSE_SUB_WINDOWS);|evalParent(Js.CLOSE_SUB_WINDOWS + &quot; &quot; + link(DepartamentoVinculoForm.ShowInsert.class)|public static String S_CONTINUAR_FROM_PESSOA  = ROOT.concat(&quot;__CONTINUAR_FROM_PESSOA&quot;);"><code class="language-java">package br.xt.app.departamento.pessoa;
+
+// ... imports (incluindo DepartamentoVinculoForm, ModalConfig, Toast, etc.) ...
+
+public class DepartamentoPessoaForm extends DepartamentoPessoaAction {
+
+    @Override
+    public Effect execute() throws Exception { render(); return new Response(); }
+
+    public static class ShowInsert extends DepartamentoPessoaForm { /* ... */ }
+    public static class Insert     extends DepartamentoPessoaAction { /* ... insert + insert_chk + close ... */ }
+    public static class ShowUpdate extends DepartamentoPessoaForm { /* ... carrega bean por id, render ... */ }
+
+    public static class AddExistingPro extends DepartamentoPessoaForm {
+        @Override
+        public Effect execute() throws Exception {
+            Integer id_produto = getInput().getInteger(DepartamentoProdutoBean.ID_PRODUTO);
+            Integer existente = getFactory().departamento().proModel().daoSingleVinculo(id_produto, id_pessoa());
+            if (existente != null) {
+                evalParent(new Toast("Produto já vinculado a esta pessoa.").fail() + "; " + Js.CLOSE_SUB_WINDOWS);
+                return new Response();
+            }
+            evalParent(Js.CLOSE_SUB_WINDOWS + " " + link(DepartamentoVinculoForm.ShowInsert.class)
+                .putInteger(DepartamentoProdutoBean.ID_PRODUTO, id_produto)
+                .putInteger(DepartamentoPessoaBean.ID_PESSOA, id_pessoa())
+                .modal(new ModalConfig().setWidth("520").setHeight("420").setOnCloseURL(url(RefreshDetail.class))));
+            return new Response();
+        }
+    }
+
+    public static class RefreshDetail extends DepartamentoPessoaForm {
+        @Override
+        public Effect execute() throws Exception {
+            update(JasapPage.DIV_DETAIL, proDetail());
+            return new Response();
+        }
+    }
+
+    public static class AfterEntregaContinuar extends DepartamentoPessoaForm {
+        @Override
+        public Effect execute() throws Exception {
+            update(JasapPage.DIV_DETAIL, proDetail());
+            Integer continuar = getSession().getInteger(S_CONTINUAR_FROM_PESSOA);
+            if (continuar != null &amp;&amp; JasapFunctions.equals(continuar, 1)) {
+                getSession().remove(S_CONTINUAR_FROM_PESSOA);
+                eval(link(DepartamentoProdutoForm.ShowInsert.class)
+                    .putInteger(DepartamentoProdutoForm.S_FROM_PESSOA, id_pessoa())
+                    .putInteger(DepartamentoProdutoBean.INSERT_CHK, 1)
+                    .modal(new ModalConfig().setWidth("752").setHeight("570").setOnCloseURL(url(RefreshDetail.class))));
+            }
+            return new Response();
+        }
+    }
+
+    public static class SearchPro         extends DepartamentoPessoaForm { /* ... busca rápida no detail ... */ }
+    public static class DetailChangePage  extends DepartamentoPessoaForm { /* ... paginação do detail ... */ }
+    public static class DesvincularPro    extends DepartamentoPessoaForm { /* ... swalConfirm + daoUnlinkPessoa ... */ }
+    public static class Update            extends DepartamentoPessoaAction { /* ... update + close ... */ }
+    public static class Cancelar          extends DepartamentoPessoaForm { /* ... close ... */ }
+    public static class Delete            extends DepartamentoPessoaAction { /* ... swalConfirm + daoDelete + close ... */ }
+
+    /* ... render(), window(), proDetail(), br(), form() e getters de campo — sem alteração ... */
+
+    public static String FORM                     = ROOT.concat("__FORM");
+    public static String CONFIRM                  = ROOT.concat("__CONFIRM");
+    public static String S_QS_PRODUTO             = ROOT.concat("__S_QS_PRODUTO");
+    public static String S_DET                    = ROOT.concat("__DET/");
+    public static String S_CONTINUAR_FROM_PESSOA  = ROOT.concat("__CONTINUAR_FROM_PESSOA");
+
+}
+</code></pre>
+
+<p class="info-note"><strong>Adições:</strong> inner class <code>AfterEntregaContinuar</code> nova (fecha o ciclo "continuar inserindo via Pessoa"), <code>AddExistingPro</code> alterado pra combinar os dois <code>evalParent</code> num único call (resolve bug do frame destruído mid-loop), 1 constante de sessão. As outras inner classes (Insert, Update, Delete, etc.) e os métodos auxiliares ficam idênticos — omitidos.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoManager                        -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoManager</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="regAction(DepartamentoProdutoForm.RefreshDetail.class);|regAction(DepartamentoProdutoForm.DetailChangePage.class);|regAction(DepartamentoProdutoForm.DesvincularPes.class);|regAction(DepartamentoPessoaForm.AfterEntregaContinuar.class);"><code class="language-java">package br.xt.app.departamento;
+
+import br.xt.app.departamento.pessoa.DepartamentoPessoaForm;
+import br.xt.app.departamento.pessoa.DepartamentoPessoaList;
+import br.xt.app.departamento.produto.DepartamentoProdutoForm;
+import br.xt.app.departamento.produto.DepartamentoProdutoList;
+import br.xt.app.departamento.produto.DepartamentoProdutoSelect;
+import br.xt.app.departamento.produto.DepartamentoVinculoForm;
+import br.xt.app.painel.PnlManager;
+
+public class DepartamentoManager extends PnlManager {
+
+    public static final String F_ACESSO_MODULO = "XT.PAINEL_CONTROLE.ACESSO_MODULO.DEPARTAMENTO";
+
+    @Override
+    public void config() throws Exception {
+
+        regFun("PAINEL DE CONTROLE", "Acesso ao Módulo", "DEPARTAMENTO", F_ACESSO_MODULO);
+
+        regAction(DepartamentoHome.class);
+        regAction(DepartamentoHome.Title.class);
+        regAction(DepartamentoHome.MenuItem.class);
+        regAction(DepartamentoHome.MenuInicial.class);
+
+        regAction(DepartamentoProdutoList.class);
+        regAction(DepartamentoProdutoList.Sort.class);
+        regAction(DepartamentoProdutoList.QuickSearch.class);
+        regAction(DepartamentoProdutoList.TabAtivos.class);
+        regAction(DepartamentoProdutoList.TabInativos.class);
+        regAction(DepartamentoProdutoList.TabArquivados.class);
+        regAction(DepartamentoProdutoList.TabTodos.class);
+        regAction(DepartamentoProdutoList.DeleteFromList.class);
+
+        regAction(DepartamentoProdutoForm.class);
+        regAction(DepartamentoProdutoForm.ShowInsert.class);
+        regAction(DepartamentoProdutoForm.ShowUpdate.class);
+        regAction(DepartamentoProdutoForm.Insert.class);
+        regAction(DepartamentoProdutoForm.Update.class);
+        regAction(DepartamentoProdutoForm.Cancelar.class);
+        regAction(DepartamentoProdutoForm.Delete.class);
+        regAction(DepartamentoProdutoForm.RefreshDetail.class);
+        regAction(DepartamentoProdutoForm.DetailChangePage.class);
+        regAction(DepartamentoProdutoForm.DesvincularPes.class);
+
+        regAction(DepartamentoProdutoSelect.class);
+        regAction(DepartamentoProdutoSelect.Sort.class);
+        regAction(DepartamentoProdutoSelect.QuickSearch.class);
+
+        regAction(DepartamentoVinculoForm.class);
+        regAction(DepartamentoVinculoForm.ShowInsert.class);
+        regAction(DepartamentoVinculoForm.ShowUpdate.class);
+        regAction(DepartamentoVinculoForm.Save.class);
+        regAction(DepartamentoVinculoForm.Delete.class);
+        regAction(DepartamentoVinculoForm.Cancelar.class);
+        regAction(DepartamentoVinculoForm.RefreshAfterEditProduto.class);
+
+        regAction(DepartamentoPessoaList.class);
+        regAction(DepartamentoPessoaList.Sort.class);
+        regAction(DepartamentoPessoaList.QuickSearch.class);
+        regAction(DepartamentoPessoaList.TabAtivos.class);
+        regAction(DepartamentoPessoaList.TabInativos.class);
+        regAction(DepartamentoPessoaList.TabArquivados.class);
+        regAction(DepartamentoPessoaList.TabTodos.class);
+        regAction(DepartamentoPessoaList.DeleteFromList.class);
+
+        regAction(DepartamentoPessoaForm.class);
+        regAction(DepartamentoPessoaForm.ShowInsert.class);
+        regAction(DepartamentoPessoaForm.ShowUpdate.class);
+        regAction(DepartamentoPessoaForm.Insert.class);
+        regAction(DepartamentoPessoaForm.Update.class);
+        regAction(DepartamentoPessoaForm.Cancelar.class);
+        regAction(DepartamentoPessoaForm.Delete.class);
+        regAction(DepartamentoPessoaForm.AddExistingPro.class);
+        regAction(DepartamentoPessoaForm.RefreshDetail.class);
+        regAction(DepartamentoPessoaForm.AfterEntregaContinuar.class);
+        regAction(DepartamentoPessoaForm.SearchPro.class);
+        regAction(DepartamentoPessoaForm.DetailChangePage.class);
+        regAction(DepartamentoPessoaForm.DesvincularPro.class);
+
+    }
+}
+</code></pre>
+
+<p class="info-note"><strong>Adições:</strong> 4 <code>regAction</code> novas — 3 do <code>DepartamentoProdutoForm</code> (refresh, paginação e desvincular do detail) + 1 do <code>DepartamentoPessoaForm</code> (callback do continuar inserindo). Sem isso, viram fantasmas — código existe, URL não responde.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- O mecanismo — simetria do N-N                                -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O mecanismo — simetria do N-N</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>A tabela <code>departamento.produto_pessoa</code> tem 3 colunas: <code>fk_produto</code>, <code>fk_pessoa</code>, <code>qt_recebida</code>. Nenhuma das três é "principal" — a tabela existe pra registrar associações N-N. Na prática isso significa que o vínculo pode ser <strong>navegado dos dois lados</strong>:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Lado</th><th>Pergunta</th><th>SQL gerado</th></tr>
+    <tr><td><strong>Pessoa</strong></td><td>"Que produtos a pessoa X recebeu?"</td><td><code>SELECT * FROM produto WHERE id_produto IN (SELECT fk_produto FROM produto_pessoa WHERE fk_pessoa=X)</code></td></tr>
+    <tr><td><strong>Produto</strong></td><td>"Que pessoas receberam o produto Y?"</td><td><code>SELECT * FROM pessoa WHERE id_pessoa IN (SELECT fk_pessoa FROM produto_pessoa WHERE fk_produto=Y)</code></td></tr>
+</table>
+</div>
+
+<p>O Master/Detail original implementava só o lado de cima. O Detail Recíproco pluga o lado de baixo — espelho perfeito.</p>
+
+<h3>Onde a simetria aparece</h3>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Mecanismo</th><th>Lado Pessoa (já existia)</th><th>Lado Produto (novo)</th></tr>
+    <tr><td>Filtro no WBean</td><td><code>fk_pessoa</code> em <code>ProdutoWBean</code></td><td><code>fk_produto</code> em <code>PessoaBean</code></td></tr>
+    <tr><td>Subquery com <code>qt_recebida</code></td><td><code>WHERE pp.fk_produto = a.id_produto AND pp.fk_pessoa = ?</code></td><td><code>WHERE pp.fk_pessoa = a.id_pessoa AND pp.fk_produto = ?</code></td></tr>
+    <tr><td>Filtro <code>IN</code> no <code>daoWhere</code></td><td><code>id_produto IN (SELECT fk_produto WHERE fk_pessoa = ?)</code></td><td><code>id_pessoa IN (SELECT fk_pessoa WHERE fk_produto = ?)</code></td></tr>
+    <tr><td>Detail no Form</td><td><code>proDetail()</code> em <code>PessoaForm</code></td><td><code>pesDetail()</code> em <code>ProdutoForm</code></td></tr>
+</table>
+</div>
+
+<p>Mesma estrutura, índices trocados. Quem entendeu o lado da Pessoa não precisa aprender nada novo — só inverter mentalmente.</p>
+
+<h3>O que NÃO se espelha</h3>
+
+<p>3 coisas do lado Pessoa que <strong>não tem equivalente</strong> no Produto Form:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Item da Pessoa</th><th>Por que não tem no Produto</th></tr>
+    <tr><td>Botão "Associar Produto"</td><td>Iniciar a entrega do lado da Pessoa faz mais sentido pedagogicamente. Duplicar o fluxo geraria 2 caminhos pra mesma coisa</td></tr>
+    <tr><td>Botão "Novo Produto"</td><td>Cadastro de produto novo a partir do detail de uma pessoa específica é caso comum. O inverso (cadastrar pessoa nova a partir de um produto) é raro</td></tr>
+    <tr><td>Barra de busca rápida no detail</td><td>Detail do produto raramente tem dezenas de pessoas. Se virar problema, dá pra adicionar depois</td></tr>
+</table>
+</div>
+
+<p>O Detail Recíproco é <strong>read + desvincular</strong>. Inserções e novos cadastros continuam pelo lado da Pessoa.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 1 — Contagem ct_pessoas + Detail recíproco           -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 1 — Contagem <code>ct_pessoas</code> + Detail recíproco no ProdutoForm</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/02-produto-conta.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<h3>Coluna "Pessoas" na lista de produtos</h3>
+
+<p>Subquery <code>COUNT</code> no <code>daoList</code> popula um campo transient <code>ct_pessoas</code> de cada bean. Visualmente, vira uma coluna nova na lista — entre Qtd e Observação:</p>
+
+<pre><code class="language-java">String ctPessoasCol = ", (SELECT COUNT(*) FROM " + DepartamentoProdutoBean.TABLE_PRODUTO_PESSOA
+                    + " pp WHERE pp.fk_produto = a.id_produto) AS ct_pessoas";
+sql.append("select a.*" + qtRecebidaCol + ctPessoasCol + " from " + ...);</code></pre>
+
+<p>Por que campo transient (sem <code>@DBInfo</code>)? A coluna <strong>não existe</strong> em <code>departamento.produto</code> — é resultado de subquery. Mas o framework popula o bean automaticamente quando o nome da coluna do SELECT bate com o nome do setter (<code>setCt_pessoas</code>). Padrão idêntico ao <code>qt_recebida</code> que já estava no Bean por causa do Master/Detail.</p>
+
+<p>Por que <strong>sem orderBy</strong>? Ordenar por subquery exige reescrever a SQL principal pra incluir a contagem no <code>SELECT</code> de ordenação — mais complexo do que vale a pena pra essa coluna informativa.</p>
+
+<h3>Detail recíproco no ProdutoForm</h3>
+
+<p>Em modo update, a janela do produto agora se divide em master + detail (mesmo padrão do PessoaForm):</p>
+
+<pre><code class="language-java">if (isUpdate(FORM)) {
+    w.rowC("1%").setId(JasapPage.DIV_MASTER).setContent(form());
+    w.rowC("1%", null, ui().line());
+    w.rowC("99%").setId(JasapPage.DIV_DETAIL).setContent(pesDetail());
+} else {
+    w.rowC("auto").setId(JasapPage.DIV_MASTER).setContent(form()).table();
+}</code></pre>
+
+<p>Em modo insert, o detail nem existe — sem <code>id_produto</code> não há vínculos pra mostrar.</p>
+
+<p>O <code>pesDetail()</code> é cópia do <code>proDetail()</code> do PessoaForm com colunas trocadas (Nome, Apelido, CPF, Recebida, Observação) e o filtro fixo em <code>fk_produto = id_produto()</code>. As 3 actions de apoio (<code>RefreshDetail</code>, <code>DetailChangePage</code>, <code>DesvincularPes</code>) são espelhos diretos das do PessoaForm.</p>
+
+<h3>Por que sem botão "Associar Pessoa"</h3>
+
+<p>Vínculo do N-N envolve <code>qt_recebida</code> + baixa transacional do estoque. Permitir associação dos dois lados duplicaria a UX e os pontos de manutenção. A entrada do vínculo continua só pelo lado da Pessoa (via VinculoForm). O lado do Produto é <strong>read-only + desvincular</strong>.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 2 — Entrega de produto via Pessoa                    -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 2 — Entrega de produto via Pessoa (Novo Produto)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/01-pessoa-entrega.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<h3>O bug que motivou a mudança</h3>
+
+<p>No fluxo "Novo Produto" do detail da Pessoa, a versão antiga fazia: cria produto com <code>qtd_produto=12</code>, depois <code>daoLinkPessoa(produto, pessoa, 12)</code> automaticamente. Resultado: estoque criado E imediatamente zerado, todas as 12 unidades indo direto pra pessoa. Confuso — o usuário esperava 12 em estoque inicial e escolher quanto entregar.</p>
+
+<h3>Solução: redirecionar pro VinculoForm</h3>
+
+<p>Em vez de <code>daoLinkPessoa</code> direto, o <code>Insert</code> do ProdutoForm agora desvia o fluxo:</p>
+
+<pre><code class="language-java">if (fromPessoa != null) {
+    getSession().remove(S_FROM_PESSOA);
+    String onCloseUrl;
+    if (JasapFunctions.equals(chk, 1)) {
+        getSession().addInt(DepartamentoPessoaForm.S_CONTINUAR_FROM_PESSOA, 1);
+        onCloseUrl = url(DepartamentoPessoaForm.AfterEntregaContinuar.class);
+    } else {
+        onCloseUrl = url(DepartamentoPessoaForm.RefreshDetail.class);
+    }
+    evalParent(Js.CLOSE_SUB_WINDOWS + " " + link(DepartamentoVinculoForm.ShowInsert.class)
+        .putInteger(DepartamentoProdutoBean.ID_PRODUTO, proBean().getId_produto())
+        .putInteger(DepartamentoPessoaBean.ID_PESSOA, fromPessoa)
+        .modal(new ModalConfig().setWidth("520").setHeight("420").setOnCloseURL(onCloseUrl)));
+    return new Response();
+}</code></pre>
+
+<p>Agora o produto é criado com estoque cheio, e o VinculoForm aparece pra escolher quanto entregar. Estoque baixa só na quantidade definida.</p>
+
+<h3>Continuar inserindo via Pessoa</h3>
+
+<p>O <code>Insert</code> escolhe um <code>onCloseURL</code> diferente conforme o checkbox "Continuar inserindo":</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Checkbox</th><th>onCloseURL</th><th>Comportamento ao fechar VinculoForm</th></tr>
+    <tr><td>Desmarcado</td><td><code>RefreshDetail</code></td><td>Atualiza detail da pessoa. Fim.</td></tr>
+    <tr><td>Marcado</td><td><code>AfterEntregaContinuar</code></td><td>Atualiza detail + reabre <code>ShowInsert</code> com FROM_PESSOA + INSERT_CHK</td></tr>
+</table>
+</div>
+
+<p><code>AfterEntregaContinuar</code> usa um flag <code>S_CONTINUAR_FROM_PESSOA</code> na sessão pra saber se deve reabrir o ShowInsert ou só fazer refresh. Flag setado pelo <code>Insert</code> antes de redirecionar pro VinculoForm; lido + limpo pelo <code>AfterEntregaContinuar</code>.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 3 — O perrengue do modal aninhado                    -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 3 — O perrengue do modal aninhado (3 bugs do Jasap)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/03-perrengue.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>O fluxo Pessoa → produto vinculado → "Editar Produto" abre 3 modais aninhados — caso que o laboratório nunca expôs. Três bugs do framework apareceram em sequência. Cada um tem fix genérico, vale pra qualquer feature do Jasap que monte fluxo aninhado profundo.</p>
+
+<h3>Bug 1 — <code>evalParent</code> empilhado destrói o frame mid-loop</h3>
+
+<p><strong>Sintoma:</strong> ao escolher um produto no Select, o modal fechava e nada mais acontecia.</p>
+
+<p><strong>Causa:</strong> a action retornava 2 entradas no <code>response.data</code>:</p>
+
+<pre><code class="language-java">evalParent(Js.CLOSE_SUB_WINDOWS);            // (1) fecha o Select
+evalParent(link(...).modal(...));            // (2) abre VinculoForm
+</code></pre>
+
+<p>O JS no cliente itera o array chamando <code>parent.takeAction(json)</code>. A entrada (1) executa <code>closeAllFrameModal(1)</code> no parent, que faz <code>document.body.removeChild(fm)</code> — e o frame onde o loop está rodando é destruído. A iteração para. (2) nunca dispara.</p>
+
+<p><strong>Fix:</strong> combinar num único <code>evalParent</code>:</p>
+
+<pre><code class="language-java">evalParent(Js.CLOSE_SUB_WINDOWS + " " + link(...).modal(...));</code></pre>
+
+<p>O parent recebe UMA entrada com 2 instruções concatenadas, executa as duas no contexto dele. O frame de origem pode morrer depois sem prejuízo — o loop já acabou.</p>
+
+<h3>Bug 2 — modal aninhado de 3 níveis fica cortado</h3>
+
+<p><strong>Sintoma:</strong> ao clicar "Editar Produto" no VinculoForm, o ProdutoForm aparecia cortado dentro de um quadrado de 520×420 (tamanho do VinculoForm), sem header, sem borda do modal.</p>
+
+<p><strong>Causa:</strong> o JS <code>ifModal</code> em <code>XTLibJqueryV1.js</code> cria o iframe novo via <code>document.body.appendChild(fm)</code> — body do <strong>frame atual</strong>, não da raiz. Como o VinculoForm já é um modal, o ProdutoForm vira filho DOM dele e fica limitado ao seu tamanho.</p>
+
+<p><strong>Fix:</strong> <code>setTarget("parent")</code> no link do "Editar Produto":</p>
+
+<pre><code class="language-java">.setOnClick(link(DepartamentoProdutoForm.ShowUpdate.class)
+    .putInteger(DepartamentoProdutoBean.ID_PRODUTO, id_produto())
+    .setTarget("parent")
+    .modal(new ModalConfig().setId("IMODAL_EDIT_PRO")...));</code></pre>
+
+<p>O JS gerado vira <code>parent.ifModal(...)</code>. O iframe novo é criado no DOM do PessoaForm (que é maximize) — tem espaço de sobra. O <code>setId</code> também é importante: o id padrão de TODO modal é <code>"IMODAL"</code>, e o JS reusaria o iframe do VinculoForm (mesmo id) em vez de criar novo.</p>
+
+<h3>Bug 3 — onCloseURL no contexto errado sobrescreve o pai</h3>
+
+<p><strong>Sintoma:</strong> ao salvar/excluir/cancelar o ProdutoForm, o cadastro da PessoaForm "virava" o cadastro do produto. A pessoa "sumia" visualmente, mas o registro continuava no banco.</p>
+
+<p><strong>Causa:</strong> com <code>setTarget("parent")</code>, o ProdutoForm tem como pai direto o PessoaForm (não mais o VinculoForm). O <code>setOnCloseURL</code> apontava pra <code>RefreshAfterEditProduto</code> (action do VinculoForm). Quando disparado, executa <strong>no contexto do PessoaForm</strong>, fazendo <code>update(DIV_MASTER, vinculoFormHtml)</code> — sobrescreve o form da pessoa pelo form do vínculo.</p>
+
+<p><strong>Fix:</strong> trocar o <code>onCloseURL</code> pra <code>DepartamentoPessoaForm.RefreshDetail</code>:</p>
+
+<pre><code class="language-java">.modal(new ModalConfig().setId("IMODAL_EDIT_PRO")
+    .setWidth("1000").setHeight("720")
+    .setOnCloseURL(url(DepartamentoPessoaForm.RefreshDetail.class)));</code></pre>
+
+<p>Quando o ProdutoForm fecha, o callback executa no contexto do PessoaForm e atualiza o detail dele. Faz sentido — é o efeito desejado depois de editar/excluir um produto vinculado.</p>
+
+<h3>Quando esses 3 bugs aparecem</h3>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Cenário</th><th>Bug 1</th><th>Bug 2</th><th>Bug 3</th></tr>
+    <tr><td>Select com callback que abre outro modal</td><td>Sim</td><td>—</td><td>—</td></tr>
+    <tr><td>Modal abre dentro de outro modal (3+ níveis)</td><td>—</td><td>Sim</td><td>Possível</td></tr>
+    <tr><td>setTarget("parent") + setOnCloseURL</td><td>—</td><td>—</td><td>Sim</td></tr>
+</table>
+</div>
+
+<p>Os 3 fixes ficam catalogados como padrões pro Jasap — qualquer feature futura com modal aninhado profundo pode reaproveitar.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Resumo                                                       -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Resumo — o que mudou</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="table-wrap">
+<table>
+    <tr><th>Arquivo</th><th>Tipo</th><th>Edição</th></tr>
+    <tr><td><strong>DepartamentoProdutoBean</strong></td><td>editar</td><td>Campo transient <code>ct_pessoas</code> + getter/setter + constante <code>CT_PESSOAS</code></td></tr>
+    <tr><td><strong>DepartamentoProdutoDAO</strong></td><td>editar</td><td>Subquery <code>COUNT</code> sempre presente no <code>daoList</code></td></tr>
+    <tr><td><strong>DepartamentoProdutoList</strong></td><td>editar</td><td>Coluna "Pessoas" entre Qtd e Observação (sem orderBy), modal de update aumentado pra 1000×720</td></tr>
+    <tr><td><strong>DepartamentoPessoaBean</strong></td><td>editar</td><td>Campos transient <code>fk_produto</code> e <code>qt_recebida</code> + getters/setters + 2 constantes</td></tr>
+    <tr><td><strong>DepartamentoPessoaDAO</strong></td><td>editar</td><td>Import novo, <code>daoList</code> com subquery condicional, <code>daoWhere</code> com filtro <code>fk_produto</code> via <code>IN</code></td></tr>
+    <tr><td><strong>DepartamentoProdutoForm</strong></td><td>editar</td><td>7 imports, 3 inner classes (<code>RefreshDetail</code>, <code>DetailChangePage</code>, <code>DesvincularPes</code>), <code>Insert</code> alterado pra desviar fluxo "Novo Produto via Pessoa", <code>window()</code> divide em master/detail, método novo <code>pesDetail()</code>, 1 constante</td></tr>
+    <tr><td><strong>DepartamentoVinculoForm</strong></td><td>editar</td><td>1 import, <code>setTarget("parent")</code> + <code>setId</code> + <code>setOnCloseURL</code> trocado no botão "Editar Produto", CSS readonly visual</td></tr>
+    <tr><td><strong>DepartamentoPessoaForm</strong></td><td>editar</td><td>Inner class <code>AfterEntregaContinuar</code>, <code>AddExistingPro</code> com evalParent combinado, 1 constante</td></tr>
+    <tr><td><strong>DepartamentoManager</strong></td><td>editar</td><td>4 <code>regAction</code> novas</td></tr>
+    <tr><td><strong>Banco</strong></td><td>—</td><td>Nada — tabela <code>produto_pessoa</code> já existia</td></tr>
+</table>
+</div>
+
+<p>9 arquivos editados, 0 novos, sem schema. Resultado: lista de produtos ganha coluna "Pessoas" com a contagem, form do produto em update mostra a lista de pessoas que receberam ele (com lixeirinha de desvínculo). O fluxo "Novo Produto via Pessoa" agora abre o VinculoForm pra escolher quanto entregar (em vez de zerar o estoque automaticamente). E 3 bugs do framework com modal aninhado profundo viraram padrões reaproveitáveis.</p>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

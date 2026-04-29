@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOC — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>TOC — Table of Contents lateral</h1>
+
+<p>Menu flutuante no canto superior direito com links âncora pra cada seção (<code>&lt;h2&gt;</code>) da página. Tem botão hamburger ↔ X pra colapsar, animações em cascata na entrada e gera automaticamente os itens <strong>Topo</strong> e <strong>Rodapé</strong>.</p>
+
+<p>Vê o componente em ação em <a href="../../../1-fundamentos/2-sql/1-backup/backup.html">páginas com muitos <code>&lt;h2&gt;</code></a> — o menu fica no canto superior direito quando a tela é grande.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Como usar — pra quem vai aplicar numa página</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/como-usar.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<h3>Quando usar</h3>
+<p><strong>Usar em:</strong></p>
+<ul>
+    <li>Páginas longas com scroll grande</li>
+    <li>3+ seções marcadas com <code>&lt;h2&gt;</code></li>
+    <li>Documentação técnica, tutoriais extensos, páginas de referência</li>
+</ul>
+<p><strong>Não usar em:</strong></p>
+<ul>
+    <li>Páginas curtas (1-2 telas)</li>
+    <li>Hub de cards (<code>home-grid</code>) — não faz sentido</li>
+    <li>Páginas com <code>info-accordion</code> dominante — já existe o <code>#sidenav</code> do layout pra esse caso (é o que esta página usa, aliás)</li>
+</ul>
+
+<h3 style="margin-top:24px;">Inserção mínima</h3>
+<p>Em qualquer página da documentação, adicione uma única linha no topo do <code>&lt;body&gt;</code>:</p>
+<pre><code class="language-html">&lt;nav class="page-toc"&gt;&lt;/nav&gt;</code></pre>
+<p>Pronto. O <code>layout.js</code> faz o resto: escaneia os <code>&lt;h2&gt;</code>, gera os links, insere "Topo" e "Rodapé", injeta o botão toggle, aplica <code>scroll-margin-top</code>.</p>
+
+<h3 style="margin-top:24px;">Atributos opcionais nos títulos</h3>
+<p>Pra customizar o texto no TOC sem alterar o <code>&lt;h2&gt;</code> visível:</p>
+<pre><code class="language-html">&lt;h2 id="plain" data-toc-title="Plain" data-sub="Texto SQL puro"&gt;
+    Plain — texto SQL puro
+&lt;/h2&gt;</code></pre>
+<table style="width:100%; border-collapse:collapse; margin-top:12px;">
+    <thead>
+        <tr style="background:#f3f4f6;">
+            <th style="padding:8px; text-align:left; border-bottom:2px solid #ddd;">Atributo</th>
+            <th style="padding:8px; text-align:left; border-bottom:2px solid #ddd;">Efeito</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="padding:8px; border-bottom:1px solid #eee;"><code>data-toc-title</code></td>
+            <td style="padding:8px; border-bottom:1px solid #eee;">Texto que aparece no TOC (se diferente do <code>&lt;h2&gt;</code>)</td>
+        </tr>
+        <tr>
+            <td style="padding:8px; border-bottom:1px solid #eee;"><code>data-sub</code></td>
+            <td style="padding:8px; border-bottom:1px solid #eee;">Subtítulo menor em cinza claro embaixo do título</td>
+        </tr>
+        <tr>
+            <td style="padding:8px;"><code>id</code></td>
+            <td style="padding:8px;">Âncora do link. Se omitido, o JS gera a partir do texto</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3 style="margin-top:24px;">Override manual</h3>
+<p>Se a página quiser controle total (listar seções que não são <code>&lt;h2&gt;</code>, por exemplo), coloca o conteúdo dentro do <code>&lt;nav&gt;</code>:</p>
+<pre><code class="language-html">&lt;nav class="page-toc"&gt;
+    &lt;div class="page-toc-title"&gt;Minhas seções&lt;/div&gt;
+    &lt;ul&gt;
+        &lt;li&gt;&lt;a href="#secao-1"&gt;Seção customizada&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+&lt;/nav&gt;</code></pre>
+<p>O JS detecta que já tem filhos e preserva.</p>
+
+<h3 style="margin-top:24px;">Breakpoints</h3>
+<table style="width:100%; border-collapse:collapse; margin-top:12px;">
+    <thead>
+        <tr style="background:#f3f4f6;">
+            <th style="padding:8px; text-align:left; border-bottom:2px solid #ddd;">Largura</th>
+            <th style="padding:8px; text-align:left; border-bottom:2px solid #ddd;">Comportamento</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="padding:8px; border-bottom:1px solid #eee;"><strong>&gt; 1440px</strong></td>
+            <td style="padding:8px; border-bottom:1px solid #eee;">Menu aberto por default. Clicar num link mantém aberto (convive com o conteúdo lado a lado).</td>
+        </tr>
+        <tr>
+            <td style="padding:8px; border-bottom:1px solid #eee;"><strong>641–1440px</strong></td>
+            <td style="padding:8px; border-bottom:1px solid #eee;">Menu fechado por default. Hamburger visível; abrir sobrepõe conteúdo. Clicar num link fecha o menu sozinho.</td>
+        </tr>
+        <tr>
+            <td style="padding:8px;"><strong>≤ 640px</strong></td>
+            <td style="padding:8px;">Hamburger e menu somem totalmente (smartphone).</td>
+        </tr>
+    </tbody>
+</table>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Como funciona por dentro — pra quem quer entender a mecânica</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/como-funciona.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<h3>Onde mora o código</h3>
+<p>O componente ficou dividido em duas partes reutilizáveis:</p>
+<table style="width:100%; border-collapse:collapse; margin-top:12px;">
+    <thead>
+        <tr style="background:#f3f4f6;">
+            <th style="padding:8px; text-align:left; border-bottom:2px solid #ddd;">Parte</th>
+            <th style="padding:8px; text-align:left; border-bottom:2px solid #ddd;">Arquivo</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="padding:8px; border-bottom:1px solid #eee;">CSS — estilos, transições, animações, breakpoints</td>
+            <td style="padding:8px; border-bottom:1px solid #eee;"><code>apoio/documentacao/css/docs.css</code> → bloco "PAGE TOC"</td>
+        </tr>
+        <tr>
+            <td style="padding:8px;">JS — detecção, auto-gen a partir dos h2, listeners</td>
+            <td style="padding:8px;"><code>apoio/documentacao/js/layout.js</code> → função <code>initPageToc(inner)</code></td>
+        </tr>
+    </tbody>
+</table>
+<p style="margin-top:12px;">Nenhum HTML inline da página precisa ter <code>&lt;style&gt;</code> ou <code>&lt;script&gt;</code> próprio pro TOC. Tudo mora central.</p>
+
+<h3 style="margin-top:24px;">Fluxo do <code>initPageToc(inner)</code></h3>
+<p>Quando o <code>layout.js</code> termina de renderizar a página, ele chama a função junto dos outros inits. O fluxo passo a passo:</p>
+<ol>
+    <li><code>document.querySelector('.page-toc')</code> — se não tem o <code>&lt;nav&gt;</code>, aborta</li>
+    <li>Se o <code>&lt;nav&gt;</code> já tem filhos, aborta (preserva override manual)</li>
+    <li><code>inner.querySelectorAll('h2')</code> — se tem menos de 2, aborta</li>
+    <li>Injeta <strong>"Topo"</strong> como primeiro <code>&lt;li&gt;</code> (<code>&lt;a href="#" data-toc-top="1"&gt;</code>)</li>
+    <li>Pra cada h2: gera <code>id</code> (se não tiver) e aplica <code>scroll-margin-top: 80px</code></li>
+    <li>Lê <code>data-toc-title</code> (fallback = texto do h2) e <code>data-sub</code> (opcional)</li>
+    <li>Injeta <strong>"Rodapé"</strong> como último <code>&lt;li&gt;</code> (<code>&lt;a href="#" data-toc-bottom="1"&gt;</code>)</li>
+    <li>Calcula <code>animationDelay</code> de cada <code>&lt;li&gt;</code> (0.25s base + 0.05s por item)</li>
+    <li>Cria o <code>&lt;button class="page-toc-toggle active"&gt;</code> com 2 SVGs (menu + close)</li>
+    <li>Listeners nos links:
+        <ul>
+            <li><code>data-toc-top</code> → <code>scrollTo({ top: 0 })</code></li>
+            <li><code>data-toc-bottom</code> → <code>scrollTo({ top: scrollHeight })</code></li>
+            <li>Em tela <code>≤ 1440px</code> → fecha o menu automaticamente</li>
+        </ul>
+    </li>
+    <li>Se <code>window.innerWidth ≤ 1440px</code>, inicia com <code>.collapsed</code> (menu escondido por default em tela menor)</li>
+    <li>Insere o botão antes do nav no DOM</li>
+</ol>
+
+<h3 style="margin-top:24px;">As 4 animações coreografadas</h3>
+<p>O que dá personalidade ao componente são 4 animações que tocam em sequência:</p>
+
+<p><strong>1. Entrada da barra</strong><br>
+<code>translateX(calc(100% + 40px)) → 0</code> + <code>opacity: 0 → 1</code>, 0.3s. A barra desliza de fora da tela pra dentro.</p>
+
+<p><strong>2. Links em cascata</strong><br>
+Cada <code>&lt;li&gt;</code> entra com <code>translateX(16px → 0)</code> + fade, 0.3s. Os delays são aplicados via JS: <strong>0.25s no primeiro</strong> (pra a barra terminar primeiro) e <strong>0.05s de intervalo</strong> entre cada item seguinte.</p>
+
+<p><strong>3. Cross-fade X ↔ hamburger</strong><br>
+Os dois SVGs ficam sobrepostos (<code>position: absolute</code>). Quando o estado muda:</p>
+<ul>
+    <li>Ícone saindo: <code>opacity 1 → 0</code> + <code>rotate 0 → 90°</code> (gira pra fora)</li>
+    <li>Ícone entrando: <code>opacity 0 → 1</code> + <code>rotate -90° → 0</code> (gira pra dentro)</li>
+</ul>
+
+<p><strong>4. Linhas do hamburger crescendo</strong><br>
+As 3 <code>&lt;line&gt;</code> do SVG do hamburger têm <code>transform-origin: left center</code>. Quando aparecem, crescem com <code>scaleX(0 → 1)</code> em cascata — delays 0s, 0.1s, 0.2s. Visualmente: linhas sendo "desenhadas" da esquerda pra direita, uma por vez.</p>
+
+<h3 style="margin-top:24px;">Decisões de design</h3>
+
+<p><strong>Por que <code>position: fixed</code> em vez de <code>sticky</code>?</strong><br>
+Sticky depende de um container pai. Como o layout injeta o conteúdo dentro de <code>#content-inner</code> com max-width, sticky criaria alinhamento inconsistente em páginas largas. Fixed garante posicionamento igual em qualquer página.</p>
+
+<p><strong>Por que largura fixa de 220px?</strong><br>
+Texto em 2 linhas (título + subtítulo) precisa de ~200px pra respirar sem quebra estranha. Mais que isso rouba espaço do conteúdo principal em telas 1280–1440px.</p>
+
+<p><strong>Por que breakpoint 1440px?</strong><br>
+Em tela menor, a janela não sobra largura suficiente pro menu de 220px conviver lado a lado com o conteúdo sem sobrepor. Acima de 1440px cabe permanentemente — menu fica aberto. Abaixo, menu começa fechado mas hamburger continua visível pra abrir sob demanda.</p>
+
+<p><strong>Por que menu fecha ao clicar num link em tela ≤1440?</strong><br>
+UX de mobile menu. Se o menu sobrepõe conteúdo, depois de escolher a seção ele precisa sumir pra revelar o que o usuário foi ver.</p>
+
+<p><strong>Por que 0.25s de delay no primeiro link?</strong><br>
+A barra tem <code>transition: transform 0.3s ease</code>. Se os links começassem em 0s, apareceriam no meio da entrada da barra — visualmente bagunçado. 0.25s dá tempo da barra chegar perto do destino antes.</p>
+
+<p><strong>Por que os links entram da direita pra esquerda?</strong><br>
+A barra entra do lado direito. Os links seguindo a mesma direção reforçam o fluxo visual do canto da tela. Se entrassem de cima pra baixo, pareceria que vieram de lugar diferente.</p>
+
+<p><strong>Por que "Topo" e "Rodapé" com <code>href="#"</code> + <code>preventDefault</code>?</strong><br>
+Se fossem <code>href="#topo"</code> / <code>href="#rodape"</code>, sujariam a URL com âncoras falsas. Atributos <code>data-toc-top</code> / <code>data-toc-bottom</code> marcam os elementos pro handler reconhecer e chamar <code>scrollTo()</code> sem alterar o endereço.</p>
+
+<p><strong>Por que z-index 60 e 61?</strong><br>
+O audio-player é sticky com <code>z-index: 50</code>. Pro TOC não ficar atrás dele quando abre sobreposto, precisa ser maior. Botão (61) sempre acima do próprio menu (60) pra permanecer clicável.</p>
+
+<p><strong>Por que <code>data-sub</code> em vez de parsing do "—" no texto?</strong><br>
+Parsing heurístico é frágil — qualquer <code>&lt;h2&gt;</code> com travessão por outro motivo viraria subtítulo por engano. <code>data-sub</code> é explícito e deixa o autor decidir.</p>
+
+<h3 style="margin-top:24px;">Histórico de iterações</h3>
+<p>Construído em 2026-04-23 em um único dia. Começou como CSS inline em uma página e evoluiu por iteração até virar componente centralizado:</p>
+<ol>
+    <li><strong>v0</strong> — CSS inline, 9 links hardcoded na página</li>
+    <li><strong>v0.1</strong> — animação de fade + translateY dos links</li>
+    <li><strong>v0.2</strong> — hamburger toggle com display none/block</li>
+    <li><strong>v0.3</strong> — animação sequencial das 3 linhas do hamburger</li>
+    <li><strong>v0.4</strong> — delay de 0.25s no primeiro link (pra barra terminar antes)</li>
+    <li><strong>v0.5</strong> — translateY trocado por translateX (direita → esquerda)</li>
+    <li><strong>v0.6</strong> — linha separadora entre items + cross-fade X ↔ hamburger</li>
+    <li><strong>v1.0</strong> — migração pra <code>docs.css</code> + <code>layout.js</code> com auto-gen dos h2</li>
+    <li><strong>v1.1</strong> — breakpoints reformulados (1440 / 640)</li>
+    <li><strong>v1.2</strong> — z-index 60/61 pra ficar acima do audio-player sticky</li>
+    <li><strong>v1.3</strong> — font-weight 700 no título + auto-fechar ao clicar em tela pequena</li>
+    <li><strong>v1.4</strong> — itens Topo e Rodapé adicionados automaticamente (presente)</li>
+</ol>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

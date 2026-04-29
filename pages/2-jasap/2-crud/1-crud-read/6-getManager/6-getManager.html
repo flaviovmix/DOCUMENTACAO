@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>getManager() — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>getManager() <span class="badge badge-edit">conceitual</span></h1>
+
+<div class="audio-player" data-src="audio/getManager.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>O <code>getManager()</code> aparece em vários lugares do CRUD — Action, XtPage, DAO, MdFactory e Model. Este episódio explica o fio invisível que conecta essas peças: como o <strong>cartão temporário</strong> (o Manager) é montado quando um pedido chega, e como ele é passado de peça em peça pra que todo mundo tenha o mesmo contexto do request.</p>
+
+<p class="info-note"><strong>Nota:</strong> esta é uma página <strong>conceitual</strong> — não tem arquivo Java pra modificar. Entender esse fio é o que conecta tudo que a gente construiu nos episódios anteriores.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Duas fases: prédio acordando vs pedido chegando</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O Jasap tem <strong>dois momentos distintos</strong> em que lida com Managers — importante não confundir:</p>
+
+<p><strong>Fase 1 — Inicialização (prédio acordando):</strong></p>
+<ol>
+    <li>O sistema sobe, antes de qualquer pedido</li>
+    <li>Cria uma INSTÂNCIA TEMPORÁRIA de cada Manager do prédio (RootManager, PnlManager, DepartamentoManager, etc.)</li>
+    <li>Chama <code>config()</code> em cada um — é aí que cada Manager registra seus serviços (<code>regAction</code>) e crachás (<code>regFun</code>) no mapa global do prédio</li>
+    <li>Descarta as instâncias — elas eram só temporárias pra config</li>
+</ol>
+<p>Nessa fase não tem agente, não tem cartão de verdade. Só o sistema preparando o prédio.</p>
+
+<p><strong>Fase 2 — Requisição (pedido chegando):</strong></p>
+<ol>
+    <li>Um request chega na internet</li>
+    <li>O sistema consulta o mapa global e descobre que destino o pedido quer</li>
+    <li>Monta UM CARTÃO TEMPORÁRIO novo com as 3 camadas encaixadas: <code>AppManager + PnlManager + DepartamentoManager</code></li>
+    <li>O cartão tem: sessão do usuário, conexão com o banco, ferramentaria local, acessos ao <code>ui()</code> — tudo do contexto deste request</li>
+    <li>Um agente novo nasce com o cartão pronto na mão</li>
+    <li>No fim do request, cartão e agente são descartados</li>
+</ol>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Onde <code>getManager()</code> aparece</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O mesmo cartão (Manager) é passado pra várias peças. Cada uma o acessa com <code>getManager()</code> — mas vem de lugares diferentes:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Peça</th><th>De onde <code>getManager()</code> vem</th><th>Pra que usa</th></tr>
+    <tr><td><strong>Action</strong> (ex: List)</td><td>Herdado de <code>JasapAct</code> — framework injeta no início do request</td><td>Passar pro <code>new XtPage(getManager())</code>, pro <code>getFactory()</code>, pra buscar o WBean</td></tr>
+    <tr><td><strong>XtPage</strong></td><td>Passado no construtor da Action <code>new XtPage(getManager())</code></td><td>Acessar ferramentaria, configurar a página com contexto</td></tr>
+    <tr><td><strong>DAO</strong></td><td>Configurado via <code>setManager(manager)</code> no construtor</td><td>Acessar o banco: <code>getDataBase()</code></td></tr>
+    <tr><td><strong>MdFactory</strong></td><td>Recebido no construtor: <code>DepartamentoMdFactory(AppManager manager)</code></td><td>Passar pros Models que a factory fabrica</td></tr>
+    <tr><td><strong>Model</strong></td><td>Herdado do DAO (via <code>super(manager)</code>)</td><td>Mesmo que o DAO — acesso ao banco</td></tr>
+</table>
+</div>
+
+<p>É SEMPRE O MESMO cartão passando de mão em mão. Não tem dois cartões diferentes rodando ao mesmo tempo no mesmo request.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">As 3 camadas encaixadas do cartão</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O cartão não é um objeto único — são 3 camadas encaixadas como País &gt; Estado &gt; Cidade (um endereço, não pessoas diferentes):</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Camada</th><th>Tipo</th><th>Fornece</th></tr>
+    <tr><td>1</td><td><code>AppManager</code> (framework)</td><td>Sessão, conexão com banco, contexto do request — a infraestrutura básica</td></tr>
+    <tr><td>2</td><td><code>PnlManager</code> (projeto)</td><td>Permissões do Painel de Controle, <code>regFun</code>, verificação de <code>ok()</code></td></tr>
+    <tr><td>3</td><td><code>DepartamentoManager</code> (módulo)</td><td>Actions registradas do módulo, <code>F_ACESSO_MODULO</code>, config específica</td></tr>
+</table>
+</div>
+
+<p>Quando uma Action chama <code>getManager()</code>, o que ela recebe é a camada mais externa (<code>DepartamentoManager</code>), que tem TUDO das camadas de baixo por herança. É um só objeto com todo o contexto junto.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que o DAO precisa do cartão?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O DAO não fala com o banco direto — ele passa por um LEITOR DE CARTÃO. O leitor precisa do cartão pra:</p>
+<ul>
+    <li>Pegar a conexão que foi aberta pelo guarda da portaria (<code>DataBaseFilter</code>) no início do request</li>
+    <li>Confirmar qual departamento tá fazendo a query (pra logs, permissões, filtros globais)</li>
+    <li>Usar o contexto da sessão se precisar (ex: timezone do usuário)</li>
+</ul>
+
+<p>Sem o cartão, o DAO não tem acesso ao banco. Por isso o construtor do DAO faz <code>setManager(manager)</code> + <code>setDataBase(manager.getDataBase())</code> — extrai a conexão do cartão e guarda.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O fio completo numa chamada real</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Veja uma chamada típica que um setor de listagem faz pra buscar produtos:</p>
+
+<pre><code class="language-java">getFactory().departamento().proModel().daoList(lv.getData());</code></pre>
+
+<p>Seguindo o fio do cartão:</p>
+
+<ol>
+    <li><code>getFactory()</code> — herdado de <code>AppsRootAction</code>. Devolve a <code>AppsRootModelFactory</code> configurada com o cartão do request atual</li>
+    <li><code>.departamento()</code> — a factory central cria uma <code>DepartamentoMdFactory</code> passando o mesmo cartão pro construtor</li>
+    <li><code>.proModel()</code> — na primeira chamada, a factory local cria o <code>DepartamentoProdutoModel</code> passando o mesmo cartão. Construtor do Model faz <code>super(manager)</code> — o cartão chega no DAO. DAO faz <code>setManager</code> + <code>setDataBase</code></li>
+    <li><code>.daoList(lv.getData())</code> — agora o DAO tem o cartão e consegue chamar <code>getDataBase()</code> pra rodar a query</li>
+</ol>
+
+<p>O cartão passou por 4 peças diferentes nessa única linha de código. Nenhuma criou um cartão novo — todas receberam o mesmo que o agente tinha na mão.</p>
+
+        </div>
+    </div>
+</div>
+
+<h2>Resumo — O Fio do Cartão</h2>
+<p>Em cada request:</p>
+<ul>
+    <li><strong>Um</strong> cartão temporário é montado pelo framework (com as 3 camadas encaixadas)</li>
+    <li><strong>Um</strong> agente nasce com esse cartão</li>
+    <li>O cartão é passado ADIANTE de peça em peça: Action → XtPage/DAO/Model/MdFactory</li>
+    <li>Todas acessam via <code>getManager()</code>/<code>getDataBase()</code>/<code>getFactory()</code></li>
+    <li>No fim do request, cartão e agente são descartados</li>
+</ul>
+<p>Saber que é sempre o MESMO cartão passando de mão em mão é o que faz tudo fazer sentido junto.</p>
+
+</body>
+</html>

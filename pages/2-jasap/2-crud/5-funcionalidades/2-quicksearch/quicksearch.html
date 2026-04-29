@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickSearch — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>QuickSearch — Busca rápida com normalização <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="audio/quicksearch.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>O usuário digita na barra de busca e a lista filtra em tempo real, sem clicar em botão. A busca é <strong>fuzzy</strong>: <code>açúcar</code> acha <code>Açúcar Refinado</code>, <code>acucar</code> acha igual, <code>AÇÚCAR</code> também — tudo via uma coluna dedicada no banco com texto pré-normalizado (lowercase, sem acento).</p>
+
+<p>5 peças trabalhando juntas: coluna nova no banco, campo no Bean, normalização no DAO, inner class <code>QuickSearch</code> que recebe o input do usuário, e a barra visual com <code>ui().bgDark()</code> no <code>window()</code>.</p>
+
+<div class="info-accordion">
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoProdutoBean                    -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoProdutoBean</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="private String  qs_produto|public String getQs_produto+1|public static String QS_PRODUTO"><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.dao.DBInfo;
+import java.io.Serializable;
+
+public class DepartamentoProdutoBean implements Serializable {
+
+    public static String TABLE = "departamento.produto";
+
+    private Integer id_produto;
+    private String  nome_produto;
+    private Double  vl_produto;
+    private Integer qtd_produto;
+    private String  obs_produto;
+    private String  qs_produto;
+
+    @DBInfo(serial=true, pk=true)
+    public Integer getId_produto() { return id_produto; }
+    public void setId_produto(Integer id_produto) { this.id_produto = id_produto; }
+
+    public String getNome_produto() { return nome_produto; }
+    public void setNome_produto(String nome_produto) { this.nome_produto = nome_produto; }
+
+    public Double getVl_produto() { return vl_produto; }
+    public void setVl_produto(Double vl_produto) { this.vl_produto = vl_produto; }
+
+    public Integer getQtd_produto() { return qtd_produto; }
+    public void setQtd_produto(Integer qtd_produto) { this.qtd_produto = qtd_produto; }
+
+    public String getObs_produto() { return obs_produto; }
+    public void setObs_produto(String obs_produto) { this.obs_produto = obs_produto; }
+
+    public String getQs_produto() { return qs_produto; }
+    public void setQs_produto(String qs_produto) { this.qs_produto = qs_produto; }
+
+    public static String ID_PRODUTO   = "id_produto";
+    public static String NOME_PRODUTO = "nome_produto";
+    public static String VL_PRODUTO   = "vl_produto";
+    public static String QTD_PRODUTO  = "qtd_produto";
+    public static String OBS_PRODUTO  = "obs_produto";
+    public static String QS_PRODUTO   = "qs_produto";
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudanças nesta sequência:</strong> 1 campo, 1 par getter/setter e 1 constante. Nenhum import novo — o framework trata <code>qs_produto</code> como qualquer outra coluna do tipo <code>String</code>.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoProdutoDAO                     -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoProdutoDAO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="import br.jasap.dao.SQL|import br.jasap.util.JasapFunctions|where 1=1|daoWhere(list.getFiltro())|public void qs_produto(DepartamentoProdutoBean bean)+5|public void daoWhere(Object objWhere)+12|qs_produto(bean)"><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.AppManager;
+import br.jasap.dao.Query;
+import br.jasap.dao.SQL;
+import br.jasap.util.JasapFunctions;
+import br.jasap.util.JasapList;
+import br.xt.AppsRootDAO;
+
+public class DepartamentoProdutoDAO extends AppsRootDAO {
+
+    public DepartamentoProdutoDAO() {
+    }
+
+    public DepartamentoProdutoDAO(AppManager manager) {
+        setManager(manager);
+        setDataBase(manager.getDataBase());
+    }
+
+    public void daoList(JasapList list) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("select a.* from " + DepartamentoProdutoBean.TABLE + " a");
+        sql.append(" where 1=1 &lt;where&gt; &lt;orderby&gt;");
+
+        Query query = getDataBase().getQuery(sql.toString());
+        daoWhere(list.getFiltro());
+        select().executeList(query, list);
+
+        while (query.next()) {
+            DepartamentoProdutoBean bean = new DepartamentoProdutoBean();
+            query.populateBean(bean);
+            list.getList().add(bean);
+        }
+        query.release();
+    }
+
+    public void daoInsert(DepartamentoProdutoBean bean) throws Exception {
+        qs_produto(bean);
+        insert().execute(bean, DepartamentoProdutoBean.TABLE);
+    }
+
+    public void daoSingle(DepartamentoProdutoBean bean) throws Exception {
+        select().execute(bean, DepartamentoProdutoBean.TABLE);
+    }
+
+    public void daoUpdate(DepartamentoProdutoBean bean) throws Exception {
+        qs_produto(bean);
+        update().execute(bean, DepartamentoProdutoBean.TABLE);
+    }
+
+    public void daoDelete(DepartamentoProdutoBean bean) throws Exception {
+        delete().execute(bean, DepartamentoProdutoBean.TABLE);
+    }
+
+    public void qs_produto(DepartamentoProdutoBean bean) throws Exception {
+        bean.setQs_produto(JasapFunctions.searchString(
+                bean.getNome_produto() + " " +
+                bean.getObs_produto()
+        ));
+    }
+
+    public void daoWhere(Object objWhere) throws Exception {
+        String where = "";
+        if (objWhere != null) {
+            DepartamentoProdutoWBean filtro = (DepartamentoProdutoWBean) objWhere;
+
+            if (filtro.getQs_produto() != null && !JasapFunctions.equals(filtro.getQs_produto(), "")) {
+                String[] cols = { SQL.column(DepartamentoProdutoBean.QS_PRODUTO) };
+                where = where + qsWhere(filtro.getQs_produto(), cols);
+            }
+
+            filtro.setWhere(where);
+        }
+    }
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudanças nesta sequência:</strong> 2 imports novos (<code>SQL</code>, <code>JasapFunctions</code>), 1 marcador <code>&lt;where&gt;</code> no SQL do <code>daoList</code>, 1 chamada de <code>daoWhere</code>, chamadas de <code>qs_produto(bean)</code> no <code>daoInsert</code> e <code>daoUpdate</code>, e os 2 métodos novos no fim (<code>qs_produto</code> e <code>daoWhere</code>).</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoProdutoList                    -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoProdutoList</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="import br.jasap.gui.form.Text|w.rowC(&quot;1%&quot;,  null, qs_produto())|protected Text qs_produto = null|public String qs_produto() throws Exception+19|public static class QuickSearch extends DepartamentoProdutoList+8"><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.ListColumn;
+import br.jasap.gui.ListLine;
+import br.jasap.gui.ListView;
+import br.jasap.gui.Bar;
+import br.jasap.gui.Button;
+import br.jasap.gui.Table;
+import br.jasap.gui.Toast;
+import br.jasap.gui.form.Text;
+import br.jasap.util.JasapFunctions;
+import br.jasap.util.Js;
+import br.jasap.util.ModalConfig;
+import br.jasap.util.exceptions.SQLConstraintException;
+import br.xt.acore.view.IconButton;
+import br.xt.acore.view.XtPage;
+
+public class DepartamentoProdutoList extends DepartamentoProdutoAction {
+
+    // ... execute() e render() (sem alteração)
+
+    public Table window() throws Exception {
+        Table w = new Table(getManager()).setSize("100%", "100%");
+        w.rowC("99%", JasapPage.DIV_WSPACE, lView());
+        w.rowC("1%",  null, ui().line());
+        w.rowC("1%",  null, qs_produto());
+        w.rowC("1%",  JasapPage.DIV_BOTTOM, br());
+        w.rowC("1%",  null, ui().line());
+        return w;
+    }
+
+    protected Text qs_produto = null;
+    public String qs_produto() throws Exception {
+        qs_produto = ui().text(DepartamentoProdutoBean.QS_PRODUTO)
+                .setLabel("Consulta")
+                .setStyle("width:400;height:30px;font-size:14px")
+                .setMaxlength(300)
+                .setValue(getFiltro().getQs_produto())
+                .setOnkeyup(Js.pressEnter(
+                        link(QuickSearch.class)
+                                .putScript(DepartamentoProdutoBean.QS_PRODUTO, Js.SELF_VALUE)
+                                .ajax()));
+
+        Table aux = new Table(getManager(), "100%", "45")
+                .setStyle(ui().bgDark())
+                .rowC()
+                .setAlign(Table.ALIGN_CENTER)
+                .setVerticalAlign(Table.ALIGN_MIDDLE)
+                .setContent(qs_produto.toHtml() + "&lt;span class=\"glyphicon glyphicon-search xt-ico-white\"&gt;&lt;/span&gt;")
+                .table();
+
+        return aux.toHtml();
+    }
+
+    // ... br(), lView(), getFiltro() (sem alteração)
+
+    public static class Sort extends DepartamentoProdutoList {
+        @Override
+        public Effect execute() throws Exception {
+            update(lView().getDIV_HEADER(), lView().getHeader());
+            update(lView().getDIV_BODY(), lView().getBody());
+            update(lView().getDIV_NAVIGATE(), lView().getNavForm());
+            return new Response();
+        }
+    }
+
+    public static class QuickSearch extends DepartamentoProdutoList {
+        @Override
+        public Effect execute() throws Exception {
+            getFiltro().setQs_produto(getInput().getString(DepartamentoProdutoBean.QS_PRODUTO));
+            update(lView().getDIV_BODY(), lView().getBody());
+            update(lView().getDIV_NAVIGATE(), lView().getNavForm());
+            eval(Js.setFocusTo(DepartamentoProdutoBean.QS_PRODUTO));
+            return new Response();
+        }
+    }
+
+    // ... DeleteFromList (sem alteração)
+
+    public static final String LIST         = ROOT.concat("__LIST/");
+    public static final String FILTRO       = LIST.concat("__FILTRO");
+    public static final String CONFIRM_LIST = LIST.concat("__CONFIRM_LIST");
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudanças nesta sequência:</strong> 1 import (<code>Text</code>), 1 linha nova no <code>window()</code> (a barra de busca), o método <code>qs_produto()</code> com a barra visual, e a inner class <code>QuickSearch</code>.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoManager                        -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoManager</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre data-add="regAction(DepartamentoProdutoList.QuickSearch.class)"><code class="language-java">package br.xt.app.departamento;
+
+import br.xt.app.departamento.produto.DepartamentoProdutoForm;
+import br.xt.app.departamento.produto.DepartamentoProdutoList;
+import br.xt.app.painel.PnlManager;
+
+public class DepartamentoManager extends PnlManager {
+
+    public static final String F_ACESSO_MODULO = "XT.PAINEL_CONTROLE.ACESSO_MODULO.DEPARTAMENTO";
+
+    @Override
+    public void config() throws Exception {
+
+        regFun("PAINEL DE CONTROLE", "Acesso ao Módulo", "DEPARTAMENTO", F_ACESSO_MODULO);
+
+        regAction(DepartamentoHome.class);
+        regAction(DepartamentoHome.Title.class);
+        regAction(DepartamentoHome.MenuItem.class);
+        regAction(DepartamentoHome.MenuInicial.class);
+
+        regAction(DepartamentoProdutoList.class);
+        regAction(DepartamentoProdutoList.Sort.class);
+        regAction(DepartamentoProdutoList.QuickSearch.class);
+        regAction(DepartamentoProdutoList.DeleteFromList.class);
+
+        regAction(DepartamentoProdutoForm.class);
+        regAction(DepartamentoProdutoForm.ShowInsert.class);
+        regAction(DepartamentoProdutoForm.ShowUpdate.class);
+        regAction(DepartamentoProdutoForm.Insert.class);
+        regAction(DepartamentoProdutoForm.Update.class);
+        regAction(DepartamentoProdutoForm.Cancelar.class);
+
+    }
+}</code></pre>
+
+<p class="info-note"><strong>Mudança nesta sequência:</strong> 1 linha <code>regAction</code> nova. Nenhum import novo — <code>DepartamentoProdutoList</code> já era importado.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- SQL — coluna qs_produto no banco                             -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">SQL — coluna <code>qs_produto</code> no banco <span class="badge badge-new">novo</span></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-sql">ALTER TABLE departamento.produto ADD COLUMN qs_produto text;
+
+CREATE EXTENSION IF NOT EXISTS unaccent;
+
+UPDATE departamento.produto
+SET qs_produto = lower(unaccent(coalesce(nome_produto, '') || ' ' || coalesce(obs_produto, '')));</code></pre>
+
+<p>Três comandos no PostgreSQL:</p>
+
+<ul>
+    <li><strong><code>ALTER TABLE</code></strong> — cria a coluna <code>qs_produto</code> do tipo <code>text</code>. <strong>Obrigatório</strong>: sem essa coluna, o primeiro <code>INSERT</code> ou <code>UPDATE</code> de produto vai dar erro <code>column "qs_produto" does not exist</code>. O framework Jasap inclui automaticamente todos os campos do Bean no SQL.</li>
+    <li><strong><code>CREATE EXTENSION unaccent</code></strong> — habilita a extensão do PostgreSQL que remove acentos. Necessária pro <code>UPDATE</code> abaixo. Roda só uma vez por banco.</li>
+    <li><strong><code>UPDATE</code></strong> — popula <code>qs_produto</code> nos produtos que já existem antes da feature entrar. <strong>Opcional</strong>: produtos novos serão populados automaticamente pelo método <code>qs_produto(bean)</code> no DAO. Sem rodar este UPDATE, os produtos antigos não vão aparecer na busca até serem editados.</li>
+</ul>
+
+<p>O <code>UPDATE</code> faz o equivalente Java do <code>JasapFunctions.searchString()</code>: lower + unaccent + concatenação. Resultado: <code>"Açúcar Refinado 1kg"</code> vira <code>"acucar refinado 1kg"</code>.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- O mecanismo: 5 peças que fazem o QuickSearch funcionar       -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O mecanismo — 5 peças que fazem o QuickSearch funcionar</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Buscar com normalização exige 5 partes coordenadas. Se qualquer uma faltar, ou a busca não funciona, ou o app quebra:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Peça</th><th>Onde</th><th>Papel</th></tr>
+    <tr><td><strong>Coluna <code>qs_produto</code></strong></td><td>banco (PostgreSQL)</td><td>Guarda o texto pesquisável já normalizado (lower + sem acento)</td></tr>
+    <tr><td><strong>Campo <code>qs_produto</code></strong></td><td>Bean</td><td>Mapeia a coluna do banco — getter/setter + constante</td></tr>
+    <tr><td><strong>Normalização</strong></td><td>DAO (<code>qs_produto</code>, <code>daoWhere</code>)</td><td>Monta o texto normalizado no INSERT/UPDATE; filtra com <code>qsWhere</code> no SELECT</td></tr>
+    <tr><td><strong>Inner class <code>QuickSearch</code></strong></td><td>List</td><td>Recebe o texto digitado, salva no filtro, atualiza body + navegação</td></tr>
+    <tr><td><strong>Barra <code>ui().bgDark()</code></strong></td><td>List (<code>window()</code>, <code>qs_produto()</code>)</td><td>O input visual com glyphicon de lupa</td></tr>
+</table>
+</div>
+
+<p>O fluxo completo: usuário digita → <code>onkeyup</code> dispara <code>QuickSearch</code> via AJAX → texto vai pro filtro na sessão → <code>lView()</code> chama <code>daoList</code> → <code>daoWhere</code> monta o WHERE com <code>qsWhere</code> → SQL retorna só os produtos que casam → body da lista atualiza.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Peça 1 — Coluna qs_produto no banco                          -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Peça 1 — Coluna <code>qs_produto</code> no banco</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Por que uma coluna dedicada? Por que não buscar direto em <code>nome_produto</code> e <code>obs_produto</code>?</p>
+
+<p>Duas razões:</p>
+
+<ul>
+    <li><strong>Performance.</strong> Buscar por substring em N colunas (<code>nome_produto LIKE '%x%' OR obs_produto LIKE '%x%'</code>) escala mal. Com uma coluna pré-normalizada, o WHERE vira um único <code>LIKE</code> simples.</li>
+    <li><strong>Normalização.</strong> O usuário digita <code>açúcar</code> ou <code>acucar</code> ou <code>AÇÚCAR</code> — todos têm que achar o mesmo registro. Comparar texto bruto com acentos e caixa não funciona. Pré-normalizar uma vez na escrita evita normalizar a cada leitura.</li>
+</ul>
+
+<p>O conteúdo da coluna é a concatenação dos campos pesquisáveis, tudo em lowercase e sem acento:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th><code>nome_produto</code></th><th><code>obs_produto</code></th><th><code>qs_produto</code></th></tr>
+    <tr><td>Açúcar Refinado 1kg</td><td>cristal fino</td><td>acucar refinado 1kg cristal fino</td></tr>
+    <tr><td>Café Torrado 500g</td><td>torra média</td><td>cafe torrado 500g torra media</td></tr>
+</table>
+</div>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Peça 2 — Campo qs_produto no Bean                            -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Peça 2 — Campo <code>qs_produto</code> no Bean</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">private String qs_produto;
+
+public String getQs_produto() { return qs_produto; }
+public void setQs_produto(String qs_produto) { this.qs_produto = qs_produto; }
+
+public static String QS_PRODUTO = "qs_produto";</code></pre>
+
+<p>Padrão idêntico aos outros campos do Bean: declaração privada, getter, setter, e a constante pública com o nome da coluna no banco. Sem nada especial.</p>
+
+<p><strong>Por que NÃO usar <code>@DBInfo(transient=true)</code>?</strong> Justamente porque queremos que o framework <em>persista</em> esse campo. O <code>qs_produto</code> tem que ir pro <code>INSERT</code> e pro <code>UPDATE</code> automaticamente. Deixar como campo normal é o que faz isso acontecer.</p>
+
+<p>A constante <code>QS_PRODUTO</code> é usada em três lugares: no DAO (<code>SQL.column(QS_PRODUTO)</code>), na List (input HTML) e na inner class QuickSearch (leitura do input). Constante centraliza o nome — se mudar a coluna no banco, muda em um lugar só.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Peça 3 — Normalização no DAO                                 -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Peça 3 — Normalização no DAO (<code>qs_produto</code> + <code>daoWhere</code>)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O DAO ganha duas responsabilidades: <strong>preencher</strong> o <code>qs_produto</code> na escrita e <strong>filtrar</strong> por ele na leitura.</p>
+
+<h3>Preenchimento — método <code>qs_produto(bean)</code></h3>
+
+<pre><code class="language-java">public void qs_produto(DepartamentoProdutoBean bean) throws Exception {
+    bean.setQs_produto(JasapFunctions.searchString(
+            bean.getNome_produto() + " " +
+            bean.getObs_produto()
+    ));
+}</code></pre>
+
+<p><code>JasapFunctions.searchString()</code> faz o trabalho pesado: recebe a string concatenada, devolve em lowercase e sem acento. É o equivalente Java do <code>lower(unaccent(...))</code> do PostgreSQL.</p>
+
+<p>Esse método é chamado no <code>daoInsert</code> e <code>daoUpdate</code>, antes do <code>execute</code>. Resultado: toda escrita atualiza o <code>qs_produto</code> automaticamente, sem o programador ter que lembrar.</p>
+
+<h3>Filtro — método <code>daoWhere</code></h3>
+
+<pre><code class="language-java">public void daoWhere(Object objWhere) throws Exception {
+    String where = "";
+    if (objWhere != null) {
+        DepartamentoProdutoWBean filtro = (DepartamentoProdutoWBean) objWhere;
+
+        if (filtro.getQs_produto() != null && !JasapFunctions.equals(filtro.getQs_produto(), "")) {
+            String[] cols = { SQL.column(DepartamentoProdutoBean.QS_PRODUTO) };
+            where = where + qsWhere(filtro.getQs_produto(), cols);
+        }
+
+        filtro.setWhere(where);
+    }
+}</code></pre>
+
+<p>Decompondo:</p>
+
+<ul>
+    <li><strong><code>filtro.getQs_produto()</code></strong> — texto que o usuário digitou (já guardado no WBean pela inner class QuickSearch).</li>
+    <li><strong><code>qsWhere(texto, cols)</code></strong> — método herdado do <code>JasapDAO</code>. Quebra o texto em palavras, normaliza cada uma e gera o SQL <code>(qs_produto LIKE '%palavra1%' AND qs_produto LIKE '%palavra2%' ...)</code>. Suporta busca multi-palavra.</li>
+    <li><strong><code>filtro.setWhere(where)</code></strong> — grava o WHERE final no WBean. O placeholder <code>&lt;where&gt;</code> no SQL do <code>daoList</code> é substituído por esse texto na hora da execução.</li>
+</ul>
+
+<h3>Mudança no <code>daoList</code></h3>
+
+<pre><code class="language-java">sql.append(" where 1=1 &lt;where&gt; &lt;orderby&gt;");
+// ...
+daoWhere(list.getFiltro());
+select().executeList(query, list);</code></pre>
+
+<p>Duas adições no <code>daoList</code>: o placeholder <code>&lt;where&gt;</code> no SQL (junto com <code>1=1</code> que vira o "ponto âncora" pra concatenação dos <code>AND</code>), e a chamada <code>daoWhere(list.getFiltro())</code> antes do <code>executeList</code> pra montar o WHERE.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Peça 4 — Inner class QuickSearch                             -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Peça 4 — Inner class <code>QuickSearch</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">public static class QuickSearch extends DepartamentoProdutoList {
+    @Override
+    public Effect execute() throws Exception {
+        getFiltro().setQs_produto(getInput().getString(DepartamentoProdutoBean.QS_PRODUTO));
+        update(lView().getDIV_BODY(), lView().getBody());
+        update(lView().getDIV_NAVIGATE(), lView().getNavForm());
+        eval(Js.setFocusTo(DepartamentoProdutoBean.QS_PRODUTO));
+        return new Response();
+    }
+}</code></pre>
+
+<p>A action chamada a cada tecla digitada na barra de busca. 4 linhas de execução:</p>
+
+<ul>
+    <li><strong><code>getFiltro().setQs_produto(getInput().getString(...))</code></strong> — lê o texto digitado (vem do <code>onkeyup</code> da barra) e grava no WBean. O WBean fica na sessão, então o filtro persiste entre cliques na lista, ordenação, abertura de form etc.</li>
+    <li><strong><code>update(getDIV_BODY(), getBody())</code></strong> — re-renderiza só as linhas da tabela. Como <code>lView()</code> chama <code>daoList</code>, e <code>daoList</code> chama <code>daoWhere</code> com o filtro recém-atualizado, o SQL volta com a lista filtrada.</li>
+    <li><strong><code>update(getDIV_NAVIGATE(), getNavForm())</code></strong> — atualiza a área de paginação. Sem isso, contagem total fica errada quando paginação for adicionada depois.</li>
+    <li><strong><code>eval(Js.setFocusTo(QS_PRODUTO))</code></strong> — devolve o foco pro campo de busca. Sem isso, o usuário perderia o foco a cada tecla e a barra ficaria inutilizável.</li>
+</ul>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Peça 5 — Barra de busca com bgDark                           -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Peça 5 — Barra de busca com <code>ui().bgDark()</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">protected Text qs_produto = null;
+public String qs_produto() throws Exception {
+    qs_produto = ui().text(DepartamentoProdutoBean.QS_PRODUTO)
+            .setLabel("Consulta")
+            .setStyle("width:400;height:30px;font-size:14px")
+            .setMaxlength(300)
+            .setValue(getFiltro().getQs_produto())
+            .setOnkeyup(Js.pressEnter(
+                    link(QuickSearch.class)
+                            .putScript(DepartamentoProdutoBean.QS_PRODUTO, Js.SELF_VALUE)
+                            .ajax()));
+
+    Table aux = new Table(getManager(), "100%", "45")
+            .setStyle(ui().bgDark())
+            .rowC()
+            .setAlign(Table.ALIGN_CENTER)
+            .setVerticalAlign(Table.ALIGN_MIDDLE)
+            .setContent(qs_produto.toHtml() + "&lt;span class=\"glyphicon glyphicon-search xt-ico-white\"&gt;&lt;/span&gt;")
+            .table();
+
+    return aux.toHtml();
+}</code></pre>
+
+<p>O método monta o input + lupa dentro de uma barra horizontal escura. Decompondo:</p>
+
+<ul>
+    <li><strong><code>ui().text(QS_PRODUTO)</code></strong> — cria um input HTML com o nome do parâmetro igual à constante <code>QS_PRODUTO</code>. Esse nome é o que <code>getInput().getString(QS_PRODUTO)</code> lê do outro lado.</li>
+    <li><strong><code>.setValue(getFiltro().getQs_produto())</code></strong> — preenche com o texto que estava na sessão. Sem isso, ao fechar e reabrir um form, a barra apareceria vazia mesmo com filtro ativo.</li>
+    <li><strong><code>.setOnkeyup(Js.pressEnter(...))</code></strong> — dispara a action <code>QuickSearch</code> ao pressionar Enter. <code>Js.SELF_VALUE</code> envia o conteúdo atual do próprio input.</li>
+    <li><strong><code>ui().bgDark()</code></strong> — CSS que dá o fundo escuro (cinza chumbo) na barra, padrão visual de barras de filtro no XT.</li>
+    <li><strong><code>glyphicon glyphicon-search</code></strong> — ícone de lupa do Bootstrap, branco (<code>xt-ico-white</code>), à direita do input.</li>
+</ul>
+
+<p>A barra é incluída no <code>window()</code> via <code>w.rowC("1%", null, qs_produto())</code> — uma linha horizontal entre a lista e o rodapé.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- regAction no Manager                                         -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title"><code>regAction</code> — registrar no Manager</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">regAction(DepartamentoProdutoList.QuickSearch.class);</code></pre>
+
+<p>Uma linha no <code>DepartamentoManager.config()</code>. Sem isso, o framework não conhece a inner class <code>QuickSearch</code> e o <code>onkeyup</code> da barra retorna "setor não encontrado".</p>
+
+<p>A linha fica logo depois do <code>regAction(Sort.class)</code>, antes do <code>DeleteFromList</code>. Organização lógica: List → Sort → QuickSearch → DeleteFromList.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Limitação — por que valor e quantidade ficam de fora         -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Limitação — por que <code>vl_produto</code> e <code>qtd_produto</code> ficam de fora</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Repare que o método <code>qs_produto(bean)</code> só concatena <strong>nome</strong> e <strong>observação</strong>:</p>
+
+<pre><code class="language-java">bean.setQs_produto(JasapFunctions.searchString(
+        bean.getNome_produto() + " " +
+        bean.getObs_produto()
+));</code></pre>
+
+<p>Valor e quantidade ficam de fora <strong>de propósito</strong>. Buscar número como texto não funciona bem em pt-BR:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Você digita</th><th>Coluna tem</th><th>Encontra?</th></tr>
+    <tr><td><code>5.2</code></td><td><code>5.2</code></td><td>sim</td></tr>
+    <tr><td><code>5,2</code></td><td><code>5.2</code></td><td>não</td></tr>
+    <tr><td><code>1000</code></td><td><code>1000</code> (mas em vários produtos)</td><td>casa demais — falso positivo</td></tr>
+</table>
+</div>
+
+<p>Em Java, <code>Double.toString()</code> sempre usa ponto como separador decimal. Mas o usuário brasileiro digita vírgula. Se incluíssemos valor no <code>qs_produto</code>, a busca por preço quebraria pra todo mundo.</p>
+
+<p>O Jasap resolve isso com outra feature: <strong>filtros de range</strong> (<code>vl_ini</code> / <code>vl_fim</code>) — campos separados pra "de R$ X até R$ Y". Esse é assunto pro próximo episódio "Filtros avançados". A barra de busca rápida é pra texto livre — nome, observação, descrição.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- O que NÃO faz parte do QuickSearch                           -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que NÃO faz parte do QuickSearch</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O QuickSearch isolado faz uma coisa só: filtrar a lista por texto digitado. Algumas features <em>parecem</em> fazer parte mas são separadas:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Feature</th><th>Faz parte?</th><th>Porquê</th></tr>
+    <tr><td>Trocar <code>setOnCloseURL</code> → <code>url(Sort.class)</code></td><td>Não</td><td>Otimização: faz a barra preservar o filtro ao fechar form. Mas é uma linha trocada na List, episódio próprio se quiser destacar.</td></tr>
+    <tr><td>Filtro de range numérico (<code>vl_ini</code>/<code>vl_fim</code>)</td><td>Não</td><td>Filtros avançados — feature separada (próximo episódio)</td></tr>
+    <tr><td>Reset de página (<code>resetPage</code>)</td><td>Não</td><td>Só faz sentido com paginação ativa — episódio de paginação</td></tr>
+    <tr><td>Tabs de status</td><td>Não</td><td>Filtro por status — feature separada</td></tr>
+</table>
+</div>
+
+<p>O QuickSearch que implementamos aqui é a base: 5 peças coordenadas, busca fuzzy funcionando. As features acima estendem o filtro de outras formas, mas não dependem do QuickSearch e o QuickSearch não depende delas.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Resumo                                                       -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Resumo — o que mudou</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="table-wrap">
+<table>
+    <tr><th>Arquivo / Recurso</th><th>Tipo</th><th>Edição</th></tr>
+    <tr><td><strong>SQL</strong></td><td>novo</td><td>Coluna <code>qs_produto text</code> + extensão <code>unaccent</code> + <code>UPDATE</code> de backfill</td></tr>
+    <tr><td><strong>DepartamentoProdutoBean</strong></td><td>editar</td><td>Campo + getter/setter + constante <code>QS_PRODUTO</code></td></tr>
+    <tr><td><strong>DepartamentoProdutoDAO</strong></td><td>editar</td><td>2 imports, <code>&lt;where&gt;</code> no SQL, chamadas <code>qs_produto(bean)</code> no insert/update, métodos <code>qs_produto</code> e <code>daoWhere</code></td></tr>
+    <tr><td><strong>DepartamentoProdutoList</strong></td><td>editar</td><td>1 import (<code>Text</code>), linha no <code>window()</code>, método <code>qs_produto()</code>, inner class <code>QuickSearch</code></td></tr>
+    <tr><td><strong>DepartamentoManager</strong></td><td>editar</td><td>1 <code>regAction(QuickSearch.class)</code></td></tr>
+</table>
+</div>
+
+<p>4 arquivos editados, 1 alteração no banco, nenhum arquivo Java novo. Resultado: barra de busca rápida funcionando com normalização (case-insensitive, sem acento), suporte a múltiplas palavras, e filtro persistente na sessão.</p>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

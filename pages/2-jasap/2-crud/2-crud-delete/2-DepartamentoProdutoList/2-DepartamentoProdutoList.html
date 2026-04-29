@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoProdutoList (DELETE) — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoProdutoList <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="audio/DepartamentoProdutoList.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>Arquivo MAIS EDITADO da sequência DELETE. Ganha a coluna da lixeirinha na tabela, a inner class <code>DeleteFromList</code> que trata o ciclo de dois cliques (confirmar + executar), e uma constante nova <code>CONFIRM_LIST</code>.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.ListColumn;
+import br.jasap.gui.ListLine;
+import br.jasap.gui.ListView;
+import br.jasap.gui.Table;
+<span class="line-add">import br.jasap.gui.Toast;</span>
+<span class="line-add">import br.jasap.util.JasapFunctions;</span>
+<span class="line-add">import br.jasap.util.Js;</span>
+<span class="line-add">import br.jasap.util.exceptions.SQLConstraintException;</span>
+<span class="line-add">import br.xt.acore.view.IconButton;</span>
+import br.xt.acore.view.XtPage;
+
+public class DepartamentoProdutoList extends DepartamentoProdutoAction {
+
+    @Override
+    public Effect execute() throws Exception {
+        render();
+        return new Response();
+    }
+
+    public void render() throws Exception {
+        XtPage page = new XtPage(getManager());
+        if (isAjaxCall()) {
+            update(JasapPage.DIV_WINDOW, page.content(window().toHtml()));
+        } else {
+            page.getTable()
+                    .setBorder(4)
+                    .rowC("100%")
+                    .setContent(page.content(window().toHtml()))
+                    .setStyle(ui().stretchBorder());
+            page.setWinTitle("Produtos");
+            getOutput().write(this, page);
+        }
+    }
+
+    public Table window() throws Exception {
+        Table w = new Table(getManager()).setSize("100%", "100%");
+        w.rowC("99%", JasapPage.DIV_WSPACE, lView());
+        w.rowC("1%",  null, ui().line());
+        return w;
+    }
+
+    private ListView lv = null;
+    public ListView lView() throws Exception {
+        if (lv == null) {
+            lv = ui().lView();
+
+            lv.setOrderBy(DepartamentoProdutoBean.NOME_PRODUTO);
+            lv.setPageSize(9999);
+
+            lv.setFiltro(getFiltro());
+            getFactory().departamento().proModel().daoList(lv.getData());
+
+            ListColumn col_nome = lv.newColumn("Nome").setWidth(220).setPadding(";padding:10 8 10 8;");
+            ListColumn col_vl   = lv.newColumn("Valor").setWidth(100).setPadding(";padding:10 8 10 8;").alignCenter();
+            ListColumn col_qtd  = lv.newColumn("Qtd").setWidth(80).setPadding(";padding:10 8 10 8;").alignCenter();
+            ListColumn col_obs  = lv.newColumn("Observação").setPadding(";padding:10 8 10 8;");
+            <span class="line-add">ListColumn col_del  = lv.newColumn("").setWidth(50).setPadding(";padding:6 4 6 4;").alignCenter();</span>
+
+            while (lv.hasNext()) {
+                DepartamentoProdutoBean bean = (DepartamentoProdutoBean) lv.next();
+                ListLine line = lv.createLine();
+                col_nome.setContent(bean.getNome_produto());
+                col_vl.setContent(bean.getVl_produto());
+                col_qtd.setContent(bean.getQtd_produto());
+                col_obs.setContent(bean.getObs_produto());
+                <span class="line-add">col_del.setHtmlData(new IconButton("trash")</span>
+                <span class="line-add">        .setColor("#d9534f")</span>
+                <span class="line-add">        .setTitle("Excluir")</span>
+                <span class="line-add">        .setOnclick(link(DeleteFromList.class).putInteger(DepartamentoProdutoBean.ID_PRODUTO, bean.getId_produto()).ajax())</span>
+                <span class="line-add">        .toHtml());</span>
+                lv.addLine(line);
+            }
+        }
+        return lv;
+    }
+
+    public DepartamentoProdutoWBean getFiltro() throws Exception {
+        DepartamentoProdutoWBean filtro = (DepartamentoProdutoWBean) getSession().getObject(FILTRO);
+        if (filtro == null) {
+            filtro = proWBean();
+            getSession().addObj(FILTRO, filtro);
+        }
+        return filtro;
+    }
+
+    <span class="line-add">public static class DeleteFromList extends DepartamentoProdutoList {</span>
+    <span class="line-add">    @Override</span>
+    <span class="line-add">    public Effect execute() throws Exception {</span>
+    <span class="line-add">        try {</span>
+    <span class="line-add">            Integer id = getInput().getInteger(DepartamentoProdutoBean.ID_PRODUTO);</span>
+    <span class="line-add">            if (JasapFunctions.equals(getInput().getInteger(CONFIRM_LIST), 1)) {</span>
+    <span class="line-add">                DepartamentoProdutoBean bean = new DepartamentoProdutoBean();</span>
+    <span class="line-add">                bean.setId_produto(id);</span>
+    <span class="line-add">                getFactory().departamento().proModel().daoDelete(bean);</span>
+    <span class="line-add">                update(lView().getDIV_BODY(), lView().getBody());</span>
+    <span class="line-add">                update(lView().getDIV_NAVIGATE(), lView().getNavForm());</span>
+    <span class="line-add">            } else {</span>
+    <span class="line-add">                eval(Js.swalConfirm("Confirma a exclusão desse registro?",</span>
+    <span class="line-add">                        link(DeleteFromList.class)</span>
+    <span class="line-add">                                .putInteger(DepartamentoProdutoBean.ID_PRODUTO, id)</span>
+    <span class="line-add">                                .putInteger(CONFIRM_LIST, 1).ajax(), ""));</span>
+    <span class="line-add">            }</span>
+    <span class="line-add">            return new Response();</span>
+    <span class="line-add">        } catch (SQLConstraintException e) {</span>
+    <span class="line-add">            eval(new Toast("Falha ao excluir: esse registro está sendo usado em outra tabela.").fail());</span>
+    <span class="line-add">            return new Response();</span>
+    <span class="line-add">        }</span>
+    <span class="line-add">    }</span>
+    <span class="line-add">}</span>
+
+    public static final String LIST         = ROOT.concat("__LIST/");
+    public static final String FILTRO       = LIST.concat("__FILTRO");
+    <span class="line-add">public static final String CONFIRM_LIST = LIST.concat("__CONFIRM_LIST");</span>
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudanças nesta sequência:</strong> 5 imports novos, 1 coluna nova (<code>col_del</code>), <code>IconButton</code> dentro do while, 1 inner class inteira (<code>DeleteFromList</code>), 1 constante (<code>CONFIRM_LIST</code>).</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title"><code>IconButton</code> — componente de ícone do projeto</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p><code>IconButton</code> é um componente fluent de <code>br.xt.acore.view</code> que gera um botão de ícone pronto com <code>event.stopPropagation()</code> embutido. Ele encapsula o HTML do botão que antes era montado na mão:</p>
+
+<pre><code class="language-java">new IconButton("trash")       // ícone de lixeira (glyphicon)
+    .setColor("#d9534f")       // vermelho Bootstrap (danger)
+    .setTitle("Excluir")       // tooltip ao passar o mouse
+    .setOnclick(link(...).ajax())  // ação Ajax ao clicar
+    .toHtml()                  // gera o HTML final</code></pre>
+
+<p>O <code>stopPropagation</code> já vem embutido — quando a linha da tabela tiver <code>setOnclick</code> (na sequência UPDATE), clicar no ícone NÃO abre o formulário de edição.</p>
+
+<p>Usa <code>setHtmlData()</code> (não <code>setContent()</code>) porque o resultado é HTML bruto que o browser precisa interpretar como botão real.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O ciclo de dois cliques — <code>DeleteFromList</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>A inner class <code>DeleteFromList</code> trata DOIS cenários no mesmo método:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Clique</th><th>Flag <code>CONFIRM_LIST</code></th><th>O que o agente faz</th></tr>
+    <tr><td>1º (na lixeirinha)</td><td>Ausente / não é 1</td><td>Entra no <code>else</code>. Escreve ordem <code>Js.swalConfirm</code> pro browser abrir popup de confirmação. O botão SIM do popup chama a PRÓPRIA <code>DeleteFromList</code> de novo — com <code>CONFIRM_LIST=1</code>.</td></tr>
+    <tr><td>2º (SIM no popup)</td><td>1</td><td>Entra no <code>if</code>. Cria ficha em branco com só o ID, chama <code>daoDelete</code>, e atualiza parcialmente <code>DIV_BODY</code> + <code>DIV_NAVIGATE</code> da ListView.</td></tr>
+</table>
+</div>
+
+<p><strong>Importante:</strong> cada clique é um request NOVO, com agente e cartão novos. O encadeamento ("o segundo clique precisa vir depois do primeiro") vive no CÓDIGO (a flag no input), não na memória do agente — cada agente chega zero-memória.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que capturar <code>SQLConstraintException</code> separadamente?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Tentar excluir um produto que tem FK apontando pra ele em outra tabela faz o banco REJEITAR o delete, lançando <code>SQLConstraintException</code>. Esse erro tem uma CAUSA CLARA que dá pra explicar pro usuário.</p>
+
+<p>Sem o <code>catch</code>, a exceção subiria pro <code>ErrorFilter</code> global que mostra "Ocorreu um erro" genérico. Com o <code>catch</code> específico, mostramos Toast com mensagem útil: <em>"Falha ao excluir: esse registro está sendo usado em outra tabela."</em></p>
+
+<p>Outros erros (conexão, query inválida) NÃO são capturados aqui — sobem pro <code>ErrorFilter</code>, que é a rede de proteção padrão.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Update parcial pós-delete</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Depois do <code>daoDelete</code>, em vez de recarregar a página inteira, atualizamos só o corpo da lista:</p>
+
+<pre><code class="language-java">update(lView().getDIV_BODY(), lView().getBody());
+update(lView().getDIV_NAVIGATE(), lView().getNavForm());</code></pre>
+
+<p>Ao chamar <code>lView()</code> depois do delete, ele é reexecutado — busca a lista nova no banco (sem a linha excluída) e remonta a tabela. O framework manda os dois updates Ajax pro browser, que cola os novos conteúdos por cima dos antigos. Usuário vê a lista sem a linha, tudo sem reload.</p>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

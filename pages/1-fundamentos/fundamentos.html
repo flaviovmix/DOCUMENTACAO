@@ -3,199 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus</title>
-    <script src="js/layout.js"></script>
+    <title>Fundamentos — Nexus</title>
+    <script src="../../js/layout.js"></script>
 </head>
 <body>
 
     <div class="home-header">
-        <h1 class="home-title">DOCUMENTACAO</h1>
-        <p class="home-sub">Documentacao do framework Jasap aplicado ao modulo de estudo</p>
+        <h1 class="home-title">FUNDAMENTOS</h1>
+        <p class="home-sub">As bases pra entender o resto — Java, SQL, HTTP, hardware e a tríade do front</p>
     </div>
 
     <div class="home-grid">
 
-        <!-- FUNDAMENTOS -->
-        <div class="card">
+        <div class="card" data-href="1-java/java.html">
             <div class="card-menu btnMenuCard">
                 <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
             </div>
             <div class="card-info">
-                <ul class="card-links">
-                    <li><a href="pages/1-fundamentos/1-java/java.html">Fundamentos Java <i class="fa-brands fa-java"></i></a></li>
-                    <li><a href="pages/1-fundamentos/2-sql/sql.html">SQL <i class="fa-solid fa-database"></i></a></li>
-                    <li><a href="pages/1-fundamentos/3-http/http.html">HTTP <i class="fa-solid fa-globe"></i></a></li>
-                    <li><a href="pages/1-fundamentos/4-html-css-js/html-css-js.html">HTML - CSS - JS <i class="fa-solid fa-code"></i></a></li>
-                    <li><a href="pages/1-fundamentos/5-hardware/hardware.html">Hardware <i class="fa-solid fa-microchip"></i></a></li>
-                </ul>
+                <div class="card-resumo">
+                    <p>A linguagem do XT — sintaxe, classes, herança, interfaces e tudo o que você precisa entender antes de mexer no código.</p>
+                </div>
             </div>
             <div class="card-img">
                 <button class="card-pause btnPauseCard" aria-label="Pausar/tocar vídeo">
                     <svg class="ic-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
                     <svg class="ic-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
                 </button>
-                <video src="pages/img-video/fundamentos.mp4#t=0.1" muted loop playsinline preload="auto" data-name="FUNDAMENTOS"></video>
+                <video src="img-video/fundamentos-java.mp4#t=0.1" muted loop playsinline preload="auto" data-name="Java"></video>
             </div>
             <div class="card-bar">
-                <a href="pages/1-fundamentos/fundamentos.html" class="card-tag" style="--tag-clr:#6b7280;">FUNDAMENTOS</a>
+                <a href="1-java/java.html" class="card-tag" style="--tag-clr:#2563eb;">Java</a>
             </div>
         </div>
 
-        <!-- JASAP -->
-        <div class="card">
+        <div class="card" data-href="2-sql/sql.html">
             <div class="card-menu btnMenuCard">
                 <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
             </div>
             <div class="card-info">
-                <ul class="card-links">
-                    <li><a href="pages/2-jasap/jasap.html">Jasap — Visao Geral <i class="fa-solid fa-gears"></i></a></li>
-                </ul>
+                <div class="card-resumo">
+                    <p>A linguagem do banco — SELECT, JOIN, INSERT, UPDATE, DELETE e como o XT conversa com o PostgreSQL.</p>
+                </div>
             </div>
             <div class="card-img">
                 <button class="card-pause btnPauseCard" aria-label="Pausar/tocar vídeo">
                     <svg class="ic-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
                     <svg class="ic-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
                 </button>
-                <video src="pages/img-video/jasap.mp4#t=0.1" muted loop playsinline preload="auto" data-name="Jasap"></video>
+                <video src="img-video/sql.mp4#t=0.1" muted loop playsinline preload="auto" data-name="SQL"></video>
             </div>
             <div class="card-bar">
-                <a href="pages/2-jasap/jasap.html" class="card-tag" style="--tag-clr:#ea580c;">JASAP</a>
+                <a href="2-sql/sql.html" class="card-tag" style="--tag-clr:#0891b2;">SQL</a>
             </div>
         </div>
 
-        <!-- NEXUS -->
-        <div class="card">
+        <div class="card" data-href="3-http/http.html">
             <div class="card-menu btnMenuCard">
                 <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
             </div>
             <div class="card-info">
-                <ul class="card-links">
-                </ul>
+                <div class="card-resumo">
+                    <p>O protocolo da web — request/response, headers, métodos GET/POST e como o browser conversa com o servidor.</p>
+                </div>
             </div>
             <div class="card-img">
                 <button class="card-pause btnPauseCard" aria-label="Pausar/tocar vídeo">
                     <svg class="ic-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
                     <svg class="ic-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
                 </button>
-                <video src="pages/img-video/nexus.mp4#t=0.1" muted loop playsinline preload="auto" data-name="Nexus"></video>
+                <video src="img-video/http.mp4#t=0.1" muted loop playsinline preload="auto" data-name="HTTP"></video>
             </div>
             <div class="card-bar">
-                <a href="pages/3-nexus/nexus.html" class="card-tag" style="--tag-clr:#db2777;">NEXUS</a>
+                <a href="3-http/http.html" class="card-tag" style="--tag-clr:#6366f1;">HTTP</a>
             </div>
         </div>
 
-        <!-- TESTES -->
-        <div class="card">
-            <div class="card-menu btnMenuCard">
-                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
-            </div>
-            <div class="card-info">
-                <ul class="card-links">
-                </ul>
-            </div>
-            <div class="card-img">
-                <button class="card-pause btnPauseCard" aria-label="Pausar/tocar vídeo">
-                    <svg class="ic-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
-                    <svg class="ic-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
-                </button>
-                <video src="pages/img-video/testes.mp4#t=0.1" muted loop playsinline preload="auto" data-name="TESTES"></video>
-            </div>
-            <div class="card-bar">
-                <a href="#" class="card-tag" style="--tag-clr:#16a34a;">TESTES</a>
-            </div>
-        </div>
-
-        <!-- VMIX -->
-        <div class="card">
-            <div class="card-menu btnMenuCard">
-                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
-            </div>
-            <div class="card-info">
-                <ul class="card-links">
-                </ul>
-            </div>
-            <div class="card-img">
-                <button class="card-pause btnPauseCard" aria-label="Pausar/tocar vídeo">
-                    <svg class="ic-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
-                    <svg class="ic-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
-                </button>
-                <video src="pages/img-video/vmix.mp4#t=0.1" muted loop playsinline preload="auto" data-name="vMix"></video>
-            </div>
-            <div class="card-bar">
-                <a href="#" class="card-tag" style="--tag-clr:#d97706;">VMIX</a>
-            </div>
-        </div>
-
-        <!-- CLAUDE -->
-        <div class="card">
-            <div class="card-menu btnMenuCard">
-                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
-            </div>
-            <div class="card-info">
-                <ul class="card-links">
-                </ul>
-            </div>
-            <div class="card-img">
-                <button class="card-pause btnPauseCard" aria-label="Pausar/tocar vídeo">
-                    <svg class="ic-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
-                    <svg class="ic-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
-                </button>
-                <video src="pages/img-video/claude.mp4#t=0.1" muted loop playsinline preload="auto" data-name="Claude"></video>
-            </div>
-            <div class="card-bar">
-                <a href="#" class="card-tag" style="--tag-clr:#475569;">CLAUDE</a>
-            </div>
-        </div>
-
-        <!-- WALKIE -->
-        <div class="card">
-            <div class="card-menu btnMenuCard">
-                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
-            </div>
-            <div class="card-info">
-                <ul class="card-links">
-                </ul>
-            </div>
-            <div class="card-img">
-                <button class="card-pause btnPauseCard" aria-label="Pausar/tocar vídeo">
-                    <svg class="ic-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
-                    <svg class="ic-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
-                </button>
-                <video src="pages/img-video/outro.mp4#t=0.1" muted loop playsinline preload="auto" data-name="WALKIE"></video>
-            </div>
-            <div class="card-bar">
-                <a href="#" class="card-tag" style="--tag-clr:#6b7280;">WALKIE</a>
-            </div>
-        </div>
-
-        <!-- OBSIDIAN -->
         <div class="card">
             <div class="card-menu btnMenuCard">
                 <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
             </div>
             <div class="card-info">
                 <div class="card-resumo">
-                    <div>
-                        <strong>Notas e tarefas em andamento.</strong>
-                        <p>Snapshot em texto puro do vault Obsidian pessoal — MOC do Departamento, guia da sessao, notas sobre integracoes (Todoist, WhatsApp) e migracao do Notion em andamento.</p>
-                    </div>
+                    <p>A tríade do front — estrutura, estilo e comportamento; o que o browser entende e como cada um faz seu papel.</p>
                 </div>
-                <ul class="card-links">
-                    <li><a href="pages/7-obsidian/obsidian.html">README <i class="fa-solid fa-file-lines"></i></a></li>
-                    <li><a href="pages/7-obsidian/obsidian.html">CLAUDE <i class="fa-solid fa-book"></i></a></li>
-                    <li><a href="pages/7-obsidian/obsidian.html">MOC - Departamento <i class="fa-solid fa-diagram-project"></i></a></li>
-                    <li><a href="pages/7-obsidian/obsidian.html">Integracoes externas <i class="fa-solid fa-plug"></i></a></li>
-                </ul>
             </div>
             <div class="card-img">
                 <button class="card-pause btnPauseCard" aria-label="Pausar/tocar vídeo">
                     <svg class="ic-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
                     <svg class="ic-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
                 </button>
-                <video src="pages/img-video/obsidian.mp4#t=0.1" muted loop playsinline preload="auto" data-name="Obsidian"></video>
+                <video src="img-video/html-css-js.mp4#t=0.1" muted loop playsinline preload="auto" data-name="HTML - CSS - JS"></video>
             </div>
             <div class="card-bar">
-                <a href="pages/7-obsidian/obsidian.html" class="card-tag" style="--tag-clr:#9333ea;">OBSIDIAN</a>
+                <span class="card-tag" style="--tag-clr:#0d9488;">HTML - CSS - JS</span>
+            </div>
+        </div>
+
+        <div class="card" data-href="5-hardware/hardware.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>A máquina por baixo — CPU, RAM, disco, rede; o que acontece quando o servidor recebe uma requisição.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <button class="card-pause btnPauseCard" aria-label="Pausar/tocar vídeo">
+                    <svg class="ic-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+                    <svg class="ic-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
+                </button>
+                <video src="img-video/hardware.mp4#t=0.1" muted loop playsinline preload="auto" data-name="Hardware"></video>
+            </div>
+            <div class="card-bar">
+                <a href="5-hardware/hardware.html" class="card-tag" style="--tag-clr:#dc2626;">HARDWARE</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>A receita pra resolver um problema — busca, ordenação, listas, mapas, árvores; e por que um algoritmo é "rápido" ou "lento".</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <button class="card-pause btnPauseCard" aria-label="Pausar/tocar vídeo">
+                    <svg class="ic-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+                    <svg class="ic-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
+                </button>
+                <video src="img-video/algoritmos.mp4#t=0.1" muted loop playsinline preload="auto" data-name="Algoritmos"></video>
+            </div>
+            <div class="card-bar">
+                <span class="card-tag" style="--tag-clr:#8b5cf6;">ALGORITMOS</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Versionamento de código — commits, branches, merge, push, pull; como trabalhar em equipe sem perder nada.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <button class="card-pause btnPauseCard" aria-label="Pausar/tocar vídeo">
+                    <svg class="ic-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+                    <svg class="ic-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
+                </button>
+                <video src="img-video/git.mp4#t=0.1" muted loop playsinline preload="auto" data-name="Git"></video>
+            </div>
+            <div class="card-bar">
+                <span class="card-tag" style="--tag-clr:#f05033;">GIT</span>
             </div>
         </div>
 

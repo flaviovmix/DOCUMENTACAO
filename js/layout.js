@@ -22,22 +22,83 @@
 
 var MENU = [
     {
+        grupo: 'FUNDAMENTOS',
+        pagina: 'fundamentos.html',
+        subgrupos: [
+            { label: 'JAVA',         href: '1-java/java.html',               pasta: '1-java' },
+            { label: 'SQL',          href: '2-sql/sql.html',                 pasta: '2-sql' },
+            { label: 'HTTP',         href: '3-http/http.html',               pasta: '3-http' },
+            { label: 'HTML-CSS-JS',  href: '4-html-css-js/html-css-js.html', pasta: '4-html-css-js' },
+            { label: 'HARDWARE',     href: '5-hardware/hardware.html',       pasta: '5-hardware' }
+        ],
+        subpastas: ['1-java', '2-sql', '3-http', '4-html-css-js', '5-hardware'],
+        pasta: '1-fundamentos'
+    },
+    {
+        grupo: 'JAVA',
+        pagina: 'java.html',
+        parent: { label: 'FUNDAMENTOS', href: '1-fundamentos/fundamentos.html' },
+        hidden: true,
+        pasta: '1-java',
+        basePath: '1-fundamentos/1-java'
+    },
+    {
+        grupo: 'SQL',
+        pagina: 'sql.html',
+        parent: { label: 'FUNDAMENTOS', href: '1-fundamentos/fundamentos.html' },
+        hidden: true,
+        pasta: '2-sql',
+        basePath: '1-fundamentos/2-sql'
+    },
+    {
+        grupo: 'HTTP',
+        pagina: 'http.html',
+        parent: { label: 'FUNDAMENTOS', href: '1-fundamentos/fundamentos.html' },
+        hidden: true,
+        pasta: '3-http',
+        basePath: '1-fundamentos/3-http'
+    },
+    {
+        grupo: 'HARDWARE',
+        pagina: 'hardware.html',
+        parent: { label: 'FUNDAMENTOS', href: '1-fundamentos/fundamentos.html' },
+        hidden: true,
+        pasta: '5-hardware',
+        basePath: '1-fundamentos/5-hardware'
+    },
+    {
+        grupo: 'JASAP',
+        pagina: 'jasap.html',
+        subgrupos: [
+            { label: 'NOVO MÓDULO', href: '1-novo-modulo/novo-modulo.html', pasta: '1-novo-modulo' },
+            { label: 'CRUD',        href: '2-crud/crud.html',               pasta: '2-crud' },
+            { label: 'MANAGER',     href: '1-Manager/1-Manager.html',       pasta: '1-Manager' }
+        ],
+        subpastas: ['1-novo-modulo', '2-crud', '1-Manager'],
+        pasta: '2-jasap'
+    },
+    {
         grupo: 'NOVO MÓDULO',
         pagina: 'novo-modulo.html',
+        parent: { label: 'JASAP', href: '2-jasap/jasap.html' },
+        hidden: true,
         items: [
-            { label: '1 - DepartamentoHome',     arquivo: '1-DepartamentoHome/1-DepartamentoHome.html',   tipo: 'novo' },
-            { label: '2 - DepartamentoManager',   arquivo: '2-DepartamentoManager/2-DepartamentoManager.html', tipo: 'novo' },
-            { label: '3 - DepartamentoMdFactory', arquivo: '3-DepartamentoMdFactory/3-DepartamentoMdFactory.html', tipo: 'novo' },
+            { label: '1 - Home',     arquivo: '1-DepartamentoHome/1-DepartamentoHome.html',   tipo: 'novo' },
+            { label: '2 - Manager',   arquivo: '2-DepartamentoManager/2-DepartamentoManager.html', tipo: 'novo' },
+            { label: '3 - MdFactory', arquivo: '3-DepartamentoMdFactory/3-DepartamentoMdFactory.html', tipo: 'novo' },
             { label: '4 - AppsRootModelFactory',  arquivo: '4-AppsRootModelFactory/4-AppsRootModelFactory.html', tipo: 'editar' },
             { label: '5 - PnlCfg',               arquivo: '5-PnlCfg/5-PnlCfg.html',                     tipo: 'editar' },
             { label: '6 - RootManager',           arquivo: '6-RootManager/6-RootManager.html',             tipo: 'editar' },
             { label: '7 - HomeDesk',              arquivo: '7-HomeDesk/7-HomeDesk.html',                   tipo: 'editar' }
         ],
-        pasta: '1-novo-modulo'
+        pasta: '1-novo-modulo',
+        basePath: '2-jasap/1-novo-modulo'
     },
     {
         grupo: 'CRUD',
         pagina: 'crud.html',
+        parent: { label: 'JASAP', href: '2-jasap/jasap.html' },
+        hidden: true,
         subgrupos: [
             { label: 'READ',   href: '1-crud-read/crud-read.html',   pasta: '1-crud-read' },
             { label: 'DELETE', href: '2-crud-delete/crud-delete.html', pasta: '2-crud-delete' },
@@ -46,109 +107,114 @@ var MENU = [
             { label: 'FUNCIONALIDADES', href: '5-funcionalidades/funcionalidades.html', pasta: '5-funcionalidades' }
         ],
         subpastas: ['1-crud-read', '2-crud-delete', '3-crud-create', '4-crud-update', '5-funcionalidades'],
-        pasta: '2-crud'
+        pasta: '2-crud',
+        basePath: '2-jasap/2-crud'
     },
     {
-        grupo: 'CRUD READ',
+        grupo: 'READ',
         pagina: 'crud-read.html',
-        parent: { label: 'CRUD', href: '2-crud/crud.html' },
+        parent: { label: 'CRUD', href: '2-jasap/2-crud/crud.html' },
         hidden: true,
         items: [
-            { label: '1 - DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html',   tipo: 'novo' },
-            { label: '2 - DepartamentoProdutoWBean',  arquivo: '2-DepartamentoProdutoWBean/2-DepartamentoProdutoWBean.html', tipo: 'novo' },
-            { label: '3 - DepartamentoProdutoDAO',    arquivo: '3-DepartamentoProdutoDAO/3-DepartamentoProdutoDAO.html',     tipo: 'novo' },
-            { label: '4 - DepartamentoProdutoModel',  arquivo: '4-DepartamentoProdutoModel/4-DepartamentoProdutoModel.html', tipo: 'novo' },
-            { label: '5 - DepartamentoProdutoAction', arquivo: '5-DepartamentoProdutoAction/5-DepartamentoProdutoAction.html', tipo: 'novo' },
+            { label: '1 - Produto Bean',   arquivo: '1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html',   tipo: 'novo' },
+            { label: '2 - Produto WBean',  arquivo: '2-DepartamentoProdutoWBean/2-DepartamentoProdutoWBean.html', tipo: 'novo' },
+            { label: '3 - Produto DAO',    arquivo: '3-DepartamentoProdutoDAO/3-DepartamentoProdutoDAO.html',     tipo: 'novo' },
+            { label: '4 - Produto Model',  arquivo: '4-DepartamentoProdutoModel/4-DepartamentoProdutoModel.html', tipo: 'novo' },
+            { label: '5 - Produto Action', arquivo: '5-DepartamentoProdutoAction/5-DepartamentoProdutoAction.html', tipo: 'novo' },
             { label: '6 - getManager',                arquivo: '6-getManager/6-getManager.html',                             tipo: 'editar' },
-            { label: '7 - DepartamentoMdFactory',     arquivo: '7-DepartamentoMdFactory/7-DepartamentoMdFactory.html',       tipo: 'editar' },
-            { label: '8 - DepartamentoProdutoList',   arquivo: '8-DepartamentoProdutoList/8-DepartamentoProdutoList.html',   tipo: 'novo' },
-            { label: '9 - DepartamentoHome',          arquivo: '9-DepartamentoHome/9-DepartamentoHome.html',                 tipo: 'editar' }
+            { label: '7 - MdFactory',     arquivo: '7-DepartamentoMdFactory/7-DepartamentoMdFactory.html',       tipo: 'editar' },
+            { label: '8 - Produto List',   arquivo: '8-DepartamentoProdutoList/8-DepartamentoProdutoList.html',   tipo: 'novo' },
+            { label: '9 - Home',          arquivo: '9-DepartamentoHome/9-DepartamentoHome.html',                 tipo: 'editar' }
         ],
         pasta: '1-crud-read',
-        basePath: '2-crud/1-crud-read'
+        basePath: '2-jasap/2-crud/1-crud-read'
     },
     {
-        grupo: 'CRUD CREATE',
+        grupo: 'CREATE',
         pagina: 'crud-create.html',
-        parent: { label: 'CRUD', href: '2-crud/crud.html' },
+        parent: { label: 'CRUD', href: '2-jasap/2-crud/crud.html' },
         hidden: true,
         items: [
-            { label: '1 - DepartamentoProdutoDAO + Model', arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html', tipo: 'editar' },
-            { label: '2 - DepartamentoProdutoAction',      arquivo: '2-DepartamentoProdutoAction/2-DepartamentoProdutoAction.html', tipo: 'editar' },
-            { label: '3 - DepartamentoProdutoForm',        arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html', tipo: 'novo' },
-            { label: '4 - DepartamentoProdutoList',        arquivo: '4-DepartamentoProdutoList/4-DepartamentoProdutoList.html', tipo: 'editar' },
-            { label: '5 - DepartamentoManager',            arquivo: '5-DepartamentoManager/5-DepartamentoManager.html', tipo: 'editar' }
+            { label: '1 - Produto DAO + Model', arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html', tipo: 'editar' },
+            { label: '2 - Produto Action',      arquivo: '2-DepartamentoProdutoAction/2-DepartamentoProdutoAction.html', tipo: 'editar' },
+            { label: '3 - Produto Form',        arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html', tipo: 'novo' },
+            { label: '4 - Produto List',        arquivo: '4-DepartamentoProdutoList/4-DepartamentoProdutoList.html', tipo: 'editar' },
+            { label: '5 - Manager',            arquivo: '5-DepartamentoManager/5-DepartamentoManager.html', tipo: 'editar' }
         ],
         pasta: '3-crud-create',
-        basePath: '2-crud/3-crud-create'
+        basePath: '2-jasap/2-crud/3-crud-create'
     },
     {
-        grupo: 'CRUD DELETE',
+        grupo: 'DELETE',
         pagina: 'crud-delete.html',
-        parent: { label: 'CRUD', href: '2-crud/crud.html' },
+        parent: { label: 'CRUD', href: '2-jasap/2-crud/crud.html' },
         hidden: true,
         items: [
-            { label: '1 - DepartamentoProdutoDAO',  arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html',  tipo: 'editar' },
-            { label: '2 - DepartamentoProdutoList',  arquivo: '2-DepartamentoProdutoList/2-DepartamentoProdutoList.html',  tipo: 'editar' },
-            { label: '3 - DepartamentoManager',      arquivo: '3-DepartamentoManager/3-DepartamentoManager.html',      tipo: 'editar' }
+            { label: '1 - Produto DAO',  arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html',  tipo: 'editar' },
+            { label: '2 - Produto List',  arquivo: '2-DepartamentoProdutoList/2-DepartamentoProdutoList.html',  tipo: 'editar' },
+            { label: '3 - Manager',      arquivo: '3-DepartamentoManager/3-DepartamentoManager.html',      tipo: 'editar' }
         ],
         pasta: '2-crud-delete',
-        basePath: '2-crud/2-crud-delete'
+        basePath: '2-jasap/2-crud/2-crud-delete'
     },
     {
-        grupo: 'CRUD UPDATE',
+        grupo: 'UPDATE',
         pagina: 'crud-update.html',
-        parent: { label: 'CRUD', href: '2-crud/crud.html' },
+        parent: { label: 'CRUD', href: '2-jasap/2-crud/crud.html' },
         hidden: true,
         items: [
-            { label: '1 - DepartamentoProdutoDAO + Model', arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html', tipo: 'editar' },
-            { label: '2 - DepartamentoProdutoAction',      arquivo: '2-DepartamentoProdutoAction/2-DepartamentoProdutoAction.html', tipo: 'editar' },
-            { label: '3 - DepartamentoProdutoForm',        arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html', tipo: 'editar' },
-            { label: '4 - DepartamentoProdutoList',        arquivo: '4-DepartamentoProdutoList/4-DepartamentoProdutoList.html', tipo: 'editar' },
-            { label: '5 - DepartamentoManager',            arquivo: '5-DepartamentoManager/5-DepartamentoManager.html', tipo: 'editar' }
+            { label: '1 - Produto DAO + Model', arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html', tipo: 'editar' },
+            { label: '2 - Produto Action',      arquivo: '2-DepartamentoProdutoAction/2-DepartamentoProdutoAction.html', tipo: 'editar' },
+            { label: '3 - Produto Form',        arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html', tipo: 'editar' },
+            { label: '4 - Produto List',        arquivo: '4-DepartamentoProdutoList/4-DepartamentoProdutoList.html', tipo: 'editar' },
+            { label: '5 - Manager',            arquivo: '5-DepartamentoManager/5-DepartamentoManager.html', tipo: 'editar' }
         ],
         pasta: '4-crud-update',
-        basePath: '2-crud/4-crud-update'
+        basePath: '2-jasap/2-crud/4-crud-update'
     },
     {
         grupo: 'FUNCIONALIDADES',
         pagina: 'funcionalidades.html',
-        parent: { label: 'CRUD', href: '2-crud/crud.html' },
+        parent: { label: 'CRUD', href: '2-jasap/2-crud/crud.html' },
         hidden: true,
         items: [
             { label: '1 - Sort',           arquivo: '1-sort/sort.html',                   tipo: 'editar' },
-            { label: '6 - Delete no Form', arquivo: '6-delete-form/delete-form.html', tipo: 'editar' },
+            { label: '2 - QuickSearch',    arquivo: '2-quicksearch/quicksearch.html',     tipo: 'check' },
+            { label: '3 - Insert Chk',     arquivo: '3-insert-chk/insert-chk.html',       tipo: 'check' },
+            { label: '4 - Paginação',      arquivo: '4-paginacao/paginacao.html',         tipo: 'check' },
+            { label: '5 - Tabs Status',    arquivo: '5-tabs-status/tabs-status.html',     tipo: 'check' },
+            { label: '6 - Delete no Form', arquivo: '6-delete-form/delete-form.html',     tipo: 'editar' },
             { label: '7 - LinkBox',        arquivo: '7-linkbox/linkbox.html',             tipo: 'check' },
             { label: '8 - Master/Detail',  arquivo: '8-master-detail/master-detail.html', tipo: 'check' }
         ],
         pasta: '5-funcionalidades',
-        basePath: '2-crud/5-funcionalidades'
+        basePath: '2-jasap/2-crud/5-funcionalidades'
     },
     {
-        grupo: 'CRUD LINKBOX',
+        grupo: 'LINKBOX',
         pagina: 'linkbox.html',
-        parent: { label: 'FUNCIONALIDADES', href: '2-crud/5-funcionalidades/funcionalidades.html' },
+        parent: { label: 'FUNCIONALIDADES', href: '2-jasap/2-crud/5-funcionalidades/funcionalidades.html' },
         hidden: true,
         items: [
             { label: 'Visão Geral',                 arquivo: 'linkbox.html',                                                    tipo: 'check' },
-            { label: '1 - DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html',     tipo: 'editar' },
-            { label: '2 - DepartamentoPessoaSelect',  arquivo: '2-DepartamentoPessoaSelect/2-DepartamentoPessoaSelect.html',   tipo: 'novo' },
-            { label: '3 - DepartamentoProdutoForm',   arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html',     tipo: 'editar' },
-            { label: '4 - DepartamentoManager',       arquivo: '4-DepartamentoManager/4-DepartamentoManager.html',             tipo: 'editar' }
+            { label: '1 - Produto Bean',   arquivo: '1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html',     tipo: 'editar' },
+            { label: '2 - Pessoa Select',  arquivo: '2-DepartamentoPessoaSelect/2-DepartamentoPessoaSelect.html',   tipo: 'novo' },
+            { label: '3 - Produto Form',   arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html',     tipo: 'editar' },
+            { label: '4 - Manager',       arquivo: '4-DepartamentoManager/4-DepartamentoManager.html',             tipo: 'editar' }
         ],
         pasta: '7-linkbox',
-        basePath: '2-crud/5-funcionalidades/7-linkbox'
+        basePath: '2-jasap/2-crud/5-funcionalidades/7-linkbox'
     },
     {
-        grupo: 'CRUD MASTER/DETAIL',
+        grupo: 'MASTER/DETAIL',
         pagina: 'master-detail.html',
-        parent: { label: 'FUNCIONALIDADES', href: '2-crud/5-funcionalidades/funcionalidades.html' },
+        parent: { label: 'FUNCIONALIDADES', href: '2-jasap/2-crud/5-funcionalidades/funcionalidades.html' },
         hidden: true,
         items: [
             { label: 'Visão Geral', arquivo: 'master-detail.html', tipo: 'check' }
         ],
         pasta: '8-master-detail',
-        basePath: '2-crud/5-funcionalidades/8-master-detail'
+        basePath: '2-jasap/2-crud/5-funcionalidades/8-master-detail'
     },
     {
         grupo: 'OBSIDIAN',
@@ -166,23 +232,23 @@ var MENU = [
             { label: 'FASE 0',      href: '2-fase-0/fase-0.html',           pasta: '2-fase-0' }
         ],
         subpastas: ['1-componentes', '2-fase-0'],
-        pasta: '8-nexus'
+        pasta: '3-nexus'
     },
     {
         grupo: 'COMPONENTES',
         pagina: 'componentes.html',
-        parent: { label: 'NEXUS', href: '8-nexus/nexus.html' },
+        parent: { label: 'NEXUS', href: '3-nexus/nexus.html' },
         hidden: true,
         items: [
             { label: '1 - TOC', arquivo: '1-toc/toc.html', tipo: 'check' }
         ],
         pasta: '1-componentes',
-        basePath: '8-nexus/1-componentes'
+        basePath: '3-nexus/1-componentes'
     },
     {
         grupo: 'FASE 0',
         pagina: 'fase-0.html',
-        parent: { label: 'NEXUS', href: '8-nexus/nexus.html' },
+        parent: { label: 'NEXUS', href: '3-nexus/nexus.html' },
         hidden: true,
         items: [
             { label: '1 - Visão Geral',           arquivo: '1-visao-geral/1-visao-geral.html',                         tipo: 'check' },
@@ -197,7 +263,7 @@ var MENU = [
             { label: '10 - Carta do Claude',      arquivo: '10-carta-do-claude/10-carta-do-claude.html',               tipo: 'check' }
         ],
         pasta: '2-fase-0',
-        basePath: '8-nexus/2-fase-0'
+        basePath: '3-nexus/2-fase-0'
     }
 ];
 
@@ -206,9 +272,9 @@ var FOOTER = {
         {
             grupo: 'NOVO MÓDULO',
             items: [
-                { label: 'DepartamentoHome',     arquivo: '1-DepartamentoHome/1-DepartamentoHome.html' },
-                { label: 'DepartamentoManager',   arquivo: '2-DepartamentoManager/2-DepartamentoManager.html' },
-                { label: 'DepartamentoMdFactory', arquivo: '3-DepartamentoMdFactory/3-DepartamentoMdFactory.html' },
+                { label: 'Home',     arquivo: '1-DepartamentoHome/1-DepartamentoHome.html' },
+                { label: 'Manager',   arquivo: '2-DepartamentoManager/2-DepartamentoManager.html' },
+                { label: 'MdFactory', arquivo: '3-DepartamentoMdFactory/3-DepartamentoMdFactory.html' },
                 { label: 'AppsRootModelFactory',  arquivo: '4-AppsRootModelFactory/4-AppsRootModelFactory.html' },
                 { label: 'PnlCfg',               arquivo: '5-PnlCfg/5-PnlCfg.html' },
                 { label: 'RootManager',           arquivo: '6-RootManager/6-RootManager.html' },
@@ -217,82 +283,88 @@ var FOOTER = {
             pasta: '1-novo-modulo'
         },
         {
-            grupo: 'CRUD READ',
+            grupo: 'READ',
             items: [
-                { label: 'DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html' },
-                { label: 'DepartamentoProdutoWBean',  arquivo: '2-DepartamentoProdutoWBean/2-DepartamentoProdutoWBean.html' },
-                { label: 'DepartamentoProdutoDAO',    arquivo: '3-DepartamentoProdutoDAO/3-DepartamentoProdutoDAO.html' },
-                { label: 'DepartamentoProdutoModel',  arquivo: '4-DepartamentoProdutoModel/4-DepartamentoProdutoModel.html' },
-                { label: 'DepartamentoProdutoAction', arquivo: '5-DepartamentoProdutoAction/5-DepartamentoProdutoAction.html' },
+                { label: 'Produto Bean',   arquivo: '1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html' },
+                { label: 'Produto WBean',  arquivo: '2-DepartamentoProdutoWBean/2-DepartamentoProdutoWBean.html' },
+                { label: 'Produto DAO',    arquivo: '3-DepartamentoProdutoDAO/3-DepartamentoProdutoDAO.html' },
+                { label: 'Produto Model',  arquivo: '4-DepartamentoProdutoModel/4-DepartamentoProdutoModel.html' },
+                { label: 'Produto Action', arquivo: '5-DepartamentoProdutoAction/5-DepartamentoProdutoAction.html' },
                 { label: 'getManager',                arquivo: '6-getManager/6-getManager.html' },
-                { label: 'DepartamentoMdFactory',     arquivo: '7-DepartamentoMdFactory/7-DepartamentoMdFactory.html' },
-                { label: 'DepartamentoProdutoList',   arquivo: '8-DepartamentoProdutoList/8-DepartamentoProdutoList.html' },
-                { label: 'DepartamentoHome',          arquivo: '9-DepartamentoHome/9-DepartamentoHome.html' }
+                { label: 'MdFactory',     arquivo: '7-DepartamentoMdFactory/7-DepartamentoMdFactory.html' },
+                { label: 'Produto List',   arquivo: '8-DepartamentoProdutoList/8-DepartamentoProdutoList.html' },
+                { label: 'Home',          arquivo: '9-DepartamentoHome/9-DepartamentoHome.html' }
             ],
             pasta: '1-crud-read',
-            basePath: '2-crud/1-crud-read'
+            basePath: '2-jasap/2-crud/1-crud-read'
         },
         {
-            grupo: 'CRUD CREATE',
+            grupo: 'CREATE',
             items: [
-                { label: 'DepartamentoProdutoDAO + Model', arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html' },
-                { label: 'DepartamentoProdutoAction',      arquivo: '2-DepartamentoProdutoAction/2-DepartamentoProdutoAction.html' },
-                { label: 'DepartamentoProdutoForm',         arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html' },
-                { label: 'DepartamentoProdutoList',        arquivo: '4-DepartamentoProdutoList/4-DepartamentoProdutoList.html' },
-                { label: 'DepartamentoManager',            arquivo: '5-DepartamentoManager/5-DepartamentoManager.html' }
+                { label: 'Produto DAO + Model', arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html' },
+                { label: 'Produto Action',      arquivo: '2-DepartamentoProdutoAction/2-DepartamentoProdutoAction.html' },
+                { label: 'Produto Form',         arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html' },
+                { label: 'Produto List',        arquivo: '4-DepartamentoProdutoList/4-DepartamentoProdutoList.html' },
+                { label: 'Manager',            arquivo: '5-DepartamentoManager/5-DepartamentoManager.html' }
             ],
             pasta: '3-crud-create',
-            basePath: '2-crud/3-crud-create'
+            basePath: '2-jasap/2-crud/3-crud-create'
         },
         {
-            grupo: 'CRUD DELETE',
+            grupo: 'DELETE',
             items: [
-                { label: 'DepartamentoProdutoDAO',  arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html' },
-                { label: 'DepartamentoProdutoList',  arquivo: '2-DepartamentoProdutoList/2-DepartamentoProdutoList.html' },
-                { label: 'DepartamentoManager',      arquivo: '3-DepartamentoManager/3-DepartamentoManager.html' }
+                { label: 'Produto DAO',  arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html' },
+                { label: 'Produto List',  arquivo: '2-DepartamentoProdutoList/2-DepartamentoProdutoList.html' },
+                { label: 'Manager',      arquivo: '3-DepartamentoManager/3-DepartamentoManager.html' }
             ],
             pasta: '2-crud-delete',
-            basePath: '2-crud/2-crud-delete'
+            basePath: '2-jasap/2-crud/2-crud-delete'
         },
         {
-            grupo: 'CRUD UPDATE',
+            grupo: 'UPDATE',
             items: [
-                { label: 'DepartamentoProdutoDAO + Model', arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html' },
-                { label: 'DepartamentoProdutoAction',      arquivo: '2-DepartamentoProdutoAction/2-DepartamentoProdutoAction.html' },
-                { label: 'DepartamentoProdutoForm',        arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html' },
-                { label: 'DepartamentoProdutoList',        arquivo: '4-DepartamentoProdutoList/4-DepartamentoProdutoList.html' },
-                { label: 'DepartamentoManager',            arquivo: '5-DepartamentoManager/5-DepartamentoManager.html' }
+                { label: 'Produto DAO + Model', arquivo: '1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html' },
+                { label: 'Produto Action',      arquivo: '2-DepartamentoProdutoAction/2-DepartamentoProdutoAction.html' },
+                { label: 'Produto Form',        arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html' },
+                { label: 'Produto List',        arquivo: '4-DepartamentoProdutoList/4-DepartamentoProdutoList.html' },
+                { label: 'Manager',            arquivo: '5-DepartamentoManager/5-DepartamentoManager.html' }
             ],
             pasta: '4-crud-update',
-            basePath: '2-crud/4-crud-update'
+            basePath: '2-jasap/2-crud/4-crud-update'
         },
         {
             grupo: 'FUNCIONALIDADES',
             items: [
                 { label: 'Sort',           arquivo: '1-sort/sort.html' },
-                { label: 'Delete no Form', arquivo: '6-delete-form/delete-form.html' }
+                { label: 'QuickSearch',    arquivo: '2-quicksearch/quicksearch.html' },
+                { label: 'Insert Chk',     arquivo: '3-insert-chk/insert-chk.html' },
+                { label: 'Paginação',      arquivo: '4-paginacao/paginacao.html' },
+                { label: 'Tabs Status',    arquivo: '5-tabs-status/tabs-status.html' },
+                { label: 'Delete no Form', arquivo: '6-delete-form/delete-form.html' },
+                { label: 'LinkBox',        arquivo: '7-linkbox/linkbox.html' },
+                { label: 'Master/Detail',  arquivo: '8-master-detail/master-detail.html' }
             ],
             pasta: '5-funcionalidades',
-            basePath: '2-crud/5-funcionalidades'
+            basePath: '2-jasap/2-crud/5-funcionalidades'
         },
         {
-            grupo: 'CRUD LINKBOX',
+            grupo: 'LINKBOX',
             items: [
-                { label: 'DepartamentoProdutoBean',   arquivo: '1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html' },
-                { label: 'DepartamentoPessoaSelect',  arquivo: '2-DepartamentoPessoaSelect/2-DepartamentoPessoaSelect.html' },
-                { label: 'DepartamentoProdutoForm',   arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html' },
-                { label: 'DepartamentoManager',       arquivo: '4-DepartamentoManager/4-DepartamentoManager.html' }
+                { label: 'Produto Bean',   arquivo: '1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html' },
+                { label: 'Pessoa Select',  arquivo: '2-DepartamentoPessoaSelect/2-DepartamentoPessoaSelect.html' },
+                { label: 'Produto Form',   arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html' },
+                { label: 'Manager',       arquivo: '4-DepartamentoManager/4-DepartamentoManager.html' }
             ],
             pasta: '7-linkbox',
-            basePath: '2-crud/5-funcionalidades/7-linkbox'
+            basePath: '2-jasap/2-crud/5-funcionalidades/7-linkbox'
         },
         {
-            grupo: 'CRUD MASTER/DETAIL',
+            grupo: 'MASTER/DETAIL',
             items: [
                 { label: 'Visão Geral', arquivo: 'master-detail.html' }
             ],
             pasta: '8-master-detail',
-            basePath: '2-crud/5-funcionalidades/8-master-detail'
+            basePath: '2-jasap/2-crud/5-funcionalidades/8-master-detail'
         }
     ],
     extras: [
@@ -448,9 +520,13 @@ var BASE = document.currentScript.getAttribute('src').replace('js/layout.js', ''
 
 function detectFolder(path) {
     var best = '';
+    var bestLen = -1;
     for (var i = 0; i < MENU.length; i++) {
-        var p = MENU[i].pasta;
-        if (path.indexOf('/' + p + '/') > -1 && p.length > best.length) best = p;
+        var search = MENU[i].basePath || MENU[i].pasta;
+        if (path.indexOf('/' + search + '/') > -1 && search.length > bestLen) {
+            bestLen = search.length;
+            best = MENU[i].pasta;
+        }
     }
     return best;
 }
@@ -460,6 +536,27 @@ function findSection(folder) {
         if (MENU[i].pasta === folder) return MENU[i];
     }
     return null;
+}
+
+function findSectionByHref(href) {
+    for (var i = 0; i < MENU.length; i++) {
+        var s = MENU[i];
+        var p = (s.basePath || s.pasta) + '/' + s.pagina;
+        if (p === href) return s;
+    }
+    return null;
+}
+
+function buildParentChain(section) {
+    var chain = [];
+    var current = section;
+    var guard = 0;
+    while (current && current.parent && guard < 10) {
+        chain.unshift(current.parent);
+        current = findSectionByHref(current.parent.href);
+        guard++;
+    }
+    return chain;
 }
 
 function loadScript(src) {
@@ -513,9 +610,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (!isRoot && section) {
         var sectionBasePath = section.basePath || section.pasta;
         var parentPrefix = '';
-        if (section.parent) {
-            parentPrefix = '<span class="breadcrumb-sep">\u203a</span>';
-            parentPrefix += '<a href="' + upToPages + section.parent.href + '">' + section.parent.label + '</a>';
+        var parentChain = buildParentChain(section);
+        for (var pc = 0; pc < parentChain.length; pc++) {
+            parentPrefix += '<span class="breadcrumb-sep">\u203a</span>';
+            parentPrefix += '<a href="' + upToPages + parentChain[pc].href + '">' + parentChain[pc].label + '</a>';
         }
         breadcrumbHTML = '<nav class="breadcrumb-nav">';
         if (isSectionIndex) {

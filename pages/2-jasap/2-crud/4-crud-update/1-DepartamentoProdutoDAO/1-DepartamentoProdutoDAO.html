@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoProdutoDAO + Model (UPDATE) — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoProdutoDAO + Model <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="audio/DepartamentoProdutoDAO.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>Primeira edição da sequência UPDATE. O DAO ganha dois métodos: <code>daoSingle</code> (carregar um registro pelo ID) e <code>daoUpdate</code> (gravar alterações). O Model ganha o wrapper <code>update(bean)</code>. Três adições mínimas que seguem exatamente o mesmo padrão do <code>daoInsert</code> / <code>insert</code> da sequência anterior.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DAO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.AppManager;
+import br.jasap.dao.Query;
+import br.jasap.util.JasapList;
+import br.xt.AppsRootDAO;
+
+public class DepartamentoProdutoDAO extends AppsRootDAO {
+
+    public DepartamentoProdutoDAO() {
+    }
+
+    public DepartamentoProdutoDAO(AppManager manager) {
+        setManager(manager);
+        setDataBase(manager.getDataBase());
+    }
+
+    public void daoList(JasapList list) throws Exception {
+        StringBuilder sql = new StringBuilder();
+        sql.append("select a.* from " + DepartamentoProdutoBean.TABLE + " a &lt;orderby&gt;");
+
+        Query query = getDataBase().getQuery(sql.toString());
+        select().executeList(query, list);
+
+        while (query.next()) {
+            DepartamentoProdutoBean bean = new DepartamentoProdutoBean();
+            query.populateBean(bean);
+            list.getList().add(bean);
+        }
+        query.release();
+    }
+
+    public void daoInsert(DepartamentoProdutoBean bean) throws Exception {
+        insert().execute(bean, DepartamentoProdutoBean.TABLE);
+    }
+
+    // ADICIONAR
+    public void daoSingle(DepartamentoProdutoBean bean) throws Exception {
+        select().execute(bean, DepartamentoProdutoBean.TABLE);
+    }
+
+    public void daoUpdate(DepartamentoProdutoBean bean) throws Exception {
+        update().execute(bean, DepartamentoProdutoBean.TABLE);
+    }
+    // FIM
+
+    public void daoDelete(DepartamentoProdutoBean bean) throws Exception {
+        delete().execute(bean, DepartamentoProdutoBean.TABLE);
+    }
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudanças nesta sequência:</strong> os métodos <code>daoSingle</code> e <code>daoUpdate</code> (verde). Tudo o mais já existia das sequências anteriores (READ, DELETE, CREATE).</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — Model</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.AppManager;
+
+public class DepartamentoProdutoModel extends DepartamentoProdutoDAO {
+
+    public DepartamentoProdutoModel(AppManager manager) {
+        super(manager);
+    }
+
+    public void insert(DepartamentoProdutoBean bean) throws Exception {
+        daoInsert(bean);
+    }
+
+    // ADICIONAR
+    public void update(DepartamentoProdutoBean bean) throws Exception {
+        daoUpdate(bean);
+    }
+    // FIM
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudança nesta sequência:</strong> somente o método <code>update</code> (verde). O construtor e o <code>insert</code> já existiam das sequências anteriores.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que <code>daoSingle</code> faz? — <code>select().execute</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Enquanto o <code>daoList</code> carrega vários registros com SQL manual, o <code>daoSingle</code> carrega <strong>um só</strong> — via reflection:</p>
+
+<pre><code class="language-java">select().execute(bean, DepartamentoProdutoBean.TABLE);</code></pre>
+
+<p>O helper <code>select()</code> herdado de <code>JasapDAO</code> inspeciona o Bean, encontra o getter marcado com <code>@DBInfo(pk=true)</code> (<code>getId_produto()</code>), e monta automaticamente:</p>
+
+<pre><code class="language-sql">SELECT * FROM departamento.produto WHERE id_produto = ?</code></pre>
+
+<p>O <code>?</code> é preenchido com o valor que já está no Bean (<code>bean.getId_produto()</code>). Depois de executar, o <code>select().execute</code> popula todos os campos do Bean com os dados do banco — nome, valor, quantidade, observações.</p>
+
+<p><strong>Pré-requisito:</strong> o Bean precisa ter o ID preenchido ANTES de chamar <code>daoSingle</code>. É por isso que o <code>ShowUpdate</code> faz <code>proBean().setId_produto(...)</code> primeiro.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Padrão dos 4 helpers — <code>select / insert / update / delete</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Com o <code>daoUpdate</code> e o <code>daoSingle</code>, o DAO agora tem os 4 helpers completos do <code>JasapDAO</code>:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Helper</th><th>Método no DAO</th><th>O que faz via reflection</th></tr>
+    <tr><td><code>select()</code></td><td><code>daoSingle</code></td><td><code>SELECT * WHERE pk = ?</code> — carrega 1 registro</td></tr>
+    <tr><td><code>insert()</code></td><td><code>daoInsert</code></td><td><code>INSERT INTO ... VALUES (...)</code> — cria registro</td></tr>
+    <tr><td><code>update()</code></td><td><code>daoUpdate</code></td><td><code>UPDATE ... SET ... WHERE pk = ?</code> — altera registro</td></tr>
+    <tr><td><code>delete()</code></td><td><code>daoDelete</code></td><td><code>DELETE FROM ... WHERE pk = ?</code> — remove registro</td></tr>
+</table>
+</div>
+
+<p>Todos funcionam do mesmo jeito: inspecionam o Bean via <code>@DBInfo</code>, montam o SQL automaticamente, executam. O chamador só precisa preencher o Bean — o framework cuida do resto.</p>
+
+<p>A diferença do <code>daoList</code> é que ele usa SQL manual (<code>StringBuilder</code> + <code>Query</code>) porque precisa de <code>JOIN</code>, <code>WHERE</code> dinâmico, ordenação e paginação — coisas que o helper simples não cobre.</p>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

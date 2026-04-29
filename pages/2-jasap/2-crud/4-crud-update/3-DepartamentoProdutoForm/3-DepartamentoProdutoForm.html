@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoProdutoForm (UPDATE) — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoProdutoForm <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="audio/DepartamentoProdutoForm.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>Arquivo central da sequência UPDATE. O <code>DepartamentoProdutoForm</code> que já tinha 3 inner classes (ShowInsert, Insert, Cancelar) ganha mais 2: <code>ShowUpdate</code> (carregar registro e abrir form preenchido) e <code>Update</code> (gravar alterações com transação). O <code>br()</code> também é atualizado pra mostrar o botão Salvar certo em cada modo.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.Bar;
+import br.jasap.gui.Button;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.Table;
+import br.jasap.gui.form.Form;
+import br.jasap.gui.form.Text;
+import br.jasap.gui.form.Textarea;
+import br.jasap.util.Js;
+import br.jasap.util.filters.TransactionFilter;
+import br.xt.acore.view.XtPage;
+
+public class DepartamentoProdutoForm extends DepartamentoProdutoAction {
+
+    @Override
+    public Effect execute() throws Exception {
+        render();
+        return new Response();
+    }
+
+    public static class ShowInsert extends DepartamentoProdutoForm {
+        @Override
+        public Effect execute() throws Exception {
+            setInsert(FORM);
+            getSession().remove(ROOT.concat(DepartamentoProdutoBean.ID_PRODUTO));
+            render();
+            return new Response();
+        }
+    }
+
+    public static class Insert extends DepartamentoProdutoAction {
+        public Insert() { super.getFilters().add(new TransactionFilter()); }
+        @Override
+        public Effect execute() throws Exception {
+            getFactory().departamento().proModel().insert(proBean());
+            evalParent(Js.CLOSE_SUB_WINDOWS);
+            return new Response();
+        }
+    }
+
+    // ADICIONAR
+    public static class ShowUpdate extends DepartamentoProdutoForm {
+        @Override
+        public Effect execute() throws Exception {
+            setUpdate(FORM);
+            proBean().setId_produto(getInput().getInteger(DepartamentoProdutoBean.ID_PRODUTO));
+            getSession().addInt(ROOT.concat(DepartamentoProdutoBean.ID_PRODUTO), proBean().getId_produto());
+            getFactory().departamento().proModel().daoSingle(proBean());
+            render();
+            return new Response();
+        }
+    }
+
+    public static class Update extends DepartamentoProdutoAction {
+        public Update() { super.getFilters().add(new TransactionFilter()); }
+        @Override
+        public Effect execute() throws Exception {
+            proBean().setId_produto(id_produto());
+            getFactory().departamento().proModel().update(proBean());
+            evalParent(Js.CLOSE_SUB_WINDOWS);
+            return new Response();
+        }
+    }
+    // FIM
+
+    public static class Cancelar extends DepartamentoProdutoForm {
+        @Override
+        public Effect execute() throws Exception {
+            evalParent(Js.CLOSE_SUB_WINDOWS);
+            return new Response();
+        }
+    }
+
+    public void render() throws Exception {
+        // ... (sem alteração — mesmo código da sequência CREATE)
+        XtPage page = new XtPage(getManager());
+        if (isAjaxCall()) {
+            update(JasapPage.DIV_WINDOW, page.content(window().toHtml()));
+            eval(Js.CLOSE_SUB_WINDOWS);
+        } else {
+            page.getTable().setBorder(4).rowC("100%")
+                    .setContent(page.content(window().toHtml()))
+                    .setStyle(ui().modalBorder());
+            page.setWinTitle("Produto");
+            getOutput().write(this, page);
+        }
+    }
+
+    public Table window() throws Exception {
+        // ... (sem alteração)
+        Table w = new Table(getManager()).setSize("100%", "100%");
+        w.rowC("1%",  JasapPage.DIV_TITLE, ui().title("CADASTRO DE PRODUTO"));
+        w.rowC("1%",  null, ui().line());
+        w.rowC("auto").setId(JasapPage.DIV_MASTER).setContent(form()).table();
+        w.rowC("1%",  null, ui().line());
+        w.rowC("1%",  JasapPage.DIV_BOTTOM, br());
+        return w;
+    }
+
+    // ADICIONAR
+    protected Bar br() throws Exception {
+        Button salvarInsert = ui().button("&amp;nbsp;&amp;nbsp;Salvar&amp;nbsp;&amp;nbsp;")
+                .setCss("btn btn-success btn-lg").setNoSize()
+                .setOnClick(submit(Insert.class).validate().toHtml())
+                .setVisible(isInsert(FORM));
+
+        Button salvarUpdate = ui().button("&amp;nbsp;&amp;nbsp;Salvar&amp;nbsp;&amp;nbsp;")
+                .setCss("btn btn-success btn-lg").setNoSize()
+                .setOnClick(submit(Update.class).validate().toHtml())
+                .setVisible(isUpdate(FORM));
+
+        Button cancelar = ui().button("&amp;nbsp;&amp;nbsp;Cancelar&amp;nbsp;&amp;nbsp;")
+                .setCss("btn btn-primary btn-lg").setNoSize()
+                .setOnClick(link(Cancelar.class).ajax());
+
+        Bar bar = ui().bar();
+        bar.addRight(cancelar);
+        bar.addRight("&amp;nbsp;");
+        bar.addRight(salvarInsert);
+        bar.addRight(salvarUpdate);
+        return bar;
+    }
+    // FIM
+
+    public String form() throws Exception {
+        // ... (sem alteração)
+        Form frm = ui().form();
+        frm.addHidden(DepartamentoProdutoBean.ID_PRODUTO, proBean().getId_produto());
+
+        frm.line().add(nome_produto(), "150");
+        frm.line().add(vl_produto(),   "150");
+        frm.line().add(qtd_produto(),  "150");
+        frm.line().add(obs_produto(),  "150");
+
+        return frm.getTable().toHtml();
+    }
+
+    // ... campos nome_produto, vl_produto, qtd_produto, obs_produto (sem alteração)
+
+    public static String FORM = ROOT.concat("__FORM");
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudanças nesta sequência:</strong> 2 inner classes novas (ShowUpdate, Update) e <code>br()</code> reescrito com 3 botões. Nenhum import novo. Os campos, o <code>render()</code>, o <code>window()</code>, o <code>form()</code> e as inner classes do CREATE permanecem iguais.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title"><code>ShowUpdate</code> — carregar registro e abrir preenchido</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Executada quando o usuário clica numa linha da lista. Faz quatro coisas antes de montar a tela:</p>
+
+<pre><code class="language-java">setUpdate(FORM);
+proBean().setId_produto(getInput().getInteger(DepartamentoProdutoBean.ID_PRODUTO));
+getSession().addInt(ROOT.concat(DepartamentoProdutoBean.ID_PRODUTO), proBean().getId_produto());
+getFactory().departamento().proModel().daoSingle(proBean());</code></pre>
+
+<ol>
+    <li><strong><code>setUpdate(FORM)</code></strong> — liga a flag "modo edição" na sessão. É essa flag que o <code>isUpdate(FORM)</code> verifica pra decidir quais botões mostrar (Salvar update). Contraparte do <code>setInsert(FORM)</code> do ShowInsert.</li>
+    <li><strong><code>getInput().getInteger(...)</code></strong> — lê o ID do produto que veio no request (passado pelo <code>setOnclick</code> da lista).</li>
+    <li><strong><code>getSession().addInt(...)</code></strong> — guarda esse ID na sessão pra uso futuro. Sem isso, o <code>Update</code> não saberia qual registro operar (ele não recebe o ID no request — lê da sessão via <code>id_produto()</code>).</li>
+    <li><strong><code>daoSingle(proBean())</code></strong> — carrega todos os dados do registro do banco e preenche o Bean. Quando o <code>render()</code> montar os campos, cada <code>setValue(proBean().getNome_produto())</code> já terá o valor real.</li>
+</ol>
+
+<p>Comparação com <code>ShowInsert</code>: o ShowInsert limpa a sessão (<code>remove</code>) e deixa o Bean vazio. O ShowUpdate grava na sessão (<code>addInt</code>) e preenche o Bean com dados do banco. Resultado: o mesmo form, mas com campos preenchidos em vez de vazios.</p>
+
+<p><strong>Herda de <code>DepartamentoProdutoForm</code></strong> — por isso tem acesso a <code>render()</code>, <code>window()</code>, <code>form()</code>, <code>br()</code>, e todos os campos. Mesma lógica do ShowInsert.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title"><code>Update</code> — gravar alterações com transação</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Executada quando o usuário clica "Salvar" no modo edição. Estrutura idêntica ao <code>Insert</code>, com uma diferença crucial:</p>
+
+<pre><code class="language-java">proBean().setId_produto(id_produto());
+getFactory().departamento().proModel().update(proBean());
+evalParent(Js.CLOSE_SUB_WINDOWS);</code></pre>
+
+<p><strong><code>proBean().setId_produto(id_produto())</code></strong> — o <code>proBean()</code> vem preenchido com os dados do formulário (via <code>getInstance</code>), MAS o <code>id_produto</code> chega como <code>null</code> pelo hidden field em alguns browsers. Pra garantir, seta explicitamente o ID lido da sessão.</p>
+
+<p>Sem essa linha, o <code>update().execute</code> geraria um <code>UPDATE ... WHERE id_produto = null</code> — que não afetaria nenhuma linha. O registro ficaria inalterado sem nenhum erro visível. É um <strong>risco silencioso</strong> clássico do framework.</p>
+
+<p><strong>TransactionFilter</strong> — mesmo mecanismo do Insert. Envolve o <code>execute()</code> numa transação: sucesso → COMMIT, exception → ROLLBACK.</p>
+
+<p><strong>Herda de <code>DepartamentoProdutoAction</code></strong> (não de Form) — mesmo padrão do Insert. Não precisa de <code>render()</code> nem de campos, só do <code>proBean()</code> e da conexão com o banco.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title"><code>br()</code> — barra de botões atualizada</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O <code>br()</code> original (do CREATE) tinha 2 botões. Agora tem 3:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Botão</th><th>Visível quando</th><th>Posição</th><th>Ação</th></tr>
+    <tr><td>Salvar (insert)</td><td><code>isInsert(FORM)</code></td><td>Direita</td><td><code>submit(Insert.class).validate()</code></td></tr>
+    <tr><td>Salvar (update)</td><td><code>isUpdate(FORM)</code></td><td>Direita</td><td><code>submit(Update.class).validate()</code></td></tr>
+    <tr><td>Cancelar</td><td>Sempre</td><td>Direita</td><td><code>link(Cancelar.class)</code></td></tr>
+</table>
+</div>
+
+<p>No modo inserção, o usuário vê: Cancelar + Salvar (à direita). No modo edição, vê: Cancelar + Salvar (à direita). Visualmente igual — mas por trás, o Salvar aponta pra actions diferentes (<code>Insert</code> vs <code>Update</code>).</p>
+
+<p><strong>Por que dois botões Salvar separados?</strong> Porque cada um aponta pra uma action diferente (<code>Insert</code> vs <code>Update</code>). O <code>setVisible</code> garante que só um aparece por vez — nunca os dois ao mesmo tempo.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Fluxo do usuário — editar um produto</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O ciclo completo de editar um produto envolve <strong>3 requests</strong> (3 agentes distintos):</p>
+
+<ol>
+    <li><strong>Clique na linha</strong> da lista → request chega → agente vai pro setor <code>ShowUpdate</code> → seta modo edição, guarda ID na sessão, carrega dados do banco → monta o form preenchido → modal abre com campos já preenchidos</li>
+    <li><strong>Usuário altera dados e clica "Salvar"</strong> → request chega com os dados alterados → agente vai pro setor <code>Update</code> → <code>TransactionFilter</code> abre transação → seta ID da sessão no Bean → <code>model.update(bean)</code> grava → transação fecha → modal fecha</li>
+    <li><strong>Modal fecha</strong> → <code>setOnCloseURL</code> dispara refresh → lista atualiza com dados novos</li>
+</ol>
+
+<p>Cada um desses requests é um agente novo, cartão novo, tudo do zero. O encadeamento lógico vive no código (ShowUpdate carrega, Update grava, List atualiza), não na memória de nenhum agente.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que o Form NÃO tem nesta sequência</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O Form agora tem INSERT e UPDATE completos — mas ainda é a versão <strong>mínima</strong>. Funcionalidades que virão em episódios futuros:</p>
+
+<ul>
+    <li><strong>Delete pelo formulário</strong> — botão Excluir com confirmação (episódio próprio)</li>
+    <li><strong>insert_chk</strong> — checkbox "Continuar inserindo" (episódio próprio)</li>
+    <li><strong>Quick Search / Sort / Tabs / Paginação</strong> — na List (episódios próprios)</li>
+    <li><strong>Detail</strong> — lista filha dentro do form (episódio próprio)</li>
+    <li><strong>LinkBox</strong> — seleção de FK com modal de busca (episódio próprio)</li>
+</ul>
+
+<p>Cada feature ganha seu próprio episódio com foco pedagógico claro. O CRUD completo (READ + DELETE + CREATE + UPDATE) está pronto na versão básica.</p>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

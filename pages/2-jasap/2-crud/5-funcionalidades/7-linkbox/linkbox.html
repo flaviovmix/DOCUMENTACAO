@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD LINKBOX — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>CRUD LINKBOX — Vincular produto a uma pessoa responsável <span class="badge badge-new">1 arquivo novo + 3 edits</span></h1>
+
+<div class="audio-player" data-src="audio/linkbox.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Até aqui, Produto e Pessoa viviam em tabelas separadas, cada uma com seu CRUD próprio. O <strong>LinkBox</strong> é o primeiro vínculo entre elas: cada produto passa a ter uma <strong>pessoa responsável</strong>, representada no formulário por um campo de leitura com botão verde ao lado — clicar abre um modal de seleção, escolher uma pessoa preenche o nome no campo e grava a FK no bean ao salvar.</p>
+
+<p>É uma <strong>FK 1-N vista do lado do filho</strong>: o Produto aponta pra <em>uma</em> Pessoa (coluna <code>fk_pessoa_produto</code> em <code>departamento.produto</code>), e cada Pessoa pode ter <em>várias</em> produtos sob sua responsabilidade. A mudança envolve <strong>4 arquivos</strong>: o Bean do Produto ganha um objeto Pessoa embutido, o Form do Produto ganha o campo e a action de callback, o arquivo novo <code>DepartamentoPessoaSelect</code> é o modal de seleção, e o Manager registra as 4 actions novas.</p>
+
+<div class="info-accordion">
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoProdutoBean                    -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoProdutoBean</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/linkbox-Bean.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<pre data-add="import br.xt.app.departamento.pessoa.DepartamentoPessoaBean;|private DepartamentoPessoaBean pessoa;|public DepartamentoPessoaBean getPessoa()|if (pessoa == null) pessoa = new DepartamentoPessoaBean();|public void setPessoa(DepartamentoPessoaBean pessoa)|public Integer getFk_pessoa_produto()|public void    setFk_pessoa_produto(Integer fk)|public static String FK_PESSOA_PRODUTO"><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.dao.DBInfo;
+import br.jasap.util.DomainValue;
+import br.jasap.util.JasapList;
+import br.xt.app.departamento.pessoa.DepartamentoPessoaBean;
+import java.io.Serializable;
+
+public class DepartamentoProdutoBean implements Serializable {
+
+    public static String TABLE = "departamento.produto";
+
+    private Integer id_produto;
+    private String  nome_produto;
+    private Double  vl_produto;
+    private Integer qtd_produto;
+    private String  obs_produto;
+    private String  qs_produto;
+    private Integer st_produto;
+    private Integer insert_chk;
+    private DepartamentoPessoaBean pessoa;
+
+    @DBInfo(serial=true, pk=true)
+    public Integer getId_produto() { return id_produto; }
+    public void setId_produto(Integer id_produto) { this.id_produto = id_produto; }
+
+    // ... getters/setters dos outros campos (sem alteração) ...
+
+    public DepartamentoPessoaBean getPessoa() {
+        if (pessoa == null) pessoa = new DepartamentoPessoaBean();
+        return pessoa;
+    }
+    public void setPessoa(DepartamentoPessoaBean pessoa) { this.pessoa = pessoa; }
+
+    public Integer getFk_pessoa_produto()           { return getPessoa().getId_pessoa(); }
+    public void    setFk_pessoa_produto(Integer fk) { getPessoa().setId_pessoa(fk); }
+
+    // ... DomStatus (sem alteração) ...
+
+    public static String ID_PRODUTO        = "id_produto";
+    public static String NOME_PRODUTO      = "nome_produto";
+    public static String VL_PRODUTO        = "vl_produto";
+    public static String QTD_PRODUTO       = "qtd_produto";
+    public static String OBS_PRODUTO       = "obs_produto";
+    public static String QS_PRODUTO        = "qs_produto";
+    public static String ST_PRODUTO        = "st_produto";
+    public static String FK_PESSOA_PRODUTO = "fk_pessoa_produto";
+    public static String INSERT_CHK        = "insert_chk";
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudanças neste arquivo:</strong> 1 import novo (<code>DepartamentoPessoaBean</code>), campo <code>private pessoa</code>, getter/setter de <code>pessoa</code> (com lazy init), <strong>getter/setter de <code>fk_pessoa_produto</code> delegando pro objeto embutido</strong> (sem campo próprio), constante <code>FK_PESSOA_PRODUTO</code>. A coluna no banco não muda.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoPessoaSelect                   -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoPessoaSelect <span class="badge badge-new">novo arquivo</span></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/linkbox-Select.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<pre><code class="language-java">package br.xt.app.departamento.pessoa;
+
+import br.jasap.core.Effect;
+import br.jasap.effect.Response;
+import br.jasap.gui.Bar;
+import br.jasap.gui.JasapPage;
+import br.jasap.gui.ListColumn;
+import br.jasap.gui.ListLine;
+import br.jasap.gui.ListView;
+import br.jasap.gui.Table;
+import br.jasap.gui.form.LinkBox;
+import br.jasap.gui.form.Text;
+import br.jasap.util.JasapList;
+import br.jasap.util.Js;
+import br.xt.acore.view.XtPage;
+
+public class DepartamentoPessoaSelect extends DepartamentoPessoaAction {
+
+    @Override
+    public Effect execute() throws Exception {
+        getSession().remove(S_ROOT);
+        render();
+        return new Response();
+    }
+
+    public static class Sort extends DepartamentoPessoaSelect {
+        @Override
+        public Effect execute() throws Exception {
+            update(listV().getDIV_HEADER(),   listV().getHeader());
+            update(listV().getDIV_BODY(),     listV().getBody());
+            update(listV().getDIV_NAVIGATE(), listV().getNavForm());
+            return new Response();
+        }
+    }
+
+    public static class QuickSearch extends DepartamentoPessoaSelect {
+        @Override
+        public Effect execute() throws Exception {
+            getFiltroS().setQs_pessoa(getInput().getString(DepartamentoPessoaBean.QS_PESSOA));
+            update(listV().getDIV_BODY(),     listV().getBody());
+            update(listV().getDIV_NAVIGATE(), listV().getNavForm());
+            return new Response();
+        }
+    }
+
+    public void render() throws Exception {
+        XtPage page = new XtPage(getManager());
+        if (isAjaxCall()) {
+            update(JasapPage.DIV_WINDOW, page.content(window().toHtml()));
+            eval(Js.CLOSE_SUB_WINDOWS);
+        } else {
+            page.getTable().setBorder(4).rowC("100%")
+                    .setContent(page.content(window().toHtml()))
+                    .setStyle(ui().modalBorder());
+            page.setWinTitle("Selecionar Pessoa");
+            getOutput().write(this, page);
+        }
+    }
+
+    public Table window() throws Exception {
+        Table w = new Table(getManager()).setSize("100%", "100%");
+        w.rowC("1%",  JasapPage.DIV_TITLE, ui().title("SELEÇÃO DE PESSOA"));
+        w.rowC("99%").setId(JasapPage.DIV_MASTER).setContent(listV()).table();
+        w.rowC("1%",  null, ui().line());
+        w.rowC("1%",  null, qs_pessoa());
+        w.rowC("1%",  JasapPage.DIV_BOTTOM, br());
+        return w;
+    }
+
+    public String qs_pessoa() throws Exception {
+        Text qs = ui().text(DepartamentoPessoaBean.QS_PESSOA)
+                .setLabel("Consulta")
+                .setStyle("width:300")
+                .setMaxlength(300)
+                .setValue(getFiltroS().getQs_pessoa())
+                .setOnkeyup(Js.pressEnter(
+                        link(QuickSearch.class)
+                                .putScript(DepartamentoPessoaBean.QS_PESSOA, Js.SELF_VALUE)
+                                .putInteger(listV().getPAGE(), 0)
+                                .ajax()));
+
+        Table aux = new Table(getManager(), "100%", "30")
+                .setStyle(ui().bgDark())
+                .rowC()
+                .setAlign(Table.ALIGN_CENTER)
+                .setVerticalAlign(Table.ALIGN_MIDDLE)
+                .setContent(qs)
+                .table();
+
+        return aux.toHtml();
+    }
+
+    private Bar br() throws Exception {
+        return ui().bar().addCenter(listV().nav(listV().getNavForm()));
+    }
+
+    private ListView lv = null;
+    public ListView listV() throws Exception {
+        if (lv == null) {
+            lv = ui().lView();
+            lv.setCallBackURL(getSession().getString(LinkBox.CALLBACK_URL.concat("_PESSOA"), getInput()))
+                    .setSortAct(url(Sort.class))
+                    .setPageAction(url(Sort.class))
+                    .setPage(getSession().getInteger(S_LIST.concat(lv.getPAGE()), getInput()))
+                    .setOrderBy(getSession().getString(S_LIST.concat(lv.getORDER_BY()), getInput()))
+                    .setSort(getSession().getString(S_LIST.concat(lv.getSORT()), getInput()))
+                    .ajax();
+
+            if (lv.getData().getOrderBy() == null) {
+                lv.getData().setOrderBy(DepartamentoPessoaBean.NOME_PESSOA);
+                lv.getData().setSort(JasapList.SORT_ASC);
+            }
+
+            lv.setFiltro(getFiltroS());
+            getFactory().departamento().pesModel().daoList(lv.getData());
+
+            ListColumn col_nome    = lv.newColumn("Nome").setOrderBy(DepartamentoPessoaBean.NOME_PESSOA).setPadding(";padding:10 8 10 8;");
+            ListColumn col_apelido = lv.newColumn("Apelido").setOrderBy(DepartamentoPessoaBean.APELIDO_PESSOA).setWidth(180).setPadding(";padding:10 8 10 8;");
+
+            while (lv.hasNext()) {
+                DepartamentoPessoaBean lb = (DepartamentoPessoaBean) lv.next();
+                ListLine line = lv.createLine()
+                        .setOnclick(link(lv.getCallBackURL())
+                                .putInteger(DepartamentoPessoaBean.ID_PESSOA, lb.getId_pessoa())
+                                .noWait().ajax());
+                col_nome.setContent(lb.getNome_pessoa());
+                col_apelido.setContent(lb.getApelido_pessoa());
+                lv.addLine(line);
+            }
+        }
+        return lv;
+    }
+
+    public DepartamentoPessoaWBean getFiltroS() throws Exception {
+        DepartamentoPessoaWBean filtro = (DepartamentoPessoaWBean) getSession().getObject(S_FILTRO);
+        if (filtro == null) {
+            filtro = pesWBean();
+            getSession().addObj(S_FILTRO, filtro);
+        }
+        return filtro;
+    }
+
+    public static final String S_ROOT   = ROOT.concat("__PESSOA_SELECT/");
+    public static final String S_LIST   = S_ROOT.concat("__LIST/");
+    public static final String S_FILTRO = S_LIST.concat("__FILTRO");
+
+}</code></pre>
+
+<p class="info-note"><strong>Arquivo novo.</strong> 3 actions (principal + Sort + QuickSearch), método <code>listV()</code> com memoization, filtro em sessão, callback via <code>LinkBox.CALLBACK_URL + "_PESSOA"</code>.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoProdutoForm                    -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoProdutoForm (apenas blocos novos)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/linkbox-Form.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<pre data-add="import br.jasap.gui.form.LinkBox;|import br.xt.app.departamento.pessoa.DepartamentoPessoaBean;|import br.xt.app.departamento.pessoa.DepartamentoPessoaSelect;|frm.line().add(fk_pessoa_produto()|private LinkBox fk_pessoa_produto = null;|public LinkBox fk_pessoa_produto()|if (fk_pessoa_produto == null)|if (proBean().getFk_pessoa_produto() != null)|getFactory().departamento().pesModel().daoSingle(proBean().getPessoa())|fk_pessoa_produto = ui().linkBox|.setLabel(&quot;Responsável&quot;)|.setValue(proBean().getPessoa().getNome_pessoa())|.setWidth(250)|.addKey(DepartamentoProdutoBean.FK_PESSOA_PRODUTO|.setSelectLnk(link(DepartamentoPessoaSelect.class)).setCallBackID(&quot;_PESSOA&quot;)|.setCallBackURL(url(Fk_pessoa_produto.class))|public static class Fk_pessoa_produto|proBean().setFk_pessoa_produto(getInput().getInteger(DepartamentoPessoaBean.ID_PESSOA))|updateParent(&quot;FK_PESSOA&quot;, fk_pessoa_produto().textValue())|update(&quot;FK_PESSOA&quot;, fk_pessoa_produto().textValue())"><code class="language-java">// Imports novos:
+import br.jasap.gui.form.LinkBox;
+import br.xt.app.departamento.pessoa.DepartamentoPessoaBean;
+import br.xt.app.departamento.pessoa.DepartamentoPessoaSelect;
+
+// ... ShowInsert, Insert, ShowUpdate, Update, Cancelar, Delete, render(), window(), br() (sem alteração) ...
+
+// Linha adicionada no form(), entre st_produto e obs_produto:
+public String form() throws Exception {
+    Form frm = ui().form();
+    frm.addHidden(DepartamentoProdutoBean.ID_PRODUTO, proBean().getId_produto());
+
+    frm.line().add(nome_produto(),       "150");
+    frm.line().add(vl_produto(),         "150");
+    frm.line().add(qtd_produto(),        "150");
+    frm.line().add(st_produto(),         "150");
+    frm.line().add(fk_pessoa_produto(),  "150");   // ADICIONADA
+    frm.line().add(obs_produto(),        "150");
+    frm.line().add(insert_chk(),         "150");
+
+    return frm.getTable().toHtml();
+}
+
+// ... nome_produto(), vl_produto(), qtd_produto(), st_produto(), obs_produto() (sem alteração) ...
+
+// Método novo:
+private LinkBox fk_pessoa_produto = null;
+public LinkBox fk_pessoa_produto() throws Exception {
+    if (fk_pessoa_produto == null) {
+        if (proBean().getFk_pessoa_produto() != null) {
+            getFactory().departamento().pesModel().daoSingle(proBean().getPessoa());
+        }
+        fk_pessoa_produto = ui().linkBox("FK_PESSOA", "500", "400")
+                .setLabel("Responsável")
+                .setValue(proBean().getPessoa().getNome_pessoa())
+                .setWidth(250)
+                .addKey(DepartamentoProdutoBean.FK_PESSOA_PRODUTO, proBean().getFk_pessoa_produto())
+                .setSelectLnk(link(DepartamentoPessoaSelect.class)).setCallBackID("_PESSOA")
+                .setCallBackURL(url(Fk_pessoa_produto.class));
+    }
+    return fk_pessoa_produto;
+}
+
+// Inner class nova:
+public static class Fk_pessoa_produto extends DepartamentoProdutoForm {
+    @Override
+    public Effect execute() throws Exception {
+        proBean().setFk_pessoa_produto(getInput().getInteger(DepartamentoPessoaBean.ID_PESSOA));
+        if (proBean().getFk_pessoa_produto() != null) {
+            updateParent("FK_PESSOA", fk_pessoa_produto().textValue());
+            evalParent(Js.CLOSE_SUB_WINDOWS);
+        } else {
+            update("FK_PESSOA", fk_pessoa_produto().textValue());
+        }
+        return new Response();
+    }
+}
+</code></pre>
+
+<p class="info-note"><strong>Mudanças neste arquivo:</strong> 3 imports novos, 1 linha no <code>form()</code>, método <code>fk_pessoa_produto()</code>, inner class <code>Fk_pessoa_produto</code>. O resto do Form (ShowInsert, Insert, Update, Delete, render, window, br, getters dos outros campos) fica igual.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- CÓDIGO COMPLETO — DepartamentoManager                        -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO — DepartamentoManager</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/linkbox-Manager.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<pre data-add="import br.xt.app.departamento.pessoa.DepartamentoPessoaSelect;|regAction(DepartamentoProdutoForm.Fk_pessoa_produto.class);|regAction(DepartamentoPessoaSelect.class);|regAction(DepartamentoPessoaSelect.Sort.class);|regAction(DepartamentoPessoaSelect.QuickSearch.class);"><code class="language-java">package br.xt.app.departamento;
+
+import br.xt.app.departamento.pessoa.DepartamentoPessoaForm;
+import br.xt.app.departamento.pessoa.DepartamentoPessoaList;
+import br.xt.app.departamento.pessoa.DepartamentoPessoaSelect;
+import br.xt.app.departamento.produto.DepartamentoProdutoForm;
+import br.xt.app.departamento.produto.DepartamentoProdutoList;
+import br.xt.app.painel.PnlManager;
+
+public class DepartamentoManager extends PnlManager {
+
+    public static final String F_ACESSO_MODULO = "XT.PAINEL_CONTROLE.ACESSO_MODULO.DEPARTAMENTO";
+
+    @Override
+    public void config() throws Exception {
+
+        regFun("PAINEL DE CONTROLE", "Acesso ao Módulo", "DEPARTAMENTO", F_ACESSO_MODULO);
+
+        // ... regAction do Home, ProdutoList, ProdutoForm (Show, Insert, Update, Cancelar, Delete) ...
+
+        regAction(DepartamentoProdutoForm.Fk_pessoa_produto.class);
+
+        // ... regAction do PessoaList, PessoaForm (Show, Insert, Update, Cancelar, Delete) ...
+
+        regAction(DepartamentoPessoaSelect.class);
+        regAction(DepartamentoPessoaSelect.Sort.class);
+        regAction(DepartamentoPessoaSelect.QuickSearch.class);
+
+    }
+}</code></pre>
+
+<p class="info-note"><strong>Mudanças neste arquivo:</strong> 1 import novo (<code>DepartamentoPessoaSelect</code>), 4 <code>regAction</code> novas — 1 pra inner class de callback do Form e 3 pras actions do Select.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- O mecanismo — o circuito de 3 peças                          -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O mecanismo — o circuito LinkBox + Select + Callback</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O LinkBox é uma <strong>FK vista do lado do filho</strong>: na tela aparece como um input de texto (mostra o nome do pai) + um botão verde ao lado. O usuário não digita — clica no botão, escolhe no modal e o texto aparece. Três peças formam o circuito:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Peça</th><th>Papel</th><th>Onde mora</th></tr>
+    <tr><td><strong>LinkBox</strong></td><td>Input visual com botão. Guarda a FK num hidden e o nome do pai visível</td><td><code>fk_pessoa_produto()</code> no <code>DepartamentoProdutoForm</code></td></tr>
+    <tr><td><strong>Select</strong></td><td>Modal que lista os candidatos e dispara callback ao clicar numa linha</td><td>Arquivo novo <code>DepartamentoPessoaSelect</code></td></tr>
+    <tr><td><strong>Callback</strong></td><td>Action que recebe o ID escolhido, grava no bean, atualiza a tela</td><td>Inner class <code>Fk_pessoa_produto</code> no Form</td></tr>
+</table>
+</div>
+
+<p>Os dois lados (LinkBox e Select) não se referenciam diretamente — a ponte é a <strong>sessão HTTP</strong>: o LinkBox grava a URL de callback numa chave identificada por um sufixo (<code>_PESSOA</code>), e o Select lê a mesma chave pra saber pra onde chamar de volta.</p>
+
+<h3>Fluxo completo de uma vinculação</h3>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Passo</th><th>Quem dispara</th><th>O que acontece</th></tr>
+    <tr><td>1</td><td>Form do Produto renderiza</td><td><code>fk_pessoa_produto()</code> monta o LinkBox, grava na sessão a URL de callback (<code>url(Fk_pessoa_produto.class)</code>) sob a chave <code>LinkBox.CALLBACK_URL + "_PESSOA"</code></td></tr>
+    <tr><td>2</td><td>Usuário clica no botão verde</td><td>Link <code>setSelectLnk</code> abre o modal <code>DepartamentoPessoaSelect</code> em Ajax</td></tr>
+    <tr><td>3</td><td>Select carrega</td><td><code>listV()</code> lê da sessão a URL de callback e configura cada linha com <code>setOnclick(link(callbackURL).putInteger(ID_PESSOA, ...).ajax())</code></td></tr>
+    <tr><td>4</td><td>Usuário clica numa pessoa</td><td>Browser dispara a URL de callback com <code>id_pessoa=42</code>. Chega na inner class <code>Fk_pessoa_produto.execute()</code></td></tr>
+    <tr><td>5</td><td>Callback executa</td><td><code>proBean().setFk_pessoa_produto(42)</code> → via delegação, vai pra <code>getPessoa().setId_pessoa(42)</code>. <code>updateParent("FK_PESSOA", textValue())</code> injeta o texto novo no Form. <code>evalParent(CLOSE_SUB_WINDOWS)</code> fecha o modal</td></tr>
+    <tr><td>6</td><td>Usuário clica "Salvar"</td><td><code>Update</code> roda, o hidden <code>fk_pessoa_produto</code> viaja junto com o form, <code>populateBean</code> o grava no bean, <code>daoUpdate</code> emite <code>UPDATE ... SET fk_pessoa_produto=42</code></td></tr>
+</table>
+</div>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 1 — Bean: pessoa embutida + delegação                -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 1 — Bean: objeto Pessoa embutido e FK delegada</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">private DepartamentoPessoaBean pessoa;
+
+public DepartamentoPessoaBean getPessoa() {
+    if (pessoa == null) pessoa = new DepartamentoPessoaBean();
+    return pessoa;
+}
+public void setPessoa(DepartamentoPessoaBean pessoa) { this.pessoa = pessoa; }
+
+public Integer getFk_pessoa_produto()           { return getPessoa().getId_pessoa(); }
+public void    setFk_pessoa_produto(Integer fk) { getPessoa().setId_pessoa(fk); }</code></pre>
+
+<p>A mudança é pequena em linhas mas conceitual: o Bean do Produto deixa de guardar <code>fk_pessoa_produto</code> como campo próprio e passa a guardar um <strong>objeto Pessoa embutido</strong>. A FK vira uma delegação — pega o <code>id_pessoa</code> da pessoa embutida.</p>
+
+<h3>Por que não deixar <code>private Integer fk_pessoa_produto</code> como antes?</h3>
+
+<p>Porque o LinkBox precisa exibir o <strong>nome</strong> da pessoa vinculada, não só o ID. Guardando só um <code>Integer</code>, o Form teria que fazer uma consulta extra em cada render pra descobrir o nome. Com o objeto embutido, basta o DAO chamar <code>daoSingle(proBean().getPessoa())</code> uma vez e o nome fica disponível em <code>getPessoa().getNome_pessoa()</code>.</p>
+
+<h3>Lazy init no getter</h3>
+
+<p><strong>Lazy init</strong> = "criar só quando precisar". O campo <code>pessoa</code> começa <code>null</code>; só vira objeto de verdade na primeira chamada a <code>getPessoa()</code>. Duas razões:</p>
+
+<ul>
+    <li><strong>Compatível com populateBean</strong> — o Jasap popula o Bean a partir do <code>ResultSet</code> e deixa <code>pessoa</code> como <code>null</code>. Quem chamar <code>getPessoa()</code> depois garante que retorna um objeto, nunca <code>null</code></li>
+    <li><strong>Economia</strong> — se a listagem só usa campos do próprio Produto, o objeto Pessoa nunca é criado</li>
+</ul>
+
+<h3>Delegação da FK</h3>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Situação</th><th>O que acontece</th></tr>
+    <tr><td>DAO lê do banco</td><td><code>setFk_pessoa_produto(42)</code> → <code>getPessoa().setId_pessoa(42)</code>. Objeto pessoa criado com só o ID</td></tr>
+    <tr><td>Form carrega o nome</td><td><code>daoSingle(proBean().getPessoa())</code> preenche os demais campos (nome, apelido, etc)</td></tr>
+    <tr><td>LinkBox exibe</td><td><code>proBean().getPessoa().getNome_pessoa()</code> — já tá lá</td></tr>
+    <tr><td>DAO grava no banco</td><td><code>getFk_pessoa_produto()</code> → <code>getPessoa().getId_pessoa()</code> → ID correto pra coluna</td></tr>
+</table>
+</div>
+
+<p>Do ponto de vista do banco, nada muda — a coluna <code>fk_pessoa_produto</code> continua existindo e sendo escrita com o ID. A diferença é interna: o valor passa por uma ponte (objeto pessoa) em vez de ficar isolado num campo <code>Integer</code>.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 2 — Form: LinkBox no form() + método                 -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 2 — Form: campo <code>fk_pessoa_produto()</code> no <code>form()</code></span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">frm.line().add(fk_pessoa_produto(),  "150");   // ADICIONADA, entre st_produto e obs_produto
+
+private LinkBox fk_pessoa_produto = null;
+public LinkBox fk_pessoa_produto() throws Exception {
+    if (fk_pessoa_produto == null) {
+        if (proBean().getFk_pessoa_produto() != null) {
+            getFactory().departamento().pesModel().daoSingle(proBean().getPessoa());
+        }
+        fk_pessoa_produto = ui().linkBox("FK_PESSOA", "500", "400")
+                .setLabel("Responsável")
+                .setValue(proBean().getPessoa().getNome_pessoa())
+                .setWidth(250)
+                .addKey(DepartamentoProdutoBean.FK_PESSOA_PRODUTO, proBean().getFk_pessoa_produto())
+                .setSelectLnk(link(DepartamentoPessoaSelect.class)).setCallBackID("_PESSOA")
+                .setCallBackURL(url(Fk_pessoa_produto.class));
+    }
+    return fk_pessoa_produto;
+}</code></pre>
+
+<h3>Carregar o nome antes de mostrar</h3>
+
+<p>Se o produto já tem responsável (cenário update), vai no banco buscar os dados da pessoa. O <code>daoSingle</code> recebe o objeto pessoa (que já tem o <code>id_pessoa</code> preenchido, graças à delegação no Bean) e enche os outros campos — inclusive o <code>nome_pessoa</code>, que é o que o LinkBox vai exibir. Se a FK é <code>null</code>, pula.</p>
+
+<h3>Configuração do LinkBox</h3>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Trecho</th><th>O que faz</th></tr>
+    <tr><td><code>ui().linkBox("FK_PESSOA", "500", "400")</code></td><td>Cria o LinkBox com ID <code>FK_PESSOA</code> (usado nos <code>update/updateParent</code>) e tamanho do modal 500×400</td></tr>
+    <tr><td><code>.setLabel("Responsável")</code></td><td>Texto à esquerda do campo</td></tr>
+    <tr><td><code>.setValue(proBean().getPessoa().getNome_pessoa())</code></td><td>Pré-preenche o texto com o nome da pessoa (ou <code>null</code>)</td></tr>
+    <tr><td><code>.setWidth(250)</code></td><td>Largura do campo de texto (não do modal)</td></tr>
+    <tr><td><code>.addKey(FK_PESSOA_PRODUTO, getFk_pessoa_produto())</code></td><td>Adiciona um hidden com a FK. Viaja junto no submit do Form; o <code>populateBean</code> do Update o lê e seta a FK antes do UPDATE</td></tr>
+    <tr><td><code>.setSelectLnk(link(DepartamentoPessoaSelect.class))</code></td><td>Link disparado ao clicar no botão verde — abre o Select</td></tr>
+    <tr><td><code>.setCallBackID("_PESSOA")</code></td><td>Sufixo anexado à chave de sessão <code>LinkBox.CALLBACK_URL</code>. Os dois lados precisam combinar o mesmo sufixo</td></tr>
+    <tr><td><code>.setCallBackURL(url(Fk_pessoa_produto.class))</code></td><td>URL que o Select vai chamar. O LinkBox grava essa URL na sessão sob <code>CALLBACK_URL + "_PESSOA"</code></td></tr>
+</table>
+</div>
+
+<p>Lazy init (<code>if (fk_pessoa_produto == null)</code>) igual aos outros campos do Form — cria uma vez por requisição e reaproveita.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 3 — Form: inner class Fk_pessoa_produto              -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 3 — Form: inner class <code>Fk_pessoa_produto</code> (callback)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">public static class Fk_pessoa_produto extends DepartamentoProdutoForm {
+    @Override
+    public Effect execute() throws Exception {
+        proBean().setFk_pessoa_produto(getInput().getInteger(DepartamentoPessoaBean.ID_PESSOA));
+        if (proBean().getFk_pessoa_produto() != null) {
+            updateParent("FK_PESSOA", fk_pessoa_produto().textValue());
+            evalParent(Js.CLOSE_SUB_WINDOWS);
+        } else {
+            update("FK_PESSOA", fk_pessoa_produto().textValue());
+        }
+        return new Response();
+    }
+}</code></pre>
+
+<p>Esta action é o "outro lado" do LinkBox. Chamada pelo <code>DepartamentoPessoaSelect</code> quando o usuário clica numa pessoa da lista (o Select dispara o callback configurado pelo LinkBox).</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Linha</th><th>O que faz</th></tr>
+    <tr><td><code>setFk_pessoa_produto(getInput().getInteger(ID_PESSOA))</code></td><td>Lê o <code>id_pessoa</code> que o Select passou como parâmetro e grava no bean. Via delegação, também preenche <code>getPessoa().setId_pessoa(...)</code></td></tr>
+    <tr><td><code>updateParent("FK_PESSOA", fk_pessoa_produto().textValue())</code></td><td>Atualiza o texto do campo na janela pai (o Form atrás do modal). <code>textValue()</code> retorna o HTML com o nome já preenchido</td></tr>
+    <tr><td><code>evalParent(Js.CLOSE_SUB_WINDOWS)</code></td><td>Fecha o modal do Select — retorna o foco pro Form</td></tr>
+    <tr><td><code>update("FK_PESSOA", ...)</code> <em>(else)</em></td><td>Cenário em que a FK veio <code>null</code>: só atualiza local, sem fechar modal</td></tr>
+    <tr><td><code>extends DepartamentoProdutoForm</code></td><td>Herda <code>fk_pessoa_produto()</code>, <code>proBean()</code> e <code>textValue()</code>. Essencial pra re-montar o componente e pegar o texto atualizado</td></tr>
+</table>
+</div>
+
+<p>Por que é <code>public static class</code> dentro do Form e não um arquivo separado? Jasap reaproveita o escopo da classe externa: <code>proBean()</code>, <code>fk_pessoa_produto()</code> etc são visíveis sem refatoração. É o mesmo padrão de <code>ShowInsert</code>, <code>Insert</code>, <code>Delete</code>.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 4 — PessoaSelect (arquivo novo)                      -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 4 — <code>DepartamentoPessoaSelect</code>: o modal de seleção</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Arquivo novo e o maior da sequência. Um Select no Jasap é uma <strong>ListView em miniatura dentro de um modal</strong>: parecido com a List comum (ordenação, paginação, busca), mas com duas diferenças:</p>
+
+<ul>
+    <li>Ao clicar numa linha, em vez de abrir o Form daquela entidade, <strong>chama a URL de callback</strong> informada pelo LinkBox</li>
+    <li>O estado (busca, página, ordenação) fica salvo num <strong>namespace próprio na sessão</strong> (<code>S_ROOT</code>) — separado da List principal e de outros Selects</li>
+</ul>
+
+<h3>3 entry points (actions)</h3>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Action</th><th>Quando é chamada</th><th>O que faz</th></tr>
+    <tr><td><code>DepartamentoPessoaSelect</code> (principal)</td><td>Quando o LinkBox abre o modal pela primeira vez</td><td><code>remove(S_ROOT)</code> limpa toda a sub-árvore de sessão (zera busca/página anteriores) e chama <code>render()</code></td></tr>
+    <tr><td><code>.Sort</code></td><td>Clique no cabeçalho de uma coluna ou troca de página</td><td>Re-renderiza só header + body + navegação via Ajax — não redesenha o modal inteiro</td></tr>
+    <tr><td><code>.QuickSearch</code></td><td>Enter no campo de busca</td><td>Grava o termo no filtro em sessão, re-renderiza body + navegação</td></tr>
+</table>
+</div>
+
+<h3>Como o Select conversa com o LinkBox</h3>
+
+<pre><code class="language-java">lv.setCallBackURL(getSession().getString(LinkBox.CALLBACK_URL.concat("_PESSOA"), getInput()))</code></pre>
+
+<p>O LinkBox, ao ser montado no Form, gravou a URL de callback na sessão sob a chave <code>LinkBox.CALLBACK_URL + "_PESSOA"</code>. O Select <strong>lê</strong> essa chave e configura cada linha pra disparar aquela URL com o <code>id_pessoa</code> do registro clicado:</p>
+
+<pre><code class="language-java">ListLine line = lv.createLine()
+        .setOnclick(link(lv.getCallBackURL())
+                .putInteger(DepartamentoPessoaBean.ID_PESSOA, lb.getId_pessoa())
+                .noWait().ajax());</code></pre>
+
+<h3>Filtro cacheado em sessão</h3>
+
+<pre><code class="language-java">public DepartamentoPessoaWBean getFiltroS() throws Exception {
+    DepartamentoPessoaWBean filtro = (DepartamentoPessoaWBean) getSession().getObject(S_FILTRO);
+    if (filtro == null) {
+        filtro = pesWBean();
+        getSession().addObj(S_FILTRO, filtro);
+    }
+    return filtro;
+}</code></pre>
+
+<p>O WBean fica salvo sob <code>S_FILTRO</code>. Primeira chamada cria em branco e salva; chamadas seguintes (Sort, QuickSearch, paginação) retornam o mesmo filtro. Isso permite que a busca digitada no <code>QuickSearch</code> persista entre reordenações — sem o cache, cada clique recriaria o filtro em branco.</p>
+
+<h3>Namespace de sessão em árvore</h3>
+
+<pre><code class="language-java">public static final String S_ROOT   = ROOT.concat("__PESSOA_SELECT/");
+public static final String S_LIST   = S_ROOT.concat("__LIST/");
+public static final String S_FILTRO = S_LIST.concat("__FILTRO");</code></pre>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Constante</th><th>Papel</th></tr>
+    <tr><td><code>S_ROOT</code></td><td>Raiz. <code>remove(S_ROOT)</code> apaga tudo abaixo de uma vez — garante que reabrir o modal começa do zero</td></tr>
+    <tr><td><code>S_LIST</code></td><td>Subárvore dos parâmetros da ListView (página, coluna, direção)</td></tr>
+    <tr><td><code>S_FILTRO</code></td><td>O WBean cacheado com o termo de busca</td></tr>
+</table>
+</div>
+
+<h3>listV() com memoization</h3>
+
+<p>O método <code>listV()</code> tem guard <code>if (lv == null)</code> — a ListView é montada <em>uma única vez</em> por requisição. <code>Sort</code>, <code>QuickSearch</code> e <code>render()</code> podem chamar <code>listV()</code> várias vezes e recebem sempre o mesmo objeto já configurado. Sem esse cache, a lista seria re-consultada do banco a cada chamada.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Mudança 5 — Manager: 4 regActions                            -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Mudança 5 — Manager: 4 <code>regAction</code> novas</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">// Bloco do Form do Produto — uma regAction nova:
+regAction(DepartamentoProdutoForm.Fk_pessoa_produto.class);
+
+// Bloco do Select — bloco inteiro novo:
+regAction(DepartamentoPessoaSelect.class);
+regAction(DepartamentoPessoaSelect.Sort.class);
+regAction(DepartamentoPessoaSelect.QuickSearch.class);</code></pre>
+
+<p>Toda action nova precisa ser registrada no Manager, senão o Jasap não a encontra no mapa global e a chamada retorna 404.</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>regAction</th><th>Onde no Manager</th><th>Por quê</th></tr>
+    <tr><td><code>DepartamentoProdutoForm.Fk_pessoa_produto</code></td><td>Final do bloco do Form do Produto — depois de <code>Delete</code></td><td>Inner class que recebe o callback do LinkBox. Sem isso, o Select chama a URL e o Jasap não reconhece</td></tr>
+    <tr><td><code>DepartamentoPessoaSelect</code></td><td>Bloco novo no final</td><td>Action principal — entrada chamada pelo botão do LinkBox</td></tr>
+    <tr><td><code>DepartamentoPessoaSelect.Sort</code></td><td>Bloco do Select</td><td>Reordenação e paginação dentro do modal</td></tr>
+    <tr><td><code>DepartamentoPessoaSelect.QuickSearch</code></td><td>Bloco do Select</td><td>Busca rápida digitada no campo</td></tr>
+</table>
+</div>
+
+<p>Convenção do projeto: ordem dos <code>regAction</code> reflete a ordem conceitual — cada entidade em bloco (List → Form → Select). O <code>Fk_pessoa_produto</code> pertence ao Form (é callback de campo do Form), então fecha o bloco do ProdutoForm. O <code>DepartamentoPessoaSelect</code> é componente auxiliar, vem depois da entidade "dona" dele.</p>
+
+<h3>Bug silencioso — esquecer de registrar</h3>
+
+<p>Compila, o link é gerado com a URL correta, mas o Manager não conhece a classe. No browser, o sintoma é mudo — nada explode, nada responde:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Sintoma</th><th>Causa real</th></tr>
+    <tr><td>Clicar numa pessoa no modal não faz nada</td><td><code>Fk_pessoa_produto</code> não registrado</td></tr>
+    <tr><td>Botão verde do LinkBox não abre modal</td><td><code>DepartamentoPessoaSelect</code> não registrado</td></tr>
+    <tr><td>Reordenar colunas ou digitar busca no modal não faz nada</td><td><code>Sort</code> ou <code>QuickSearch</code> não registrados</td></tr>
+</table>
+</div>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- O que NÃO faz parte                                          -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que NÃO faz parte do LinkBox</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Quatro coisas <em>parecem</em> relacionadas mas não são tocadas:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Item</th><th>Por que fica de fora</th></tr>
+    <tr><td><strong>DDL do banco</strong></td><td>A coluna <code>fk_pessoa_produto</code> já existia na tabela. Nenhum ALTER TABLE — só um objeto embutido no Bean que delega pra mesma coluna</td></tr>
+    <tr><td><strong>DepartamentoProdutoDAO</strong></td><td>O <code>daoInsert</code>/<code>daoUpdate</code> continuam iguais. O <code>populateBean</code> do framework lê a coluna e chama <code>setFk_pessoa_produto</code> — que agora delega, mas a assinatura externa é a mesma</td></tr>
+    <tr><td><strong>DepartamentoProdutoWBean</strong></td><td>Filtros da listagem de Produto não mudam. Filtrar produtos por responsável é cenário futuro (Master/Detail)</td></tr>
+    <tr><td><strong>DepartamentoPessoaForm</strong></td><td>O Form da Pessoa fica igual — não precisa saber que produtos existem vinculados. O LinkBox é unidirecional: o filho aponta pro pai, o pai não "sabe" dos filhos</td></tr>
+</table>
+</div>
+
+<p>Ver os produtos a partir do lado da Pessoa é a próxima etapa da sequência (<strong>Master/Detail</strong>) — aí sim o PessoaForm ganha uma tabela de detail, e aí sim o ProdutoDAO ganha <code>daoLinkPessoa</code>/<code>daoUnlinkPessoa</code>.</p>
+
+        </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- Resumo                                                       -->
+    <!-- =========================================================== -->
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Resumo — o que mudou</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="table-wrap">
+<table>
+    <tr><th>Arquivo</th><th>Tipo</th><th>Edição</th></tr>
+    <tr><td><strong>DepartamentoProdutoBean</strong></td><td>editar</td><td>1 import, campo <code>private pessoa</code>, getter/setter com lazy init, <code>getFk/setFk</code> delegando, constante <code>FK_PESSOA_PRODUTO</code></td></tr>
+    <tr><td><strong>DepartamentoPessoaSelect</strong></td><td>novo arquivo</td><td>Action principal + Sort + QuickSearch, <code>listV()</code> com memoization, filtro em sessão, callback via <code>CALLBACK_URL + "_PESSOA"</code></td></tr>
+    <tr><td><strong>DepartamentoProdutoForm</strong></td><td>editar</td><td>3 imports, 1 linha no <code>form()</code>, método <code>fk_pessoa_produto()</code>, inner class <code>Fk_pessoa_produto</code></td></tr>
+    <tr><td><strong>DepartamentoManager</strong></td><td>editar</td><td>1 import, 4 <code>regAction</code> (1 pro callback, 3 pro Select)</td></tr>
+    <tr><td><strong>Banco</strong></td><td>—</td><td>Nada — coluna <code>fk_pessoa_produto</code> já existia</td></tr>
+</table>
+</div>
+
+<p>1 arquivo novo + 3 edits, nenhuma mudança de schema. Resultado: campo "Responsável" no form do Produto com modal de seleção de Pessoa, callback que atualiza texto e FK, e o <code>UPDATE</code> do Produto grava a FK junto com os outros campos.</p>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

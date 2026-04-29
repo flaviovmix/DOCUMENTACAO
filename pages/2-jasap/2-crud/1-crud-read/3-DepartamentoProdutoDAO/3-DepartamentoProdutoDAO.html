@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoProdutoDAO — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoProdutoDAO <span class="badge badge-new">novo arquivo</span></h1>
+
+<div class="audio-player" data-src="audio/DepartamentoProdutoDAO.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>O DAO (Data Access Object) é a peça que SABE FALAR COM O ALMOXARIFADO. É aqui que mora a query SELECT que busca os produtos no banco de dados. <strong>Terceiro arquivo</strong> da sequência CRUD READ — depende do Bean (a ficha que vai ser preenchida) e do WBean (a ficha de filtro).</p>
+
+<p class="info-note"><strong>Nota:</strong> nesta fase CRUD READ, o DAO tem apenas o método <code>daoList</code> (busca a lista de produtos). Os métodos de buscar um único registro, inserir, atualizar e deletar vão ser adicionados nas próximas sequências (DELETE, CREATE, UPDATE), conforme aparecerem as necessidades.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import br.jasap.core.AppManager;
+import br.jasap.dao.Query;
+import br.jasap.util.JasapList;
+import br.xt.AppsRootDAO;
+
+public class DepartamentoProdutoDAO extends AppsRootDAO {
+
+    <span class="line-add">public DepartamentoProdutoDAO() {</span>
+    <span class="line-add">}</span>
+
+    <span class="line-add">public DepartamentoProdutoDAO(AppManager manager) {</span>
+    <span class="line-add">    setManager(manager);</span>
+    <span class="line-add">    setDataBase(manager.getDataBase());</span>
+    <span class="line-add">}</span>
+
+    <span class="line-add">public void daoList(JasapList list) throws Exception {</span>
+    <span class="line-add">    StringBuilder sql = new StringBuilder();</span>
+    <span class="line-add">    sql.append("select a.* from " + DepartamentoProdutoBean.TABLE + " a &lt;orderby&gt;");</span>
+    <span class="line-add"></span>
+    <span class="line-add">    Query query = getDataBase().getQuery(sql.toString());</span>
+    <span class="line-add">    select().executeList(query, list);</span>
+    <span class="line-add"></span>
+    <span class="line-add">    while (query.next()) {</span>
+    <span class="line-add">        DepartamentoProdutoBean bean = new DepartamentoProdutoBean();</span>
+    <span class="line-add">        query.populateBean(bean);</span>
+    <span class="line-add">        list.getList().add(bean);</span>
+    <span class="line-add">    }</span>
+    <span class="line-add">    query.release();</span>
+    <span class="line-add">}</span>
+
+}</code></pre>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Hierarquia: de onde vêm os métodos?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O DAO herda em dois níveis:</p>
+<p><code>JasapDAO</code> (Jasap) → <code>AppsRootDAO</code> (projeto) → <code>DepartamentoProdutoDAO</code></p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Classe</th><th>O que fornece</th></tr>
+    <tr><td><code>JasapDAO</code></td><td><code>select()</code>, <code>insert()</code>, <code>update()</code>, <code>delete()</code>, <code>setManager()</code>, <code>setDataBase()</code>, <code>getDataBase()</code> — operações básicas de banco</td></tr>
+    <tr><td><code>AppsRootDAO</code></td><td><code>getFactory()</code> — acesso a MdFactories de outros módulos; <code>getUser()</code> — usuário logado; <code>ok()</code> — verificar permissão</td></tr>
+</table>
+</div>
+
+<p>Quando o DAO chama <code>select().executeList(query, list)</code>, o <code>select()</code> vem do JasapDAO. O DAO da entidade NÃO implementa nada de SQL básico — herda tudo.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que dois construtores? (e o Bean/WBean não tem nenhum)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O Bean e o WBean não declaram construtores — o Java cria um vazio automaticamente. Funciona porque são só objetos de dados sem dependências.</p>
+
+<p>O DAO precisa de <strong>dois construtores explícitos</strong>:</p>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Construtor</th><th>Quem chama</th><th>Para quê</th></tr>
+    <tr><td><code>DepartamentoProdutoDAO()</code></td><td>Jasap (reflection)</td><td>O framework pode precisar instanciar o DAO via <code>Class.newInstance()</code> em algumas operações — sem construtor vazio, falha em runtime</td></tr>
+    <tr><td><code>DepartamentoProdutoDAO(AppManager)</code></td><td>Model (<code>super(manager)</code>)</td><td>Configura <code>setManager()</code> + <code>setDataBase()</code> — sem isso, o DAO não tem conexão com o banco</td></tr>
+</table>
+</div>
+
+<p>Corrente de criação: MdFactory → Model → <code>super(manager)</code> → DAO configurado com conexão ao banco.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que <code>throws Exception</code> em vez de tratar?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Qualquer chamada de banco pode lançar <code>SQLException</code> (conexão caiu, query inválida, FK quebrada, etc.). O DAO PODERIA capturar com <code>try/catch</code> — mas não é o lugar certo de tratar.</p>
+
+<p>O <code>throws Exception</code> deixa a exceção SUBIR pelo código. Quem captura no fim é um filtro global do framework (<code>ErrorFilter</code>), que registra o erro e mostra uma tela amigável pro usuário.</p>
+
+<p>Vantagem: o DAO fica focado SÓ em falar com o banco. Tratamento de erro é responsabilidade de outra camada.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que é <code>StringBuilder</code>? (áudio dedicado)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Em Java, <code>String</code> é <strong>imutável</strong> — cada concatenação com <code>+</code> cria um objeto novo. Pra montar SQL grande com várias partes, isso vira desperdício de memória.</p>
+
+<p><code>StringBuilder</code> é uma classe que permite ir adicionando texto SEM criar objeto novo a cada passo. No fim, <code>toString()</code> devolve a string final.</p>
+
+<p>No <code>daoList</code> a montagem é simples (basicamente um <code>append</code>), mas a convenção do projeto é usar <code>StringBuilder</code> sempre que monta SQL — porque em DAOs com filtros condicionais, vão aparecer vários <code>append</code> consecutivos.</p>
+
+<p class="info-note"><strong>Áudio dedicado:</strong> tem um áudio só sobre <code>StringBuilder</code> no card <strong>Fundamentos Java</strong> do estudo, explicando em profundidade por que String é imutável, quando usar <code>StringBuilder</code> vs <code>StringBuffer</code>, e os ganhos de performance reais.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que é o alias <code>a</code> em <code>from ... a</code>?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p><code>a</code> é um <strong>apelido</strong> (alias) da tabela. Em SQL, todo apelido depois do nome da tabela serve pra referenciar colunas qualificadas, ex: <code>a.nome_produto</code>.</p>
+
+<p>No <code>daoList</code> aparece em duas linhas:</p>
+<ul>
+    <li><code>select <strong>a.*</strong> from departamento.produto <strong>a</strong></code> — pega todas as colunas da tabela apelidada de <code>a</code></li>
+</ul>
+
+<p>Aqui parece exagero (a tabela é só uma), mas a convenção do projeto é SEMPRE usar alias. Quando o DAO precisar de <code>JOIN</code> com outras tabelas, cada uma vai ter seu alias (<code>a</code>, <code>b</code>, <code>c</code>), e as referências de coluna ficam claras.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que é <code>&lt;orderby&gt;</code>?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p><code>&lt;orderby&gt;</code> é um <strong>placeholder</strong> que o Jasap reconhece e substitui por uma cláusula <code>ORDER BY</code> real na hora de executar a query.</p>
+
+<p>A configuração de ordem mora na ListView (a tela de listagem). Quando o usuário clica no cabeçalho de uma coluna, a ListView atualiza a ordem desejada e o DAO recebe via <code>JasapList</code>. O Jasap então pega essa ordem e injeta no lugar do <code>&lt;orderby&gt;</code> — algo como:</p>
+
+<pre><code class="language-sql">select a.* from departamento.produto a ORDER BY a.nome_produto ASC</code></pre>
+
+<p>O DAO não precisa saber qual coluna nem direção — só deixa o placeholder e o framework cuida.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que <code>select().executeList()</code> faz?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O método <code>select()</code> vem do <code>JasapDAO</code> e devolve um objeto helper de SELECT. O <code>executeList(query, list)</code> faz três coisas:</p>
+
+<ol>
+    <li>Substitui o placeholder <code>&lt;orderby&gt;</code> pela ordem definida no <code>JasapList</code></li>
+    <li>Aplica <strong>paginação</strong> automática (LIMIT/OFFSET) com base na página atual da listagem</li>
+    <li>Executa a query no banco e prepara o cursor pra leitura</li>
+</ol>
+
+<p>Depois disso, o DAO pode iterar com <code>while (query.next())</code> pra ler linha por linha.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que é <code>query.populateBean(bean)</code>? (reflection — áudio dedicado)</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O <code>populateBean</code> usa <strong>reflection</strong> (uma técnica do Java) pra olhar as colunas que vieram do banco e encontrar o setter correspondente em cada uma.</p>
+
+<p>Fluxo:</p>
+<ol>
+    <li>Olha a primeira coluna do resultado: <code>id_produto</code></li>
+    <li>Procura no Bean um método chamado <code>setId_produto</code></li>
+    <li>Achou — invoca passando o valor que veio do banco</li>
+    <li>Repete pra cada coluna</li>
+</ol>
+
+<p>Por isso a nomenclatura JavaBean é OBRIGATÓRIA: se o setter se chamasse <code>gravarId</code> em vez de <code>setId_produto</code>, o reflection não acharia e o campo ficaria <code>null</code>.</p>
+
+<p class="info-note"><strong>Áudio dedicado:</strong> tem um áudio só sobre <strong>Reflection em Java</strong> no card <strong>Fundamentos Java</strong> do estudo, mostrando como o Java consegue olhar a estrutura de uma classe em runtime e invocar métodos pelo nome.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que <code>query.release()</code> é obrigatório?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Cada <code>Query</code> abre recursos no banco: cursor, ResultSet, conexão emprestada do pool. Esses recursos precisam ser DEVOLVIDOS quando a leitura termina.</p>
+
+<p>Sem <code>query.release()</code>, os recursos ficam pendurados. Com o tempo, o pool de conexões esgota — todo mundo tentando conectar e ninguém consegue. O sistema trava.</p>
+
+<p>Por que não tem <code>try/finally</code>? Porque o <code>throws Exception</code> deixa a exceção subir pro filtro global, e em produção o framework garante que conexões órfãs sejam fechadas no fim do request via <code>DataBaseFilter</code>. Mas o <code>release()</code> explícito é a boa prática — libera ASSIM QUE o cursor termina, sem esperar o fim do request.</p>
+
+        </div>
+    </div>
+</div>
+
+<h2><code class="explicacao">public class DepartamentoProdutoDAO extends AppsRootDAO</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Elemento</th><th>O que significa</th></tr>
+    <tr><td><code>public</code></td><td>Visível para o Model (que estende este DAO) e pra MdFactory (que instancia)</td></tr>
+    <tr><td><code>DepartamentoProdutoDAO</code></td><td>Convenção do projeto: prefixo do módulo + entidade + <code>DAO</code></td></tr>
+    <tr><td><code>extends AppsRootDAO</code></td><td>Herda toda infraestrutura de banco: <code>select()</code>, <code>setManager()</code>, <code>setDataBase()</code>, <code>getDataBase()</code>, <code>getFactory()</code>, <code>getUser()</code></td></tr>
+</table>
+</div>
+
+<h2><code class="explicacao">DepartamentoProdutoDAO() / DepartamentoProdutoDAO(AppManager)</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Construtor</th><th>Para quê</th></tr>
+    <tr><td><code>DepartamentoProdutoDAO()</code></td><td>Construtor vazio — exigido pelo Jasap para instanciação via reflection em alguns pontos do framework</td></tr>
+    <tr><td><code>DepartamentoProdutoDAO(AppManager)</code></td><td>Construtor principal usado pelo Model. <code>setManager(manager)</code> grava o manager (cartão temporário); <code>setDataBase(manager.getDataBase())</code> configura a conexão com o banco extraída do cartão</td></tr>
+</table>
+</div>
+
+<h2><code class="explicacao">daoList(JasapList list) throws Exception</code></h2>
+
+<div class="table-wrap">
+<table>
+    <tr><th>Linha</th><th>O que faz</th></tr>
+    <tr><td><code>StringBuilder sql = new StringBuilder()</code></td><td>Cria um buffer mutável pra montar o SQL sem criar objetos String intermediários</td></tr>
+    <tr><td><code>sql.append("select a.* from " + TABLE + " a &lt;orderby&gt;")</code></td><td>Monta o SELECT usando a constante <code>TABLE</code> do Bean. Alias <code>a</code> pra qualificar colunas em joins futuros. <code>&lt;orderby&gt;</code> é placeholder que o Jasap substitui</td></tr>
+    <tr><td><code>getDataBase().getQuery(sql.toString())</code></td><td>Pega a conexão do cartão, cria o objeto <code>Query</code> com o SQL — ainda não executou nada no banco</td></tr>
+    <tr><td><code>select().executeList(query, list)</code></td><td>Executa: substitui <code>&lt;orderby&gt;</code>, aplica paginação (LIMIT/OFFSET), abre o cursor pra leitura</td></tr>
+    <tr><td><code>while (query.next())</code></td><td>Itera o cursor — cada <code>next()</code> avança uma linha do resultado. Retorna <code>false</code> quando acabou</td></tr>
+    <tr><td><code>new DepartamentoProdutoBean()</code></td><td>Cria uma ficha em branco pra cada linha do resultado</td></tr>
+    <tr><td><code>query.populateBean(bean)</code></td><td>Reflection: pega cada coluna do cursor, encontra o setter correspondente no Bean (<code>id_produto</code> → <code>setId_produto</code>), invoca passando o valor</td></tr>
+    <tr><td><code>list.getList().add(bean)</code></td><td>Adiciona a ficha preenchida na lista que a tela vai consumir</td></tr>
+    <tr><td><code>query.release()</code></td><td>Libera os recursos do cursor de volta pro pool de conexões — <strong>obrigatório</strong></td></tr>
+</table>
+</div>
+
+</body>
+</html>

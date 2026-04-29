@@ -1002,6 +1002,7 @@ body.dark #footer a.sub:hover      { color: #cba6f7; }
     white-space: nowrap;
     text-decoration: none;
     cursor: pointer;
+    text-transform: uppercase;
     transition: background 0.3s, color 0.3s;
 }
 

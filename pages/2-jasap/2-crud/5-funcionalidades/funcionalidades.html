@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funcionalidades — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+    <div class="home-header">
+        <h1 class="home-title">FUNCIONALIDADES</h1>
+        <p class="home-sub">Features de conveniencia pos CRUD basico — ordenacao, busca rapida, paginacao e mais</p>
+    </div>
+
+    <div class="home-grid">
+
+        <div class="card" data-href="1-sort/sort.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Ordenacao por titulo de coluna — clicar no header para ordenar ASC/DESC. Inner class Sort + setSortAct + setOrderBy.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/sort.png" alt="Sort">
+            </div>
+            <div class="card-bar">
+                <a href="1-sort/sort.html" class="card-tag" style="--tag-clr:#8b5cf6;">SORT</a>
+            </div>
+        </div>
+
+        <div class="card" data-href="2-quicksearch/quicksearch.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="145" cy="145" r="110" fill="none" stroke-width="32"/><line x1="225" y1="225" x2="320" y2="320" stroke-width="32" stroke-linecap="round"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Busca rapida com normalizacao — coluna qs_produto no banco + barra com lupa. Acha "acucar" digitando "açúcar" ou vice-versa.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/quicksearch.png" alt="QuickSearch">
+            </div>
+            <div class="card-bar">
+                <a href="2-quicksearch/quicksearch.html" class="card-tag" style="--tag-clr:#10b981;">QUICKSEARCH</a>
+            </div>
+        </div>
+
+        <div class="card" data-href="3-insert-chk/insert-chk.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><rect x="40" y="40" width="270" height="270" rx="30" fill="none" stroke-width="28"/><polyline points="95,180 160,240 270,115" fill="none" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Checkbox "Continuar inserindo" no Form — ao salvar com a caixa marcada, nao fecha o modal: limpa os campos pro proximo registro.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/insert-chk.png" alt="Insert Chk">
+            </div>
+            <div class="card-bar">
+                <a href="3-insert-chk/insert-chk.html" class="card-tag" style="--tag-clr:#f59e0b;">Insert Chk</a>
+            </div>
+        </div>
+
+        <div class="card" data-href="4-paginacao/paginacao.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><polyline points="110,85 55,175 110,265" fill="none" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/><polyline points="240,85 295,175 240,265" fill="none" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/><line x1="155" y1="175" x2="195" y2="175" stroke-width="32" stroke-linecap="round"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Lista dividida em paginas de 50 registros — navegador "Anterior / Proxima" no rodape, reset a pagina 1 ao digitar na busca rapida.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/paginacao.png" alt="Paginação">
+            </div>
+            <div class="card-bar">
+                <a href="4-paginacao/paginacao.html" class="card-tag" style="--tag-clr:#3b82f6;">Paginação</a>
+            </div>
+        </div>
+
+        <div class="card" data-href="5-tabs-status/tabs-status.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><rect x="25" y="95" width="300" height="225" rx="12"/><rect x="35" y="40" width="90" height="70" rx="10"/><rect x="135" y="55" width="90" height="55" rx="10" opacity="0.4"/><rect x="235" y="55" width="90" height="55" rx="10" opacity="0.4"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Tabs de status na lista — Ativos / Inativos / Arquivados / Todos. Nova coluna st_produto, Radio no form, TabStrip e padrao resetPage reusavel.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/tabs-status.png" alt="Tabs Status">
+            </div>
+            <div class="card-bar">
+                <a href="5-tabs-status/tabs-status.html" class="card-tag" style="--tag-clr:#7c3aed;">Tabs Status</a>
+            </div>
+        </div>
+
+        <div class="card" data-href="6-delete-form/delete-form.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><path d="M80 120 L80 300 Q80 320 100 320 L250 320 Q270 320 270 300 L270 120 Z"/><rect x="50" y="85" width="250" height="25" rx="8"/><path d="M135 55 L135 85 L215 85 L215 55 Q215 40 200 40 L150 40 Q135 40 135 55 Z" fill="none" stroke-width="20"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Botao Excluir dentro do Form em modo edicao — swalConfirm, TransactionFilter e SQLConstraintException. Fecha o modal, Toast verde e a lista atualiza sozinha.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/delete-form.png" alt="Delete no Form">
+            </div>
+            <div class="card-bar">
+                <a href="6-delete-form/delete-form.html" class="card-tag" style="--tag-clr:#ef4444;">Delete no Form</a>
+            </div>
+        </div>
+
+        <div class="card" data-href="7-linkbox/linkbox.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Vincular duas entidades via FK 1-N: o produto aponta pra um responsavel (pessoa). Campo no form com modal de selecao e callback.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/linkbox.png" alt="LINKBOX">
+            </div>
+            <div class="card-bar">
+                <a href="7-linkbox/linkbox.html" class="card-tag" style="--tag-clr:#6366f1;">LINKBOX</a>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

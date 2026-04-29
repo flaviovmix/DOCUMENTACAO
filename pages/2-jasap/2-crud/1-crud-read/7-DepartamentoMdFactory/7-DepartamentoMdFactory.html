@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DepartamentoMdFactory — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>DepartamentoMdFactory <span class="badge badge-edit">editar arquivo</span></h1>
+
+<div class="audio-player" data-src="audio/DepartamentoMdFactory.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+
+<p>A ferramentaria local do Departamento já foi construída na sequência <strong>Novo Módulo</strong> — existe, mas está vazia, sem nenhuma ferramenta. Agora, na fase CRUD READ, ela ganha a <strong>primeira ferramenta</strong>: o método <code>proModel()</code> que fabrica o <code>DepartamentoProdutoModel</code> e guarda pra reusar. <strong>Sétimo passo</strong> da sequência CRUD READ — primeiro arquivo EDITADO.</p>
+
+<p class="info-note"><strong>Nota:</strong> quando a ferramentaria foi criada na sequência Novo Módulo, ela tinha só o construtor e o <code>getManager</code>. Nenhuma ferramenta. Aqui a gente adiciona o <code>proModel()</code> com lazy initialization. Em sequências futuras (quando aparecerem novas entidades no módulo), a ferramentaria vai ganhar mais métodos — um por entidade.</p>
+
+<div class="info-accordion">
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<pre><code class="language-java">package br.xt.app.departamento;
+
+import br.jasap.core.AppManager;
+<span class="line-add">import br.xt.app.departamento.produto.DepartamentoProdutoModel;</span>
+
+public class DepartamentoMdFactory {
+
+    protected AppManager manager = null;
+
+    public DepartamentoMdFactory() {
+    }
+
+    public DepartamentoMdFactory(AppManager manager) {
+        this.manager = manager;
+    }
+
+    public AppManager getManager() {
+        return manager;
+    }
+
+    <span class="line-add">private DepartamentoProdutoModel proModel = null;</span>
+    <span class="line-add">public DepartamentoProdutoModel proModel() {</span>
+    <span class="line-add">    if (proModel == null) proModel = new DepartamentoProdutoModel(manager);</span>
+    <span class="line-add">    return proModel;</span>
+    <span class="line-add">}</span>
+
+}</code></pre>
+
+<p class="info-note"><strong>Mudanças nesta fase:</strong> apenas os blocos destacados em verde (o import do Model, o atributo <code>proModel</code> e o método <code>proModel()</code>). O resto do arquivo já existia desde a sequência Novo Módulo.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que <code>lazy initialization</code>?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>O Model só é criado <strong>quando realmente precisa</strong>. Se o agente passar pelo setor de listagem, vai precisar do ProdutoModel — aí a ferramentaria fabrica. Se o agente passar por algum setor que não precise, o ProdutoModel nem é fabricado nesse request.</p>
+
+<p>Depois de fabricado, a mesma instância é guardada na prateleira da ferramentaria (o atributo <code>proModel</code>) e reusada nas chamadas seguintes do mesmo request. Uma só ferramenta, reusada várias vezes.</p>
+
+<p>Quando o request termina, a ferramentaria inteira é descartada (junto com a Action, junto com a ferramenta). O próximo request cria uma ferramentaria nova, que vai fabricar seu próprio ProdutoModel na primeira chamada.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Por que passar o <code>manager</code> pro construtor do Model?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Porque o Model vai precisar do cartão temporário pra falar com o banco — lembra do episódio do <code>getManager()</code>? O cartão passa de mão em mão: da Action pro getFactory, da ferramentaria central pra ferramentaria local, e aqui da ferramentaria local pro Model via <code>new DepartamentoProdutoModel(manager)</code>.</p>
+
+<p>O construtor do Model chama <code>super(manager)</code>, que passa pro construtor do DAO, que faz <code>setManager</code> + <code>setDataBase</code>. Resultado: quando o setor de listagem chamar <code>proModel().daoList(...)</code>, o Model (com tudo herdado do DAO) tem o cartão necessário pra rodar a query no banco.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">O que acontece quando outra entidade for adicionada?</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<p>Se no futuro o módulo Departamento ganhar uma entidade "Pessoa", por exemplo, a ferramentaria ganha mais um método análogo:</p>
+
+<pre><code class="language-java">private DepartamentoPessoaModel pesModel = null;
+public DepartamentoPessoaModel pesModel() {
+    if (pesModel == null) pesModel = new DepartamentoPessoaModel(manager);
+    return pesModel;
+}</code></pre>
+
+<p>Cada entidade do módulo tem SEU próprio método na ferramentaria, com sua própria prateleira (<code>pesModel</code>, <code>proModel</code>, etc.). O padrão repete.</p>
+
+        </div>
+    </div>
+</div>
+
+<h2>Parte já existente (da sequência Novo Módulo)</h2>
+<p>Quando a sequência Novo Módulo terminou, a ferramentaria tinha o esqueleto: o campo <code>manager</code> protegido, um construtor vazio, um construtor que recebe o <code>AppManager</code>, e um <code>getManager()</code>. Nenhuma ferramenta ainda — só o prédio da oficina pronto.</p>
+
+<h2>Partes adicionadas nesta fase CRUD READ</h2>
+<p>Três mudanças:</p>
+<ol>
+    <li><strong>Import do Model:</strong> <code>import br.xt.app.departamento.produto.DepartamentoProdutoModel;</code></li>
+    <li><strong>Campo privado</strong> <code>proModel</code> começando <code>null</code> — a prateleira onde a ferramenta vai ser guardada depois de fabricada</li>
+    <li><strong>Método público</strong> <code>proModel()</code> com a lógica de lazy initialization: se a prateleira está vazia, fabrica uma ferramenta nova e guarda; caso contrário, devolve a que já existe</li>
+</ol>
+
+</body>
+</html>

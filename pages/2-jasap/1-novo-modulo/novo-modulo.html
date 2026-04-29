@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novo Módulo — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+    <div class="home-header">
+        <h1 class="home-title">Novo Módulo</h1>
+        <p class="home-sub">Estrutura base de um módulo no framework Jasap</p>
+    </div>
+
+    <div class="info-accordion">
+        <div class="info-row open">
+            <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+                <span class="info-row-title">Visão Geral — Como o prédio funciona + Panorama dos 7 arquivos</span>
+                <span class="info-row-btn">+</span>
+            </div>
+            <div class="info-row-body">
+                <div class="audio-player" data-src="visaogeral.m4a">
+                    <audio preload="metadata"></audio>
+                    <button class="audio-btn" title="Play / Pause"></button>
+                    <div class="audio-progress-wrap">
+                        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                        <div class="audio-progress-fill"></div>
+                    </div>
+                    <span class="audio-time">0:00 / 0:00</span>
+                </div>
+
+                <p>Antes de criar um módulo, é preciso entender <strong>como o prédio funciona por dentro</strong> e depois <strong>quais arquivos precisam ser construídos</strong>.</p>
+
+                <h3 style="margin-top:24px;">Como o prédio funciona</h3>
+                <ul style="list-style:none; padding-left:0;">
+                    <li style="margin-bottom:16px;">
+                        <strong>Internet sem estado</strong><br>
+                        <span style="color:#666; font-size:0.92em;">Cada pedido é tratado como se fosse a primeira vez. Tudo que foi montado para atender o pedido é descartado quando a resposta sai. O prédio em si continua de pé entre um pedido e outro.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Request e Response</strong><br>
+                        <span style="color:#666; font-size:0.92em;">Andam sempre em par. Cada clique do usuário vira um request que viaja pela internet, entra no prédio, é processado, e um response (geralmente um documento HTML) volta pro browser.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>6 Guardas na Entrada</strong> — Filtros Globais<br>
+                        <span style="color:#666; font-size:0.92em;">DataBaseFilter (abre conexão com o banco), PerfFilter (mede tempo), EffectFilter (gerencia Ajax), AAFilter (sessão/autenticação), ErrorFilter (captura erros), PermissaoFilter (checa acesso ao módulo). Nenhum pedido entra sem passar por todos.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Ficha Permanente</strong> — Sessão do Usuário<br>
+                        <span style="color:#666; font-size:0.92em;">A única coisa que persiste entre pedidos. Fica guardada dentro do prédio numa gaveta. O browser do usuário só carrega o número dela e manda em todo pedido seguinte.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Manager</strong> — Cartão Temporário<br>
+                        <span style="color:#666; font-size:0.92em;">Montado fresco a cada pedido com 3 camadas encaixadas (AppManager + PnlManager + ManagerDoDepartamento). Carrega todo o contexto: conexão com o banco, sessão do usuário, acesso à ferramentaria, ao ui(), às permissões.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Agente usa o cartão em cada parada</strong><br>
+                        <span style="color:#666; font-size:0.92em;">Pegar a ferramentaria, fabricar a ferramenta, acessar o banco, criar componentes visuais. Sem cartão, o agente não faz nada — o cartão é o personagem principal do framework.</span>
+                    </li>
+                    <li>
+                        <strong>Permissões linha por linha</strong><br>
+                        <span style="color:#666; font-size:0.92em;">Para cada produto da lista, o agente pergunta ao cartão "esse usuário pode deletar?" antes de desenhar o botão. A tela é montada dinamicamente, baseada em quem está logado.</span>
+                    </li>
+                </ul>
+
+                <h3 style="margin-top:32px;">Os 7 arquivos em 3 fases</h3>
+                <p><strong>3 arquivos novos + 4 edições</strong> formam a cadeia para criar um módulo.</p>
+
+                <p style="margin-top:16px;"><strong style="color:#2563eb;">Fase 1 — Construção isolada</strong> (elevador de serviço, em sigilo):</p>
+                <ul style="list-style:none; padding-left:0;">
+                    <li style="margin-bottom:16px;">
+                        <strong>Departamento Home</strong> <span class="badge-new">novo</span> — Recepção<br>
+                        <span style="color:#666; font-size:0.92em;">Tela principal do módulo com sidebar e breadcrumb. É o primeiro lugar que o usuário vê ao entrar no departamento.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Departamento Manager</strong> <span class="badge-new">novo</span> — Estrutura do Departamento<br>
+                        <span style="color:#666; font-size:0.92em;">Registra todas as actions via regAction e define os crachás de permissão via regFun. Grava na lista telefônica do prédio no startup.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Departamento Md Factory</strong> <span class="badge-new">novo</span> — Ferramentaria Local<br>
+                        <span style="color:#666; font-size:0.92em;">Fabrica os models sob encomenda e guarda pra reusar (lazy init). As ferramentas que as actions usam para acessar o banco de dados.</span>
+                    </li>
+                </ul>
+
+                <p style="margin-top:16px;"><strong style="color:#059669;">Fase 2 — Conectar ao prédio</strong>:</p>
+                <ul style="list-style:none; padding-left:0;">
+                    <li style="margin-bottom:16px;">
+                        <strong>Apps Root Model Factory</strong> <span class="badge-edit">editar</span> — Ferramentaria Central<br>
+                        <span style="color:#666; font-size:0.92em;">Conecta a ferramentaria do módulo ao getFactory() global. Sem isso, a central responde "não conheço" quando o agente pede a local.</span>
+                    </li>
+                    <li style="margin-bottom:16px;">
+                        <strong>Pnl Cfg</strong> <span class="badge-edit">editar</span> — Quadro de Disjuntores<br>
+                        <span style="color:#666; font-size:0.92em;">Cada disjuntor liga ou desliga um módulo para um cliente específico. Editar instala o disjuntor novo do Departamento.</span>
+                    </li>
+                    <li>
+                        <strong>Root Manager</strong> <span class="badge-edit">editar</span> — Configuração Geral<br>
+                        <span style="color:#666; font-size:0.92em;">Classe separada que, no startup, chama cada módulo para se configurar. Uma linha é suficiente para o framework saber que o departamento existe.</span>
+                    </li>
+                </ul>
+
+                <p style="margin-top:16px;"><strong style="color:#d97706;">Fase 3 — Ativar para os clientes</strong>:</p>
+                <ul style="list-style:none; padding-left:0;">
+                    <li>
+                        <strong>Home Desk</strong> <span class="badge-edit">editar</span> — Saguão Principal<br>
+                        <span style="color:#666; font-size:0.92em;">Adiciona a placa do módulo no saguão após o login. Só aparece se o usuário tem permissão (Fase 1) E o disjuntor do PnlCfg está ligado (Fase 2).</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="home-grid">
+
+        <div class="card" data-href="1-DepartamentoHome/1-DepartamentoHome.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Monta a sidebar com os guiches (MID) e o breadcrumb. Primeira tela do modulo.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/home.png" alt="Home">
+            </div>
+            <div class="card-bar">
+                <a href="1-DepartamentoHome/1-DepartamentoHome.html" class="card-tag" style="--tag-clr:#2563eb;">Ver docs</a>
+            </div>
+        </div>
+
+        <div class="card" data-href="2-DepartamentoManager/2-DepartamentoManager.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Registra as actions via regAction e as permissoes via regFun. Estende PnlManager.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/manager.png" alt="Manager">
+            </div>
+            <div class="card-bar">
+                <a href="2-DepartamentoManager/2-DepartamentoManager.html" class="card-tag" style="--tag-clr:#7A3E9D;">Ver docs</a>
+            </div>
+        </div>
+
+        <div class="card" data-href="3-DepartamentoMdFactory/3-DepartamentoMdFactory.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Fabrica os models sob encomenda e guarda pra reusar (lazy init).</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/mdfactory.png" alt="Md Factory">
+            </div>
+            <div class="card-bar">
+                <a href="3-DepartamentoMdFactory/3-DepartamentoMdFactory.html" class="card-tag" style="--tag-clr:#0891b2;">Ver docs</a>
+            </div>
+        </div>
+
+        <div class="card" data-href="4-AppsRootModelFactory/4-AppsRootModelFactory.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Conecta a ferramentaria do modulo ao getFactory() global.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/appsroot.png" alt="Apps Root Model Factory">
+            </div>
+            <div class="card-bar">
+                <a href="4-AppsRootModelFactory/4-AppsRootModelFactory.html" class="card-tag" style="--tag-clr:#059669;">Ver docs</a>
+            </div>
+        </div>
+
+        <div class="card" data-href="5-PnlCfg/5-PnlCfg.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Checkbox pra ativar ou desativar o modulo no painel de controle.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/pnlcfg.png" alt="Pnl Cfg">
+            </div>
+            <div class="card-bar">
+                <a href="5-PnlCfg/5-PnlCfg.html" class="card-tag" style="--tag-clr:#d97706;">Ver docs</a>
+            </div>
+        </div>
+
+        <div class="card" data-href="6-RootManager/6-RootManager.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Uma linha no array de Managers registra o modulo no framework.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/rootmanager.png" alt="Root Manager">
+            </div>
+            <div class="card-bar">
+                <a href="6-RootManager/6-RootManager.html" class="card-tag" style="--tag-clr:#dc2626;">Ver docs</a>
+            </div>
+        </div>
+
+        <div class="card" data-href="7-HomeDesk/7-HomeDesk.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Adiciona o card do modulo na tela inicial do sistema (desk).</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/homedesk.png" alt="Home Desk">
+            </div>
+            <div class="card-bar">
+                <a href="7-HomeDesk/7-HomeDesk.html" class="card-tag" style="--tag-clr:#6366f1;">Ver docs</a>
+            </div>
+        </div>
+
+    </div>
+
+    <h2 style="margin-top:48px;">Jornada Completa — o agente em ação</h2>
+    <p>Depois de conhecer cada peça do prédio e construir os 7 arquivos um a um, volta o olhar sistêmico. Um usuário acessa o site, faz login, chega no saguão, clica no departamento, clica em produtos. Em cada clique, um agente novo nasce, usa o cartão temporário em cada parada, e some. Este áudio amarra cada setor do trajeto ao arquivo que você construiu.</p>
+    <div class="audio-player" data-src="jornadacompleta.m4a">
+        <audio preload="metadata"></audio>
+        <button class="audio-btn" title="Play / Pause"></button>
+        <div class="audio-progress-wrap">
+            <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+            <div class="audio-progress-fill"></div>
+        </div>
+        <span class="audio-time">0:00 / 0:00</span>
+    </div>
+
+</body>
+</html>
