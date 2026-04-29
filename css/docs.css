@@ -876,7 +876,7 @@ body.dark #footer a.sub:hover      { color: #cba6f7; }
     display: flex;
     flex-wrap: wrap;
     gap: 24px;
-    justify-content: flex-start;
+    justify-content: center;
 }
 
 /* --- Card --- */
