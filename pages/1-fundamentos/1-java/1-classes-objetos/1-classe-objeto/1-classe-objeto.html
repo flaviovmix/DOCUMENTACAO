@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Classes e Objetos — XT - Treinamento</title>
-    <script src="../../../../js/layout.js"></script>
+    <title>Molde e Instância — XT - Treinamento</title>
+    <script src="../../../../../js/layout.js"></script>
 </head>
 <body>
 
 <nav class="page-toc"></nav>
 
-<h1>Classes e Objetos em Java</h1>
+<h1>Molde e Instância em Java</h1>
 
-<div class="audio-player" data-src="audio/classes-objetos.m4a">
+<div class="audio-player" data-src="../audio/classes-objetos.m4a">
     <audio preload="metadata"></audio>
     <button class="audio-btn" title="Play / Pause"></button>
     <div class="audio-progress-wrap">
@@ -52,27 +52,13 @@ teclado.preco = 120.00;</code></pre>
 <p>A variável <code>teclado</code> aponta para um objeto do tipo <code>Produto</code>. Esse objeto tem seu próprio <code>nome</code> e seu próprio <code>preco</code>.</p>
 
 <h2 id="atributos-metodos" data-toc-title="Atributos e métodos" data-sub="Estado e comportamento">Atributos e métodos</h2>
-<table style="width:100%; border-collapse:collapse; margin-top:12px;">
-    <thead>
-        <tr style="background:#f3f4f6;">
-            <th style="padding:8px; text-align:left; border-bottom:2px solid #ddd;">Parte</th>
-            <th style="padding:8px; text-align:left; border-bottom:2px solid #ddd;">Pergunta que responde</th>
-            <th style="padding:8px; text-align:left; border-bottom:2px solid #ddd;">Exemplo</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td style="padding:8px; border-bottom:1px solid #eee;"><strong>Atributo</strong></td>
-            <td style="padding:8px; border-bottom:1px solid #eee;">Que informação esse objeto guarda?</td>
-            <td style="padding:8px; border-bottom:1px solid #eee;"><code>nome</code>, <code>preco</code>, <code>ativo</code></td>
-        </tr>
-        <tr>
-            <td style="padding:8px;"><strong>Método</strong></td>
-            <td style="padding:8px;">O que esse objeto sabe fazer?</td>
-            <td style="padding:8px;"><code>salvar()</code>, <code>validar()</code>, <code>calcularTotal()</code></td>
-        </tr>
-    </tbody>
-</table>
+<div class="table-wrap">
+    <table>
+        <tr><th>Parte</th><th>Pergunta que responde</th><th>Exemplo</th></tr>
+        <tr><td><strong>Atributo</strong></td><td>Que informação esse objeto guarda?</td><td><code>nome</code>, <code>preco</code>, <code>ativo</code></td></tr>
+        <tr><td><strong>Método</strong></td><td>O que esse objeto sabe fazer?</td><td><code>salvar()</code>, <code>validar()</code>, <code>calcularTotal()</code></td></tr>
+    </table>
+</div>
 <p>Essa separação ajuda a ler código: quando você vê campo, pense em estado; quando vê método, pense em ação.</p>
 
 <h2 id="tipo-e-variavel" data-toc-title="Tipo e variável" data-sub="Como ler a linha">Tipo e variável</h2>

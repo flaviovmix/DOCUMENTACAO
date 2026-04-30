@@ -1,12 +1,12 @@
-// =====================================================================
-// LAYOUT.JS — Estrutura completa da documentação Nexus
+﻿// =====================================================================
+// LAYOUT.JS â€” Estrutura completa da documentaÃ§Ã£o Nexus
 //
-// Único script necessário em cada HTML. Faz tudo:
+// Ãšnico script necessÃ¡rio em cada HTML. Faz tudo:
 //   1. Injeta CSS (docs.css, highlight.js themes, font-awesome)
 //   2. Monta a estrutura (topbar, drawer, content-inner, footer)
 //   3. Gera breadcrumb automaticamente a partir do path
-//   4. Monta menu lateral e rodapé
-//   5. Inicializa componentes (áudio, carrossel, syntax highlight, etc.)
+//   4. Monta menu lateral e rodapÃ©
+//   5. Inicializa componentes (Ã¡udio, carrossel, syntax highlight, etc.)
 //   6. Restaura estado (drawer, tema, zoom) do localStorage
 //
 // Cada HTML precisa apenas:
@@ -18,7 +18,7 @@
 (function() {
 'use strict';
 
-// ─── Dados do Menu ─────────────────────────────────────────────────
+// â”€â”€â”€ Dados do Menu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 var MENU = [
     {
@@ -41,12 +41,26 @@ var MENU = [
         parent: { label: 'FUNDAMENTOS', href: '1-fundamentos/fundamentos.html' },
         hidden: true,
         items: [
-            { label: 'Visão Geral', arquivo: 'java.html', tipo: 'check' },
-            { label: '1 - Os 4 Pilares da POO', arquivo: '1-os-4-pilares-poo/1-os-4-pilares-poo.html', tipo: 'check' },
-            { label: '2 - Classes e Objetos', arquivo: '2-classes-objetos/2-classes-objetos.html', tipo: 'check' }
+            { label: 'VisÃ£o Geral', arquivo: 'java.html', tipo: 'check' },
+            { label: '1 - Classes e Objetos', arquivo: '1-classes-objetos/1-classes-objetos.html', tipo: 'check' },
+            { label: '2 - Os 4 Pilares da POO', arquivo: '2-os-4-pilares-poo/2-os-4-pilares-poo.html', tipo: 'check' },
+            { label: '3 - Coletor de Lixo', arquivo: '3-coletor-de-lixo/3-coletor-de-lixo.html', tipo: 'check' }
         ],
         pasta: '1-java',
         basePath: '1-fundamentos/1-java'
+    },
+    {
+        grupo: 'Classes e Objetos',
+        pagina: '1-classes-objetos.html',
+        parent: { label: 'JAVA', href: '1-fundamentos/1-java/java.html' },
+        hidden: true,
+        items: [
+            { label: 'VisÃƒÂ£o Geral', arquivo: '1-classes-objetos.html', tipo: 'check' },
+            { label: 'Molde e InstÃƒÂ¢ncia', arquivo: '1-classe-objeto/1-classe-objeto.html', tipo: 'check' },
+            { label: 'Anatomia da Classe', arquivo: '2-anatomia-classe/2-anatomia-classe.html', tipo: 'check' }
+        ],
+        pasta: '1-classes-objetos',
+        basePath: '1-fundamentos/1-java/1-classes-objetos'
     },
     {
         grupo: 'SQL',
@@ -84,7 +98,7 @@ var MENU = [
         grupo: 'JASAP',
         pagina: 'jasap.html',
         subgrupos: [
-            { label: 'NOVO MÓDULO', href: '1-novo-modulo/novo-modulo.html', pasta: '1-novo-modulo' },
+            { label: 'NOVO MÃ“DULO', href: '1-novo-modulo/novo-modulo.html', pasta: '1-novo-modulo' },
             { label: 'CRUD',        href: '2-crud/crud.html',               pasta: '2-crud' },
             { label: 'MANAGER',     href: '1-Manager/1-Manager.html',       pasta: '1-Manager' }
         ],
@@ -92,7 +106,7 @@ var MENU = [
         pasta: '2-jasap'
     },
     {
-        grupo: 'NOVO MÓDULO',
+        grupo: 'NOVO MÃ“DULO',
         pagina: 'novo-modulo.html',
         parent: { label: 'JASAP', href: '2-jasap/jasap.html' },
         hidden: true,
@@ -195,7 +209,7 @@ var MENU = [
             { label: '1 - Sort',           arquivo: '1-sort/sort.html',                   tipo: 'editar' },
             { label: '2 - QuickSearch',    arquivo: '2-quicksearch/quicksearch.html',     tipo: 'check' },
             { label: '3 - Insert Chk',     arquivo: '3-insert-chk/insert-chk.html',       tipo: 'check' },
-            { label: '4 - Paginação',      arquivo: '4-paginacao/paginacao.html',         tipo: 'check' },
+            { label: '4 - PaginaÃ§Ã£o',      arquivo: '4-paginacao/paginacao.html',         tipo: 'check' },
             { label: '5 - Tabs Status',    arquivo: '5-tabs-status/tabs-status.html',     tipo: 'check' },
             { label: '6 - Delete no Form', arquivo: '6-delete-form/delete-form.html',     tipo: 'editar' },
             { label: '7 - LinkBox',        arquivo: '7-linkbox/linkbox.html',             tipo: 'check' },
@@ -210,7 +224,7 @@ var MENU = [
         parent: { label: 'FUNCIONALIDADES', href: '2-jasap/2-crud/5-funcionalidades/funcionalidades.html' },
         hidden: true,
         items: [
-            { label: 'Visão Geral',                 arquivo: 'linkbox.html',                                                    tipo: 'check' },
+            { label: 'VisÃ£o Geral',                 arquivo: 'linkbox.html',                                                    tipo: 'check' },
             { label: '1 - Produto Bean',   arquivo: '1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html',     tipo: 'editar' },
             { label: '2 - Pessoa Select',  arquivo: '2-DepartamentoPessoaSelect/2-DepartamentoPessoaSelect.html',   tipo: 'novo' },
             { label: '3 - Produto Form',   arquivo: '3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html',     tipo: 'editar' },
@@ -225,7 +239,7 @@ var MENU = [
         parent: { label: 'FUNCIONALIDADES', href: '2-jasap/2-crud/5-funcionalidades/funcionalidades.html' },
         hidden: true,
         items: [
-            { label: 'Visão Geral', arquivo: 'master-detail.html', tipo: 'check' }
+            { label: 'VisÃ£o Geral', arquivo: 'master-detail.html', tipo: 'check' }
         ],
         pasta: '8-master-detail',
         basePath: '2-jasap/2-crud/5-funcionalidades/8-master-detail'
@@ -265,7 +279,7 @@ var MENU = [
         parent: { label: 'NEXUS', href: '3-nexus/nexus.html' },
         hidden: true,
         items: [
-            { label: '1 - Visão Geral',           arquivo: '1-visao-geral/1-visao-geral.html',                         tipo: 'check' },
+            { label: '1 - VisÃ£o Geral',           arquivo: '1-visao-geral/1-visao-geral.html',                         tipo: 'check' },
             { label: '2 - Setup do Ambiente',     arquivo: '2-setup-ambiente/2-setup-ambiente.html',                   tipo: 'check' },
             { label: '3 - Spring Initializr',     arquivo: '3-spring-initializr/3-spring-initializr.html',             tipo: 'check' },
             { label: '4 - application.yml',       arquivo: '4-application-yml/4-application-yml.html',                 tipo: 'check' },
@@ -273,7 +287,7 @@ var MENU = [
             { label: '6 - Spring Security',       arquivo: '6-spring-security-inicial/6-spring-security-inicial.html', tipo: 'check' },
             { label: '7 - Health Endpoint',       arquivo: '7-health-endpoint/7-health-endpoint.html',                 tipo: 'check' },
             { label: '8 - SvelteKit Setup',       arquivo: '8-sveltekit-setup/8-sveltekit-setup.html',                 tipo: 'check' },
-            { label: '9 - Integração Fim a Fim',  arquivo: '9-integracao-fim-a-fim/9-integracao-fim-a-fim.html',       tipo: 'check' },
+            { label: '9 - IntegraÃ§Ã£o Fim a Fim',  arquivo: '9-integracao-fim-a-fim/9-integracao-fim-a-fim.html',       tipo: 'check' },
             { label: '10 - Carta do Claude',      arquivo: '10-carta-do-claude/10-carta-do-claude.html',               tipo: 'check' }
         ],
         pasta: '2-fase-0',
@@ -284,7 +298,7 @@ var MENU = [
 var FOOTER = {
     episodios: [
         {
-            grupo: 'NOVO MÓDULO',
+            grupo: 'NOVO MÃ“DULO',
             items: [
                 { label: 'Home',     arquivo: '1-DepartamentoHome/1-DepartamentoHome.html' },
                 { label: 'Manager',   arquivo: '2-DepartamentoManager/2-DepartamentoManager.html' },
@@ -352,7 +366,7 @@ var FOOTER = {
                 { label: 'Sort',           arquivo: '1-sort/sort.html' },
                 { label: 'QuickSearch',    arquivo: '2-quicksearch/quicksearch.html' },
                 { label: 'Insert Chk',     arquivo: '3-insert-chk/insert-chk.html' },
-                { label: 'Paginação',      arquivo: '4-paginacao/paginacao.html' },
+                { label: 'PaginaÃ§Ã£o',      arquivo: '4-paginacao/paginacao.html' },
                 { label: 'Tabs Status',    arquivo: '5-tabs-status/tabs-status.html' },
                 { label: 'Delete no Form', arquivo: '6-delete-form/delete-form.html' },
                 { label: 'LinkBox',        arquivo: '7-linkbox/linkbox.html' },
@@ -375,7 +389,7 @@ var FOOTER = {
         {
             grupo: 'MASTER/DETAIL',
             items: [
-                { label: 'Visão Geral', arquivo: 'master-detail.html' }
+                { label: 'VisÃ£o Geral', arquivo: 'master-detail.html' }
             ],
             pasta: '8-master-detail',
             basePath: '2-jasap/2-crud/5-funcionalidades/8-master-detail'
@@ -385,15 +399,15 @@ var FOOTER = {
         {
             grupo: 'Conceitos',
             items: [
-                { label: 'O que é uma Action',     href: '#' },
-                { label: 'O que é um Manager',      href: '#' },
-                { label: 'O que é um DAO',          href: '#' },
-                { label: 'O que é um Bean',         href: '#' },
-                { label: 'Fluxo de uma requisição', href: '#' }
+                { label: 'O que Ã© uma Action',     href: '#' },
+                { label: 'O que Ã© um Manager',      href: '#' },
+                { label: 'O que Ã© um DAO',          href: '#' },
+                { label: 'O que Ã© um Bean',         href: '#' },
+                { label: 'Fluxo de uma requisiÃ§Ã£o', href: '#' }
             ]
         },
         {
-            grupo: 'Padrões',
+            grupo: 'PadrÃµes',
             items: [
                 { label: 'Nomenclatura de arquivos', href: '#' },
                 { label: 'Constante ROOT',           href: '#' },
@@ -403,33 +417,33 @@ var FOOTER = {
             ]
         },
         {
-            grupo: 'Referências',
+            grupo: 'ReferÃªncias',
             items: [
                 { label: 'CLAUDE.md',            href: '#' },
-                { label: 'Jasap — código-fonte', href: '#' },
-                { label: 'app — modelo',         href: '#' },
+                { label: 'Jasap â€” cÃ³digo-fonte', href: '#' },
+                { label: 'app â€” modelo',         href: '#' },
                 { label: 'Banco PRD_TREINAMENTO', href: '#' }
             ]
         }
     ]
 };
 
-// ─── Base path (derivado do src do próprio script) ─────────────────
+// â”€â”€â”€ Base path (derivado do src do prÃ³prio script) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 var BASE = document.currentScript.getAttribute('src').replace('js/layout.js', '');
 
-// ─── Injetar CSS imediatamente (antes do DOM estar pronto) ─────────
+// â”€â”€â”€ Injetar CSS imediatamente (antes do DOM estar pronto) â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 (function injectCSS() {
     var head = document.head;
 
-    // Esconder body até layout estar pronto (evita FOUC)
+    // Esconder body atÃ© layout estar pronto (evita FOUC)
     var hide = document.createElement('style');
     hide.id = 'layout-hide';
     hide.textContent = 'body{visibility:hidden}';
     head.appendChild(hide);
 
-    // Loader: barra fina azul no topo (0 → 100%), página fica branca durante o load
+    // Loader: barra fina azul no topo (0 â†’ 100%), pÃ¡gina fica branca durante o load
     var loaderStyle = document.createElement('style');
     loaderStyle.id = 'page-loader-style';
     loaderStyle.textContent =
@@ -440,7 +454,7 @@ var BASE = document.currentScript.getAttribute('src').replace('js/layout.js', ''
         '#page-loader.done{opacity:0}';
     head.appendChild(loaderStyle);
 
-    // Inicia o loader (barra) — funciona mesmo com body invisible porque fica no <html>
+    // Inicia o loader (barra) â€” funciona mesmo com body invisible porque fica no <html>
     var addLoader = function() {
         if (document.documentElement) {
             window.__startPageLoader();
@@ -448,14 +462,14 @@ var BASE = document.currentScript.getAttribute('src').replace('js/layout.js', ''
             setTimeout(addLoader, 0);
         }
     };
-    // Funções globais para iniciar/finalizar o loader (também usadas na transição entre páginas)
+    // FunÃ§Ãµes globais para iniciar/finalizar o loader (tambÃ©m usadas na transiÃ§Ã£o entre pÃ¡ginas)
     window.__pageLoaderTrickle = null;
     window.__startPageLoader = function() {
         if (document.getElementById('page-loader')) return;
         var loader = document.createElement('div');
         loader.id = 'page-loader';
         document.documentElement.appendChild(loader);
-        // Progresso simulado: cresce rápido no início, devagar perto de 90%
+        // Progresso simulado: cresce rÃ¡pido no inÃ­cio, devagar perto de 90%
         var progress = 0;
         window.__pageLoaderTrickle = setInterval(function() {
             var step;
@@ -494,17 +508,17 @@ var BASE = document.currentScript.getAttribute('src').replace('js/layout.js', ''
     // docs.css
     var css = document.createElement('link');
     css.rel = 'stylesheet';
-    css.href = BASE + 'css/docs.css';
+    css.href = BASE + 'css/docs.css?v=20260430-card-img-pan-4';
     head.appendChild(css);
 
-    // highlight.js — tema claro
+    // highlight.js â€” tema claro
     var hljsLight = document.createElement('link');
     hljsLight.id = 'hljs-light';
     hljsLight.rel = 'stylesheet';
     hljsLight.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/intellij-light.min.css';
     head.appendChild(hljsLight);
 
-    // highlight.js — tema escuro (desabilitado por padrão)
+    // highlight.js â€” tema escuro (desabilitado por padrÃ£o)
     var hljsDark = document.createElement('link');
     hljsDark.id = 'hljs-dark';
     hljsDark.rel = 'stylesheet';
@@ -525,12 +539,12 @@ var BASE = document.currentScript.getAttribute('src').replace('js/layout.js', ''
     }
 
     // Espera docs.css + font-awesome + hljs (tema ativo) antes de mostrar o body
-    // — evita FOUC em páginas que não têm 'pre code' (ex: index.html)
+    // â€” evita FOUC em pÃ¡ginas que nÃ£o tÃªm 'pre code' (ex: index.html)
     var activeHljs = hljsLight.disabled ? hljsDark : hljsLight;
     window.__stylesheetsReady = Promise.all([linkReady(css), linkReady(fa), linkReady(activeHljs)]);
 })();
 
-// ─── Helpers ───────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function detectFolder(path) {
     var best = '';
@@ -583,7 +597,7 @@ function loadScript(src) {
     });
 }
 
-// ─── Montar layout no DOMContentLoaded ─────────────────────────────
+// â”€â”€â”€ Montar layout no DOMContentLoaded â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 document.addEventListener('DOMContentLoaded', async function() {
     var path = location.pathname.replace(/\\/g, '/');
@@ -592,14 +606,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     var isRoot = (BASE === '' || BASE === './');
     var section = findSection(currentFolder);
     var isSectionIndex = section && currentFile === section.pagina;
-    // Detecta se o HTML está numa subpasta dentro do grupo (ex: 1-DepartamentoHome/1-DepartamentoHome.html)
+    // Detecta se o HTML estÃ¡ numa subpasta dentro do grupo (ex: 1-DepartamentoHome/1-DepartamentoHome.html)
     var isSubFolder = false;
     if (currentFolder) {
         var afterGroup = path.split('/' + currentFolder + '/')[1] || '';
         isSubFolder = afterGroup.indexOf('/') !== -1;
     }
 
-    // Profundidade a partir de pages/ (usado pra calcular prefixos de navegação)
+    // Profundidade a partir de pages/ (usado pra calcular prefixos de navegaÃ§Ã£o)
     var pagesIdx = path.indexOf('/pages/');
     var depth = 0;
     if (pagesIdx > -1) {
@@ -607,10 +621,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         depth = afterPages.split('/').length - 1;
     }
 
-    // Extrair título da tag <title> (remove sufixo " — Nexus")
-    var pageTitle = document.title.replace(/\s*[—–-]\s*Nexus\s*$/, '').trim();
+    // Extrair tÃ­tulo da tag <title> (remove sufixo " â€” Nexus")
+    var pageTitle = document.title.replace(/\s*[â€”â€“-]\s*Nexus\s*$/, '').trim();
 
-    // Salvar conteúdo original do body
+    // Salvar conteÃºdo original do body
+    pageTitle = pageTitle
+        .replace(/\s*[\u2014\u2013-]\s*XT\s*-\s*Treinamento\s*$/, '')
+        .trim();
+
     var content = document.body.innerHTML;
 
     // Aplicar tema escuro antes de mostrar (evita flash branco)
@@ -618,7 +636,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.body.classList.add('dark');
     }
 
-    // ── Breadcrumb ──
+    // â”€â”€ Breadcrumb â”€â”€
     var breadcrumbHTML = '';
     var upToPages = '../'.repeat(depth);
     if (!isRoot && section) {
@@ -649,7 +667,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         breadcrumbHTML += '</nav>';
     }
 
-    // ── Zoom controls ──
+    // â”€â”€ Zoom controls â”€â”€
     var zoomHTML =
         '<div style="margin-left:auto;display:flex;align-items:center;gap:4px;">' +
             '<button onclick="changeZoom(-0.1)" title="Diminuir zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 8px;line-height:1;" onmouseover="this.style.color=\'#2563eb\'" onmouseout="this.style.color=\'#555\'">\u2212</button>' +
@@ -662,20 +680,20 @@ document.addEventListener('DOMContentLoaded', async function() {
                 '</div>' +
             '</span>' +
             '<button onclick="changeZoom(0.1)" title="Aumentar zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 8px;line-height:1;" onmouseover="this.style.color=\'#2563eb\'" onmouseout="this.style.color=\'#555\'">+</button>' +
-            '<button id="toggle-all-videos" onclick="toggleAllVideos()" title="Pausar/tocar todos os vídeos" style="display:none;background:none;border:none;cursor:pointer;color:#555;padding:4px 8px;line-height:0;border-radius:4px;margin-left:8px;align-items:center;justify-content:center;" onmouseover="this.style.color=\'#2563eb\'" onmouseout="this.style.color=\'#555\'">' +
+            '<button id="toggle-all-videos" onclick="toggleAllVideos()" title="Pausar/tocar todos os vÃ­deos" style="display:none;background:none;border:none;cursor:pointer;color:#555;padding:4px 8px;line-height:0;border-radius:4px;margin-left:8px;align-items:center;justify-content:center;" onmouseover="this.style.color=\'#2563eb\'" onmouseout="this.style.color=\'#555\'">' +
                 '<svg id="ic-pause-all" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="display:none;"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>' +
                 '<svg id="ic-play-all" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>' +
             '</button>' +
             '<button id="theme-toggle" onclick="toggleTheme()" title="Alternar tema" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 10px;border-radius:4px;line-height:1;margin-left:8px;" onmouseover="this.style.color=\'#2563eb\'" onmouseout="this.style.color=\'#555\'">&#9788;</button>' +
         '</div>';
 
-    // ── Montar HTML completo ──
+    // â”€â”€ Montar HTML completo â”€â”€
     document.body.innerHTML =
         '<div id="topbar">' +
             '<button id="hamburger" onclick="toggleDrawer()"><span></span><span></span><span></span></button>' +
             '<a id="topbar-title" href="' + BASE + 'index.html">Nexus</a>' +
             breadcrumbHTML +
-            '<a id="topbar-grafo" href="' + BASE + 'grafo.html" title="Ver grafo de páginas">' +
+            '<a id="topbar-grafo" href="' + BASE + 'grafo.html" title="Ver grafo de pÃ¡ginas">' +
                 '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
                     '<circle cx="5" cy="12" r="3"/>' +
                     '<circle cx="19" cy="5" r="3"/>' +
@@ -683,7 +701,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     '<line x1="7.5" y1="10.5" x2="16.5" y2="6.5"/>' +
                     '<line x1="7.5" y1="13.5" x2="16.5" y2="17.5"/>' +
                 '</svg>' +
-                '<span>Gráfico</span>' +
+                '<span>GrÃ¡fico</span>' +
             '</a>' +
             zoomHTML +
         '</div>' +
@@ -695,20 +713,20 @@ document.addEventListener('DOMContentLoaded', async function() {
         '</div>' +
         '<div id="footer"><div id="footer-inner"></div></div>';
 
-    // ── Menu lateral ──
+    // â”€â”€ Menu lateral â”€â”€
     buildMenu(currentFile, currentFolder, isSubFolder, depth);
 
-    // ── Footer ──
+    // â”€â”€ Footer â”€â”€
     buildFooter(currentFolder, isSubFolder, depth);
 
-    // ── Botão global pausar/tocar todos os vídeos ──
+    // â”€â”€ BotÃ£o global pausar/tocar todos os vÃ­deos â”€â”€
     var allVideos = document.querySelectorAll('.card-img video');
     var globalBtn = document.getElementById('toggle-all-videos');
     if (allVideos.length && globalBtn) {
         globalBtn.style.display = 'inline-flex';
         var icPause = document.getElementById('ic-pause-all');
         var icPlay  = document.getElementById('ic-play-all');
-        // Toggle puro: estado começa "play" (todos pausados pra usuário). Independe do hover dos cards.
+        // Toggle puro: estado comeÃ§a "play" (todos pausados pra usuÃ¡rio). Independe do hover dos cards.
         var globalPlaying = false;
         window.toggleAllVideos = function() {
             globalPlaying = !globalPlaying;
@@ -721,39 +739,36 @@ document.addEventListener('DOMContentLoaded', async function() {
         };
     }
 
-    // ── Home cards — menu info toggle ──
+    // â”€â”€ Home cards â€” menu info toggle â”€â”€
     document.querySelectorAll('.card').forEach(function(card) {
         var btn = card.querySelector('.btnMenuCard');
         var info = card.querySelector('.card-info');
 
         if (btn && info) {
             btn.addEventListener('click', function(e) {
+                e.stopPropagation();
                 info.classList.toggle('aberto');
                 btn.classList.toggle('aberto');
             });
         }
 
-        // Padrão: nome do card (alt da imagem ou data-name do vídeo). Hover: texto original ("Ver docs" / "Ver notas")
-        var tag = card.querySelector('.card-tag');
-        var media = card.querySelector('.card-img img, .card-img video');
-        if (tag && media) {
-            var cardName = (media.getAttribute('alt') || media.getAttribute('data-name') || '').toUpperCase();
-            var hoverText = tag.textContent;
-            if (cardName && cardName !== hoverText.toUpperCase()) {
-                tag.textContent = cardName;
-                tag.addEventListener('mouseenter', function() { tag.textContent = hoverText; });
-                tag.addEventListener('mouseleave', function() { tag.textContent = cardName; });
-            }
+        var cardHref = card.getAttribute('data-href');
+        if (cardHref) {
+            card.addEventListener('click', function(e) {
+                if (e.target.closest('a[href]') || e.target.closest('.btnMenuCard')) return;
+                window.location.href = cardHref;
+            });
         }
 
-        // Vídeo no card: começa pausado, SÓ o primeiro hover dá play; depois disso o controle é do botão
+
+        // VÃ­deo no card: comeÃ§a pausado, SÃ“ o primeiro hover dÃ¡ play; depois disso o controle Ã© do botÃ£o
         var video = card.querySelector('.card-img video');
         if (video) {
             card.addEventListener('mouseenter', function() {
                 video.play().catch(function() {});
             }, { once: true });
 
-            // Botão pause/play (canto superior esquerdo)
+            // BotÃ£o pause/play (canto superior esquerdo)
             var pauseBtn = card.querySelector('.btnPauseCard');
             if (pauseBtn) {
                 pauseBtn.addEventListener('click', function(e) {
@@ -767,7 +782,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
 
-    // ── Inicializar componentes ──
+    // â”€â”€ Inicializar componentes â”€â”€
     var inner = document.getElementById('content-inner');
     var hasCode = inner.querySelector('pre code');
 
@@ -787,7 +802,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     initSideNav(inner);
     initPageToc(inner);
 
-    // ── Restaurar estado do drawer ──
+    // â”€â”€ Restaurar estado do drawer â”€â”€
     if (localStorage.getItem('drawerOpen') === 'true') {
         document.getElementById('drawer').classList.add('open');
         document.getElementById('hamburger').classList.add('open');
@@ -797,27 +812,27 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
-    // ── Tema — ícone (body.dark já aplicado acima) ──
+    // â”€â”€ Tema â€” Ã­cone (body.dark jÃ¡ aplicado acima) â”€â”€
     if (localStorage.getItem('theme') === 'dark') {
         document.getElementById('theme-toggle').innerHTML = '&#9790;';
     }
 
-    // ── Esperar stylesheets críticos (docs.css, font-awesome, hljs) terminarem ──
-    // sem isso, páginas sem 'pre code' (ex: index.html) mostram FOUC
+    // â”€â”€ Esperar stylesheets crÃ­ticos (docs.css, font-awesome, hljs) terminarem â”€â”€
+    // sem isso, pÃ¡ginas sem 'pre code' (ex: index.html) mostram FOUC
     if (window.__stylesheetsReady) await window.__stylesheetsReady;
 
-    // ── Mostrar body ──
+    // â”€â”€ Mostrar body â”€â”€
     var hideStyle = document.getElementById('layout-hide');
     if (hideStyle) hideStyle.remove();
     document.body.style.visibility = 'visible';
 
-    // ── Finalizar loader (0→100% + fade) ──
+    // â”€â”€ Finalizar loader (0â†’100% + fade) â”€â”€
     if (window.__finishPageLoader) window.__finishPageLoader();
 });
 
-// ═══════════════════════════════════════════════════════════════════
-// TRANSIÇÃO ENTRE PÁGINAS — reinsere loader ao clicar em link interno
-// ═══════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// TRANSIÃ‡ÃƒO ENTRE PÃGINAS â€” reinsere loader ao clicar em link interno
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 function showTransitionLoader() {
     if (window.__startPageLoader) window.__startPageLoader();
@@ -848,9 +863,9 @@ document.addEventListener('click', function(e) {
     }
 }, true);
 
-// ═══════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // MENU LATERAL (DRAWER)
-// ═══════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 function buildMenu(currentPage, currentFolder, isSubFolder, depth) {
     var inner = document.getElementById('drawer-inner');
@@ -886,7 +901,7 @@ function buildMenu(currentPage, currentFolder, isSubFolder, depth) {
                 } else if (item.tipo === 'editar') {
                     badgeHtml = ' <i class="fa-solid fa-pen-to-square" style="margin-left:6px;font-size:0.8em;color:#d97706;" title="editar arquivo"></i>';
                 } else if (item.tipo === 'check') {
-                    badgeHtml = ' <svg style="margin-left:6px;width:1em;height:1em;vertical-align:-0.1em;" viewBox="0 0 640 640" fill="#999" title="não precisa alterar"><path d="M160 128C107 128 64 171 64 224L64 480C64 533 107 576 160 576L416 576C469 576 512 533 512 480L512 384C512 366.3 497.7 352 480 352C462.3 352 448 366.3 448 384L448 480C448 497.7 433.7 512 416 512L160 512C142.3 512 128 497.7 128 480L128 224C128 206.3 142.3 192 160 192L256 192C273.7 192 288 177.7 288 160C288 142.3 273.7 128 256 128L160 128z"/><path d="M168 340L208 300L290 390L510 80L550 120L290 440Z"/></svg>';
+                    badgeHtml = ' <svg style="margin-left:6px;width:1em;height:1em;vertical-align:-0.1em;" viewBox="0 0 640 640" fill="#999" title="nÃ£o precisa alterar"><path d="M160 128C107 128 64 171 64 224L64 480C64 533 107 576 160 576L416 576C469 576 512 533 512 480L512 384C512 366.3 497.7 352 480 352C462.3 352 448 366.3 448 384L448 480C448 497.7 433.7 512 416 512L160 512C142.3 512 128 497.7 128 480L128 224C128 206.3 142.3 192 160 192L256 192C273.7 192 288 177.7 288 160C288 142.3 273.7 128 256 128L160 128z"/><path d="M168 340L208 300L290 390L510 80L550 120L290 440Z"/></svg>';
                 } else if (item.icon) {
                     badgeHtml = ' <i class="' + item.icon + '" style="opacity:0.4;margin-left:6px;font-size:0.85em;"></i>';
                 }
@@ -899,7 +914,7 @@ function buildMenu(currentPage, currentFolder, isSubFolder, depth) {
             for (var s = 0; s < g.subgrupos.length; s++) {
                 var sub = g.subgrupos[s];
 
-                // Subgrupo-link (href) — renderiza como link simples
+                // Subgrupo-link (href) â€” renderiza como link simples
                 if (sub.href) {
                     var subActive = (sub.pasta && currentFolder === sub.pasta) ||
                         (!sub.pasta && currentPage === sub.href);
@@ -915,7 +930,7 @@ function buildMenu(currentPage, currentFolder, isSubFolder, depth) {
                     continue;
                 }
 
-                // Subgrupo expandível (com items) — padrão original
+                // Subgrupo expandÃ­vel (com items) â€” padrÃ£o original
                 var hasItems = sub.items && sub.items.length > 0;
                 var hasActive = false;
                 if (hasItems) {
@@ -943,9 +958,9 @@ function buildMenu(currentPage, currentFolder, isSubFolder, depth) {
     inner.innerHTML = html;
 }
 
-// ═══════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // FOOTER
-// ═══════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 function buildFooter(currentFolder, isSubFolder, depth) {
     var inner = document.getElementById('footer-inner');
@@ -979,11 +994,11 @@ function buildFooter(currentFolder, isSubFolder, depth) {
     inner.innerHTML = html;
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// UI CONTROLS — Drawer, Tema, Zoom
-// ═══════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// UI CONTROLS â€” Drawer, Tema, Zoom
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-// ── Drawer ──
+// â”€â”€ Drawer â”€â”€
 
 function createDrawerOverlay(show) {
     var overlay = document.getElementById('drawer-overlay');
@@ -1009,7 +1024,7 @@ function toggleDrawer() {
     }
 }
 
-// ── Tema ──
+// â”€â”€ Tema â”€â”€
 
 function toggleTheme() {
     var dark = document.body.classList.toggle('dark');
@@ -1021,7 +1036,7 @@ function toggleTheme() {
     localStorage.setItem('theme', dark ? 'dark' : 'light');
 }
 
-// ── Zoom ──
+// â”€â”€ Zoom â”€â”€
 
 var zoom = 1;
 
@@ -1047,7 +1062,7 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// ── Toggle helpers (usados via onclick no HTML) ──
+// â”€â”€ Toggle helpers (usados via onclick no HTML) â”€â”€
 
 function toggleGroup(header) {
     header.closest('.menu-group').classList.toggle('collapsed');
@@ -1075,7 +1090,7 @@ function toggleChapter(header) {
     }
 }
 
-// ── Expor funções globais (necessárias para onclick no HTML) ──
+// â”€â”€ Expor funÃ§Ãµes globais (necessÃ¡rias para onclick no HTML) â”€â”€
 
 window.toggleDrawer   = toggleDrawer;
 window.toggleTheme    = toggleTheme;
@@ -1087,11 +1102,11 @@ window.toggleSubgroup = toggleSubgroup;
 window.toggleInfoRow  = toggleInfoRow;
 window.toggleChapter  = toggleChapter;
 
-// ═══════════════════════════════════════════════════════════════════
-// INIT FUNCTIONS — Audio, Copy, Highlight, Carousel, SideNav, TopNav
-// ═══════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// INIT FUNCTIONS â€” Audio, Copy, Highlight, Carousel, SideNav, TopNav
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-// ── Audio Players ──
+// â”€â”€ Audio Players â”€â”€
 
 function initAudioPlayers(container) {
     container.querySelectorAll('.audio-player').forEach(function(player) {
@@ -1124,17 +1139,17 @@ function initAudioPlayers(container) {
 
         btn.innerHTML = iconPlay;
 
-        // botão -10s
+        // botÃ£o -10s
         var btnBack = document.createElement('button');
         btnBack.className = 'audio-skip audio-back';
         btnBack.title = 'Voltar 10s';
         btnBack.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M11.99 5V1l-5 5 5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6h-2c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>';
         btnBack.addEventListener('click', function() { audio.currentTime = Math.max(0, audio.currentTime - 10); });
 
-        // botão +10s
+        // botÃ£o +10s
         var btnFwd = document.createElement('button');
         btnFwd.className = 'audio-skip audio-fwd';
-        btnFwd.title = 'Avançar 10s';
+        btnFwd.title = 'AvanÃ§ar 10s';
         btnFwd.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12.01 5V1l5 5-5 5V7c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6h2c0 4.42-3.58 8-8 8s-8-3.58-8-8 3.58-8 8-8z"/></svg>';
         btnFwd.addEventListener('click', function() { audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10); });
 
@@ -1223,12 +1238,12 @@ function initAudioPlayers(container) {
         btnDl.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>';
         volWrap.after(btnDl);
 
-        // sentinel: div invisível para detectar quando o player grudou no topo
+        // sentinel: div invisÃ­vel para detectar quando o player grudou no topo
         var sentinel = document.createElement('div');
         sentinel.style.cssText = 'height:1px;margin-bottom:-1px;';
         player.parentNode.insertBefore(sentinel, player);
 
-        // spacer: substitui o espaço do player no mobile quando vira fixed
+        // spacer: substitui o espaÃ§o do player no mobile quando vira fixed
         var spacer = document.createElement('div');
         spacer.style.display = 'none';
         player.parentNode.insertBefore(spacer, player.nextSibling);
@@ -1244,7 +1259,7 @@ function initAudioPlayers(container) {
     });
 }
 
-// ── Copy Buttons ──
+// â”€â”€ Copy Buttons â”€â”€
 
 function initCopyButtons(container) {
     var iconCopy = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>';
@@ -1272,7 +1287,7 @@ function initCopyButtons(container) {
     });
 }
 
-// ── Range Highlights (// ADICIONAR ... // FIM) ──
+// â”€â”€ Range Highlights (// ADICIONAR ... // FIM) â”€â”€
 
 function initRangeHighlights(container) {
     container.querySelectorAll('pre code').forEach(function(code) {
@@ -1315,7 +1330,7 @@ function initRangeHighlights(container) {
     });
 }
 
-// ── Line Highlights (data-add) ──
+// â”€â”€ Line Highlights (data-add) â”€â”€
 
 function initLineHighlights(container) {
     container.querySelectorAll('pre[data-add]').forEach(function(pre) {
@@ -1358,7 +1373,7 @@ function initLineHighlights(container) {
                 i++;
             }
         }
-        // Junta sem \n extra após line-add (display:block já quebra a linha)
+        // Junta sem \n extra apÃ³s line-add (display:block jÃ¡ quebra a linha)
         var html = '';
         for (var k = 0; k < result.length; k++) {
             if (k > 0 && !result[k - 1].startsWith('<span class="line-add">')) {
@@ -1370,7 +1385,7 @@ function initLineHighlights(container) {
     });
 }
 
-// ── Syntax Highlight (highlight.js + tokens customizados) ──
+// â”€â”€ Syntax Highlight (highlight.js + tokens customizados) â”€â”€
 
 function highlightAll(container) {
     var java = hljs.getLanguage('java');
@@ -1412,7 +1427,7 @@ function highlightAll(container) {
     container.querySelectorAll('pre code').forEach(function(block) {
         var html = block.innerHTML;
 
-        // Protege strings literais para não serem recoloridas
+        // Protege strings literais para nÃ£o serem recoloridas
         var saved = [];
         html = html.replace(/<span class="hljs-string">[\s\S]*?<\/span>/g, function(match) {
             saved.push(match);
@@ -1443,9 +1458,9 @@ function highlightAll(container) {
             );
         });
 
-        // Departamento* — placeholders de template (marca-texto)
-        // Aluno troca "Departamento" pelo nome real do módulo (Estoque, Financeiro, etc.)
-        // Boundary custom (não usa \b) pra pegar DEPARTAMENTO mesmo cercado de _, ex: __DEPARTAMENTO_MID
+        // Departamento* â€” placeholders de template (marca-texto)
+        // Aluno troca "Departamento" pelo nome real do mÃ³dulo (Estoque, Financeiro, etc.)
+        // Boundary custom (nÃ£o usa \b) pra pegar DEPARTAMENTO mesmo cercado de _, ex: __DEPARTAMENTO_MID
         var templateRe = /(?<![A-Za-z0-9])(Departamento\w*|departamento|DEPARTAMENTO)(?![A-Za-z0-9])(?=[^>]*<|[^<>]*$)/g;
         html = html.replace(templateRe, '<span class="xt-template">$1</span>');
 
@@ -1454,7 +1469,7 @@ function highlightAll(container) {
             return s.replace(templateRe, '<span class="xt-template">$1</span>');
         });
 
-        // Restaura strings literais (agora com o highlight do Departamento já dentro)
+        // Restaura strings literais (agora com o highlight do Departamento jÃ¡ dentro)
         saved.forEach(function(s, i) { html = html.replace('\x00S' + i + '\x00', s); });
 
         block.innerHTML = html;
@@ -1462,19 +1477,19 @@ function highlightAll(container) {
 }
 
 // Highlight dos placeholders "Departamento*" fora de <pre><code>
-// Roda sempre (mesmo se a página não tem bloco de código)
+// Roda sempre (mesmo se a pÃ¡gina nÃ£o tem bloco de cÃ³digo)
 function highlightTemplates(container) {
     var re = /(?<![A-Za-z0-9])(Departamento\w*|departamento|DEPARTAMENTO)(?![A-Za-z0-9])(?=[^>]*<|[^<>]*$)/g;
 
-    // Inline <code> em parágrafos/listas — pula <pre> e tabelas de explicação
+    // Inline <code> em parÃ¡grafos/listas â€” pula <pre> e tabelas de explicaÃ§Ã£o
     container.querySelectorAll('code').forEach(function(block) {
-        if (block.closest('pre')) return;   // já processado em highlightAll
-        if (block.closest('table')) return; // tabelas de explicação não precisam
+        if (block.closest('pre')) return;   // jÃ¡ processado em highlightAll
+        if (block.closest('table')) return; // tabelas de explicaÃ§Ã£o nÃ£o precisam
         block.innerHTML = block.innerHTML.replace(re, '<span class="xt-template">$1</span>');
     });
 }
 
-// ── Carousel ──
+// â”€â”€ Carousel â”€â”€
 
 async function initCarousel(container) {
     for (var carousel of container.querySelectorAll('.carousel')) {
@@ -1520,7 +1535,7 @@ async function initCarousel(container) {
 
         var btnNext = document.createElement('button');
         btnNext.className = 'carousel-btn carousel-btn--next';
-        btnNext.title     = 'Próxima';
+        btnNext.title     = 'PrÃ³xima';
         btnNext.innerHTML = svgR;
 
         var dotsWrap = document.createElement('div');
@@ -1577,7 +1592,7 @@ async function initCarousel(container) {
 
                 var lbNext = document.createElement('button');
                 lbNext.className = 'carousel-lb-btn carousel-lb-btn--next';
-                lbNext.title     = 'Próxima';
+                lbNext.title     = 'PrÃ³xima';
                 lbNext.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
 
                 function lbGoTo(newIdx) {
@@ -1605,7 +1620,7 @@ async function initCarousel(container) {
 
             slides.forEach(function(slide, i) { slide.addEventListener('click', function() { openLightbox(i); }); });
 
-            // Teclado: ← →
+            // Teclado: â† â†’
             var carouselEl = slides[0].closest('.carousel');
             carouselEl.setAttribute('tabindex', '0');
             carouselEl.addEventListener('keydown', function(e) {
@@ -1616,7 +1631,7 @@ async function initCarousel(container) {
     }
 }
 
-// ── TopNav (navegação por h2) ──
+// â”€â”€ TopNav (navegaÃ§Ã£o por h2) â”€â”€
 
 function initTopnav(inner) {
     var topnav = document.getElementById('topnav');
@@ -1626,7 +1641,7 @@ function initTopnav(inner) {
 
     var topoLink = document.createElement('a');
     topoLink.href = '#';
-    topoLink.textContent = '\u2191 início';
+    topoLink.textContent = '\u2191 inÃ­cio';
     topoLink.addEventListener('click', function(e) { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
     topnav.appendChild(topoLink);
 
@@ -1664,7 +1679,7 @@ function initTopnav(inner) {
     }
 }
 
-// ── Persistência do estado aberto/fechado dos info-row ──
+// â”€â”€ PersistÃªncia do estado aberto/fechado dos info-row â”€â”€
 
 function initInfoRowPersist(inner) {
     var rows = inner.querySelectorAll('.info-row');
@@ -1685,10 +1700,10 @@ function initInfoRowPersist(inner) {
     });
 }
 
-// ── SideNav (índice lateral para páginas com info-row) ──
+// â”€â”€ SideNav (Ã­ndice lateral para pÃ¡ginas com info-row) â”€â”€
 
 function initSideNav(inner) {
-    // Se a página tem <nav class="page-toc">, o componente TOC substitui o sidenav
+    // Se a pÃ¡gina tem <nav class="page-toc">, o componente TOC substitui o sidenav
     if (document.querySelector('.page-toc')) return;
 
     var rows = inner.querySelectorAll('.info-row');
@@ -1709,7 +1724,7 @@ function initSideNav(inner) {
         var a = document.createElement('a');
         a.href = '#' + row.id;
         var fullText = titleEl.textContent;
-        var dashIdx = fullText.indexOf(' — ');
+        var dashIdx = fullText.indexOf(' â€” ');
         a.textContent = dashIdx > 0 ? fullText.substring(0, dashIdx) : fullText;
 
         a.addEventListener('click', function(e) {
@@ -1734,7 +1749,7 @@ function initSideNav(inner) {
     var arrow = document.createElement('div');
     arrow.id = 'sidenav-toggle-arrow';
     arrow.innerHTML = '<span></span><span></span><span></span>';
-    arrow.title = 'Mostrar/ocultar índice';
+    arrow.title = 'Mostrar/ocultar Ã­ndice';
 
     arrow.addEventListener('click', function() {
         var isOpen = nav.classList.toggle('open');
@@ -1744,7 +1759,7 @@ function initSideNav(inner) {
     });
     document.body.appendChild(arrow);
 
-    // Restaurar estado salvo (aberto por padrão)
+    // Restaurar estado salvo (aberto por padrÃ£o)
     if (localStorage.getItem('sidenavOpen') !== 'false') {
         nav.classList.add('open');
         arrow.classList.add('open');
@@ -1762,23 +1777,23 @@ function initSideNav(inner) {
     rows.forEach(function(row) { observer.observe(row); });
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// PAGE TOC — Table of Contents lateral auto-gerado a partir dos <h2>
-// Ativado pela presença de <nav class="page-toc"></nav> vazia no HTML.
-// Suporta override: se o nav já tiver conteúdo, preserva.
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// PAGE TOC â€” Table of Contents lateral auto-gerado a partir dos <h2>
+// Ativado pela presenÃ§a de <nav class="page-toc"></nav> vazia no HTML.
+// Suporta override: se o nav jÃ¡ tiver conteÃºdo, preserva.
 // Atributos opcionais no <h2>:
-//   data-sub="..."         → subtítulo menor em cinza claro
-//   data-toc-title="..."   → título no TOC (se diferente do h2)
-// ═══════════════════════════════════════════════════════════════════
+//   data-sub="..."         â†’ subtÃ­tulo menor em cinza claro
+//   data-toc-title="..."   â†’ tÃ­tulo no TOC (se diferente do h2)
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 function initPageToc(inner) {
     var nav = document.querySelector('.page-toc');
     if (!nav) return;
 
-    // Override manual: se já tem conteúdo, não sobrescreve
+    // Override manual: se jÃ¡ tem conteÃºdo, nÃ£o sobrescreve
     if (nav.children.length > 0) return;
 
-    // Fonte primária: <h2> da página. Fallback: .info-row (quando a página usa info-accordion).
+    // Fonte primÃ¡ria: <h2> da pÃ¡gina. Fallback: .info-row (quando a pÃ¡gina usa info-accordion).
     var items = [];
     var h2s = inner.querySelectorAll('h2');
     if (h2s.length >= 2) {
@@ -1798,8 +1813,8 @@ function initPageToc(inner) {
             });
         });
     } else {
-        // Fallback: usa os .info-row como seções (compatível com info-accordion)
-        // Ignora info-rows aninhados dentro de outros info-rows (ex: Resumo/Material dentro de cada episódio)
+        // Fallback: usa os .info-row como seÃ§Ãµes (compatÃ­vel com info-accordion)
+        // Ignora info-rows aninhados dentro de outros info-rows (ex: Resumo/Material dentro de cada episÃ³dio)
         var rows = Array.from(inner.querySelectorAll('.info-row')).filter(function(r) {
             return !r.parentElement.closest('.info-row');
         });
@@ -1810,7 +1825,7 @@ function initPageToc(inner) {
             if (!row.id) row.id = 'row-' + (i + 1);
             if (!row.style.scrollMarginTop) row.style.scrollMarginTop = '80px';
             var fullText = titleEl.textContent.trim();
-            var dashIdx = fullText.indexOf(' — ');
+            var dashIdx = fullText.indexOf(' â€” ');
             items.push({
                 id: row.id,
                 title: row.dataset.tocTitle || (dashIdx > 0 ? fullText.substring(0, dashIdx) : fullText),
@@ -1827,10 +1842,10 @@ function initPageToc(inner) {
         var subHtml = item.sub ? '<span class="toc-sub">' + item.sub + '</span>' : '';
         ulHtml += '<li><a href="#' + item.id + '">' + item.title + subHtml + '</a></li>';
     });
-    ulHtml += '<li><a href="#" data-toc-bottom="1">Rodapé</a></li>';
+    ulHtml += '<li><a href="#" data-toc-bottom="1">RodapÃ©</a></li>';
     ulHtml += '</ul>';
 
-    nav.innerHTML = '<div class="page-toc-title">Nesta página</div>' + ulHtml;
+    nav.innerHTML = '<div class="page-toc-title">Nesta pÃ¡gina</div>' + ulHtml;
 
     // Delays em cascata (0.25s base pra esperar a barra entrar + 0.05s por item)
     var lis = nav.querySelectorAll('li');
@@ -1838,7 +1853,7 @@ function initPageToc(inner) {
         li.style.animationDelay = (0.25 + i * 0.05) + 's';
     });
 
-    // Botão toggle (hamburger / X)
+    // BotÃ£o toggle (hamburger / X)
     var btn = document.createElement('button');
     btn.className = 'page-toc-toggle active';
     btn.setAttribute('aria-label', 'Alternar menu');
@@ -1858,14 +1873,14 @@ function initPageToc(inner) {
     });
     nav.parentNode.insertBefore(btn, nav);
 
-    // Em tela <=1440px, menu começa escondido — hamburger fica visível pra abrir sob demanda
+    // Em tela <=1440px, menu comeÃ§a escondido â€” hamburger fica visÃ­vel pra abrir sob demanda
     if (window.innerWidth <= 1440) {
         nav.classList.add('collapsed');
         btn.classList.remove('active');
     }
 
     // Em tela <=1440px, clicar num link fecha o menu automaticamente
-    // (menu sobrepõe conteúdo; depois de escolher a seção, some pra revelar)
+    // (menu sobrepÃµe conteÃºdo; depois de escolher a seÃ§Ã£o, some pra revelar)
     nav.querySelectorAll('a').forEach(function(a) {
         a.addEventListener('click', function(e) {
             if (a.dataset.tocTop) {
@@ -1875,7 +1890,7 @@ function initPageToc(inner) {
                 e.preventDefault();
                 window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
             } else {
-                // Se o target é (ou está dentro de) um info-row fechado, abre antes do scroll
+                // Se o target Ã© (ou estÃ¡ dentro de) um info-row fechado, abre antes do scroll
                 var href = a.getAttribute('href');
                 if (href && href.length > 1 && href.charAt(0) === '#') {
                     var target = document.getElementById(href.substring(1));
