@@ -40,6 +40,11 @@ var MENU = [
         pagina: 'java.html',
         parent: { label: 'FUNDAMENTOS', href: '1-fundamentos/fundamentos.html' },
         hidden: true,
+        items: [
+            { label: 'Visão Geral', arquivo: 'java.html', tipo: 'check' },
+            { label: '1 - Os 4 Pilares da POO', arquivo: '1-os-4-pilares-poo/1-os-4-pilares-poo.html', tipo: 'check' },
+            { label: '2 - Classes e Objetos', arquivo: '2-classes-objetos/2-classes-objetos.html', tipo: 'check' }
+        ],
         pasta: '1-java',
         basePath: '1-fundamentos/1-java'
     },
