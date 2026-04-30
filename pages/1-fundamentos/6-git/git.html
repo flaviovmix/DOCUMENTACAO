@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git — XT - Treinamento</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Git no projeto</h1>
+
+<p>O XT trabalha com duas branches: <code>dev</code> (onde o trabalho do dia a dia acontece) e <code>main</code> (a branch limpa, com histórico em squash). Toda a sequência de comandos que aparece no <code>/commit</code> gira em torno disso — commitar na <code>dev</code>, atualizar a <code>main</code> com um único commit que resume tudo, e voltar pra <code>dev</code>.</p>
+
+<h2 id="fluxo" data-toc-title="Fluxo do XT" data-sub="dev → main com squash">O fluxo dev → main</h2>
+<p>Em vez de fazer merge direto da <code>dev</code> na <code>main</code> (que carregaria N commits intermediários), o XT usa <strong>merge squash</strong>: a <code>main</code> recebe um commit único que resume toda a mudança da <code>dev</code>. No fim, um <code>merge -s ours</code> "fecha o histórico" — sem ele, o próximo merge tentaria trazer os commits antigos de novo e daria conflito.</p>
+<ul>
+    <li><strong>dev:</strong> histórico real, com todos os commits do dia.</li>
+    <li><strong>main:</strong> histórico limpo, um commit por sessão de trabalho.</li>
+</ul>
+
+<h2 id="status" data-toc-title="status" data-sub="Ver o que mudou">git status — ver o que mudou</h2>
+<p>Lista os arquivos modificados, novos (untracked) e os que já estão no stage pra commitar. É o primeiro comando do fluxo — antes de adicionar qualquer coisa, você olha o status pra entender o que o git "vê".</p>
+<pre><code class="language-bash">git status</code></pre>
+<p>No <code>/commit</code>, esse passo serve também pra <strong>filtrar</strong>: arquivos grandes, <code>.env</code>, secrets ou pastas que não deveriam ir (tipo <code>PROEJTOS PARA CLAUDE/</code>) são identificados aqui antes do <code>add</code>.</p>
+
+<h2 id="add" data-toc-title="add" data-sub="Selecionar pra commitar">git add — selecionar pra commitar</h2>
+<p>Coloca um arquivo (ou vários) no <strong>stage</strong> — a área de espera do próximo commit. Só o que está em stage entra no commit; o resto fica como modificação solta.</p>
+<pre><code class="language-bash">git add caminho/do/arquivo.java
+git add .</code></pre>
+<ul>
+    <li><strong><code>git add &lt;arquivo&gt;</code>:</strong> adiciona um item específico — preferido quando você quer controle do que vai.</li>
+    <li><strong><code>git add .</code>:</strong> adiciona tudo da pasta atual pra baixo. Mais rápido, mas perigoso — pode pegar arquivos sensíveis sem você ver.</li>
+</ul>
+<p>No fluxo do XT, a <strong>Fase 2 (commit na dev)</strong> usa adições específicas pra evitar incluir lixo. Já a <strong>Fase 3 (squash na main)</strong> pode usar <code>git add .</code> sem medo — porque a main só recebe o que já foi filtrado e commitado na dev.</p>
+
+<h2 id="commit" data-toc-title="commit" data-sub="Gravar a mudança">git commit -m — gravar a mudança</h2>
+<p>Pega tudo que está em stage e cria um commit no histórico, com a mensagem que você passar. Só depois do commit a mudança vira "permanente" no histórico local.</p>
+<pre><code class="language-bash">git commit -m "feat: adiciona DepartamentoForm com 4 campos"</code></pre>
+<p>A flag <code>-m</code> ("message") permite passar a mensagem direto na linha. Sem ela, o git abriria o editor (vim por padrão) — é por isso que <code>-m</code> está em todo lugar.</p>
+
+<h2 id="push" data-toc-title="push" data-sub="Enviar pro GitHub">git push — enviar pro GitHub</h2>
+<p>Manda os commits que estão só no seu computador pro repositório remoto (no caso, o GitHub). Antes do push, o trabalho existe só localmente — depois do push, está sincronizado e visível pra outras máquinas.</p>
+<pre><code class="language-bash">git push</code></pre>
+<p>Se você tentar push sem antes ter dado <code>commit</code>, não acontece nada — push só envia o que já foi commitado.</p>
+
+<h2 id="checkout" data-toc-title="checkout" data-sub="Trocar de branch">git checkout — trocar de branch</h2>
+<p>Move o "ponteiro" pra outra branch. Os arquivos no disco mudam pra refletir o estado daquela branch.</p>
+<pre><code class="language-bash">git checkout main
+git checkout dev</code></pre>
+<p>No fluxo do XT, o <code>checkout</code> aparece três vezes: pular pra <code>main</code> (Fase 3, passo 8), e voltar pra <code>dev</code> no fim (Fase 4, passo 15) — e mais uma variante especial com <code>--theirs</code> (próxima seção).</p>
+
+<h2 id="merge-squash" data-toc-title="merge --squash" data-sub="Empilhar tudo num commit só">git merge --squash — empilhar tudo num commit só</h2>
+<p>Diferente do merge normal (que cria um "merge commit" trazendo todos os commits da branch de origem), o <code>--squash</code> <strong>achata</strong> tudo: as mudanças aparecem no stage como se fossem uma só, prontas pra um commit único.</p>
+<pre><code class="language-bash">git checkout main
+git merge --squash dev</code></pre>
+<p>É isso que mantém a <code>main</code> com histórico limpo: cada sessão de trabalho da <code>dev</code> (com 5, 10, 20 commits) vira <strong>um</strong> commit na <code>main</code>.</p>
+
+<h2 id="theirs" data-toc-title="checkout --theirs" data-sub="Resolver conflitos do squash">git checkout --theirs — resolver conflitos do squash</h2>
+<p>Quando o squash gera conflitos (porque a <code>main</code> e a <code>dev</code> divergiram), <code>--theirs</code> resolve <strong>aceitando a versão da branch que está sendo mergeada</strong> — no caso, a <code>dev</code>.</p>
+<pre><code class="language-bash">git checkout --theirs .</code></pre>
+<p>Faz sentido aqui porque <strong>a dev é a fonte da verdade</strong> — a main só recebe o que já foi aprovado lá. Sem isso, você teria que abrir cada arquivo conflitado e escolher manualmente.</p>
+
+<h2 id="commit-squash" data-toc-title="commit do squash" data-sub="Fechar o squash na main">commit do squash — fechar a fase 3</h2>
+<p>Depois do <code>--theirs</code> e do <code>git add .</code> que recoloca tudo no stage, vem o commit que <strong>cria o commit único</strong> da sessão na <code>main</code>:</p>
+<pre><code class="language-bash">git add .
+git commit -m "merge: sessão do dia X — feature Y"</code></pre>
+<p>Esse é o commit que vai aparecer no histórico limpo da main.</p>
+
+<h2 id="merge-ours" data-toc-title="merge -s ours" data-sub="Fechar o histórico">git merge -s ours — fechar o histórico</h2>
+<p>Esse é o <strong>passo crítico</strong> do fluxo — sem ele, o próximo merge tentaria trazer todos os commits antigos da <code>dev</code> de novo, gerando conflitos enormes.</p>
+<pre><code class="language-bash">git merge -s ours dev</code></pre>
+<p>A estratégia <code>ours</code> diz pro git: "registra que a main absorveu tudo da dev, mas <strong>mantém o conteúdo atual da main</strong>". O resultado é um merge commit "vazio" que só serve pra marcar no histórico que a dev até esse ponto já está dentro da main.</p>
+<ul>
+    <li><strong>Sem <code>-s ours</code>:</strong> o próximo squash mostra todos os commits da dev outra vez, como se nada tivesse sido mergeado.</li>
+    <li><strong>Com <code>-s ours</code>:</strong> o git sabe que a dev já entrou; o próximo squash só mostra o que veio <em>depois</em>.</li>
+</ul>
+
+<h2 id="pull" data-toc-title="pull" data-sub="Sincronizar de outra máquina">git pull — sincronizar de outra máquina</h2>
+<p>Quando você troca de computador (ou alguém mais commita no remoto), <code>pull</code> traz as mudanças do GitHub pra sua máquina. É o oposto do <code>push</code>.</p>
+<pre><code class="language-bash">git pull</code></pre>
+<p>No XT, isso aparece no fluxo simétrico do <code>/sync-pull</code> — depois de um <code>git pull</code>, é preciso copiar as memórias e <code>settings.json</code> do espelho versionado de volta pra pasta do harness.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="A sequência inteira">A sequência inteira em ordem</h2>
+<p>Os 16 passos do <code>/commit</code> resumidos pra fixar a ordem:</p>
+<ol>
+    <li>Backup de memórias e settings.</li>
+    <li><code>git status</code> — ver o que mudou.</li>
+    <li><code>git add &lt;files específicos&gt;</code> — selecionar.</li>
+    <li><code>git commit -m "msg"</code> — commitar na dev.</li>
+    <li><code>git push</code> — enviar a dev.</li>
+    <li><code>git checkout main</code> — pular pra main.</li>
+    <li><code>git merge --squash dev</code> — empilhar.</li>
+    <li><code>git checkout --theirs .</code> — resolver conflitos.</li>
+    <li><code>git add .</code> — restagear.</li>
+    <li><code>git commit -m "msg"</code> — commit do squash.</li>
+    <li><code>git merge -s ours dev</code> — fechar o histórico.</li>
+    <li><code>git push</code> — enviar a main.</li>
+    <li><code>git checkout dev</code> — voltar pra dev.</li>
+    <li>Repetir o ciclo no submódulo de documentação se houver mudança lá.</li>
+</ol>
+
+<h2 id="licao" data-toc-title="Lição geral" data-sub="Por que esse fluxo">Por que esse fluxo e não merge direto</h2>
+<p>O git permite vários modelos de branching. O XT escolheu este por três razões:</p>
+<ul>
+    <li><strong>Histórico limpo na main:</strong> abrir o log da main mostra um commit por sessão, fácil de varrer.</li>
+    <li><strong>Histórico real preservado na dev:</strong> nada se perde — todos os commits do dia continuam lá.</li>
+    <li><strong>Sem conflito acumulado:</strong> o <code>merge -s ours</code> garante que cada sessão começa do zero, sem arrastar conflitos antigos.</li>
+</ul>
+<p>A regra prática: <strong>nunca improvisar</strong> a ordem dos passos. Pular o <code>-s ours</code> ou trocar a ordem do <code>--theirs</code> com o <code>add</code> quebra o histórico de um jeito difícil de desfazer. Sempre que o pedido for "atualizar com o GitHub", invocar o <code>/commit</code> — ele tem os 16 passos certinhos.</p>
+
+</body>
+</html>

@@ -4,9 +4,317 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus</title>
+    <link rel="stylesheet" href="assets-codex/css/normalize.css">
     <script src="js/layout.js"></script>
+    <style>
+        /* full-bleed: quebra o padding e max-width do #content-inner pra ocupar 100vw */
+        .codex-slider-container,
+        .codex-dots-bar { width: 100vw; margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw); }
+        .codex-slider-container { margin-top: -40px; }
+        .codex-dots-bar { margin-bottom: 30px; }
+        @media (max-width: 768px) {
+            .codex-slider-container { margin-top: -24px; }
+        }
+
+        .codex-slider-container { overflow: hidden; position: relative; background-color: #ffffff; cursor: default; user-select: none; touch-action: pan-y; }
+        .codex-slider-container.dragging { cursor: grabbing; }
+        .codex-slide { width: max-content; display: flex; will-change: transform; }
+        .codex-wrapper { width: 250px; height: 30vh; min-height: 230px; max-height: 420px; position: relative; transform: skew(-5deg); border-left: 7px solid #ffffff; box-shadow: -5px 0 7px rgba(0, 0, 0, 0.3); overflow: hidden; margin-left: -4px; flex: 0 0 auto; }
+        .codex-parallax { width: 140%; height: 100%; margin-left: -60px; transform: skew(5deg); background-position: center top; background-repeat: no-repeat; background-size: cover; transition: background-position 0.5s ease; }
+        .codex-wrapper:hover .codex-parallax { background-position: center bottom; }
+        .codex-card-label { position: absolute; left: 10px; bottom: 4px; z-index: 1; transform: skew(5deg); font-family: Arial, sans-serif; font-size: 16px; font-weight: 700; color: #ffffff; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75); pointer-events: none; opacity: 1; transition: opacity 0.25s ease, transform 0.25s ease; }
+        .codex-wrapper:hover .codex-card-label { opacity: 0; transform: skew(5deg) translateY(-6px); }
+        .codex-card-link { position: absolute; left: 10px; bottom: 4px; z-index: 2; transform: skew(5deg) translateY(6px); opacity: 0; color: #ffffff; font-family: Arial, sans-serif; font-size: 16px; font-weight: 700; text-decoration: none; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75); transition: opacity 0.25s ease, transform 0.25s ease; }
+        .codex-wrapper:hover .codex-card-link { opacity: 1; transform: skew(5deg) translateY(0); }
+        .codex-dots-bar { min-height: 22px; background-color: #333333; display: flex; align-items: center; justify-content: center; padding: 0 16px; box-sizing: border-box; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18); }
+        .codex-controls-row { display: grid; grid-template-columns: 18px auto 18px; align-items: center; justify-content: center; column-gap: 8px; height: 18px; line-height: 0; }
+        .codex-direction-button { width: 18px; height: 12px; border: 0; background-color: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px; padding: 0; appearance: none; line-height: 0; }
+        .codex-direction-button:hover { transform: scale(1.12); }
+        .codex-direction-button::before { content: ""; width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
+        .codex-direction-button.left::before { border-right: 8px solid #ffffff; }
+        .codex-direction-button.right::before { border-left: 8px solid #ffffff; }
+        .codex-direction-button.pause::before, .codex-direction-button.pause::after { content: ""; width: 2px; height: 9px; background-color: #ffffff; border: 0; }
+        #codexDotsBar { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; line-height: 0; }
+        .codex-dot { width: 9px; height: 9px; border: 0; border-radius: 50%; background-color: #8f8f8f; cursor: pointer; padding: 0; transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease; }
+        .codex-dot:hover { background-color: #ffffff; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18); opacity: 1; }
+        .codex-dot.active { background-color: #ffffff; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18); }
+    </style>
 </head>
 <body>
+
+    <div class="codex-slider-container">
+        <div class="codex-slide" id="codexSlide"></div>
+    </div>
+    <div class="codex-dots-bar" aria-label="Controles do carrossel">
+        <div class="codex-controls-row">
+            <button class="codex-direction-button left" id="codexLeftButton" type="button" aria-label="Mover para a esquerda"></button>
+            <div id="codexDotsBar"></div>
+            <button class="codex-direction-button right" id="codexRightButton" type="button" aria-label="Mover para a direita"></button>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        const totalImages = 21;
+        // refs setadas dentro de init() — layout.js reescreve body.innerHTML antes do nosso init rodar,
+        // então capturar antes daria refs órfãs do document
+        let sliderContainer, slide, dotsBar, leftButton, rightButton;
+        const images = Array.from({ length: totalImages }, (_, index) => `assets-codex/img/img${index + 1}.png`);
+        const cardNames = ['Anna','Bianca','Clara','Diana','Elisa','Flora','Giovana','Helena','Isabela','Julia','Karla','Laura','Marina','Natasha','Olivia','Paula','Renata','Sofia','Valentina','Yasmin','Zoe'];
+        let selectedIndex = null;
+        let sequenceWidth = 0;
+        let currentOffset = 0;
+        let targetOffset = null;
+        let lastFrameTime = null;
+        let direction = -1;
+        let isPaused = false;
+        let isSoftStopping = false;
+        let isDragging = false;
+        let lastPointerX = 0;
+        let lastDragDelta = 0;
+        let lastDragTime = 0;
+        let dragVelocity = 0;
+        let glideVelocity = null;
+        const loopDuration = 60000;
+        const glideBoost = 1;
+        const maxGlideMultiplier = 16;
+        const glideSlowdown = 1100;
+
+        function createCard(imagePath, index) {
+            const wrapper = document.createElement('div');
+            const parallax = document.createElement('div');
+            const label = document.createElement('div');
+            const link = document.createElement('a');
+            wrapper.className = 'codex-wrapper';
+            wrapper.dataset.index = index;
+            parallax.className = 'codex-parallax';
+            parallax.style.backgroundImage = `url('${imagePath}')`;
+            label.className = 'codex-card-label';
+            label.textContent = cardNames[index];
+            link.className = 'codex-card-link';
+            link.href = '#';
+            link.textContent = 'Saiba mais';
+            link.addEventListener('pointerdown', event => event.stopPropagation());
+            link.addEventListener('click', event => event.preventDefault());
+            wrapper.appendChild(parallax);
+            wrapper.appendChild(link);
+            wrapper.appendChild(label);
+            return wrapper;
+        }
+        function buildSlider() {
+            [...images, ...images, ...images].forEach((imagePath, index) => {
+                slide.appendChild(createCard(imagePath, index % totalImages));
+            });
+        }
+        function buildDots() {
+            images.forEach((_, index) => {
+                const dot = document.createElement('button');
+                dot.className = 'codex-dot';
+                dot.type = 'button';
+                dot.setAttribute('aria-label', `Centralizar ${cardNames[index]}`);
+                dot.addEventListener('click', () => centerImage(index));
+                dotsBar.appendChild(dot);
+            });
+        }
+        function updateScrollDistance() {
+            const firstCard = slide.children[0];
+            const firstDuplicatedCard = slide.children[totalImages];
+            sequenceWidth = firstDuplicatedCard.offsetLeft - firstCard.offsetLeft;
+        }
+        function normalizeOffset(offset) {
+            if (sequenceWidth <= 0) return offset;
+            let normalizedOffset = offset;
+            while (normalizedOffset <= sequenceWidth * -2) normalizedOffset += sequenceWidth;
+            while (normalizedOffset > sequenceWidth * -1) normalizedOffset -= sequenceWidth;
+            return normalizedOffset;
+        }
+        function getCenterOffset(index) {
+            const selectedCard = slide.children[index + totalImages];
+            const cardCenter = selectedCard.offsetLeft + (selectedCard.offsetWidth / 2);
+            const screenCenter = window.innerWidth / 2;
+            return screenCenter - cardCenter;
+        }
+        function getClosestLoopOffset(offset, referenceOffset) {
+            let closestOffset = offset;
+            while (closestOffset - referenceOffset > sequenceWidth / 2) closestOffset -= sequenceWidth;
+            while (referenceOffset - closestOffset > sequenceWidth / 2) closestOffset += sequenceWidth;
+            return closestOffset;
+        }
+        function updateDotsProgress() {
+            const renderedOffset = normalizeOffset(currentOffset);
+            const screenCenter = window.innerWidth / 2;
+            const nearestDistances = Array(totalImages).fill(Infinity);
+            Array.from(slide.children).forEach(card => {
+                const cardIndex = Number(card.dataset.index);
+                const cardCenter = card.offsetLeft + (card.offsetWidth / 2) + renderedOffset;
+                const distance = Math.abs(screenCenter - cardCenter);
+                nearestDistances[cardIndex] = Math.min(nearestDistances[cardIndex], distance);
+            });
+            const influenceDistance = 260;
+            Array.from(dotsBar.children).forEach((dot, index) => {
+                const progress = Math.max(0, 1 - (nearestDistances[index] / influenceDistance));
+                const scale = 1 + (progress * 0.75);
+                dot.style.transform = `scale(${scale})`;
+                dot.style.opacity = 0.65 + (progress * 0.35);
+                dot.classList.toggle('active', progress > 0.72);
+            });
+        }
+        function centerImage(index) {
+            targetOffset = getClosestLoopOffset(getCenterOffset(index), currentOffset);
+            selectedIndex = index;
+            isPaused = true;
+            isSoftStopping = false;
+            glideVelocity = null;
+            Array.from(dotsBar.children).forEach((dot, dotIndex) => {
+                dot.classList.toggle('active', dotIndex === index);
+            });
+            updateDotsProgress();
+            updateControlButtons();
+        }
+        function changeDirection(newDirection) {
+            direction = newDirection;
+            selectedIndex = null;
+            targetOffset = null;
+            isPaused = false;
+            isSoftStopping = false;
+            glideVelocity = null;
+            Array.from(dotsBar.children).forEach(dot => dot.classList.remove('active'));
+            updateControlButtons();
+        }
+        function pauseCarousel() {
+            isSoftStopping = true;
+            isPaused = false;
+            targetOffset = null;
+            glideVelocity = direction * (sequenceWidth / loopDuration);
+            updateControlButtons();
+        }
+        function handleDirectionButton(buttonDirection) {
+            if (!isPaused && direction === buttonDirection) { pauseCarousel(); return; }
+            changeDirection(buttonDirection);
+        }
+        function updateControlButtons() {
+            const isMovingLeft = (!isPaused || isSoftStopping) && direction === -1;
+            const isMovingRight = (!isPaused || isSoftStopping) && direction === 1;
+            leftButton.classList.toggle('pause', isMovingLeft);
+            rightButton.classList.toggle('pause', isMovingRight);
+            leftButton.setAttribute('aria-label', isMovingLeft ? 'Pausar' : 'Mover para a esquerda');
+            rightButton.setAttribute('aria-label', isMovingRight ? 'Pausar' : 'Mover para a direita');
+        }
+        function startDrag(event) {
+            isDragging = true;
+            isPaused = true;
+            isSoftStopping = false;
+            targetOffset = null;
+            lastPointerX = event.clientX;
+            lastDragDelta = 0;
+            lastDragTime = event.timeStamp;
+            dragVelocity = 0;
+            glideVelocity = null;
+            sliderContainer.classList.add('dragging');
+            sliderContainer.setPointerCapture(event.pointerId);
+        }
+        function dragSlider(event) {
+            if (!isDragging) return;
+            const deltaX = event.clientX - lastPointerX;
+            const elapsed = Math.max(event.timeStamp - lastDragTime, 1);
+            currentOffset += deltaX;
+            lastPointerX = event.clientX;
+            lastDragTime = event.timeStamp;
+            lastDragDelta = deltaX;
+            const instantVelocity = deltaX / elapsed;
+            dragVelocity = dragVelocity === 0 ? instantVelocity : (dragVelocity * 0.72) + (instantVelocity * 0.28);
+            slide.style.transform = `translateX(${normalizeOffset(currentOffset)}px)`;
+        }
+        function stopDrag(event) {
+            if (!isDragging) return;
+            isDragging = false;
+            isPaused = false;
+            isSoftStopping = false;
+            selectedIndex = null;
+            sliderContainer.classList.remove('dragging');
+            if (Math.abs(dragVelocity) > 0.01) direction = dragVelocity > 0 ? 1 : -1;
+            else if (Math.abs(lastDragDelta) > 1) direction = lastDragDelta > 0 ? 1 : -1;
+            if (Math.abs(dragVelocity) > sequenceWidth / loopDuration) {
+                const maxGlideVelocity = (sequenceWidth / loopDuration) * maxGlideMultiplier;
+                glideVelocity = Math.max(Math.min(dragVelocity * glideBoost, maxGlideVelocity), maxGlideVelocity * -1);
+            }
+            Array.from(dotsBar.children).forEach(dot => dot.classList.remove('active'));
+            if (sliderContainer.hasPointerCapture(event.pointerId)) sliderContainer.releasePointerCapture(event.pointerId);
+            updateControlButtons();
+        }
+        function animateSlider(time) {
+            if (lastFrameTime === null) lastFrameTime = time;
+            const elapsed = Math.min(time - lastFrameTime, 100);
+            const speed = sequenceWidth / loopDuration;
+            const normalVelocity = direction * speed;
+            if (!isDragging && (!isPaused || targetOffset !== null)) {
+                if (isSoftStopping) {
+                    glideVelocity = glideVelocity === null ? normalVelocity : glideVelocity;
+                    currentOffset += glideVelocity * elapsed;
+                    glideVelocity *= Math.exp(-elapsed / 420);
+                    if (Math.abs(glideVelocity) < 0.003) {
+                        glideVelocity = null;
+                        isSoftStopping = false;
+                        isPaused = true;
+                        updateControlButtons();
+                    }
+                } else if (glideVelocity !== null && targetOffset === null) {
+                    currentOffset += glideVelocity * elapsed;
+                    glideVelocity = normalVelocity + ((glideVelocity - normalVelocity) * Math.exp(-elapsed / glideSlowdown));
+                    if (Math.abs(glideVelocity - normalVelocity) < 0.003) glideVelocity = null;
+                } else {
+                    currentOffset += normalVelocity * elapsed;
+                }
+            }
+            if (!isDragging && targetOffset !== null) {
+                currentOffset += (targetOffset - currentOffset) * 0.12;
+                if (Math.abs(targetOffset - currentOffset) < 0.5) {
+                    currentOffset = targetOffset;
+                    targetOffset = null;
+                    isPaused = true;
+                    isSoftStopping = false;
+                    updateControlButtons();
+                }
+            }
+            slide.style.transform = `translateX(${normalizeOffset(currentOffset)}px)`;
+            updateDotsProgress();
+            lastFrameTime = time;
+            requestAnimationFrame(animateSlider);
+        }
+
+        function init() {
+            sliderContainer = document.querySelector('.codex-slider-container');
+            slide = document.getElementById('codexSlide');
+            dotsBar = document.getElementById('codexDotsBar');
+            leftButton = document.getElementById('codexLeftButton');
+            rightButton = document.getElementById('codexRightButton');
+            if (!sliderContainer || !slide || !dotsBar) return;
+            buildSlider();
+            buildDots();
+            updateScrollDistance();
+            currentOffset = sequenceWidth * -1;
+            updateControlButtons();
+            leftButton.addEventListener('click', () => handleDirectionButton(-1));
+            rightButton.addEventListener('click', () => handleDirectionButton(1));
+            sliderContainer.addEventListener('pointerdown', startDrag);
+            sliderContainer.addEventListener('pointermove', dragSlider);
+            sliderContainer.addEventListener('pointerup', stopDrag);
+            sliderContainer.addEventListener('pointercancel', stopDrag);
+            requestAnimationFrame(animateSlider);
+            window.addEventListener('resize', () => {
+                updateScrollDistance();
+                if (selectedIndex !== null) currentOffset = getClosestLoopOffset(getCenterOffset(selectedIndex), currentOffset);
+            });
+        }
+
+        // layout.js reescreve o body inteiro, então o carrossel precisa ser inicializado DEPOIS
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
 
     <div class="home-header">
         <h1 class="home-title">DOCUMENTACAO</h1>
@@ -24,7 +332,7 @@
                 <ul class="card-links">
                     <li><a href="pages/1-fundamentos/1-java/java.html">Fundamentos Java <i class="fa-brands fa-java"></i></a></li>
                     <li><a href="pages/1-fundamentos/2-sql/sql.html">SQL <i class="fa-solid fa-database"></i></a></li>
-                    <li><a href="pages/1-fundamentos/3-http/http.html">HTTP <i class="fa-solid fa-globe"></i></a></li>
+                    <li><a href="pages/1-fundamentos/3-redes/redes.html">Redes <i class="fa-solid fa-network-wired"></i></a></li>
                     <li><a href="pages/1-fundamentos/4-html-css-js/html-css-js.html">HTML - CSS - JS <i class="fa-solid fa-code"></i></a></li>
                     <li><a href="pages/1-fundamentos/5-hardware/hardware.html">Hardware <i class="fa-solid fa-microchip"></i></a></li>
                 </ul>

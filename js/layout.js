@@ -27,11 +27,12 @@ var MENU = [
         subgrupos: [
             { label: 'JAVA',         href: '1-java/java.html',               pasta: '1-java' },
             { label: 'SQL',          href: '2-sql/sql.html',                 pasta: '2-sql' },
-            { label: 'HTTP',         href: '3-http/http.html',               pasta: '3-http' },
+            { label: 'REDES',        href: '3-redes/redes.html',             pasta: '3-redes' },
             { label: 'HTML-CSS-JS',  href: '4-html-css-js/html-css-js.html', pasta: '4-html-css-js' },
-            { label: 'HARDWARE',     href: '5-hardware/hardware.html',       pasta: '5-hardware' }
+            { label: 'HARDWARE',     href: '5-hardware/hardware.html',       pasta: '5-hardware' },
+            { label: 'GIT',          href: '6-git/git.html',                 pasta: '6-git' }
         ],
-        subpastas: ['1-java', '2-sql', '3-http', '4-html-css-js', '5-hardware'],
+        subpastas: ['1-java', '2-sql', '3-redes', '4-html-css-js', '5-hardware', '6-git'],
         pasta: '1-fundamentos'
     },
     {
@@ -51,12 +52,12 @@ var MENU = [
         basePath: '1-fundamentos/2-sql'
     },
     {
-        grupo: 'HTTP',
-        pagina: 'http.html',
+        grupo: 'REDES',
+        pagina: 'redes.html',
         parent: { label: 'FUNDAMENTOS', href: '1-fundamentos/fundamentos.html' },
         hidden: true,
-        pasta: '3-http',
-        basePath: '1-fundamentos/3-http'
+        pasta: '3-redes',
+        basePath: '1-fundamentos/3-redes'
     },
     {
         grupo: 'HARDWARE',
@@ -65,6 +66,14 @@ var MENU = [
         hidden: true,
         pasta: '5-hardware',
         basePath: '1-fundamentos/5-hardware'
+    },
+    {
+        grupo: 'GIT',
+        pagina: 'git.html',
+        parent: { label: 'FUNDAMENTOS', href: '1-fundamentos/fundamentos.html' },
+        hidden: true,
+        pasta: '6-git',
+        basePath: '1-fundamentos/6-git'
     },
     {
         grupo: 'JASAP',
