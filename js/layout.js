@@ -41,32 +41,37 @@ var MENU = [
         parent: { label: 'FUNDAMENTOS', href: '1-fundamentos/fundamentos.html' },
         hidden: true,
         items: [
-            { label: 'VisÃ£o Geral', arquivo: 'java.html', tipo: 'check' },
-            { label: '1 - Classes e Objetos', arquivo: '1-classes-objetos/1-classes-objetos.html', tipo: 'check' },
-            { label: '2 - Os 4 Pilares da POO', arquivo: '2-os-4-pilares-poo/2-os-4-pilares-poo.html', tipo: 'check' },
-            { label: '3 - Coletor de Lixo', arquivo: '3-coletor-de-lixo/3-coletor-de-lixo.html', tipo: 'check' }
+            { label: '1 - Visão Geral', arquivo: '1-visao-geral/1-visao-geral.html', tipo: 'check' },
+            { label: '2 - Classes e Objetos', arquivo: '2-classes-objetos/2-classes-objetos.html', tipo: 'check' },
+            { label: '3 - Os 4 Pilares da POO', arquivo: '3-os-4-pilares-poo/3-os-4-pilares-poo.html', tipo: 'check' },
+            { label: '4 - Coletor de Lixo', arquivo: '4-coletor-de-lixo/4-coletor-de-lixo.html', tipo: 'check' }
         ],
         pasta: '1-java',
         basePath: '1-fundamentos/1-java'
     },
     {
         grupo: 'Classes e Objetos',
-        pagina: '1-classes-objetos.html',
+        pagina: '2-classes-objetos.html',
         parent: { label: 'JAVA', href: '1-fundamentos/1-java/java.html' },
         hidden: true,
         items: [
-            { label: 'VisÃƒÂ£o Geral', arquivo: '1-classes-objetos.html', tipo: 'check' },
-            { label: 'Molde e InstÃƒÂ¢ncia', arquivo: '1-classe-objeto/1-classe-objeto.html', tipo: 'check' },
+            { label: 'Visão Geral', arquivo: '2-classes-objetos.html', tipo: 'check' },
+            { label: 'Molde e Instância', arquivo: '1-classe-objeto/1-classe-objeto.html', tipo: 'check' },
             { label: 'Anatomia da Classe', arquivo: '2-anatomia-classe/2-anatomia-classe.html', tipo: 'check' }
         ],
-        pasta: '1-classes-objetos',
-        basePath: '1-fundamentos/1-java/1-classes-objetos'
+        pasta: '2-classes-objetos',
+        basePath: '1-fundamentos/1-java/2-classes-objetos'
     },
     {
         grupo: 'SQL',
         pagina: 'sql.html',
         parent: { label: 'FUNDAMENTOS', href: '1-fundamentos/fundamentos.html' },
         hidden: true,
+        items: [
+            { label: '1 - Visão Geral', arquivo: '1-visao-geral/1-visao-geral.html', tipo: 'check' },
+            { label: '2 - Backup',      arquivo: '2-backup/backup.html',             tipo: 'check' },
+            { label: '3 - CRUD',        arquivo: '3-crud/crud.html',                 tipo: 'check' }
+        ],
         pasta: '2-sql',
         basePath: '1-fundamentos/2-sql'
     },
@@ -339,12 +344,13 @@ var MENU = [
         basePath: '2-jasap/2-crud/5-funcionalidades/8-master-detail'
     },
     {
-        grupo: 'OBSIDIAN',
-        pagina: 'obsidian.html',
+        grupo: 'INTERFACE',
+        pagina: 'interface.html',
         items: [
-            { label: 'Notas do vault', arquivo: 'obsidian.html', tipo: 'check' }
+            { label: '1 - Visão Geral', arquivo: '1-visao-geral/1-visao-geral.html', tipo: 'check' }
         ],
-        pasta: '7-obsidian'
+        pasta: '7-interface',
+        basePath: '7-interface'
     },
     {
         grupo: 'NEXUS',

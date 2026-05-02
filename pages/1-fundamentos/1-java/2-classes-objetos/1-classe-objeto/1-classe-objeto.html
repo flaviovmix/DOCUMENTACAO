@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molde e Instância — XT - Treinamento</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Molde e Instância em Java</h1>
+
+<div class="audio-player" data-src="../audio/classes-objetos.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Antes de entrar nos pilares da POO, vale firmar a peça mais usada no Java: a diferença entre <strong>classe</strong> e <strong>objeto</strong>. A classe é o molde; o objeto é uma coisa real criada a partir desse molde.</p>
+
+<h2 id="ideia-central" data-toc-title="Ideia central" data-sub="Molde e instância">Ideia central</h2>
+<p>Uma <strong>classe</strong> descreve quais dados e comportamentos alguma coisa terá. Um <strong>objeto</strong> é uma instância concreta dessa classe, com valores próprios.</p>
+<p>Pense em <code>Produto</code>: a classe diz que todo produto tem nome, preço e pode calcular desconto. Um objeto específico pode ser o produto "Teclado", com preço 120. Outro objeto pode ser "Monitor", com preço 900. Os dois seguem o mesmo molde, mas carregam estados diferentes.</p>
+
+<h2 id="classe" data-toc-title="Classe" data-sub="O molde">Classe — o molde</h2>
+<p>A classe junta <strong>atributos</strong> e <strong>métodos</strong> em uma unidade com nome. Em Java, quase tudo que você escreve fica dentro de alguma classe.</p>
+<pre><code class="language-java">public class Produto {
+    String nome;
+    double preco;
+
+    double precoComDesconto(double percentual) {
+        return preco - (preco * percentual / 100);
+    }
+}</code></pre>
+<ul>
+    <li><code>Produto</code> é o nome da classe.</li>
+    <li><code>nome</code> e <code>preco</code> são atributos: guardam estado.</li>
+    <li><code>precoComDesconto()</code> é um método: executa comportamento usando os dados do objeto.</li>
+</ul>
+
+<h2 id="objeto" data-toc-title="Objeto" data-sub="A instância">Objeto — a instância</h2>
+<p>Objeto é aquilo que nasce quando o programa usa uma classe para criar algo em memória. Em Java, isso normalmente aparece com <code>new</code>.</p>
+<pre><code class="language-java">Produto teclado = new Produto();
+teclado.nome = "Teclado";
+teclado.preco = 120.00;</code></pre>
+<p>A variável <code>teclado</code> aponta para um objeto do tipo <code>Produto</code>. Esse objeto tem seu próprio <code>nome</code> e seu próprio <code>preco</code>.</p>
+
+<h2 id="atributos-metodos" data-toc-title="Atributos e métodos" data-sub="Estado e comportamento">Atributos e métodos</h2>
+<div class="table-wrap">
+    <table>
+        <tr><th>Parte</th><th>Pergunta que responde</th><th>Exemplo</th></tr>
+        <tr><td><strong>Atributo</strong></td><td>Que informação esse objeto guarda?</td><td><code>nome</code>, <code>preco</code>, <code>ativo</code></td></tr>
+        <tr><td><strong>Método</strong></td><td>O que esse objeto sabe fazer?</td><td><code>salvar()</code>, <code>validar()</code>, <code>calcularTotal()</code></td></tr>
+    </table>
+</div>
+<p>Essa separação ajuda a ler código: quando você vê campo, pense em estado; quando vê método, pense em ação.</p>
+
+<h2 id="tipo-e-variavel" data-toc-title="Tipo e variável" data-sub="Como ler a linha">Tipo e variável</h2>
+<p>Na linha <code>Produto teclado = new Produto();</code>, aparecem duas ideias juntas:</p>
+<ul>
+    <li><code>Produto</code> antes do nome é o <strong>tipo da variável</strong>.</li>
+    <li><code>teclado</code> é o <strong>nome da variável</strong>.</li>
+    <li><code>new Produto()</code> cria o <strong>objeto</strong>.</li>
+</ul>
+<p>A variável não é o objeto em si. Ela é uma referência para encontrar aquele objeto na memória.</p>
+
+<h2 id="varios-objetos" data-toc-title="Vários objetos" data-sub="Mesmo molde, estados diferentes">Vários objetos da mesma classe</h2>
+<p>Uma mesma classe pode gerar muitos objetos. Cada objeto guarda seu próprio estado, mesmo compartilhando o mesmo desenho.</p>
+<pre><code class="language-java">Produto teclado = new Produto();
+teclado.nome = "Teclado";
+teclado.preco = 120.00;
+
+Produto monitor = new Produto();
+monitor.nome = "Monitor";
+monitor.preco = 900.00;</code></pre>
+<p><code>teclado</code> e <code>monitor</code> são dois objetos diferentes. Mudar o preço do teclado não muda o preço do monitor.</p>
+
+<h2 id="construtor" data-toc-title="Construtor" data-sub="Nascimento do objeto">Construtor — nascimento do objeto</h2>
+<p>O construtor é chamado quando o objeto é criado. Ele serve para começar o objeto em um estado válido.</p>
+<pre><code class="language-java">public class Produto {
+    String nome;
+    double preco;
+
+    public Produto(String nome, double preco) {
+        this.nome = nome;
+        this.preco = preco;
+    }
+}</code></pre>
+<p>Com isso, dá para criar o objeto já preenchido:</p>
+<pre><code class="language-java">Produto teclado = new Produto("Teclado", 120.00);</code></pre>
+<p>O <code>this</code> significa "este objeto aqui". Ele diferencia o atributo do objeto do parâmetro recebido pelo construtor.</p>
+
+<h2 id="no-projeto" data-toc-title="No projeto" data-sub="Como isso aparece">Como isso aparece no projeto</h2>
+<p>Nos arquivos do projeto, esse fundamento aparece o tempo todo:</p>
+<ul>
+    <li><code>DepartamentoManager</code> é uma classe que concentra registros e configuração.</li>
+    <li><code>DepartamentoHome</code> é uma classe que descreve uma tela/ação.</li>
+    <li><code>new</code> aparece quando o código precisa criar uma instância concreta de alguma classe.</li>
+    <li>Métodos como <code>execute()</code>, <code>render()</code> e <code>config()</code> representam comportamentos que aquelas classes sabem executar.</li>
+</ul>
+
+<h2 id="licao" data-toc-title="Lição geral" data-sub="A leitura prática">Lição geral</h2>
+<p>Quando estiver lendo Java, faça três perguntas simples: <strong>qual é a classe?</strong>, <strong>quais objetos existem?</strong> e <strong>que estado e comportamento eles carregam?</strong></p>
+<p>Com isso claro, os próximos fundamentos — encapsulamento, herança, polimorfismo e abstração — deixam de parecer nomes soltos e passam a encaixar em uma base concreta.</p>
+
+</body>
+</html>

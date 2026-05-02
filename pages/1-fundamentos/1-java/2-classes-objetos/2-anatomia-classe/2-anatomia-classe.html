@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anatomia de uma Classe Java — XT - Treinamento</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Anatomia de uma Classe Java</h1>
+
+<p>Depois de entender que a classe é o molde e o objeto é a instância, o próximo passo é aprender a abrir um arquivo Java e reconhecer as peças. Algumas aparecem antes da classe, como <code>package</code> e <code>import</code>. Outras aparecem dentro dela, como atributos, construtores, métodos e modificadores de acesso.</p>
+
+<h2 id="visao-geral" data-toc-title="Visão geral" data-sub="A leitura de cima para baixo">Visão geral</h2>
+<pre><code class="language-java">package br.xt.app.departamento.produto;
+
+import java.math.BigDecimal;
+
+public class Produto {
+    private String nome;
+    private BigDecimal preco;
+
+    public Produto(String nome, BigDecimal preco) {
+        this.nome = nome;
+        this.preco = preco;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+}</code></pre>
+<p>Esse arquivo mostra a estrutura básica que aparece em muitas classes: endereço no projeto, dependências, declaração da classe, estado interno, nascimento do objeto e comportamentos públicos.</p>
+
+<h2 id="package" data-toc-title="Package" data-sub="Onde a classe mora">Package — onde a classe mora</h2>
+<p>O <code>package</code> informa o caminho lógico da classe dentro do projeto. Ele ajuda o Java a organizar nomes e separar áreas do sistema.</p>
+<pre><code class="language-java">package br.xt.app.departamento.produto;</code></pre>
+<p>Na prática, quando você vê esse trecho, leia como: esta classe pertence ao pacote de produto dentro do módulo departamento.</p>
+
+<h2 id="import" data-toc-title="Import" data-sub="O que a classe usa">Import — o que vem de fora</h2>
+<p>O <code>import</code> indica classes que este arquivo usa, mas que foram declaradas em outro pacote.</p>
+<pre><code class="language-java">import java.math.BigDecimal;</code></pre>
+<p>Aqui, a classe vai usar <code>BigDecimal</code>, um tipo comum para valores numéricos que precisam de mais cuidado, como preço.</p>
+
+<h2 id="declaracao" data-toc-title="Declaração" data-sub="O início do molde">Declaração da classe</h2>
+<p>A declaração da classe abre o molde:</p>
+<pre><code class="language-java">public class Produto {
+    // corpo da classe
+}</code></pre>
+<div class="table-wrap">
+    <table>
+        <tr><th>Trecho</th><th>O que significa</th></tr>
+        <tr><td><code>public</code></td><td>Outras partes do sistema podem acessar essa classe.</td></tr>
+        <tr><td><code>class</code></td><td>Indica que estamos declarando uma classe.</td></tr>
+        <tr><td><code>Produto</code></td><td>Nome da classe. Por convenção, começa com letra maiúscula.</td></tr>
+    </table>
+</div>
+
+<h2 id="atributos" data-toc-title="Atributos" data-sub="Estado do objeto">Atributos — estado do objeto</h2>
+<p>Atributos são os dados guardados dentro do objeto.</p>
+<pre><code class="language-java">private String nome;
+private BigDecimal preco;</code></pre>
+<p>O <code>private</code> protege o estado interno. Quem está fora da classe não mexe diretamente nesses campos; precisa passar pelos métodos que a classe oferece.</p>
+
+<h2 id="construtor" data-toc-title="Construtor" data-sub="Como o objeto nasce">Construtor — como o objeto nasce</h2>
+<p>O construtor é chamado quando alguém usa <code>new</code>. Ele prepara o objeto no momento em que ele nasce.</p>
+<pre><code class="language-java">public Produto(String nome, BigDecimal preco) {
+    this.nome = nome;
+    this.preco = preco;
+}</code></pre>
+<p>O construtor tem o mesmo nome da classe e não declara tipo de retorno. O <code>this</code> aponta para o próprio objeto que está sendo criado.</p>
+
+<h2 id="metodos" data-toc-title="Métodos" data-sub="Comportamento">Métodos — comportamento da classe</h2>
+<p>Métodos representam ações ou consultas que o objeto sabe fazer.</p>
+<pre><code class="language-java">public String getNome() {
+    return nome;
+}
+
+public void setNome(String nome) {
+    this.nome = nome;
+}</code></pre>
+<div class="table-wrap">
+    <table>
+        <tr><th>Trecho</th><th>Leitura prática</th></tr>
+        <tr><td><code>public</code></td><td>O método pode ser chamado de fora da classe.</td></tr>
+        <tr><td><code>String</code></td><td>O método devolve um texto.</td></tr>
+        <tr><td><code>void</code></td><td>O método executa algo, mas não devolve valor.</td></tr>
+        <tr><td><code>return nome</code></td><td>Devolve o valor do atributo <code>nome</code>.</td></tr>
+        <tr><td><code>String nome</code></td><td>Parâmetro recebido pelo método.</td></tr>
+    </table>
+</div>
+
+<h2 id="modificadores" data-toc-title="Modificadores" data-sub="Quem pode acessar">Modificadores de acesso</h2>
+<p>Modificadores de acesso definem quem consegue enxergar ou usar uma classe, atributo, construtor ou método.</p>
+<div class="table-wrap">
+    <table>
+        <tr><th>Modificador</th><th>Leitura simples</th><th>Uso comum</th></tr>
+        <tr><td><code>public</code></td><td>Aberto para outras partes do sistema.</td><td>Classes principais, métodos de uso externo.</td></tr>
+        <tr><td><code>private</code></td><td>Visível apenas dentro da própria classe.</td><td>Atributos e métodos internos.</td></tr>
+        <tr><td><code>protected</code></td><td>Visível no pacote e para classes filhas.</td><td>Base de herança, quando uma filha precisa reaproveitar algo.</td></tr>
+        <tr><td><em>padrão</em></td><td>Sem palavra escrita; visível dentro do mesmo pacote.</td><td>Classes e métodos de uso interno do pacote.</td></tr>
+    </table>
+</div>
+<p>A pergunta prática é: quem precisa acessar isso? Se só a própria classe usa, <code>private</code> costuma fazer mais sentido. Se outras partes precisam chamar, aí o acesso pode ser <code>public</code>.</p>
+
+<h2 id="no-projeto" data-toc-title="No projeto" data-sub="Como ler arquivos reais">Como isso aparece no projeto</h2>
+<p>Quando você abrir uma classe como <code>DepartamentoProdutoBean</code>, <code>DepartamentoHome</code> ou <code>DepartamentoManager</code>, tente ler nessa ordem:</p>
+<ol>
+    <li>Qual é o <code>package</code>?</li>
+    <li>Quais <code>imports</code> aparecem?</li>
+    <li>Qual é o nome da classe?</li>
+    <li>Quais atributos guardam estado?</li>
+    <li>Existe construtor?</li>
+    <li>Quais métodos formam o comportamento?</li>
+    <li>O que está <code>public</code>, <code>private</code>, <code>protected</code> ou sem modificador?</li>
+</ol>
+
+<h2 id="licao" data-toc-title="Lição geral" data-sub="A leitura da classe">Lição geral</h2>
+<p>Uma classe Java não é um bloco único para decorar. Ela tem peças. Primeiro vem a localização, depois as dependências, depois o molde em si, com estado, nascimento e comportamento.</p>
+<p>Quando essa anatomia fica clara, os próximos assuntos, como encapsulamento, herança e polimorfismo, ficam bem mais fáceis de enxergar no código real.</p>
+
+</body>
+</html>

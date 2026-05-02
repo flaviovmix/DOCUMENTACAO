@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visão Geral — Java — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Visão Geral — Java</h1>
+
+<p>Java é uma linguagem de programação que existe desde 1996 e segue entre as mais usadas no mundo. Esta página tem dois blocos: o primeiro explica <strong>como o Java funciona</strong> (compilador, JVM, características da linguagem), e o segundo conta <strong>como o Java evoluiu</strong> ao longo das versões LTS — o que cada uma trouxe e por que tanta gente ainda está em Java 8.</p>
+
+<div class="audio-player" data-src="audio/visao-geral-fundamentos.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Como o Java executa código — .java → bytecode → JVM</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Java é uma linguagem <strong>compilada e interpretada</strong> ao mesmo tempo. O código que você escreve passa por duas etapas antes de rodar:</p>
+            <ol>
+                <li><strong>Compilação</strong> (<code>javac</code>) — o arquivo <code>.java</code> vira <code>.class</code> (bytecode)</li>
+                <li><strong>Execução</strong> (<code>java</code>) — a JVM lê o bytecode e traduz pra instruções da máquina</li>
+            </ol>
+            <pre><code class="language-bash">$ javac Main.java        # Main.java -> Main.class (bytecode)
+$ java Main              # JVM executa Main.class
+</code></pre>
+            <p>O bytecode é <strong>independente do sistema operacional</strong>. O mesmo arquivo <code>.class</code> roda em Windows, Linux, Mac — desde que tenha JVM instalada. Esse é o famoso slogan <strong>"Write Once, Run Anywhere"</strong>.</p>
+            <p>Por que assim?</p>
+            <ul>
+                <li><strong>C/C++</strong>: compila direto pra binário do SO. Roda mais rápido, mas você precisa compilar pra cada plataforma.</li>
+                <li><strong>Java</strong>: compila pra bytecode (intermediário), JVM traduz na hora. Tem o overhead da JVM, mas portabilidade total.</li>
+            </ul>
+            <p>A JVM moderna é altamente otimizada — usa <strong>JIT (Just-In-Time)</strong> compilation, que detecta código quente e compila pra instruções nativas em runtime. Resultado: performance próxima a código nativo, com a portabilidade do bytecode.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">JDK vs JRE vs JVM — quem é quem</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Três siglas que confundem todo mundo no início:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Sigla</th><th>O que é</th><th>Pra que serve</th></tr>
+                    <tr><td><strong>JVM</strong></td><td>Java Virtual Machine</td><td>Roda o bytecode (.class)</td></tr>
+                    <tr><td><strong>JRE</strong></td><td>Java Runtime Environment</td><td>JVM + bibliotecas-padrão (java.util, java.io, etc.)</td></tr>
+                    <tr><td><strong>JDK</strong></td><td>Java Development Kit</td><td>JRE + ferramentas de desenvolvimento (javac, javadoc, jar, jdb)</td></tr>
+                </table>
+            </div>
+            <p>Relação: <strong>JDK ⊃ JRE ⊃ JVM</strong></p>
+            <p>Quem usa o quê:</p>
+            <ul>
+                <li><strong>Quem só executa Java</strong> (servidor de produção, usuário final): precisa do JRE</li>
+                <li><strong>Quem desenvolve em Java</strong> (programador, build server): precisa do JDK</li>
+                <li><strong>A JVM</strong> é o coração — parte tanto do JRE quanto do JDK</li>
+            </ul>
+            <p>Detalhe histórico: a partir do Java 11, a Oracle parou de distribuir o JRE separadamente — agora você baixa o JDK e ponto.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Características da linguagem — tipagem estática, OO, garbage collector</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Java tem 3 pilares que moldam o jeito de programar:</p>
+
+            <h3>Tipagem estática</h3>
+            <p>Toda variável tem um tipo declarado em compile-time. O compilador pega erros de tipo antes do código rodar. IDEs conseguem dar autocomplete completo e refatoração segura.</p>
+            <pre><code class="language-java">String nome = "João";
+int idade = 30;
+nome = 42;  // ERRO de compilação — int não é String
+</code></pre>
+
+            <h3>Orientação a objetos</h3>
+            <p>Tudo é classe (exceto tipos primitivos: <code>int</code>, <code>long</code>, <code>boolean</code>, <code>double</code>, <code>char</code>, <code>byte</code>, <code>short</code>, <code>float</code>). Herança, polimorfismo, encapsulamento, abstração — os <strong>4 pilares da POO</strong>, detalhados no próximo card da trilha.</p>
+
+            <h3>Garbage collector</h3>
+            <p>Você não precisa liberar memória manualmente (sem <code>free()</code> como em C). O GC roda em background, identifica objetos sem referência e limpa. Mais detalhe no card "Coletor de Lixo".</p>
+
+            <h3>Outros traços</h3>
+            <ul>
+                <li><strong>Verboso</strong> — comparado a Python ou Kotlin, Java exige mais código pra mesma coisa. Trade-off pela explicitude.</li>
+                <li><strong>Multi-threaded de fábrica</strong> — <code>Thread</code>, <code>synchronized</code>, <code>volatile</code>, concurrent collections fazem parte da linguagem.</li>
+                <li><strong>Backward compatibility forte</strong> — código de Java 8 ainda roda em Java 21 sem mudança (na maioria dos casos).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Onde Java é usado — corporativo, Android, big data, web</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Java domina vários nichos:</p>
+
+            <h3>Sistemas corporativos / Enterprise</h3>
+            <p>Bancos, seguradoras, telecom, governo. Sistemas que rodam há 10-20 anos sem reescrever. Stack típica: <strong>Spring + Tomcat + Oracle/PostgreSQL</strong>. Java é a "linguagem segura" — compila tudo, tem tipagem forte, é estável.</p>
+
+            <h3>Android</h3>
+            <p>Foi a linguagem oficial do Android até 2017, quando o Google promoveu o <strong>Kotlin</strong> a "linguagem preferida". Mas Java ainda roda em milhões de apps existentes — Kotlin compila pra bytecode JVM, então convivem.</p>
+
+            <h3>Big data</h3>
+            <p>Hadoop, Spark, Kafka, Flink, Cassandra — tudo Java/JVM. A JVM é otimizada pra throughput, as ferramentas são maduras e o ecossistema é gigante.</p>
+
+            <h3>Backend web</h3>
+            <p>APIs REST, microsserviços. Frameworks: <strong>Spring Boot</strong> (líder), Quarkus (cloud-native), Micronaut. Servidores: Tomcat, Jetty, Netty.</p>
+
+            <h3>IDEs e ferramentas</h3>
+            <p>IntelliJ IDEA, Eclipse, NetBeans, Android Studio — todos escritos em Java. Build tools: Maven, Gradle, Ant.</p>
+
+            <h3>Onde Java NÃO domina</h3>
+            <ul>
+                <li>Frontend (HTML/CSS/JS)</li>
+                <li>Aplicações desktop modernas (Electron, .NET dominam)</li>
+                <li>Mobile iOS (Swift)</li>
+                <li>Data science / ML (Python)</li>
+                <li>Scripts curtos / DevOps (Python, Go, Bash)</li>
+            </ul>
+            <p>Em 2026, Java continua entre as 3 linguagens mais usadas no mundo nos rankings TIOBE e GitHub Octoverse.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O que vem nessa trilha — preview dos próximos cards</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Os próximos cards aprofundam tópicos que essa Visão Geral só tocou:</p>
+
+            <h3>Card 2 — Classes e Objetos</h3>
+            <p>O que é uma classe (molde) vs objeto (instância). Atributos, métodos, construtores, modificadores de acesso. A base pra entender qualquer código Java.</p>
+
+            <h3>Card 3 — Os 4 Pilares da POO</h3>
+            <p>Encapsulamento, herança, polimorfismo, abstração. Como cada pilar aparece em código real e quando usar cada um.</p>
+
+            <h3>Card 4 — Coletor de Lixo</h3>
+            <p>Como a JVM decide quais objetos limpar. Tipos de GC (Serial, G1, ZGC) e como isso afeta performance.</p>
+
+            <p>A trilha vai do conceito básico (o que é Java) até detalhes internos (como a JVM gerencia memória). Cada card é independente — você pode pular pra um específico se quiser.</p>
+        </div>
+    </div>
+
+</div>
+
+<div class="audio-player" data-src="audio/visao-geral-evolucao.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<div class="info-accordion">
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Ciclo de releases — LTS vs feature releases</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Antes de Java 9 (2017), os releases eram <strong>longos e irregulares</strong>. Entre Java 6 (2006) e Java 7 (2011) passaram 5 anos. Entre Java 7 e 8 (2014), mais 3 anos. Cada release acumulava muita coisa nova de uma vez.</p>
+            <p>A partir de Java 9, a Oracle adotou um <strong>modelo de cadência fixa</strong>:</p>
+            <ul>
+                <li><strong>Feature releases</strong> — toda primavera (março) e outono (setembro), 6 meses fixos</li>
+                <li><strong>LTS releases</strong> (Long-Term Support) — a cada 2-3 anos, com suporte estendido (8+ anos)</li>
+            </ul>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Versão</th><th>Lançamento</th><th>Tipo</th></tr>
+                    <tr><td>Java 9</td><td>set/2017</td><td>Feature</td></tr>
+                    <tr><td>Java 10</td><td>mar/2018</td><td>Feature</td></tr>
+                    <tr><td><strong>Java 11</strong></td><td>set/2018</td><td><strong>LTS</strong></td></tr>
+                    <tr><td>Java 12-16</td><td>2019-2021</td><td>Feature</td></tr>
+                    <tr><td><strong>Java 17</strong></td><td>set/2021</td><td><strong>LTS</strong></td></tr>
+                    <tr><td>Java 18-20</td><td>2022-2023</td><td>Feature</td></tr>
+                    <tr><td><strong>Java 21</strong></td><td>set/2023</td><td><strong>LTS</strong></td></tr>
+                    <tr><td>Java 22-24</td><td>2024-2025</td><td>Feature</td></tr>
+                    <tr><td><strong>Java 25</strong></td><td>set/2025</td><td><strong>LTS</strong></td></tr>
+                </table>
+            </div>
+            <p>A maioria dos projetos pula as feature releases e fica nas LTS. Por isso, na prática, as versões importantes pra estudar e usar em produção são: <strong>8, 11, 17, 21</strong>.</p>
+            <p>Features novas geralmente entram primeiro em <strong>preview</strong> (em feature releases), passam por 1-2 ciclos de feedback, e só então finalizam numa LTS. Quando você adota uma LTS, as features dela já foram testadas por 6-12 meses na comunidade.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Java 8 (2014) — o divisor de águas</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Lançado em <strong>março de 2014</strong>, Java 8 é considerado o release que mais transformou a linguagem. Antes dele, Java era visto como verboso e datado. Java 8 trouxe vários conceitos modernos de uma vez.</p>
+
+            <h3>Lambdas — programação funcional chega ao Java</h3>
+            <pre><code class="language-java">// Antes (Java 7) — anonymous inner class verbosa
+Comparator&lt;String&gt; cmp = new Comparator&lt;String&gt;() {
+    @Override
+    public int compare(String a, String b) {
+        return a.length() - b.length();
+    }
+};
+
+// Depois (Java 8) — lambda
+Comparator&lt;String&gt; cmp = (a, b) -&gt; a.length() - b.length();
+</code></pre>
+
+            <h3>Streams API — manipulação funcional de coleções</h3>
+            <pre><code class="language-java">List&lt;String&gt; nomesAdultos = pessoas.stream()
+    .filter(p -&gt; p.getIdade() &gt;= 18)
+    .map(Pessoa::getNome)
+    .collect(Collectors.toList());
+</code></pre>
+            <p>Antes você fazia tudo isso com loops <code>for</code> aninhados e listas auxiliares. Com Streams, expressa o <strong>o quê</strong> e não o <strong>como</strong>.</p>
+
+            <h3>Optional — alternativa explícita a null</h3>
+            <pre><code class="language-java">Optional&lt;User&gt; user = userRepository.findById(id);
+user.ifPresent(u -&gt; System.out.println(u.getName()));
+</code></pre>
+            <p>Força a tratar a ausência de valor — reduz NullPointerException.</p>
+
+            <h3>Nova Date/Time API (java.time)</h3>
+            <p>Substitui o desastroso <code>java.util.Date</code> e <code>Calendar</code>. Imutável, thread-safe, API limpa.</p>
+            <pre><code class="language-java">LocalDate hoje = LocalDate.now();
+LocalDate amanha = hoje.plusDays(1);
+</code></pre>
+
+            <h3>Default methods em interfaces</h3>
+            <pre><code class="language-java">public interface Lista&lt;T&gt; {
+    void add(T item);
+
+    default boolean isEmpty() {  // método com implementação
+        return size() == 0;
+    }
+}
+</code></pre>
+            <p>Permite adicionar métodos a interfaces sem quebrar implementações existentes — sem isso, as Streams API não seriam possíveis (<code>Collection.stream()</code> é default method).</p>
+
+            <p>Java 8 é o release mais usado em produção até hoje. Quase 12 anos depois, milhões de sistemas continuam nessa versão — o tópico do próximo accordion.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Por que tanta gente ainda usa Java 8</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Em 2026, mais de 30% dos sistemas Java em produção ainda rodam Java 8. Os motivos são técnicos, financeiros e culturais.</p>
+
+            <h3>1. Suporte estendido até 2030+</h3>
+            <p>A Oracle estendeu o suporte do Java 8 várias vezes. Premier Support vai até dezembro de 2030. Extended Support até 2032. Empresas grandes não têm pressa.</p>
+
+            <h3>2. Mudança de licença em Java 11</h3>
+            <p>Em 2018, a Oracle mudou a licença do Oracle JDK — uso em produção passou a exigir licença comercial. Muitas empresas não queriam pagar nem migrar pro OpenJDK (gratuito), então ficaram em Java 8.</p>
+            <p>Hoje há várias distribuições gratuitas de OpenJDK 11+ (Adoptium/Temurin, Amazon Corretto, Microsoft OpenJDK), mas o trauma da licença marcou o ecossistema.</p>
+
+            <h3>3. Trauma do Java 9 — Module System</h3>
+            <p>Java 9 trouxe o sistema de módulos (Project Jigsaw), que mudou drasticamente como o classpath funciona. Bibliotecas que usavam reflection pra acessar internals da JVM <strong>quebraram</strong>. Frameworks grandes (Lombok, Mockito, Hibernate) precisaram de updates pra compatibilidade. Migrar de 8 pra 9+ exigia trabalho não trivial.</p>
+
+            <h3>4. Java 11 removeu módulos Java EE</h3>
+            <p>JAXB, JTA, CORBA, Java Web Start, Activation — tudo removido. Código que usava precisava adicionar dependências externas. Mais trabalho.</p>
+
+            <h3>5. "Se funciona, não mexe"</h3>
+            <p>Sistemas legados gigantes (banco, governo, telecom):</p>
+            <ul>
+                <li>Milhões de linhas de código</li>
+                <li>Configurações certificadas</li>
+                <li>Suite de testes pesada</li>
+                <li>Janelas de manutenção raras</li>
+                <li>Risco enorme em qualquer migração</li>
+            </ul>
+            <p>Pra esses sistemas, Java 8 é "good enough" — tem lambdas, streams, Optional. As features novas (records, virtual threads) são desejáveis mas não urgentes.</p>
+
+            <h3>6. Inércia de fornecedores</h3>
+            <p>Frameworks corporativos antigos (versões antigas de Spring, Struts, EJB) só rodam em Java 8. Bibliotecas internas das empresas idem. Atualizar tudo isso é projeto, não tarefa.</p>
+
+            <p><strong>Resultado:</strong> Java 8 ainda é maioria em produção legacy, enquanto Java 17 e 21 dominam projetos novos. A migração é gradual e provavelmente vai durar mais 5-10 anos.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Java 11 (2018) — primeiro LTS pós-novo modelo</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Lançado em <strong>setembro de 2018</strong>, é o primeiro LTS após a mudança pro ciclo de 6 meses. Adoção foi mais lenta que Java 8 (problemas de licença, módulos), mas hoje é versão estável e popular.</p>
+
+            <h3>var — inferência de tipo local</h3>
+            <pre><code class="language-java">// Antes
+ArrayList&lt;Map&lt;String, List&lt;Integer&gt;&gt;&gt; dados = new ArrayList&lt;Map&lt;String, List&lt;Integer&gt;&gt;&gt;();
+
+// Depois
+var dados = new ArrayList&lt;Map&lt;String, List&lt;Integer&gt;&gt;&gt;();
+</code></pre>
+            <p>Funciona apenas em variáveis locais (não em campos, parâmetros, retorno). Adicionado em Java 10, mas popularizado no 11 — primeiro LTS a tê-lo.</p>
+
+            <h3>HTTP Client API padronizado</h3>
+            <p>Antes era <code>HttpURLConnection</code> (verboso, datado) ou bibliotecas externas (Apache HttpClient, OkHttp). Java 11 trouxe um cliente moderno:</p>
+            <pre><code class="language-java">HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder(URI.create("https://api.exemplo.com"))
+    .GET()
+    .build();
+HttpResponse&lt;String&gt; response = client.send(request, BodyHandlers.ofString());
+</code></pre>
+            <p>Suporta HTTP/2, requisições assíncronas (<code>sendAsync</code>), WebSocket.</p>
+
+            <h3>Métodos novos em String</h3>
+            <ul>
+                <li><code>lines()</code> — converte string multilinha em Stream</li>
+                <li><code>strip()</code> — versão Unicode-aware do <code>trim()</code></li>
+                <li><code>repeat(n)</code> — repete a string n vezes</li>
+                <li><code>isBlank()</code> — true se vazia ou só espaços</li>
+            </ul>
+
+            <h3>Files API</h3>
+            <pre><code class="language-java">String conteudo = Files.readString(Path.of("arquivo.txt"));
+Files.writeString(Path.of("saida.txt"), "novo conteudo");
+</code></pre>
+
+            <h3>Single-file source-code launcher</h3>
+            <pre><code class="language-bash">java HelloWorld.java   # sem precisar compilar primeiro
+</code></pre>
+            <p>Útil pra scripts e prototipagem.</p>
+
+            <h3>O que foi removido</h3>
+            <ul>
+                <li>Módulos Java EE (JAXB, JAX-WS, CORBA, JTA) — virou Jakarta EE (projeto da Eclipse Foundation)</li>
+                <li>Java Web Start, Applets — tecnologias mortas</li>
+                <li>Nashorn (engine JavaScript) — depreciado, removido em Java 15</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Java 17 (2021) — modernização da sintaxe</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Lançado em <strong>setembro de 2021</strong>, Java 17 é o release que mais avançou em sintaxe moderna desde Java 8. Várias features que ficaram em preview por anos finalmente estáveis.</p>
+
+            <h3>Records — POJO em 1 linha</h3>
+            <pre><code class="language-java">// Antes — boilerplate gigante
+public class Point {
+    private final int x;
+    private final int y;
+    public Point(int x, int y) { this.x = x; this.y = y; }
+    public int x() { return x; }
+    public int y() { return y; }
+    @Override public boolean equals(Object o) { /* ... */ }
+    @Override public int hashCode() { /* ... */ }
+    @Override public String toString() { /* ... */ }
+}
+
+// Depois — 1 linha
+public record Point(int x, int y) {}
+</code></pre>
+            <p>Records são imutáveis e geram automaticamente: construtor, getters, equals, hashCode, toString.</p>
+
+            <h3>Sealed classes — controle de hierarquia</h3>
+            <pre><code class="language-java">public sealed class Forma permits Circulo, Quadrado, Triangulo {}
+public final class Circulo extends Forma {}
+public final class Quadrado extends Forma {}
+public final class Triangulo extends Forma {}
+</code></pre>
+            <p>Limita quem pode estender. Útil pra modelar tipos algébricos (ADTs) e melhorar pattern matching.</p>
+
+            <h3>Pattern matching for instanceof</h3>
+            <pre><code class="language-java">// Antes
+if (obj instanceof String) {
+    String s = (String) obj;
+    System.out.println(s.length());
+}
+
+// Depois
+if (obj instanceof String s) {
+    System.out.println(s.length());
+}
+</code></pre>
+
+            <h3>Text blocks — strings multilinhas</h3>
+            <pre><code class="language-java">String json = """
+    {
+        "name": "Joao",
+        "age": 30
+    }
+    """;
+</code></pre>
+            <p>Indentação automática, ideal pra JSON, SQL, HTML inline.</p>
+
+            <h3>Switch expressions</h3>
+            <pre><code class="language-java">String dia = switch (numero) {
+    case 1 -&gt; "Segunda";
+    case 2 -&gt; "Terca";
+    case 3 -&gt; "Quarta";
+    default -&gt; "Outro";
+};
+</code></pre>
+            <p>Switch que retorna valor, sem fallthrough acidental, exhaustive (compila erro se faltar caso).</p>
+
+            <p>Java 17 é a versão "default" pra projetos novos hoje em muitas empresas. Substituiu Java 8 sem dor de cabeça (pulou direto sem 11, em muitos casos).</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Java 21 (2023) — concorrência repensada</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Lançado em <strong>setembro de 2023</strong>, Java 21 tem uma feature-estrela: <strong>virtual threads</strong>. Muda o jogo pra servidores web e qualquer aplicação com muitas threads.</p>
+
+            <h3>Virtual threads — milhões de threads leves</h3>
+            <p>O modelo antigo:</p>
+            <ul>
+                <li>Threads do SO custam memória (~1 MB cada de stack)</li>
+                <li>Limite prático: ~10 mil threads por JVM</li>
+                <li>Pra escalar, você precisava de async/reactive (CompletableFuture, Reactor) — código difícil de ler e debugar</li>
+            </ul>
+            <p>O modelo novo:</p>
+            <ul>
+                <li>Virtual threads são gerenciadas pela JVM, não pelo SO</li>
+                <li>Custam ~kB cada — milhões viáveis</li>
+                <li>Permite escrever código <strong>bloqueante</strong> (síncrono) com performance de async</li>
+            </ul>
+            <pre><code class="language-java">// Cria virtual thread por requisicao — escala como Node.js, com sintaxe sincrona
+Thread.startVirtualThread(() -&gt; {
+    handleRequest(req);  // pode bloquear sem problema
+});
+</code></pre>
+            <p>Game changer pra servidores web, microsserviços, qualquer thing-per-request.</p>
+
+            <h3>Sequenced collections</h3>
+            <p>Interfaces unificadas (<code>SequencedCollection</code>, <code>SequencedSet</code>, <code>SequencedMap</code>) pra coleções com ordem definida — <code>List</code>, <code>LinkedHashSet</code>, <code>LinkedHashMap</code>.</p>
+            <pre><code class="language-java">List&lt;String&gt; lista = List.of("a", "b", "c");
+String primeiro = lista.getFirst();          // "a"
+String ultimo = lista.getLast();             // "c"
+List&lt;String&gt; reverso = lista.reversed();    // ["c", "b", "a"]
+</code></pre>
+
+            <h3>Pattern matching for switch</h3>
+            <pre><code class="language-java">String desc = switch (obj) {
+    case Integer i when i &gt; 0 -&gt; "positivo";
+    case Integer i -&gt; "nao positivo";
+    case String s -&gt; "string " + s;
+    case null -&gt; "nulo";
+    default -&gt; "outro tipo";
+};
+</code></pre>
+
+            <h3>Record patterns</h3>
+            <pre><code class="language-java">if (point instanceof Point(int x, int y)) {
+    // x e y desestruturados direto
+    System.out.println(x + ", " + y);
+}
+</code></pre>
+
+            <p>Java 21 é a versão atual recomendada pra projetos novos. Quem está em Java 17 sem features específicas do 21 não tem urgência pra migrar.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Linha do tempo — todas as LTS num quadro só</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Ano</th><th>Versão</th><th>Highlights</th></tr>
+                    <tr><td>1996</td><td>Java 1.0</td><td>Nascimento — applets</td></tr>
+                    <tr><td>2004</td><td>Java 5</td><td>Generics, annotations, autoboxing</td></tr>
+                    <tr><td>2011</td><td>Java 7</td><td>try-with-resources, diamond operator</td></tr>
+                    <tr><td><strong>2014</strong></td><td><strong>Java 8 LTS</strong></td><td><strong>Lambdas, Streams, Optional, java.time</strong></td></tr>
+                    <tr><td>2017</td><td>Java 9</td><td>Module System, JShell</td></tr>
+                    <tr><td>2018</td><td>Java 10</td><td>var (local vars)</td></tr>
+                    <tr><td><strong>2018</strong></td><td><strong>Java 11 LTS</strong></td><td><strong>HTTP Client, String API, Files API</strong></td></tr>
+                    <tr><td>2019-2021</td><td>Java 12-16</td><td>Pattern matching preview, records preview</td></tr>
+                    <tr><td><strong>2021</strong></td><td><strong>Java 17 LTS</strong></td><td><strong>Records, Sealed, Pattern matching, Text blocks</strong></td></tr>
+                    <tr><td>2022-2023</td><td>Java 18-20</td><td>Virtual threads preview</td></tr>
+                    <tr><td><strong>2023</strong></td><td><strong>Java 21 LTS</strong></td><td><strong>Virtual threads, Sequenced collections</strong></td></tr>
+                    <tr><td>2024-2025</td><td>Java 22-24</td><td>Stream Gatherers, Scoped Values</td></tr>
+                    <tr><td><strong>2025</strong></td><td><strong>Java 25 LTS</strong></td><td><strong>Module imports, instance main methods</strong></td></tr>
+                </table>
+            </div>
+            <p><strong>Próxima LTS:</strong> Java 29 (setembro de 2027). A partir do próximo ciclo, novas LTS a cada 2 anos (em vez de 3).</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

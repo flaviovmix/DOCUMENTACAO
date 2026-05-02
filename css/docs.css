@@ -919,6 +919,7 @@ body.dark #footer a.sub:hover      { color: #cba6f7; }
     height: 100%;
     object-fit: cover;
     object-position: center top;
+    transition: filter 0.5s ease;
 }
 
 .card-img img {
@@ -928,7 +929,7 @@ body.dark #footer a.sub:hover      { color: #cba6f7; }
     top: 0;
     left: 50%;
     transform: translateX(-50%);
-    transition: top 0.6s ease, transform 0.6s ease;
+    transition: top 0.6s ease, transform 0.6s ease, filter 0.5s ease;
 }
 
 .card:hover .card-img img {
@@ -1109,6 +1110,11 @@ body.dark #footer a.sub:hover      { color: #cba6f7; }
     opacity: 1;
 }
 
+.card:has(.card-info.aberto) .card-pause {
+    opacity: 0;
+    pointer-events: none;
+}
+
 .card-pause svg {
     width: 24px;
     height: 24px;
@@ -1203,7 +1209,7 @@ body.dark #footer a.sub:hover      { color: #cba6f7; }
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 4px 10px;
+    padding: 3px 10px;
     font-size: 0.75em;
     font-weight: 600;
     color: #1a1a1a;
@@ -1261,7 +1267,6 @@ body.dark #footer a.sub:hover      { color: #cba6f7; }
 .card-info.aberto ~ .card-img img,
 .card-info.aberto ~ .card-img video {
     filter: blur(6px) grayscale(20%);
-    transform: scale(1.1);
 }
 
 

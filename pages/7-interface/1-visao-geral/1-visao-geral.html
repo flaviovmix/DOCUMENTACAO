@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interface — Visão Geral — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Interface — Visão Geral</h1>
+
+<p>Como esta documentação é construída por dentro: arquitetura em 3 camadas, convenções e fluxo pra adicionar página nova. É documentação puro front-end — HTML/CSS/JS estático, sem build step, servido localmente.</p>
+
+<div class="audio-player" data-src="audio/visao-geral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Arquitetura em 3 camadas</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Toda página HTML carrega <strong>1 único script</strong> e o resto é injetado em runtime. Isso mantém cada página HTML curta — só conteúdo, sem boilerplate de head/nav/footer.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Camada</th><th>Arquivo</th><th>Responsabilidade</th></tr>
+                    <tr><td><strong>Esqueleto</strong></td><td><code>js/layout.js</code></td><td>Injeta CSS, monta topbar/drawer/footer, gera breadcrumb, inicializa componentes</td></tr>
+                    <tr><td><strong>Estilo</strong></td><td><code>css/docs.css</code></td><td>Todo o visual — cards, accordion, audio-player, TOC, etc.</td></tr>
+                    <tr><td><strong>Conteúdo</strong></td><td><code>pages/**/*.html</code></td><td>Só conteúdo — sem &lt;head&gt; próprio, sem nav, sem footer</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">layout.js — o cérebro</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>É o ÚNICO <code>&lt;script&gt;</code> que cada HTML precisa carregar. Faz tudo:</p>
+
+            <ol>
+                <li>Injeta CSS (<code>docs.css</code>, highlight.js, font-awesome)</li>
+                <li>Monta topbar + drawer lateral + content-inner + footer</li>
+                <li>Gera breadcrumb automaticamente a partir do path da URL</li>
+                <li>Monta o menu lateral a partir do array <code>MENU</code> definido no topo</li>
+                <li>Inicializa componentes (audio, carrossel, highlight, TOC, accordion)</li>
+                <li>Restaura estado (drawer aberto/fechado, tema, zoom) do localStorage</li>
+            </ol>
+
+            <p>O array <code>MENU</code> no topo do arquivo descreve toda a navegação — cada grupo com <code>subgrupos</code>, <code>items</code>, <code>parent</code>, <code>hidden</code>, <code>pasta</code>. Quem manda na estrutura de páginas é esse array.</p>
+
+            <pre><code class="language-javascript">var MENU = [
+    {
+        grupo: 'FUNDAMENTOS',
+        pagina: 'fundamentos.html',
+        subgrupos: [
+            { label: 'JAVA', href: '1-java/java.html', pasta: '1-java' },
+            { label: 'SQL',  href: '2-sql/sql.html',   pasta: '2-sql' }
+        ],
+        pasta: '1-fundamentos'
+    }
+    // ...
+];</code></pre>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">docs.css — o visual</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Único stylesheet. Todo o visual mora aqui. Lista dos componentes reutilizáveis disponíveis:</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Componente</th><th>Pra que serve</th></tr>
+                    <tr><td><code>home-grid</code> + <code>card</code></td><td>Grid de cards clicáveis (variantes <em>card-image</em> e <em>card-video</em>)</td></tr>
+                    <tr><td><code>info-accordion</code></td><td>Seções colapsáveis</td></tr>
+                    <tr><td><code>audio-player</code></td><td>Player de áudio dos podcasts NotebookLM</td></tr>
+                    <tr><td><code>page-toc</code></td><td>Table of Contents lateral</td></tr>
+                    <tr><td><code>xt-template</code></td><td>Bloco de código com highlight customizado</td></tr>
+                    <tr><td><code>overview-box</code></td><td>Box de destaque estilo Apple</td></tr>
+                    <tr><td><code>table-wrap</code></td><td>Wrapper de tabela com scroll horizontal em mobile</td></tr>
+                    <tr><td><code>carousel</code></td><td>Carrossel de imagens</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">pages/ — o conteúdo</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>97 HTMLs organizados por tópico. Cada pasta é um grupo do menu, cada HTML é uma página.</p>
+
+            <pre><code class="language-bash">documentacao/
+├── index.html              ← hub raiz (cards principais)
+├── grafo.html              ← grafo de páginas (vis-network)
+├── css/docs.css            ← estilo único
+├── js/layout.js            ← esqueleto único
+└── pages/
+    ├── 1-fundamentos/      ← Java, SQL, OSI, HTML/CSS/JS, Hardware, Git
+    ├── 2-jasap/            ← framework Jasap (Manager, novo-modulo, crud)
+    ├── 2-crud/             ← funcionalidades transversais
+    ├── 3-nexus/            ← projeto Nexus
+    ├── 7-interface/        ← esta meta-doc
+    └── img-video/          ← vídeos dos cards do index</code></pre>
+
+            <p>Cada pasta de página tem <code>audio/</code> (m4a do NotebookLM) e <code>img/</code> próprios — material auto-contido por página.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Convenções de naming</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Item</th><th>Padrão</th><th>Exemplo</th></tr>
+                    <tr><td>Pasta numerada</td><td><code>N-nome-kebab/</code></td><td><code>1-visao-geral/</code></td></tr>
+                    <tr><td>HTML da página</td><td>mesmo nome da pasta</td><td><code>1-visao-geral.html</code></td></tr>
+                    <tr><td>Hub de grupo</td><td><code>grupo.html</code> sem prefixo</td><td><code>java.html</code>, <code>sql.html</code></td></tr>
+                    <tr><td>Áudio</td><td><code>audio/nome.m4a</code></td><td><code>audio/visao-geral.m4a</code></td></tr>
+                    <tr><td>Imagens</td><td><code>img/N.png</code> ou nome livre</td><td><code>img/1.png</code>, <code>img/diagrama.png</code></td></tr>
+                </table>
+            </div>
+
+            <p>Páginas XT/Jasap usam o prefixo <code>Departamento*</code> nos exemplos de código; páginas de fundamentos (e esta meta-doc) usam nomes genéricos.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Adicionar uma página nova</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <ol>
+                <li>Criar a pasta numerada e o HTML com mesmo nome dentro de <code>pages/&lt;grupo&gt;/</code></li>
+                <li>Subir <code>audio/</code> e <code>img/</code> dentro da pasta da página</li>
+                <li>No topo do HTML, único script: <code>&lt;script src="../../../js/layout.js"&gt;</code> — contar <code>../</code> até <code>documentacao/</code></li>
+                <li>Adicionar entrada no array <code>MENU</code> de <code>js/layout.js</code></li>
+                <li>Se for hub do grupo, adicionar card no <code>index.html</code> (<em>card-image</em> ou <em>card-video</em>)</li>
+            </ol>
+
+            <p>O resto (head, breadcrumb, menu lateral, footer, highlight, TOC) é montado em runtime pelo <code>layout.js</code>.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
