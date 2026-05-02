@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carta Aberta — Claude — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<h1>Carta Aberta</h1>
+
+<div class="audio-player" data-src="audio/carta-aberta.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Resumo da carta</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Esta pasta <code>src/</code> não nasceu como está hoje. Ela começou com <strong>um projeto só</strong> — o XTtreinamento — e foi crescendo conforme outros projetos foram entrando na minha rotina.</p>
+
+            <p>O motivo de trazer tudo pra dentro de <code>src/</code> foi prático: ter <strong>vários repositórios espalhados</strong> em pastas diferentes do disco fragmentava o contexto. Cada vez que eu pedia ajuda ao Claude num projeto, ele só enxergava aquela pasta — não conseguia, por exemplo, alimentar a documentação centralizada em <code>apoio/documentacao</code> a partir de qualquer projeto.</p>
+
+            <p>Centralizar resolveu o contexto, mas criou um novo problema: <strong>a pasta <code>src/</code> precisa ser organizada</strong>. Hoje ela tem projetos ativos, projetos de referência, apoio compartilhado e outras coisas misturadas. O próximo passo é arrumar essa casa.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

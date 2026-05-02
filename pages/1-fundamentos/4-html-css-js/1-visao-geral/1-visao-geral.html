@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visão Geral — HTML - CSS - JS — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Visão Geral — HTML - CSS - JS</h1>
+
+<div class="audio-player" data-src="audio/visao-geral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>HTML, CSS e JavaScript parecem três arquivos simples, mas no browser eles viram um sistema vivo. O HTML cria a árvore de elementos, o CSS calcula a apresentação, o JavaScript altera estado e comportamento, e o DOM é o contrato em memória onde tudo se encontra. Esta visão geral começa pelo encaixe básico e vai subindo até o pipeline real do browser, performance e arquitetura.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O encaixe básico — estrutura, apresentação e comportamento</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A separação clássica é simples e ainda é útil: <strong>HTML</strong> descreve o conteúdo, <strong>CSS</strong> descreve como esse conteúdo aparece, e <strong>JavaScript</strong> descreve o que acontece quando a página precisa reagir.</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Camada</th><th>Responsabilidade</th><th>Erro típico</th></tr>
+                    <tr><td><strong>HTML</strong></td><td>Semântica, hierarquia, formulário, links, texto, mídia</td><td>Botão que deveria ser link, título fora de ordem, formulário sem label</td></tr>
+                    <tr><td><strong>CSS</strong></td><td>Layout, cor, tipografia, estados, responsividade</td><td>Elemento desalinhado, quebra no mobile, regra sobrescrita sem querer</td></tr>
+                    <tr><td><strong>JavaScript</strong></td><td>Eventos, estado, DOM, rede, fluxo assíncrono</td><td>Clique sem efeito, estado inconsistente, requisição fora de ordem</td></tr>
+                </table>
+            </div>
+            <p>Mas essa divisão não significa isolamento total. O CSS depende da estrutura do HTML. O JavaScript consulta e altera o DOM. Mudanças de classe feitas por JavaScript disparam novas regras CSS. Na prática, front-end é o estudo das fronteiras entre essas três camadas.</p>
+            <pre><code class="language-html">&lt;button class="save-button" type="button"&gt;Salvar&lt;/button&gt;</code></pre>
+            <pre><code class="language-css">.save-button {
+    background: #2563eb;
+    color: #ffffff;
+}</code></pre>
+            <pre><code class="language-javascript">document.querySelector('.save-button')
+    .addEventListener('click', saveChanges);</code></pre>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">HTML além de tags — semântica, acessibilidade e contrato de dados</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>HTML não é só marcação visual. Ele informa ao browser, leitores de tela, motores de busca e scripts o que cada parte da página significa. Um botão, um link e uma div clicável podem parecer iguais depois do CSS, mas não são equivalentes.</p>
+            <pre><code class="language-html">&lt;article class="task-card" data-task-id="42"&gt;
+    &lt;h2&gt;Revisar pedido&lt;/h2&gt;
+    &lt;p&gt;Pedido aguardando confirmação fiscal.&lt;/p&gt;
+    &lt;button type="button" aria-label="Marcar pedido como revisado"&gt;
+        Revisar
+    &lt;/button&gt;
+&lt;/article&gt;</code></pre>
+            <p>Esse trecho carrega várias decisões:</p>
+            <ul>
+                <li><code>&lt;article&gt;</code> diz que o card é uma unidade de conteúdo.</li>
+                <li><code>&lt;h2&gt;</code> preserva hierarquia navegável.</li>
+                <li><code>&lt;button&gt;</code> comunica ação, recebe foco e responde ao teclado.</li>
+                <li><code>data-task-id</code> cria um ponto de ligação entre DOM e lógica.</li>
+                <li><code>aria-label</code> melhora a descrição quando o texto visual não basta.</li>
+            </ul>
+            <p>Em páginas simples, semântica parece detalhe. Em aplicações grandes, ela vira contrato: testes automatizados encontram elementos, scripts ligam comportamento, acessibilidade funciona e o HTML continua legível mesmo antes do CSS carregar.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">CSS além da aparência — cascade, especificidade e layout engine</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>CSS parece uma lista de propriedades, mas o browser precisa resolver conflitos antes de desenhar qualquer coisa. A regra final aplicada a um elemento nasce da combinação de <strong>origem</strong>, <strong>importância</strong>, <strong>especificidade</strong>, <strong>ordem</strong> e <strong>herança</strong>.</p>
+            <pre><code class="language-css">button { color: #111827; }
+.save-button { color: #2563eb; }
+main .save-button { color: #16a34a; }</code></pre>
+            <p>As três regras miram o mesmo botão. A última vence por ser mais específica. Esse é o tipo de decisão que explica por que "mudei o CSS e nada aconteceu" quase sempre é problema de cascade, seletor, ordem de carregamento ou estado.</p>
+            <h3>Do CSS até pixels</h3>
+            <ol>
+                <li>O browser parseia CSS e monta a <strong>CSSOM</strong>.</li>
+                <li>Combina DOM + CSSOM para formar a <strong>render tree</strong>.</li>
+                <li>Calcula layout: posição e tamanho de cada caixa.</li>
+                <li>Pinta camadas: texto, fundo, borda, sombra, imagem.</li>
+                <li>Compõe na tela, muitas vezes usando GPU.</li>
+            </ol>
+            <p>Nem toda mudança visual custa a mesma coisa. Alterar <code>width</code> pode recalcular layout. Alterar <code>color</code> tende a repintar. Alterar <code>transform</code> ou <code>opacity</code> costuma ser mais barato porque pode ficar na etapa de composição.</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Mudança</th><th>Custo comum</th><th>Exemplo</th></tr>
+                    <tr><td>Layout</td><td>Mais caro</td><td><code>width</code>, <code>height</code>, <code>display</code>, <code>font-size</code></td></tr>
+                    <tr><td>Paint</td><td>Médio</td><td><code>color</code>, <code>background</code>, <code>box-shadow</code></td></tr>
+                    <tr><td>Composite</td><td>Mais barato</td><td><code>transform</code>, <code>opacity</code></td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">JavaScript no browser — estado, eventos, módulos e assincronia</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>JavaScript entra quando a página precisa decidir algo em runtime: responder a eventos, buscar dados, validar entrada, alterar estado e refletir esse estado no DOM. O ponto central é que o browser é orientado a eventos.</p>
+            <pre><code class="language-javascript">const state = {
+    selectedId: null,
+    loading: false
+};
+
+document.addEventListener('click', async function(event) {
+    const button = event.target.closest('[data-load-user]');
+    if (!button) return;
+
+    state.loading = true;
+    const response = await fetch(`/api/users/${button.dataset.loadUser}`);
+    const user = await response.json();
+
+    state.selectedId = user.id;
+    state.loading = false;
+    renderUser(user);
+});</code></pre>
+            <p>Esse exemplo mistura quatro coisas importantes: delegação de evento, atributo <code>data-*</code>, requisição assíncrona e renderização. Parece simples, mas em escala isso vira arquitetura.</p>
+            <h3>Event loop em uma frase</h3>
+            <p>JavaScript executa em uma thread principal, mas agenda trabalhos. Cliques, timers, promises e respostas de rede entram em filas. O event loop decide quando cada callback roda, intercalando código JS com renderização do browser.</p>
+            <pre><code class="language-javascript">console.log('A');
+
+setTimeout(() =&gt; console.log('B'), 0);
+Promise.resolve().then(() =&gt; console.log('C'));
+
+console.log('D');
+
+// Ordem: A, D, C, B</code></pre>
+            <p>Promises rodam antes de timers porque entram na fila de microtasks. Esse detalhe importa quando uma tela atualiza em ordem inesperada ou quando um loading pisca rápido demais.</p>
+            <h3>Módulos</h3>
+            <p>Em código moderno, JavaScript tende a ser dividido em módulos. Isso evita variáveis globais e deixa dependências explícitas.</p>
+            <pre><code class="language-javascript">import { formatCurrency } from './money.js';
+
+export function renderPrice(value) {
+    return formatCurrency(value, 'BRL');
+}</code></pre>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">DOM como ponto de encontro — árvore, mutação e custo</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O DOM é a representação viva do documento. O HTML inicial cria a primeira árvore, mas JavaScript pode consultar, criar, mover e remover nós. CSS observa essa árvore por seletores. O usuário interage com essa árvore por foco, clique, rolagem, seleção e teclado.</p>
+            <pre><code class="language-html">&lt;ul id="tasks"&gt;
+    &lt;li data-id="1"&gt;Compilar notas&lt;/li&gt;
+    &lt;li data-id="2"&gt;Revisar CSS&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+            <pre><code class="language-javascript">const list = document.querySelector('#tasks');
+
+const item = document.createElement('li');
+item.dataset.id = '3';
+item.textContent = 'Publicar página';
+
+list.appendChild(item);</code></pre>
+            <p>Cada mutação pode ter custo. Em listas grandes, alterar o DOM item por item pode gerar trabalho repetido. Uma estratégia comum é montar um fragmento em memória e anexar tudo de uma vez.</p>
+            <pre><code class="language-javascript">const fragment = document.createDocumentFragment();
+
+for (const task of tasks) {
+    const li = document.createElement('li');
+    li.textContent = task.title;
+    fragment.appendChild(li);
+}
+
+list.replaceChildren(fragment);</code></pre>
+            <p>Frameworks como React, Vue e Svelte existem, em parte, para organizar esse problema: como transformar estado em DOM sem deixar a aplicação cheia de mutações manuais difíceis de rastrear.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Pipeline completo — parse, CSSOM, render tree, layout, paint e composite</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Quando a página cresce, o modelo mental mais útil é o pipeline do browser. Ele mostra por que certas escolhas deixam a interface fluida e outras criam travamentos.</p>
+            <ol>
+                <li><strong>Parse HTML</strong> — bytes viram tokens, tokens viram nós, nós viram DOM.</li>
+                <li><strong>Parse CSS</strong> — folhas de estilo viram CSSOM.</li>
+                <li><strong>Execução de scripts</strong> — JavaScript pode bloquear ou alterar o parse dependendo de como é carregado.</li>
+                <li><strong>Style calculation</strong> — o browser decide quais regras CSS valem para cada nó.</li>
+                <li><strong>Layout</strong> — calcula geometria das caixas.</li>
+                <li><strong>Paint</strong> — desenha texto, borda, fundo, imagem, sombra.</li>
+                <li><strong>Composite</strong> — combina camadas e entrega o frame final.</li>
+            </ol>
+            <p>Por isso <code>&lt;script defer&gt;</code>, CSS crítico, imagens com tamanho definido e manipulação cuidadosa do DOM não são "otimização prematura"; são formas de não atrapalhar o pipeline.</p>
+            <pre><code class="language-html">&lt;link rel="stylesheet" href="app.css"&gt;
+&lt;script src="app.js" defer&gt;&lt;/script&gt;</code></pre>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Problema</th><th>Causa comum</th><th>Correção típica</th></tr>
+                    <tr><td>Tela pisca sem estilo</td><td>CSS tarde ou carregamento mal ordenado</td><td>Carregar CSS principal cedo</td></tr>
+                    <tr><td>Layout salta</td><td>Imagem sem dimensão, fonte trocando, conteúdo tardio</td><td>Reservar espaço e definir dimensões</td></tr>
+                    <tr><td>Interface trava</td><td>JS longo na main thread</td><td>Quebrar tarefa, adiar trabalho, reduzir DOM</td></tr>
+                    <tr><td>Animação engasga</td><td>Animar propriedades que recalculam layout</td><td>Preferir <code>transform</code> e <code>opacity</code></td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O que vem nessa trilha — de fundamento para arquitetura</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Os próximos sub-hubs separam a tríade para estudar com profundidade, mas a leitura deve continuar conectada. HTML ruim força CSS frágil. CSS sem arquitetura vira guerra de especificidade. JavaScript sem modelo de estado vira sequência de remendos no DOM.</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Sub-hub</th><th>Primeira camada</th><th>Camada avançada</th></tr>
+                    <tr><td><strong>HTML</strong></td><td>Tags, atributos, formulários</td><td>Semântica, acessibilidade, SEO técnico, contrato com JS</td></tr>
+                    <tr><td><strong>CSS</strong></td><td>Seletores, box model, flex/grid</td><td>Cascade layers, arquitetura, tokens, performance de layout</td></tr>
+                    <tr><td><strong>JavaScript</strong></td><td>Variáveis, funções, eventos</td><td>Event loop, módulos, async, estado, renderização</td></tr>
+                </table>
+            </div>
+            <p>A ordem pedagógica continua: primeiro entender a estrutura, depois controlar a apresentação, depois adicionar comportamento. Mas o objetivo final é enxergar a página como sistema: dados entram, estado muda, DOM reflete, CSS apresenta e o browser renderiza em frames.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -95,6 +95,20 @@ var MENU = [
         basePath: '1-fundamentos/3-modelo-osi'
     },
     {
+        grupo: 'HTML-CSS-JS',
+        pagina: 'html-css-js.html',
+        parent: { label: 'FUNDAMENTOS', href: '1-fundamentos/fundamentos.html' },
+        hidden: true,
+        items: [
+            { label: '1 - Visão Geral', arquivo: '1-visao-geral/1-visao-geral.html', tipo: 'check' },
+            { label: '2 - HTML',        arquivo: '2-html/2-html.html',               tipo: 'check' },
+            { label: '3 - CSS',         arquivo: '3-css/3-css.html',                 tipo: 'check' },
+            { label: '4 - JavaScript',  arquivo: '4-javascript/4-javascript.html',   tipo: 'check' }
+        ],
+        pasta: '4-html-css-js',
+        basePath: '1-fundamentos/4-html-css-js'
+    },
+    {
         grupo: 'VISÃO GERAL',
         pagina: '0-visao-geral.html',
         parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-osi/modelo-osi.html' },
@@ -351,6 +365,15 @@ var MENU = [
         ],
         pasta: '7-interface',
         basePath: '7-interface'
+    },
+    {
+        grupo: 'CLAUDE',
+        pagina: 'claude.html',
+        items: [
+            { label: '1 - Carta Aberta', arquivo: '1-carta-aberta/1-carta-aberta.html', tipo: 'check' }
+        ],
+        pasta: '8-claude',
+        basePath: '8-claude'
     },
     {
         grupo: 'NEXUS',

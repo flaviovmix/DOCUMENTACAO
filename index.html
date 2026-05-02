@@ -26,18 +26,73 @@
         .codex-wrapper:hover .codex-card-label { opacity: 0; transform: skew(5deg) translateY(-6px); }
         .codex-card-link { position: absolute; left: 10px; bottom: 4px; z-index: 2; transform: skew(5deg) translateY(6px); opacity: 0; color: #ffffff; font-family: Arial, sans-serif; font-size: 16px; font-weight: 700; text-decoration: none; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75); transition: opacity 0.25s ease, transform 0.25s ease; }
         .codex-wrapper:hover .codex-card-link { opacity: 1; transform: skew(5deg) translateY(0); }
-        .codex-dots-bar { min-height: 22px; background-color: #333333; display: flex; align-items: center; justify-content: center; padding: 0 16px; box-sizing: border-box; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18); }
-        .codex-controls-row { display: grid; grid-template-columns: 18px auto 18px; align-items: center; justify-content: center; column-gap: 8px; height: 18px; line-height: 0; }
+        .codex-dots-bar { min-height: 22px; background-color: #333333; display: flex; align-items: center; justify-content: center; padding: 0 16px; box-sizing: border-box; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18); overflow: visible; }
+        .codex-controls-row { display: grid; grid-template-columns: 18px auto 18px; align-items: center; justify-content: center; column-gap: 8px; height: 18px; line-height: 0; overflow: visible; }
         .codex-direction-button { width: 18px; height: 12px; border: 0; background-color: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px; padding: 0; appearance: none; line-height: 0; }
         .codex-direction-button:hover { transform: scale(1.12); }
         .codex-direction-button::before { content: ""; width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
         .codex-direction-button.left::before { border-right: 8px solid #ffffff; }
         .codex-direction-button.right::before { border-left: 8px solid #ffffff; }
         .codex-direction-button.pause::before, .codex-direction-button.pause::after { content: ""; width: 2px; height: 9px; background-color: #ffffff; border: 0; }
-        #codexDotsBar { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; line-height: 0; }
-        .codex-dot { width: 9px; height: 9px; border: 0; border-radius: 50%; background-color: #8f8f8f; cursor: pointer; padding: 0; transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease; }
+        #codexDotsBar { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; line-height: 0; overflow: visible; }
+        .codex-dot { width: 9px; height: 9px; border: 0; border-radius: 50%; background-color: #8f8f8f; cursor: pointer; padding: 0; position: relative; z-index: 1; transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease; }
         .codex-dot:hover { background-color: #ffffff; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18); opacity: 1; }
         .codex-dot.active { background-color: #ffffff; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.18); }
+        .codex-dot:hover,
+        .codex-dot:focus-visible { z-index: 80; }
+        .codex-dot-tooltip {
+            position: absolute;
+            left: calc(100% + 30px);
+            top: -30px;
+            transform: translateX(4px);
+            width: 210px;
+            min-height: 126px;
+            padding: 22px 24px 18px;
+            border-radius: 10px;
+            background-color: rgba(20, 20, 20, 0.94);
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            text-align: left;
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.34);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.16s ease, transform 0.16s ease;
+            z-index: 100;
+        }
+        .codex-dot-tooltip strong {
+            display: block;
+            margin-bottom: 18px;
+            font-size: 20px;
+            line-height: 1.15;
+            font-weight: 800;
+        }
+        .codex-dot-tooltip span {
+            display: block;
+            font-size: 15px;
+            line-height: 1.38;
+            font-weight: 500;
+        }
+        .codex-dot::after {
+            content: "";
+            position: absolute;
+            left: calc(100% + 9px);
+            top: -8px;
+            transform: translateX(4px);
+            border-top: 17px solid transparent;
+            border-bottom: 17px solid transparent;
+            border-right: 22px solid rgba(20, 20, 20, 0.94);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.16s ease, transform 0.16s ease;
+            z-index: 21;
+        }
+        .codex-dot:hover .codex-dot-tooltip,
+        .codex-dot:focus-visible .codex-dot-tooltip,
+        .codex-dot:hover::after,
+        .codex-dot:focus-visible::after {
+            opacity: 1;
+            transform: translateX(0);
+        }
     </style>
 </head>
 <body>
@@ -114,6 +169,7 @@
                 dot.className = 'codex-dot';
                 dot.type = 'button';
                 dot.setAttribute('aria-label', `Centralizar ${cardNames[index]}`);
+                dot.innerHTML = `<span class="codex-dot-tooltip"><strong>${cardNames[index]}</strong><span>Lorem ipsum e um texto padrao simulado para descrever este item.</span></span>`;
                 dot.addEventListener('click', () => centerImage(index));
                 dotsBar.appendChild(dot);
             });
@@ -155,9 +211,9 @@
             const influenceDistance = 260;
             Array.from(dotsBar.children).forEach((dot, index) => {
                 const progress = Math.max(0, 1 - (nearestDistances[index] / influenceDistance));
-                const scale = 1 + (progress * 0.75);
+                const scale = 1;
                 dot.style.transform = `scale(${scale})`;
-                dot.style.opacity = 0.65 + (progress * 0.35);
+                dot.style.opacity = 0.95 + (progress * 0.05);
                 dot.classList.toggle('active', progress > 0.72);
             });
         }
@@ -460,27 +516,6 @@
             </div>
         </div>
 
-        <!-- CLAUDE -->
-        <div class="card">
-            <div class="card-menu btnMenuCard">
-                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
-            </div>
-            <div class="card-info">
-                <ul class="card-links">
-                </ul>
-            </div>
-            <div class="card-img">
-                <button class="card-pause btnPauseCard" aria-label="Pausar/tocar vídeo">
-                    <svg class="ic-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
-                    <svg class="ic-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
-                </button>
-                <video src="pages/img-video/claude.mp4#t=0.1" muted loop playsinline preload="auto" data-name="Claude"></video>
-            </div>
-            <div class="card-bar">
-                <a href="#" class="card-tag" style="--tag-clr:#475569;">CLAUDE</a>
-            </div>
-        </div>
-
         <!-- WALKIE -->
         <div class="card">
             <div class="card-menu btnMenuCard">
@@ -521,6 +556,28 @@
             </div>
             <div class="card-bar">
                 <a href="pages/7-interface/interface.html" class="card-tag" style="--tag-clr:#9333ea;">INTERFACE</a>
+            </div>
+        </div>
+
+        <!-- CLAUDE -->
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <ul class="card-links">
+                    <li><a href="pages/8-claude/1-carta-aberta/1-carta-aberta.html">Carta Aberta <i class="fa-solid fa-envelope-open-text"></i></a></li>
+                </ul>
+            </div>
+            <div class="card-img">
+                <button class="card-pause btnPauseCard" aria-label="Pausar/tocar vídeo">
+                    <svg class="ic-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+                    <svg class="ic-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
+                </button>
+                <video src="pages/img-video/claude.mp4#t=0.1" muted loop playsinline preload="auto" data-name="Claude"></video>
+            </div>
+            <div class="card-bar">
+                <a href="pages/8-claude/claude.html" class="card-tag" style="--tag-clr:#475569;">CLAUDE</a>
             </div>
         </div>
 
