@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fase 1 — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+    <style>
+        .ep-sub {
+            color: #6b7280;
+            font-style: italic;
+            margin: 0 0 12px 0;
+            font-size: 0.92em;
+        }
+        .tags { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+        .tag {
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 0.75em;
+            padding: 3px 9px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Nexus — Fase 1 <span class="badge badge-new">6 episódios</span></h1>
+
+<p>Sequência da Fase 1 do Nexus — o MVP funcionando ponta a ponta. Auth (registro/login/JWT), CRUD de notas com ownership, frontend SvelteKit com runes, e a jornada do cliente amarrando tudo. 6 episódios, cada um com áudio + resumo + material completo.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open" data-toc-title="01 VISÃO GERAL" data-toc-sub="Visão Geral">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">01 - Visão Geral</span><span class="badge" style="margin-left:auto; background:#6366f1; color:#fff;">VISÃO GERAL</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Panorama da Fase 1 em primeira pessoa — o que foi entregue, decisões e onde estamos</p>
+
+            <div class="audio-player" data-src="1-visao-geral/audio/visao-geral.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>A Fase 1 entregou o <strong>MVP do Nexus rodando local</strong>: autenticação completa (registro, login, JWT), CRUD de notas com isolamento entre usuários, e frontend SvelteKit consumindo a API. 4 passos concluídos em 23/04, passo 5 (deploy) pausado pra esperar o servidor próprio chegar.</p>
+            <p>Stack do MVP: <strong>Spring Boot 3.5.13 + Java 25 + Spring Security + JWT (HS256) + JPA/Hibernate + Flyway</strong> no backend; <strong>SvelteKit + Svelte 5 (runes) + TypeScript</strong> no frontend; PostgreSQL 16 local.</p>
+            <p>Decisões guiando: <strong>auth stateless com JWT</strong> (não sessão server-side — funciona com mobile e SPA), <strong>ownership na query SQL</strong> (segurança no banco, não só no controller), <strong>frontend separado do backend</strong> (REST puro), e <strong>BCrypt</strong> pro hash de senha (cost 10).</p>
+            <div class="tags"><span class="tag">MVP</span><span class="tag">JWT</span><span class="tag">SvelteKit</span><span class="tag">stateless</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-01"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row" data-toc-title="02 USER" data-toc-sub="User e Migration">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">02 - User e Migration</span><span class="badge" style="margin-left:auto; background:#059669; color:#fff;">JPA</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Entidade JPA, anotações, V2 e a regra ddl-auto: validate</p>
+
+            <div class="audio-player" data-src="2-user-e-migration/audio/user-e-migration.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p><code>User</code> é a primeira entidade. Anotada com <code>@Entity</code>, <code>@Table(name="users")</code>, <code>@Id @GeneratedValue(IDENTITY)</code>. Campos <code>email</code> (unique not null) e <code>passwordHash</code> (not null, guarda o BCrypt — nunca a senha). <code>createdAt</code> com <code>@CreationTimestamp</code> (Hibernate-specific, preenche no insert).</p>
+            <p>Migration <strong>V2__create_users.sql</strong> cria a tabela com índice único em <code>email</code>. Flyway aplica no startup, antes do Hibernate validar.</p>
+            <p>Configuração crítica: <strong><code>spring.jpa.hibernate.ddl-auto: validate</code></strong>. Diferente do <code>create</code>, <code>update</code> ou <code>create-drop</code> — <strong>validate só valida</strong> que as classes batem com o schema, nunca cria nem altera. Schema é responsabilidade exclusiva do Flyway. Princípio: uma única fonte de verdade pra DDL.</p>
+            <div class="tags"><span class="tag">@Entity</span><span class="tag">Flyway V2</span><span class="tag">ddl-auto: validate</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-02"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row" data-toc-title="03 AUTH" data-toc-sub="Auth e JWT">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">03 - Auth e JWT</span><span class="badge" style="margin-left:auto; background:#f59e0b; color:#fff;">AUTH</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">BCrypt, filter chain stateless, dois endpoints densos — registro e login</p>
+
+            <div class="audio-player" data-src="3-auth-e-jwt/audio/auth-e-jwt.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Dois endpoints públicos: <code>POST /auth/register</code> e <code>POST /auth/login</code>. Ambos retornam <code>{ "token": "&lt;jwt&gt;" }</code>. Senha vai como <strong>BCrypt</strong> (cost 10) — hash + salt embutido, jamais plaintext no banco.</p>
+            <p><strong>JWT</strong>: HS256, segredo no <code>application.yml</code> (overridable via env <code>NEXUS_AUTH_JWT_SECRET</code>), expiração 7 dias. Claim principal é <code>sub</code> = email. Não guarda nada sensível no token (token vai pro localStorage do browser).</p>
+            <p><strong>Filter chain stateless</strong>: <code>JwtAuthenticationFilter</code> roda em cada request, lê o header <code>Authorization: Bearer ...</code>, valida o JWT, popula o <code>SecurityContext</code> com o <code>User</code>. Spring Security configurado com <code>SessionCreationPolicy.STATELESS</code> — nada de cookie de sessão. <code>GlobalExceptionHandler</code> normaliza erros de validação (400) e JSON malformado.</p>
+            <div class="tags"><span class="tag">BCrypt</span><span class="tag">JWT HS256</span><span class="tag">stateless</span><span class="tag">filter chain</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-03"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row" data-toc-title="04 NOTE" data-toc-sub="Note e CRUD">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">04 - Note e CRUD</span><span class="badge" style="margin-left:auto; background:#2563eb; color:#fff;">CRUD</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">@ManyToOne LAZY, ownership na query SQL, DTOs, saveAndFlush no update</p>
+
+            <div class="audio-player" data-src="4-note-e-crud/audio/note-e-crud.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Entidade <code>Note</code> com <code>@ManyToOne(fetch = LAZY)</code> pra <code>User</code>. <strong>Migration V3</strong> cria tabela <code>notes</code> com FK pra <code>users</code> e <code>ON DELETE CASCADE</code> — apagar usuário apaga notas dele. Title obrigatório, content nullable.</p>
+            <p>Cinco endpoints REST: <code>POST /notes</code>, <code>GET /notes</code>, <code>GET /notes/{id}</code>, <code>PUT /notes/{id}</code>, <code>DELETE /notes/{id}</code>. <strong>Ownership na query SQL</strong>: <code>findByIdAndUser</code> e <code>findByUserOrderByUpdatedAtDesc</code> filtram por <code>user_id</code> direto no banco. Tentar acessar nota de outro user retorna 404 (não 403 — não revela existência).</p>
+            <p><strong>DTOs</strong>: <code>NoteRequest</code> (entrada com Bean Validation: title @NotBlank @Size, content nullable) e <code>NoteResponse</code> (saída — não vaza <code>User</code> aninhado, só os campos da nota). Mapeamento via static factory <code>NoteResponse.from(note)</code>.</p>
+            <p><strong>saveAndFlush no update</strong>: força flush imediato pro <code>@UpdateTimestamp</code> popular o <code>updatedAt</code> antes de montar o DTO de resposta. Sem flush, o response volta com <code>updatedAt</code> antigo. (Em 28/04 isso foi refatorado pra DTO com <code>OffsetDateTime.now()</code>.)</p>
+            <div class="tags"><span class="tag">@ManyToOne LAZY</span><span class="tag">ownership SQL</span><span class="tag">DTOs</span><span class="tag">Flyway V3</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-04"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row" data-toc-title="05 FRONTEND" data-toc-sub="Frontend SvelteKit">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">05 - Frontend SvelteKit</span><span class="badge" style="margin-left:auto; background:#ff3e00; color:#fff;">FRONTEND</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Svelte 5 runes ($state/$effect/$derived), .svelte.ts, fetch wrapper, auth guard</p>
+
+            <div class="audio-player" data-src="5-frontend-sveltekit/audio/frontend-sveltekit.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>SvelteKit com <strong>Svelte 5 runes</strong>: <code>$state</code> (reativo simples), <code>$effect</code> (efeitos colaterais), <code>$derived</code> (computado), <code>$props</code>. Estado global de autenticação em <code>auth.svelte.ts</code> — extensão <code>.svelte.ts</code> habilita runes em arquivos TypeScript. Token persiste no <code>localStorage</code>, hidratado no boot.</p>
+            <p><strong>Fetch wrapper</strong> em <code>lib/api.ts</code>: anexa <code>Authorization: Bearer &lt;token&gt;</code> automaticamente, trata 401/403 limpando token (e o usuário cai no login), parseia JSON ou retorna <code>undefined</code> em 204. Erros viram <code>ApiException</code> com <code>status</code> + <code>message</code> + <code>fields</code> de validação.</p>
+            <p>Rotas: <code>/login</code>, <code>/register</code>, <code>/</code> (lista), <code>/notes/new</code>, <code>/notes/[id]</code>. <strong>Auth guard</strong> no <code>+layout.svelte</code> via <code>$effect</code>: rotas privadas redirecionam pra <code>/login</code> se não autenticado. Textarea simples pro conteúdo (rich-text vem na Fase 2).</p>
+            <div class="tags"><span class="tag">Svelte 5</span><span class="tag">runes</span><span class="tag">fetch wrapper</span><span class="tag">auth guard</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-05"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row" data-toc-title="06 JORNADA" data-toc-sub="Jornada do Cliente">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">06 - Jornada do Cliente</span><span class="badge" style="margin-left:auto; background:#64748b; color:#fff;">JORNADA</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">5 cenários end-to-end: primeiro acesso, retorno, expiração, multi-usuário, logout</p>
+
+            <div class="audio-player" data-src="6-jornada-do-cliente/audio/jornada-do-cliente.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Episódio que <strong>amarra o circuito</strong>. Os 5 cenários do agente:</p>
+            <p><strong>1. Primeiro acesso</strong> — usuário abre <code>/</code>, sem token, redireciona pra <code>/register</code>, registra, recebe JWT, volta pra lista vazia.</p>
+            <p><strong>2. Retorno (token válido)</strong> — token no localStorage ainda dentro dos 7 dias, fetch da lista de notas vai com <code>Authorization: Bearer</code>, backend valida JWT no filter, retorna notas do user.</p>
+            <p><strong>3. Token expirado</strong> — fetch retorna 401, wrapper de api limpa token do localStorage, usuário cai no login.</p>
+            <p><strong>4. Dois usuários simultâneos</strong> — User A e User B logados em browsers diferentes. <code>findByUserOrderByUpdatedAtDesc</code> filtra por <code>user_id</code> — A nunca vê notas do B mesmo que tente <code>GET /notes/&lt;id-do-B&gt;</code> (404).</p>
+            <p><strong>5. Logout</strong> — clica em logout, frontend só apaga o token do localStorage. Backend stateless não precisa "saber" — JWT abandonado expira sozinho. Sem revogação de token nesta fase (rolaria com blacklist em Redis na Fase 4+).</p>
+            <div class="tags"><span class="tag">jornada</span><span class="tag">stateless</span><span class="tag">multi-user</span><span class="tag">cenários</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-06"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script type="text/template" id="tpl-01">
+================================================================================
+NEXUS — FASE 1: O MVP
+================================================================================
+
+Esta sequência é Nexus puro, NÃO é Jasap. NÃO use analogias com agente,
+cartão temporário, prédio comercial, departamento (no sentido de Jasap),
+ferramentaria, recepção, leitor de cartão. Essas analogias são exclusivas
+da sequência Jasap.
+
+Use SOMENTE as analogias descritas neste arquivo. NÃO invente analogias
+novas nem crie metáforas próprias. Se o conceito não tem analogia
+definida, explique de forma direta.
+
+Linguagem simples e casual, como se estivesse explicando pra um amigo.
+NÃO usar palavras rebuscadas, dramáticas ou literárias.
+
+Sem frases de efeito ou transição vazias. Ir direto ao ponto.
+
+
+================================================================================
+1. ONDE A GENTE PAROU
+================================================================================
+
+Na Fase 0 a gente fez o ambiente fim a fim funcionar VAZIO. JDK 25
+instalado, PostgreSQL rodando, Spring Boot subindo, SvelteKit subindo,
+os dois conversando via /health. Nenhuma feature, nenhum dado, nenhum
+usuário. Era o esqueleto provando que a stack funciona junto.
+
+Fase 1 transforma esse esqueleto em um MVP de verdade. Quem entra no
+site faz cadastro, faz login, escreve uma nota, vê a lista, edita,
+apaga. Múltiplos usuários, isolados — o que um cria o outro não vê.
+Tudo rodando local: backend em localhost:8080, frontend em localhost:5173,
+banco em localhost:5432.
+
+A meta da Fase 1 era simples: digitar uma nota no celular e ver
+aparecer no desktop. Conseguimos.
+
+
+================================================================================
+2. OS 4 PASSOS
+================================================================================
+
+A fase foi quebrada em 5 passos, mas o passo 5 (deploy) ficou pausado.
+Os 4 que entregaram o MVP rodando local:
+
+PASSO 1 - User e Migration
+    A primeira entidade do sistema. User com email, hash de senha,
+    timestamp de criação. Migration Flyway V2 cria a tabela.
+
+PASSO 2 - Auth: registro, login, JWT
+    Dois endpoints públicos: POST /auth/register e POST /auth/login.
+    Os dois retornam um token JWT que vale por 7 dias. BCrypt pra
+    hash de senha. Filter chain do Spring Security validando o token
+    em cada request protegido.
+
+PASSO 3 - Note e CRUD
+    Entidade Note ligada a User por chave estrangeira. Migration V3.
+    5 endpoints REST: criar, listar, ver uma, atualizar, deletar.
+    Cada usuário só enxerga as próprias notas — isolamento garantido
+    no banco, não no controller.
+
+PASSO 4 - Frontend SvelteKit
+    Telas de login, registro, lista de notas, criar nota, editar nota.
+    Svelte 5 com runes. TypeScript. Wrapper de fetch que anexa o token
+    automaticamente em toda chamada. Rotas protegidas: se não tem
+    token válido, cai no login.
+
+PASSO 5 - Deploy (PAUSADO)
+    O plano original era subir em Railway (backend) + Vercel (frontend).
+    Mudou: o Flávio vai ganhar um servidor com IP real, então o deploy
+    vai ser direto nele com Docker. Enquanto o servidor não chega,
+    o MVP roda local. Não bloqueou Fase 2.
+
+
+================================================================================
+3. AS DECISÕES QUE GUIARAM A FASE
+================================================================================
+
+Quatro decisões que aparecem repetidas ao longo dos 4 passos:
+
+DECISÃO 1: Auth STATELESS com JWT, não sessão server-side
+    Sessão server-side é o padrão antigo: o servidor guarda na memória
+    quem tá logado. Cada request precisa bater nessa memória. Não
+    escala bem com múltiplos servidores e funciona mal em mobile.
+
+    JWT é o oposto: o servidor não lembra de ninguém. O cliente
+    guarda um token assinado e manda em toda request. O servidor só
+    valida a assinatura e descobre quem é o usuário a partir do
+    próprio token. Cada request é autossuficiente.
+
+    Para um app que vai ter celular e desktop, JWT é mais simples e
+    mais escalável.
+
+DECISÃO 2: Ownership no banco, não no controller
+    O jeito errado: pegar a nota pelo ID, depois checar no controller
+    se o user_id da nota bate com o usuário logado. Funciona, mas
+    se alguém esquecer o check num endpoint, qualquer um lê qualquer
+    nota.
+
+    O jeito certo: a query SQL já filtra por user_id. Tipo um SELECT
+    com WHERE id = ? AND user_id = ?. Se o ID for de outro usuário,
+    a query simplesmente não retorna nada — o banco bloqueia, não
+    o programador. Segurança virou propriedade do schema.
+
+DECISÃO 3: BCrypt pra senha, sempre
+    Senha NUNCA em texto puro no banco. BCrypt gera um hash com salt
+    embutido. Mesmo que o banco vaze, ninguém recupera as senhas
+    originais. Cost 10 (que é o default) deixa cada hash demorar uns
+    100ms — irrelevante pro usuário, mas inviabiliza força bruta.
+
+DECISÃO 4: Frontend TOTALMENTE separado do backend
+    Backend é uma API REST que devolve JSON. Frontend é um app
+    SvelteKit que consome essa API. Os dois rodam em portas diferentes
+    e podem rodar em servidores diferentes. Comunicação só por HTTP.
+
+    Vantagem: o frontend pode trocar (web, mobile, terminal, qualquer
+    coisa) sem mexer no backend. E vice-versa.
+
+
+================================================================================
+4. A STACK COMPLETA DO MVP
+================================================================================
+
+BACKEND
+    Java 25                       Linguagem
+    Spring Boot 3.5.13            Framework
+    Spring Security               Filtros de auth + BCrypt
+    JJWT 0.12.6                   Geração e validação de JWT
+    JPA / Hibernate               ORM (mapear classe Java para tabela SQL)
+    Flyway                        Versionamento do schema
+    PostgreSQL Driver             Conector JDBC
+    Maven                         Build
+
+FRONTEND
+    SvelteKit                     Framework full-stack
+    Svelte 5                      Sintaxe com runes ($state, $effect)
+    TypeScript                    Linguagem
+    Vite                          Build e dev server
+
+BANCO
+    PostgreSQL 16                 Local, porta 5432, db nexus, user nexus
+
+INFRA
+    Localhost                     Tudo roda na própria máquina
+    Sem Docker                    Decisão da Fase 0, ainda vale aqui
+
+
+================================================================================
+5. O QUE NÃO ESTÁ NA FASE 1
+================================================================================
+
+Pra deixar claro o escopo:
+
+NÃO TEM rich text. O conteúdo da nota é um textarea simples, sem
+negrito, sem lista, sem heading. Editor decente vai entrar na Fase 2.
+
+NÃO TEM busca. Listar notas é só ordenar por data de atualização
+descendente. Quem tem 200 notas precisa rolar pra achar. Busca também
+fica pra Fase 2.
+
+NÃO TEM tags. Toda nota é solta numa lista única. Organização vai vir
+depois, junto com busca.
+
+NÃO TEM hierarquia tipo Notion. Nota não tem nota dentro. Vai pra
+Fase 3.
+
+NÃO TEM deploy. Roda só na máquina do Flávio, no localhost. Vai voltar
+quando o servidor próprio chegar.
+
+NÃO TEM múltiplos usuários reais usando ao mesmo tempo. O sistema
+SUPORTA (a infra de auth e ownership funciona), mas na prática só o
+Flávio usa hoje.
+
+
+================================================================================
+6. ONDE A GENTE TÁ AGORA
+================================================================================
+
+A Fase 1 está completa do ponto de vista funcional. Os 4 passos foram
+entregues em 23 de abril de 2026. Depois disso, em 28 de abril, vieram
+ajustes finos: testes (33 testes novos cobrindo repository, controller
+e integração), refatoração do saveAndFlush no update, troca de 403 por
+401 em request sem token, flags archived/pinned na Note.
+
+O MVP roda local. Você cadastra, loga, cria notas, lista, edita, apaga.
+Funciona em desktop e celular (qualquer browser que aponte pro IP da
+máquina). Auth está sólida, isolamento está garantido, frontend está
+fluido.
+
+A próxima parada é a Fase 2: rich text, tags, busca full-text. A busca
+inclusive já entrou em 1 de maio — primeiro item da Fase 2 entregue.
+Mas isso é assunto pros próximos episódios.
+
+Os 5 próximos áudios desta Fase 1 vão abrir cada passo. User e Migration
+entra no detalhe da entidade JPA e da migration Flyway. Auth e JWT
+explica BCrypt, anatomia do token, filter chain. Note e CRUD detalha
+ManyToOne, ownership, DTOs. Frontend SvelteKit cobre runes, fetch
+wrapper, auth guard. E a Jornada do Cliente fecha amarrando tudo num
+fluxo único: do primeiro acesso ao logout, passando por token expirado
+e dois usuários simultâneos.
+</script>
+
+<script type="text/template" id="tpl-02">
+================================================================================
+NEXUS — FASE 1 / USER E MIGRATION
+================================================================================
+
+Esta sequência é Nexus puro, NÃO é Jasap. NÃO use analogias com agente,
+cartão temporário, prédio comercial, departamento, ferramentaria, leitor
+de cartão. Essas analogias são exclusivas da sequência Jasap.
+
+Use SOMENTE as analogias descritas neste arquivo. NÃO invente analogias
+novas nem crie metáforas próprias.
+
+Linguagem simples e casual. Sem palavras rebuscadas. Sem frases de
+efeito vazias.
+
+
+================================================================================
+ONDE A GENTE PAROU
+================================================================================
+
+No episódio anterior (Visão Geral) a gente viu o panorama da Fase 1
+inteira: 4 passos entregando o MVP rodando local. Agora começa o passo
+1 — montar a primeira entidade do sistema.
+
+Esse episódio é sobre dois arquivos pequenos, mas que ditam o jeito
+que TODO o resto do projeto vai conversar com o banco:
+
+1. User.java — a classe Java que representa um usuário
+2. V2__create_users.sql — a migration Flyway que cria a tabela no Postgres
+
+Spoiler: os dois arquivos descrevem A MESMA coisa. Email, senha,
+timestamps. Um pra Java, outro pra SQL. A Fase 1 inteira gira em torno
+dessa duplicação — entender PORQUE ela existe é o ponto central deste
+áudio.
+
+
+================================================================================
+1. POR QUE PRECISA DUPLICAR
+================================================================================
+
+Java é uma linguagem de objetos. Postgres é um banco que entende SQL.
+Eles não falam a mesma língua. No meio dos dois mora o JPA — uma
+biblioteca Java que TRADUZ classe Java pra tabela SQL e vice-versa.
+
+A tradução é automática, mas não é mágica: o JPA precisa que ALGUÉM
+diga como mapear cada coisa. Esse alguém são as ANOTAÇÕES. Você anota
+a classe e o JPA descobre que o campo `email` da classe vira a coluna
+`email` da tabela.
+
+Funciona, mas tem um detalhe: o JPA pode até gerar o SQL de criação
+da tabela sozinho. E muitos projetos deixam ele fazer isso. O Nexus
+NÃO deixa. A regra aqui é: o BANCO tem a versão oficial do schema
+(via Flyway). O Java só DESCREVE o que já existe no banco.
+
+Isso é a tal "uma única fonte de verdade pra DDL".
+
+
+================================================================================
+2. ANATOMIA DA CLASSE USER
+================================================================================
+
+A classe User tem 5 campos:
+
+- id              Long, gerado pelo banco (BIGSERIAL)
+- email           String, único, obrigatório
+- passwordHash    String, obrigatório (NUNCA a senha em texto puro)
+- createdAt       OffsetDateTime, preenchido na criação
+- updatedAt       OffsetDateTime, atualizado em toda alteração
+
+A anotação no topo da classe:
+
+    @Entity                    diz pro JPA "essa classe é uma tabela"
+    @Table(name = "users")     nome da tabela no banco
+
+Por que `users` (plural)? Convenção SQL — tabelas no plural, classes
+no singular. Sem o @Table o JPA usaria o nome da classe (`user`) e
+ia bater contra uma palavra reservada do Postgres.
+
+
+================================================================================
+3. ANOTAÇÕES NOS CAMPOS
+================================================================================
+
+ID
+    @Id                                 marca como chave primária
+    @GeneratedValue(IDENTITY)           o banco gera o número (BIGSERIAL)
+
+Por que IDENTITY e não AUTO/SEQUENCE? IDENTITY delega TUDO pro banco
+gerar o ID. É o padrão moderno em Postgres e MySQL. AUTO deixa o JPA
+escolher (varia conforme o dialeto). SEQUENCE precisa criar SEQUENCE
+manual. IDENTITY é a opção mais previsível.
+
+EMAIL
+    @Column(nullable = false, unique = true)
+
+Duas regras: não pode ser nulo, não pode repetir. Funciona em
+combinação com a constraint UNIQUE da migration — segurança em
+duplicata, no Java e no banco.
+
+PASSWORD_HASH
+    @Column(name = "password_hash", nullable = false)
+
+O `name` é necessário porque o nome da coluna no banco usa
+underscore (snake_case) e o nome do campo Java usa camelCase. Sem o
+`name`, o JPA tentaria mapear pra `passwordhash` ou `password_hash`
+dependendo da estratégia — explicitar evita confusão.
+
+CREATED_AT
+    @CreationTimestamp                            // anotação do Hibernate
+    @Column(name = "created_at",
+            nullable = false, updatable = false)
+
+@CreationTimestamp é uma anotação ESPECÍFICA do Hibernate (não é JPA
+padrão). Quando o objeto é salvo pela primeira vez, o Hibernate
+preenche o campo automaticamente com o timestamp atual.
+
+`updatable = false` impede que o JPA tente alterar essa coluna depois.
+Uma vez criado, fica.
+
+UPDATED_AT
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+
+Mesmo princípio mas pro update. Toda vez que o User é salvo de novo,
+o Hibernate atualiza o `updated_at` pra agora.
+
+Detalhe: a migration V2 também tem `DEFAULT NOW()` em ambos os
+timestamps. Isso é redundante (Hibernate já preenche), mas serve como
+rede de proteção: se algum INSERT for feito direto no SQL (fora do
+JPA), o banco ainda preenche.
+
+
+================================================================================
+4. CONSTRUTOR PROTECTED + CONSTRUTOR PÚBLICO
+================================================================================
+
+A classe tem dois construtores:
+
+    protected User() { }                          // pro JPA
+    public User(String email, String hash) { }    // pro código
+
+O construtor vazio é EXIGÊNCIA do JPA. Quando o Hibernate carrega um
+User do banco, ele cria o objeto vazio e depois preenche os campos
+via reflection. Sem o construtor vazio, o Hibernate não consegue
+instanciar.
+
+Mas a gente NÃO quer que o resto do código crie User vazio (objeto
+sem email é estado inválido). Por isso é `protected` — só o próprio
+JPA, que tá no mesmo classpath, consegue chamar.
+
+O construtor público recebe email e hash, garantindo que todo User
+criado pelo código nasce com os campos obrigatórios preenchidos.
+
+
+================================================================================
+5. ANATOMIA DA MIGRATION V2
+================================================================================
+
+O arquivo V2__create_users.sql tem 13 linhas, todas SQL puro:
+
+    CREATE TABLE users (
+        id              BIGSERIAL PRIMARY KEY,
+        email           VARCHAR(255) NOT NULL UNIQUE,
+        password_hash   VARCHAR(255) NOT NULL,
+        created_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+        updated_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+    );
+
+    CREATE INDEX idx_users_email ON users (email);
+
+Cada decisão tem motivo:
+
+BIGSERIAL — inteiro de 64 bits que se autoincrementa. Equivalente a
+BIGINT + sequence + DEFAULT nextval. É o "tamanho seguro" — INTEGER
+(32 bits) atinge o limite em ~2 bilhões; BIGSERIAL atinge em ~9
+quintilhões. Custo praticamente igual.
+
+VARCHAR(255) — limite arbitrário razoável. Email RFC permite até 320
+caracteres mas na prática ninguém tem email maior que 100. 255 cobre
+com folga.
+
+NOT NULL — força o banco a rejeitar INSERT sem o campo. Reflete o
+`nullable = false` do Java.
+
+UNIQUE — força email único. Reflete o `unique = true` do Java.
+
+TIMESTAMPTZ — timestamp COM timezone. Crucial pra evitar bug quando o
+servidor estiver em UTC e o cliente em outro fuso. Postgres armazena
+sempre em UTC e converte na leitura.
+
+DEFAULT NOW() — se ninguém preencher, usa o tempo atual do servidor.
+Rede de proteção (vimos no item 3).
+
+CREATE INDEX em email — buscas por email vão ser MUITO frequentes
+(login). Sem índice, busca é varredura linear. Com índice, é log(n).
+
+
+================================================================================
+6. POR QUE FLYWAY E NÃO DEIXAR O JPA CRIAR
+================================================================================
+
+O JPA tem uma config chamada `spring.jpa.hibernate.ddl-auto` com 4
+valores possíveis:
+
+    none           Não faz nada. Você cuida do schema.
+    validate       Confere se as classes batem com o schema. Não cria.
+    update         Se algo mudou, ALTERA o schema. Perigoso.
+    create-drop    Recria tudo do zero a cada start. Só pra teste.
+
+O Nexus usa `validate`. Significa que toda vez que o backend sobe:
+1. Flyway aplica migrations pendentes (cria/altera o schema)
+2. Hibernate olha o schema final e confere contra as classes anotadas
+3. Se bater, sobe. Se não bater, falha.
+
+POR QUE NÃO usar `update` (que parece mais cômodo)?
+
+Porque "alterar schema automaticamente" é arriscado em produção. O JPA
+pode escolher uma alteração diferente da que você quer (renomeia
+coluna em vez de criar nova, perde dados, etc.). Migration manual
+deixa O DESENVOLVEDOR decidir o passo exato.
+
+E uma única fonte de verdade: o Flyway é dono do schema. As classes
+Java só descrevem o que tá lá. Se quiser adicionar coluna, escreve
+uma migration V4. Não muda a classe Java esperando que o JPA "se
+vire". Direção da informação é sempre banco → Java.
+
+
+================================================================================
+7. O QUE VAI EVOLUIR
+================================================================================
+
+Esse User aqui é o User do MVP. Tem só email e hash de senha. Quando
+o Nexus crescer, vai ganhar nome, foto, configurações, talvez papel
+(admin/comum). Cada novo campo entra como migration nova (V8, V9,
+V10) e a classe ganha o campo correspondente.
+
+Por enquanto não precisa. O passo 2 — Auth — vai usar esse User pra
+provar a identidade do cliente em cada request. Próximo episódio.
+</script>
+
+<script type="text/template" id="tpl-03">
+================================================================================
+NEXUS — FASE 1 / AUTH E JWT
+================================================================================
+
+Esta sequência é Nexus puro, NÃO é Jasap. NÃO use analogias com agente,
+cartão temporário, prédio comercial, departamento, ferramentaria, leitor
+de cartão. Essas analogias são exclusivas da sequência Jasap.
+
+Use SOMENTE as analogias descritas neste arquivo. NÃO invente analogias
+novas nem crie metáforas próprias.
+
+Linguagem simples e casual. Sem palavras rebuscadas. Sem frases de
+efeito vazias.
+
+
+================================================================================
+ONDE A GENTE PAROU
+================================================================================
+
+No episódio anterior montamos a entidade User e a migration V2. Já
+temos como guardar usuário no banco. Agora precisa de um jeito do
+cliente PROVAR que é um usuário cadastrado a cada vez que pede algo
+pro servidor.
+
+Esse é o passo 2: autenticação. Três peças trabalham juntas:
+
+1. AuthController + AuthService — o par de endpoints register/login
+2. JwtService — gera e valida tokens
+3. JwtAuthenticationFilter + SecurityConfig — interceptam toda request
+   e descobrem quem é o cliente
+
+São 5 arquivos no total. Cabe num único episódio porque a maioria é
+pequena e o conjunto faz mais sentido visto junto.
+
+
+================================================================================
+1. POR QUE STATELESS
+================================================================================
+
+Auth tradicional funciona com SESSÃO no servidor. Você loga, o servidor
+guarda na memória "este token X é o usuário Y". A cada request, o
+cliente manda o token via cookie e o servidor confere na memória.
+
+O problema: o servidor PRECISA lembrar. Se reiniciar, perde tudo. Se
+você tem 3 servidores em load balancer, eles têm que compartilhar
+memória (Redis, banco, etc.). Funciona, mas é complicado.
+
+Stateless inverte: o servidor NÃO lembra de NADA. O TOKEN carrega a
+identidade. Em cada request, o servidor lê o token, confirma a
+assinatura e descobre quem é o cliente. Sem memória compartilhada,
+sem sincronização entre servidores, sem perder dado em restart.
+
+A peça que torna isso possível é o JWT.
+
+
+================================================================================
+2. ANATOMIA DO JWT
+================================================================================
+
+JWT são 3 partes separadas por ponto: HEADER.PAYLOAD.SIGNATURE.
+
+HEADER — diz qual algoritmo foi usado pra assinar (no Nexus: HS256,
+HMAC com SHA-256). É um JSON pequeno em base64.
+
+PAYLOAD — os dados do token. No Nexus tem 3 claims:
+    sub             id do usuário (string)
+    iat             instant emitido (quando foi gerado)
+    exp             instant de expiração (7 dias depois)
+    email           email do usuário (claim auxiliar)
+
+Tudo isso vai em base64. Importante: o payload NÃO é criptografado.
+Qualquer um que tenha o token pode decodificar e ler. Por isso
+NUNCA colocar dado sensível ali (senha, dados de cartão).
+
+SIGNATURE — hash do header + payload usando uma chave secreta que SÓ
+o servidor tem. Se alguém alterar o payload (tipo trocar o `sub` pra
+outro id), a assinatura não bate mais — servidor rejeita.
+
+Resumo:
+- O servidor confia no payload PORQUE a assinatura confirma autoria
+- Se o segredo do servidor vazar, o atacante consegue forjar tokens
+- Por isso o segredo fica em variável de ambiente, nunca commitado
+
+
+================================================================================
+3. BCRYPT NA SENHA
+================================================================================
+
+Senha jamais vai pro banco em texto puro. Se o banco vazar, todas as
+senhas vazam. Solução: armazenar HASH da senha.
+
+Mas hash simples (MD5, SHA-256) tem 2 problemas:
+1. Rápido demais — atacante testa milhões de combinações por segundo
+2. Sem salt — se duas pessoas têm senha "123456", têm o mesmo hash
+
+BCrypt resolve os dois:
+- LENTIDÃO INTENCIONAL — cada hash demora ~100ms (parametrizado por
+  "cost factor"; o Spring usa 10 por padrão). Inviabiliza força bruta.
+- SALT AUTOMÁTICO — cada hash recebe um salt aleatório embutido no
+  próprio hash. "123456" hashada duas vezes dá hashes diferentes.
+
+No código:
+
+    new BCryptPasswordEncoder()           // cost 10 (default)
+    encoder.encode("senha")               // gera hash com salt
+    encoder.matches("senha", hashSalvo)   // verifica
+
+Detalhe: o método `matches` extrai o salt do próprio hash e re-hasha
+a senha tentada. Se bater, é a mesma. Não precisa guardar o salt
+separado — ele tá no hash.
+
+
+================================================================================
+4. O REGISTER
+================================================================================
+
+POST /auth/register recebe { email, password }. O AuthService:
+
+1. Confere se já existe alguém com esse email. Se existe, dispara
+   EmailAlreadyInUseException → AuthController traduz pra HTTP 409
+2. Hasha a senha com BCrypt
+3. Salva o User no banco
+4. Gera um JWT assinado com o id do user
+5. Retorna { token: "..." } com status 201 Created
+
+Validação do request acontece ANTES do AuthService rodar. O
+RegisterRequest tem @Email no campo email e @Size(min = 8) no
+password. Se falhar, o Spring retorna 400 com lista de erros antes
+mesmo do controller ser chamado.
+
+
+================================================================================
+5. O LOGIN
+================================================================================
+
+POST /auth/login recebe { email, password }. O AuthService:
+
+1. Busca o User pelo email
+2. Se não achou: dispara InvalidCredentialsException → 401
+3. Confere a senha com BCrypt.matches
+4. Se não bate: também InvalidCredentialsException → 401
+5. Se passa: gera JWT, retorna { token }
+
+Detalhe importante: usuário não existe e senha errada retornam o
+MESMO erro (401). Se retornassem erros diferentes, atacante poderia
+descobrir quais emails estão cadastrados (enumeração).
+
+
+================================================================================
+6. O FILTRO DE AUTENTICAÇÃO
+================================================================================
+
+Pra TODA request que não é /health nem /auth/**, o JwtAuthenticationFilter
+roda automaticamente. Ele faz:
+
+1. Lê o header `Authorization`. Se não começa com "Bearer ", deixa
+   passar (sem autenticação)
+2. Extrai o token (tira o prefixo "Bearer ")
+3. Pede pro JwtService validar e extrair o id do user
+4. Se válido: busca o User no banco pelo id
+5. Se achou: registra o User no SecurityContext do Spring
+
+A partir desse momento, qualquer endpoint pode receber o usuário
+autenticado direto via @AuthenticationPrincipal:
+
+    public List<NoteResponse> list(@AuthenticationPrincipal User user)
+
+O Spring magic injeta o User automaticamente. Os endpoints nunca
+precisam parsear token na mão.
+
+Se o token estiver inválido ou ausente, o User no SecurityContext
+fica null. Quando a request chega no controller, o Spring olha pras
+regras de autorização do SecurityConfig e barra com 401.
+
+
+================================================================================
+7. SECURITYCONFIG — AS REGRAS GERAIS
+================================================================================
+
+O SecurityConfig liga tudo:
+
+    .csrf().disable()                    // não usamos CSRF (stateless + JWT)
+    .sessionManagement(STATELESS)        // não cria sessão server-side
+    .authorizeHttpRequests(...)
+        .requestMatchers("/health", "/auth/**").permitAll()
+        .anyRequest().authenticated()    // todo o resto exige login
+    .exceptionHandling(...)              // 401 com JSON em vez de 403 default
+    .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+    .cors(...)                           // libera localhost:5173 (frontend)
+
+Resumo: sem sessão, sem CSRF, JWT no header, /health e /auth livres,
+qualquer outra rota precisa de Bearer válido.
+
+
+================================================================================
+8. O QUE VAI EVOLUIR
+================================================================================
+
+Hoje o token vale 7 dias. Quando a Fase 2 trouxer mobile, vai querer
+refresh token (token longo + token curto). Quando o Nexus tiver users
+de verdade, vai querer revogação (logout invalida o token de fato,
+não só apaga do localStorage).
+
+Por enquanto não precisa. Auth básica entrega o MVP. Próximo episódio:
+a entidade Note e o CRUD que usa esse User pra dizer quem é o dono
+de cada nota.
+</script>
+
+<script type="text/template" id="tpl-04">
+================================================================================
+NEXUS — FASE 1 / NOTE E CRUD
+================================================================================
+
+Esta sequência é Nexus puro, NÃO é Jasap. NÃO use analogias com agente,
+cartão temporário, prédio comercial, departamento, ferramentaria, leitor
+de cartão. Essas analogias são exclusivas da sequência Jasap.
+
+Use SOMENTE as analogias descritas neste arquivo. NÃO invente analogias
+novas nem crie metáforas próprias.
+
+Linguagem simples e casual. Sem palavras rebuscadas. Sem frases de
+efeito vazias.
+
+
+================================================================================
+ONDE A GENTE PAROU
+================================================================================
+
+Já temos User no banco e auth funcionando. Toda request autenticada
+chega no backend com um User identificado. Agora precisa de algo pra
+o usuário GUARDAR — o objetivo do Nexus é segundo cérebro, então a
+peça central é a NOTA.
+
+Esse passo entrega a entidade Note + os 5 endpoints REST do CRUD. É
+o passo mais denso da Fase 1 — 6 arquivos, 1 migration, 5 endpoints,
+e um conceito de segurança que muda como a gente pensa em "quem pode
+ver o quê".
+
+
+================================================================================
+1. ANATOMIA DA ENTIDADE NOTE
+================================================================================
+
+Mesma estrutura do User mas com 7 campos:
+
+    id              Long, BIGSERIAL
+    user            User (relação ManyToOne)
+    title           String, obrigatório
+    content         String, NULLABLE (nota rascunho pode ter só título)
+    archived        boolean, default false
+    pinned          boolean, default false
+    createdAt       OffsetDateTime
+    updatedAt       OffsetDateTime
+
+Os campos `archived` e `pinned` foram adicionados depois (V4, em 28
+de abril). Não fazem parte do MVP original. Mencionados aqui pra dar
+o estado atual da entidade.
+
+A novidade pesada é o campo `user` — referência pra outra entidade.
+
+
+================================================================================
+2. RELAÇÃO MANYTOONE COM USER
+================================================================================
+
+A nota TEM um dono. Cada nota pertence a UM user. Mas um user TEM
+várias notas. Essa é uma relação many-to-one (muitas notas pra um
+user).
+
+No Java:
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+Vamos por partes:
+
+@ManyToOne — declara a relação. Cardinalidade: muitas notas → 1 user.
+
+fetch = LAZY — quando o Hibernate carrega a Note, ele NÃO carrega o
+User junto. Só carrega quando alguém chama note.getUser(). Por que
+LAZY? Performance. Se você lista 100 notas, sem LAZY o Hibernate
+faria 100 queries extras pra carregar 100 Users (mesmo que sejam o
+mesmo user repetido). LAZY evita isso. Pra ler só os campos da nota
+(title, content), nem toca no User.
+
+optional = false — a coluna user_id NÃO pode ser nula. Toda nota
+TEM dono. Sem isso, JPA permite criar nota sem user.
+
+@JoinColumn(name = "user_id", nullable = false) — diz pro JPA que a
+referência ao User vira a coluna `user_id` no banco, e que a coluna
+não aceita nulo.
+
+
+================================================================================
+3. MIGRATION V3 COM CASCADE
+================================================================================
+
+A migration cria a tabela `notes` com a foreign key:
+
+    user_id     BIGINT       NOT NULL REFERENCES users(id) ON DELETE CASCADE
+
+REFERENCES users(id) — é a foreign key. Garante que toda linha em
+notes tem um user_id que existe na tabela users. Se você tentar criar
+uma nota com user_id que não existe, o banco rejeita.
+
+ON DELETE CASCADE — se o User for apagado, todas as notas dele são
+apagadas junto. Sem CASCADE, o banco impediria o DELETE do User
+(porque tem notas referenciando ele).
+
+A V3 também cria 2 índices:
+
+    CREATE INDEX idx_notes_user_id      ON notes (user_id);
+    CREATE INDEX idx_notes_user_updated ON notes (user_id, updated_at DESC);
+
+O segundo é índice composto — otimiza a query mais comum:
+"liste as notas do user X em ordem de atualização decrescente".
+
+
+================================================================================
+4. OS 5 ENDPOINTS
+================================================================================
+
+POST   /notes              cria nova nota
+GET    /notes              lista as notas do user (com ?q= opcional pra busca)
+GET    /notes/{id}         pega uma nota específica
+PUT    /notes/{id}         atualiza
+DELETE /notes/{id}         deleta
+
+Todos exigem token (já vimos: o filter coloca o User no contexto).
+Todos retornam JSON (NoteResponse) ou 204 (delete).
+
+Cada endpoint recebe @AuthenticationPrincipal User user — o User vem
+direto do filter. Os endpoints nunca leem token na mão.
+
+
+================================================================================
+5. OWNERSHIP NA QUERY SQL — A IDEIA CENTRAL
+================================================================================
+
+Imagine a query do GET /notes/{id}:
+
+JEITO 1 (errado):
+    Note note = repo.findById(id);
+    if (!note.getUser().getId().equals(user.getId())) {
+        throw new Forbidden();
+    }
+    return note;
+
+Funciona. Mas tem 2 problemas:
+- Sempre carrega a nota antes de checar (vaza existência)
+- Se em algum endpoint alguém esquecer o check, vaza tudo
+
+JEITO 2 (certo, é como o Nexus faz):
+    Optional<Note> note = repo.findByIdAndUser(id, user);
+    return note.orElseThrow(() -> new NoteNotFoundException(id));
+
+A query SQL JÁ filtra por user_id:
+
+    SELECT * FROM notes WHERE id = ? AND user_id = ?
+
+Se o id for de outra pessoa, a query NÃO RETORNA NADA. O banco
+bloqueia. Não é o programador que precisa lembrar — é a query que
+não permite.
+
+Resultado: tentar ler nota alheia retorna 404 (não 403). Por quê 404?
+Porque "não existe pra você" é mais seguro que "existe mas você não
+pode". O 403 confirmaria a existência da nota — atacante poderia
+mapear quais IDs estão em uso.
+
+
+================================================================================
+6. DTOS REQUEST E RESPONSE
+================================================================================
+
+Os endpoints NÃO recebem nem retornam a entidade Note diretamente.
+Tem 2 DTOs no meio:
+
+NoteRequest — entrada (criar/atualizar)
+    record NoteRequest(
+        @NotBlank @Size(max=255) String title,
+        String content
+    )
+
+@NotBlank obriga título não-vazio. @Size limita 255 caracteres. Se o
+cliente mandar { title: "" }, o Spring rejeita com 400 antes de
+chegar no controller.
+
+NoteResponse — saída
+    record NoteResponse(
+        Long id,
+        String title,
+        String content,
+        boolean archived,
+        boolean pinned,
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt
+    )
+
+Note: o NoteResponse NÃO tem User aninhado. Por quê? Vazaria o
+passwordHash pra resposta JSON. Sempre que possível, expor SÓ o que
+o cliente precisa.
+
+Mapeamento entre Note e NoteResponse acontece via static method
+NoteResponse.from(note). Centralizado, fácil de auditar.
+
+
+================================================================================
+7. SAVEANDFLUSH — DECISÃO E REFATORAÇÃO
+================================================================================
+
+Comportamento padrão do JPA: ao chamar `repo.save(entity)`, o
+Hibernate marca o objeto como "vai persistir no fim da transação".
+O INSERT/UPDATE só acontece quando a transação fecha.
+
+Problema do update: o @UpdateTimestamp só preenche `updatedAt` no
+flush. Se o controller monta a resposta DEPOIS do save mas ANTES do
+flush, o updatedAt da resposta fica VELHO (hora da última atualização
+anterior). Mas o banco já tá com o novo. Inconsistência visível pro
+cliente.
+
+Solução original (passo 3): chamar saveAndFlush — força o flush na
+hora, atualiza o timestamp, depois monta a resposta. Funciona.
+
+Solução final (refatorada em 28 de abril): em vez de forçar flush,
+montar o DTO com OffsetDateTime.now() em Java:
+
+    NoteResponse.from(note, OffsetDateTime.now())
+
+O `@UpdateTimestamp` ainda atualiza no banco no flush automático
+no fim da transação. Diverge do DTO em microssegundos — irrelevante
+pro cliente. Sem precisar do saveAndFlush, código mais limpo.
+
+Por que mudou? saveAndFlush força o JPA a se comportar de um jeito
+não-padrão. Se outro código chamar update e esperar comportamento
+batch, o flush precoce atrapalha. Construir o DTO explicitamente é
+mais simples e local.
+
+
+================================================================================
+8. O QUE VAI EVOLUIR
+================================================================================
+
+A Fase 2 vai trazer rich text — content vai de String simples pra JSON
+(BlockNote) ou HTML (TipTap). Tags entram como entidade nova com
+relação N-N. Busca full-text com tsvector (já entrou no dia 1 de maio).
+
+Próximo episódio: o frontend que consome esses 5 endpoints.
+</script>
+
+<script type="text/template" id="tpl-05">
+================================================================================
+NEXUS — FASE 1 / FRONTEND SVELTEKIT
+================================================================================
+
+Esta sequência é Nexus puro, NÃO é Jasap. NÃO use analogias com agente,
+cartão temporário, prédio comercial, departamento, ferramentaria, leitor
+de cartão. Essas analogias são exclusivas da sequência Jasap.
+
+Use SOMENTE as analogias descritas neste arquivo. NÃO invente analogias
+novas nem crie metáforas próprias.
+
+Linguagem simples e casual. Sem palavras rebuscadas. Sem frases de
+efeito vazias.
+
+
+================================================================================
+ONDE A GENTE PAROU
+================================================================================
+
+O backend tá pronto: User, Auth, JWT, CRUD de Note. 7 endpoints REST
+expostos em localhost:8080. Falta a parte que o usuário VÊ — o
+frontend. Esse é o passo 4: SvelteKit consumindo a API.
+
+Esse episódio cobre 4 conceitos novos:
+
+1. Svelte 5 runes ($state, $effect, $derived, $props)
+2. Estado global de auth com .svelte.ts
+3. Wrapper de fetch com token automático
+4. Auth guard que redireciona pro login
+
+O frontend roda em localhost:5173 (Vite dev server) e bate na API
+em localhost:8080. CORS já liberado no backend.
+
+
+================================================================================
+1. SVELTE 5 E AS RUNES
+================================================================================
+
+Svelte é um framework parecido com React/Vue mas com filosofia
+diferente: em vez de virtual DOM, ele COMPILA o componente. O que
+você escreve em .svelte vira JavaScript otimizado direto.
+
+A versão 5 do Svelte trouxe as RUNES. São funções com nome que começa
+com $ que controlam reatividade. Quatro principais:
+
+$state — declara variável reativa
+    let count = $state(0);
+    count = count + 1;            // tela atualiza sozinha
+
+$effect — roda código quando dependências mudam
+    $effect(() => {
+        console.log('count agora é', count);
+    });
+
+$derived — valor computado a partir de outros estados
+    let dobro = $derived(count * 2);
+
+$props — recebe propriedades de componente pai
+    let { titulo, onSalvar } = $props();
+
+Essas runes substituem a sintaxe antiga ($:, export let, stores).
+Mais explícitas, mais simples, com TypeScript completo.
+
+
+================================================================================
+2. .SVELTE.TS — RUNES FORA DE COMPONENTE
+================================================================================
+
+Por padrão, runes só funcionam dentro de arquivos .svelte. Mas
+estado global (auth, configurações, tema) precisa morar FORA de
+componente — em arquivo de utilidade.
+
+Solução do Svelte 5: extensão .svelte.ts. Arquivos com essa extensão
+são processados pelo compilador como se fossem .svelte, então as
+runes funcionam.
+
+No Nexus tem o auth.svelte.ts com:
+
+    export const auth = $state({
+        token: readStored() as string | null
+    });
+
+`auth` é um objeto reativo global. Qualquer componente que importar e
+ler `auth.token` re-renderiza quando o token muda.
+
+Hidratação: a função readStored() lê do localStorage no boot. Se o
+usuário fechou e reabriu o browser, o token ainda tá lá — sessão
+persiste.
+
+Funções auxiliares completam a interface:
+
+    setToken(token)      atualiza estado + grava localStorage
+    clearToken()         apaga estado + apaga localStorage
+    isAuthenticated()    helper booleano
+
+Detalhe: localStorage só existe no browser. SvelteKit pode rodar
+SSR (server-side rendering), então tem o guard `if (browser)` antes
+de tocar no localStorage.
+
+
+================================================================================
+3. FETCH WRAPPER — A CAMADA QUE FALA COM A API
+================================================================================
+
+Toda chamada pra API passa pelo arquivo lib/api.ts. Ele tem:
+
+UMA função privada `request<T>` que:
+    1. Monta os headers (Content-Type + Authorization se logado)
+    2. Faz o fetch
+    3. Se status 401/403: limpa o token (queda automática no login)
+    4. Se !ok: parseia o erro JSON e dispara ApiException
+    5. Se 204 (No Content): retorna undefined
+    6. Senão: parseia JSON e retorna
+
+UM objeto `api` com métodos curtos:
+
+    api.register(email, password)
+    api.login(email, password)
+    api.listNotes()
+    api.searchNotes(q)
+    api.getNote(id)
+    api.createNote(noteRequest)
+    api.updateNote(id, noteRequest)
+    api.deleteNote(id)
+
+Cada método é uma linha — chama o request com o path e o body. Toda
+a complicação (auth header, parsing, erro) fica concentrada no
+request<T>. Os componentes consomem a API como se fossem chamadas
+locais.
+
+ApiException carrega:
+    status      o código HTTP
+    message     erro do backend
+    fields      validações (quando 400)
+
+Componente trata a exception e mostra o erro na UI.
+
+
+================================================================================
+4. AUTH GUARD NO LAYOUT
+================================================================================
+
+SvelteKit tem rotas baseadas em pastas. O arquivo +layout.svelte
+envolve TODAS as páginas (header, footer, etc.). É o lugar perfeito
+pra colocar o guard de autenticação.
+
+No Nexus o +layout.svelte tem:
+
+    const PUBLIC_ROUTES = ['/login', '/register'];
+
+    $effect(() => {
+        const path = page.url.pathname;
+        const isPublic = PUBLIC_ROUTES.includes(path);
+
+        if (!isAuthenticated() && !isPublic) {
+            goto('/login', { replaceState: true });
+        } else if (isAuthenticated() && isPublic) {
+            goto('/', { replaceState: true });
+        }
+    });
+
+Lógica em duas direções:
+- Se NÃO tá logado e tenta acessar rota privada → manda pro /login
+- Se TÁ logado e tenta acessar /login ou /register → manda pra home
+
+`replaceState: true` significa "não cria entrada no histórico do
+browser" — clicar voltar não traz pra rota bloqueada.
+
+`$effect` reage a mudanças. Toda vez que o token muda OU a URL muda,
+o effect roda de novo. Se o token expirar e o wrapper de fetch
+limpar (clearToken), o $effect imediatamente redireciona.
+
+
+================================================================================
+5. AS ROTAS DO MVP
+================================================================================
+
+A estrutura de pastas em src/routes/:
+
+    /                   lista de notas (home, protegida)
+    /login              tela de login (pública)
+    /register           tela de registro (pública)
+    /notes/new          criar nota (protegida)
+    /notes/[id]         ver/editar/deletar nota (protegida)
+
+Cada uma tem um +page.svelte. SvelteKit lê a pasta e cria as rotas
+automaticamente — não precisa configurar router.
+
+Nas páginas privadas, o guard do layout já garante que só usuário
+autenticado entra. As páginas em si só precisam fazer fetch e
+mostrar.
+
+
+================================================================================
+6. POR QUE TEXTAREA EM VEZ DE EDITOR
+================================================================================
+
+A tela de criar/editar nota usa <textarea> simples. Sem negrito, sem
+lista, sem heading. Por quê?
+
+Editor rich-text (TipTap, BlockNote) é projeto à parte. Tem decisões
+arquiteturais (formato do conteúdo: HTML? JSON?), formatação,
+toolbar, atalhos. Implementar agora atrasaria o MVP em semanas.
+
+Textarea entrega 80% do valor: usuário escreve nota, salva, lê depois.
+Editor decente entra na Fase 2.
+
+
+================================================================================
+7. O QUE VAI EVOLUIR
+================================================================================
+
+Fase 2 traz editor rich-text e busca na home. Fase 3 traz hierarquia
+(notas dentro de notas). Mobile vai ganhar PWA (manifest + service
+worker). Tudo mantendo a mesma camada de API — só mudando UI.
+
+Próximo episódio fecha a Fase 1: a Jornada do Cliente, amarrando
+backend, frontend e banco em 5 cenários reais de uso.
+</script>
+
+<script type="text/template" id="tpl-06">
+================================================================================
+NEXUS — FASE 1 / JORNADA DO CLIENTE
+================================================================================
+
+Esta sequência é Nexus puro, NÃO é Jasap. NÃO use analogias com agente,
+cartão temporário, prédio comercial, departamento, ferramentaria, leitor
+de cartão. Essas analogias são exclusivas da sequência Jasap.
+
+Use SOMENTE as analogias descritas neste arquivo. NÃO invente analogias
+novas nem crie metáforas próprias.
+
+Linguagem simples e casual. Sem palavras rebuscadas. Sem frases de
+efeito vazias.
+
+
+================================================================================
+ONDE A GENTE PAROU
+================================================================================
+
+Quatro episódios de construção: User, Auth, Note, Frontend. Cada um
+explicou uma peça do MVP isolada. Esse último episódio AMARRA tudo —
+mostra como as peças funcionam JUNTAS em 5 cenários reais.
+
+A ideia é seguir a jornada do cliente do começo ao fim, contando a cada
+passo o que acontece em cada camada (browser, frontend, backend, banco).
+Quem escutou os 4 anteriores deve reconhecer cada componente.
+
+
+================================================================================
+CENÁRIO 1 — PRIMEIRO ACESSO
+================================================================================
+
+Cliente abre o navegador, digita http://localhost:5173.
+
+NO BROWSER
+    SvelteKit serve o HTML inicial + JS. A página faz hidratação
+    (transforma o HTML estático em app reativo).
+
+NO FRONTEND
+    O auth.svelte.ts é importado. readStored() é chamado, lê o
+    localStorage, não acha nada (primeiro acesso). auth.token = null.
+
+    O +layout.svelte roda o $effect:
+        path = "/"
+        isPublic = false
+        isAuthenticated() = false
+        → goto('/login', { replaceState: true })
+
+    A URL muda pra /login automaticamente. SvelteKit renderiza o
+    +page.svelte de /login.
+
+NA TELA
+    Cliente vê o formulário de login. Clica em "Criar conta", vai
+    pra /register. Preenche email + senha (mínimo 8 chars). Clica
+    em "Registrar".
+
+NO FRONTEND
+    api.register(email, password) é chamado.
+    request<AuthResponse> monta:
+        POST /auth/register
+        body: { email, password }
+        sem Authorization (auth: false)
+
+NO BACKEND
+    SecurityConfig: /auth/** é permitAll → passa direto.
+    AuthController.register valida com @Valid. Email passa, senha
+    passa (8+ chars). Chama AuthService.register.
+
+    AuthService:
+        users.existsByEmail("...") → false
+        passwordEncoder.encode("...") → "$2a$10$..." (BCrypt hash)
+        new User(email, hash) → users.save → INSERT no banco
+        jwtService.generateToken(user) → "eyJ..."
+    Retorna 201 com { token: "eyJ..." }
+
+NO FRONTEND
+    request<T> retorna { token }. Componente chama setToken(token):
+        auth.token = "eyJ..."
+        localStorage.setItem('nexus.auth.token', "eyJ...")
+
+    Token agora persiste no browser. auth.token mudou → o $effect do
+    layout dispara → cliente está autenticado e em /register
+    (rota pública) → goto('/'). Cliente vê a home com lista vazia.
+
+
+================================================================================
+CENÁRIO 2 — RETORNO COM TOKEN VÁLIDO
+================================================================================
+
+Cliente fecha o navegador. Abre de novo no dia seguinte.
+
+NO BROWSER
+    SvelteKit hidrata. auth.svelte.ts roda. readStored() acha o
+    token no localStorage. auth.token = "eyJ...".
+
+    O $effect do layout:
+        path = "/"
+        isPublic = false
+        isAuthenticated() = true (token existe)
+        → não redireciona
+
+    +page.svelte da home renderiza. Chama api.listNotes().
+
+NO FRONTEND
+    request<Note[]> monta:
+        GET /notes
+        Authorization: Bearer eyJ...
+
+NO BACKEND
+    JwtAuthenticationFilter:
+        extractToken → "eyJ..."
+        jwtService.extractUserId → ainda dentro dos 7 dias, válido
+            → Optional<Long> com o user id
+        users.findById(id) → User
+        SecurityContext.setAuthentication(...)
+
+    Request continua. NoteController.list recebe @AuthenticationPrincipal
+    User user. Chama noteService.list(user) → query SQL com
+    user_id = ?. Retorna lista das notas DELE.
+
+NA TELA
+    Cliente vê suas notas. Tudo carrega em ~50ms. Sem login de novo,
+    sem perguntar nada.
+
+Isso é stateless funcionando: o servidor não sabia que o cliente
+existia até a request chegar com o token. Mas o token CARREGAVA a
+identidade.
+
+
+================================================================================
+CENÁRIO 3 — TOKEN EXPIRADO
+================================================================================
+
+Cliente volta depois de 8 dias. Token foi gerado pra valer 7.
+
+NO FRONTEND
+    auth.svelte.ts hidrata. Token existe no localStorage. auth.token
+    é setado. $effect do layout vê isAuthenticated() = true (porque
+    o frontend SÓ checa se token != null, não decodifica e valida
+    expiração).
+
+    Layout renderiza home. api.listNotes() é chamado.
+
+NO BACKEND
+    JwtAuthenticationFilter:
+        extractToken → "eyJ..." (expirado)
+        jwtService.extractUserId tenta validar → ExpiredJwtException
+            → retorna Optional.empty()
+        ifPresent NÃO roda. SecurityContext fica sem User.
+
+    Request continua sem user autenticado. NoteController.list espera
+    @AuthenticationPrincipal — que vem null. Spring Security barra
+    com 401 (graças ao Json401EntryPoint).
+
+    Resposta: 401 + { "error": "unauthorized" }.
+
+NO FRONTEND
+    request<T> recebe 401. Roda:
+        if (res.status === 401 || 403) clearToken();
+
+    auth.token volta pra null. localStorage limpo.
+
+    A mudança de auth.token dispara o $effect do layout:
+        isAuthenticated() = false
+        path = "/" (rota privada)
+        → goto('/login')
+
+    Cliente acaba na tela de login. Sem mensagem explicando "seu token
+    expirou" — só a tela de login. UX mais polida viria depois.
+
+Resultado: cliente loga de novo, gera token novo, segue.
+
+
+================================================================================
+CENÁRIO 4 — DOIS USUÁRIOS SIMULTÂNEOS
+================================================================================
+
+Mariana e José usam o mesmo Nexus. Mariana tem 3 notas, José tem 2.
+Ambos estão logados em browsers diferentes.
+
+NO BACKEND
+    Cada um tem um token diferente. JWT da Mariana tem `sub` = id
+    dela. JWT do José tem `sub` = id dele.
+
+    Mariana faz GET /notes:
+        Filter extrai user id da Mariana → coloca o User dela no
+            SecurityContext da request DELA
+        NoteService.list(mariana) → query:
+            SELECT * FROM notes WHERE user_id = <id-mariana>
+        Retorna 3 notas.
+
+    José faz GET /notes simultaneamente:
+        Filter extrai user id do José
+        NoteService.list(jose) → query com user_id = <id-jose>
+        Retorna 2 notas.
+
+    Os dois SecurityContexts são SEPARADOS — Spring usa
+    ThreadLocal/RequestScope, então cada request tem seu próprio
+    contexto sem misturar.
+
+    Mariana NUNCA vê notas do José. Mesmo que ela descubra o ID de
+    uma nota dele e tente:
+        GET /notes/<id-do-jose>
+        → Filter coloca a Mariana no contexto
+        → NoteController.get → noteService.get(id, mariana)
+        → repo.findByIdAndUser(id, mariana) → retorna Optional.empty()
+        → throws NoteNotFoundException → 404
+
+    Banco filtrou. Não foi check no controller. Não tem como furar.
+
+Esse é o ponto-chave da decisão "ownership na query SQL" do passo 3.
+Não importa quantos usuários sejam simultâneos — cada query carrega
+o user_id dele, e o banco isola.
+
+
+================================================================================
+CENÁRIO 5 — LOGOUT
+================================================================================
+
+Cliente clica em "Sair" no header.
+
+NO FRONTEND
+    +layout.svelte tem o handler:
+        function logout() {
+            clearToken();
+            goto('/login', { replaceState: true });
+        }
+
+    clearToken: auth.token = null + localStorage.removeItem.
+    goto: vai pra /login.
+
+NO BACKEND
+    Nada acontece.
+
+Repete: NADA. O backend NÃO sabe que o cliente "deslogou". Logout no
+Nexus é puramente de cliente — apaga o token de onde ele tava
+guardado.
+
+E o token que tava no localStorage? Foi removido. Mas se alguém TIVER
+copiado o token antes (extensão maliciosa, captura de rede), ele
+ainda VALE até expirar. O backend não sabe que foi "revogado".
+
+Isso é uma limitação aceita do JWT puro. Pra revogar de verdade
+precisaria:
+- Lista negra de tokens revogados (Redis, banco) — backend bate em
+  cada request → DEIXA DE SER STATELESS
+- Tokens curtos (15 min) + refresh token → revoga refresh, JWT
+  morre sozinho rápido
+- Trocar a chave de assinatura — invalida TODOS os tokens de TODOS
+
+Pro Nexus single-user, não é problema. Em produção real, decidir
+caso a caso.
+
+
+================================================================================
+FECHAMENTO
+================================================================================
+
+A Fase 1 entregou um MVP completo:
+- Cadastro funcional
+- Login funcional
+- Persistência de sessão entre visitas
+- Token expirando sozinho
+- Múltiplos usuários isolados no banco
+- Logout limpo (mesmo com a limitação do stateless)
+
+Tudo rodando local, em 4 passos, com 4 decisões guiando: stateless,
+ownership SQL, BCrypt, frontend separado.
+
+A Fase 2 começa com busca full-text (já entregue em 1 de maio) e
+segue com tags, ordenação e editor rich-text. Mas isso é assunto pra
+próxima sequência de podcasts.
+</script>
+
+</body>
+</html>

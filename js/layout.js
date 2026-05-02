@@ -27,12 +27,12 @@ var MENU = [
         subgrupos: [
             { label: 'JAVA',         href: '1-java/java.html',               pasta: '1-java' },
             { label: 'SQL',          href: '2-sql/sql.html',                 pasta: '2-sql' },
-            { label: 'REDES',        href: '3-redes/redes.html',             pasta: '3-redes' },
+            { label: 'MODELO OSI',   href: '3-modelo-osi/modelo-osi.html',   pasta: '3-modelo-osi' },
             { label: 'HTML-CSS-JS',  href: '4-html-css-js/html-css-js.html', pasta: '4-html-css-js' },
             { label: 'HARDWARE',     href: '5-hardware/hardware.html',       pasta: '5-hardware' },
             { label: 'GIT',          href: '6-git/git.html',                 pasta: '6-git' }
         ],
-        subpastas: ['1-java', '2-sql', '3-redes', '4-html-css-js', '5-hardware', '6-git'],
+        subpastas: ['1-java', '2-sql', '3-modelo-osi', '4-html-css-js', '5-hardware', '6-git'],
         pasta: '1-fundamentos'
     },
     {
@@ -71,12 +71,99 @@ var MENU = [
         basePath: '1-fundamentos/2-sql'
     },
     {
-        grupo: 'REDES',
-        pagina: 'redes.html',
+        grupo: 'MODELO OSI',
+        pagina: 'modelo-osi.html',
         parent: { label: 'FUNDAMENTOS', href: '1-fundamentos/fundamentos.html' },
         hidden: true,
-        pasta: '3-redes',
-        basePath: '1-fundamentos/3-redes'
+        items: [
+            { label: 'Cards',         arquivo: 'modelo-osi.html', tipo: 'check' },
+            { label: 'Visão Geral',   arquivo: '0-visao-geral/0-visao-geral.html', tipo: 'check' },
+            { label: 'Aplicação',     arquivo: '7-aplicacao/7-aplicacao.html', tipo: 'check' },
+            { label: 'Apresentação',  arquivo: '6-apresentacao/6-apresentacao.html', tipo: 'check' },
+            { label: 'Sessão',        arquivo: '5-sessao/5-sessao.html', tipo: 'check' },
+            { label: 'Transporte',    arquivo: '4-transporte/4-transporte.html', tipo: 'check' },
+            { label: 'Rede',          arquivo: '3-rede/3-rede.html', tipo: 'check' },
+            { label: 'Enlace',        arquivo: '2-enlace/2-enlace.html', tipo: 'check' },
+            { label: 'Física',        arquivo: '1-fisica/1-fisica.html', tipo: 'check' }
+        ],
+        pasta: '3-modelo-osi',
+        basePath: '1-fundamentos/3-modelo-osi'
+    },
+    {
+        grupo: 'VISÃO GERAL',
+        pagina: '0-visao-geral.html',
+        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-osi/modelo-osi.html' },
+        hidden: true,
+        pasta: '0-visao-geral',
+        basePath: '1-fundamentos/3-modelo-osi/0-visao-geral'
+    },
+    {
+        grupo: 'REDE',
+        pagina: '3-rede.html',
+        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-osi/modelo-osi.html' },
+        hidden: true,
+        pasta: '3-rede',
+        basePath: '1-fundamentos/3-modelo-osi/3-rede'
+    },
+    {
+        grupo: 'APRESENTAÇÃO',
+        pagina: '6-apresentacao.html',
+        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-osi/modelo-osi.html' },
+        hidden: true,
+        pasta: '6-apresentacao',
+        basePath: '1-fundamentos/3-modelo-osi/6-apresentacao'
+    },
+    {
+        grupo: 'SESSÃO',
+        pagina: '5-sessao.html',
+        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-osi/modelo-osi.html' },
+        hidden: true,
+        pasta: '5-sessao',
+        basePath: '1-fundamentos/3-modelo-osi/5-sessao'
+    },
+    {
+        grupo: 'TRANSPORTE',
+        pagina: '4-transporte.html',
+        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-osi/modelo-osi.html' },
+        hidden: true,
+        pasta: '4-transporte',
+        basePath: '1-fundamentos/3-modelo-osi/4-transporte'
+    },
+    {
+        grupo: 'ENLACE',
+        pagina: '2-enlace.html',
+        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-osi/modelo-osi.html' },
+        hidden: true,
+        pasta: '2-enlace',
+        basePath: '1-fundamentos/3-modelo-osi/2-enlace'
+    },
+    {
+        grupo: 'FÍSICA',
+        pagina: '1-fisica.html',
+        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-osi/modelo-osi.html' },
+        hidden: true,
+        pasta: '1-fisica',
+        basePath: '1-fundamentos/3-modelo-osi/1-fisica'
+    },
+    {
+        grupo: 'APLICAÇÃO',
+        pagina: '7-aplicacao.html',
+        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-osi/modelo-osi.html' },
+        hidden: true,
+        items: [
+            { label: 'Visão Geral', arquivo: '7-aplicacao.html', tipo: 'check' },
+            { label: 'HTTP',        arquivo: 'http/http.html', tipo: 'check' }
+        ],
+        pasta: '7-aplicacao',
+        basePath: '1-fundamentos/3-modelo-osi/7-aplicacao'
+    },
+    {
+        grupo: 'HTTP',
+        pagina: 'http.html',
+        parent: { label: 'APLICAÇÃO', href: '1-fundamentos/3-modelo-osi/7-aplicacao/7-aplicacao.html' },
+        hidden: true,
+        pasta: 'http',
+        basePath: '1-fundamentos/3-modelo-osi/7-aplicacao/http'
     },
     {
         grupo: 'HARDWARE',
@@ -91,6 +178,13 @@ var MENU = [
         pagina: 'git.html',
         parent: { label: 'FUNDAMENTOS', href: '1-fundamentos/fundamentos.html' },
         hidden: true,
+        items: [
+            { label: 'Cards',              arquivo: 'git.html', tipo: 'check' },
+            { label: '1 - Visão Geral',    arquivo: '1-visao-geral/visao-geral.html', tipo: 'check' },
+            { label: '2 - Setup',          arquivo: '2-setup/2-setup.html', tipo: 'check' },
+            { label: '3 - Primeiro ciclo', arquivo: '3-primeiro-ciclo/3-primeiro-ciclo.html', tipo: 'check' },
+            { label: '4 - Histórico',      arquivo: '4-historico/4-historico.html', tipo: 'check' }
+        ],
         pasta: '6-git',
         basePath: '1-fundamentos/6-git'
     },
@@ -256,10 +350,12 @@ var MENU = [
         grupo: 'NEXUS',
         pagina: 'nexus.html',
         subgrupos: [
-            { label: 'COMPONENTES', href: '1-componentes/componentes.html', pasta: '1-componentes' },
-            { label: 'FASE 0',      href: '2-fase-0/fase-0.html',           pasta: '2-fase-0' }
+            { label: 'COMPONENTES',     href: '1-componentes/componentes.html',  pasta: '1-componentes' },
+            { label: 'FASE 0 - SETUP',  href: '2-fase-0/fase-0.html',            pasta: '2-fase-0' },
+            { label: 'FASE 1 - MVP',    href: '3-fase-1/fase-1.html',            pasta: '3-fase-1' },
+            { label: 'FAXINA - FASE 1', href: '4-fase-1-faxina/fase-1-faxina.html', pasta: '4-fase-1-faxina' }
         ],
-        subpastas: ['1-componentes', '2-fase-0'],
+        subpastas: ['1-componentes', '2-fase-0', '3-fase-1', '4-fase-1-faxina'],
         pasta: '3-nexus'
     },
     {
@@ -292,6 +388,39 @@ var MENU = [
         ],
         pasta: '2-fase-0',
         basePath: '3-nexus/2-fase-0'
+    },
+    {
+        grupo: 'FASE 1',
+        pagina: 'fase-1.html',
+        parent: { label: 'NEXUS', href: '3-nexus/nexus.html' },
+        hidden: true,
+        items: [
+            { label: '01 - Visão Geral',         arquivo: '1-visao-geral/1-visao-geral.html',                 tipo: 'check' },
+            { label: '02 - User e Migration',    arquivo: '2-user-e-migration/2-user-e-migration.html',       tipo: 'check' },
+            { label: '03 - Auth e JWT',          arquivo: '3-auth-e-jwt/3-auth-e-jwt.html',                   tipo: 'check' },
+            { label: '04 - Note e CRUD',         arquivo: '4-note-e-crud/4-note-e-crud.html',                 tipo: 'check' },
+            { label: '05 - Frontend SvelteKit',  arquivo: '5-frontend-sveltekit/5-frontend-sveltekit.html',   tipo: 'check' },
+            { label: '06 - Jornada do Cliente',  arquivo: '6-jornada-do-cliente/6-jornada-do-cliente.html',   tipo: 'check' }
+        ],
+        pasta: '3-fase-1',
+        basePath: '3-nexus/3-fase-1'
+    },
+    {
+        grupo: 'FAXINA - FASE 1',
+        pagina: 'fase-1-faxina.html',
+        parent: { label: 'NEXUS', href: '3-nexus/nexus.html' },
+        hidden: true,
+        items: [
+            { label: '01 - Visão Geral',          arquivo: 'fase-1-faxina.html', tipo: 'check' },
+            { label: '02 - História do Nome',     arquivo: 'fase-1-faxina.html', tipo: 'check' },
+            { label: '03 - Validando o Build',    arquivo: 'fase-1-faxina.html', tipo: 'check' },
+            { label: '04 - Evoluindo a Note',     arquivo: 'fase-1-faxina.html', tipo: 'check' },
+            { label: '05 - Testes da Fase 1',     arquivo: 'fase-1-faxina.html', tipo: 'check' },
+            { label: '06 - Refactor saveAndFlush',arquivo: 'fase-1-faxina.html', tipo: 'check' },
+            { label: '07 - 401 vs 403',           arquivo: 'fase-1-faxina.html', tipo: 'check' }
+        ],
+        pasta: '4-fase-1-faxina',
+        basePath: '3-nexus/4-fase-1-faxina'
     }
 ];
 

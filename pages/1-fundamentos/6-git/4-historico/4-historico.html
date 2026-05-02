@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git — Histórico — XT - Treinamento</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Git — Histórico</h1>
+
+<div class="audio-player" data-src="audio/4-historico.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Você fez vários commits — agora quer <strong>navegar a linha do tempo</strong>. Esse card cobre os três comandos de leitura do histórico: <code>git log</code> (lista cronológica), <code>git diff</code> (o que mudou) e <code>git show</code> (abrir uma foto específica). É a primeira vez que você sai de "criar commits" e entra em "explorar o que já existe".</p>
+
+<h2 id="log" data-toc-title="git log" data-sub="A lista cronológica">git log — a lista cronológica</h2>
+<p>O <code>git log</code> mostra todos os commits da branch atual, do mais novo pro mais antigo. É o comando-base pra ver o histórico.</p>
+<pre><code class="language-bash">git log</code></pre>
+<p>O output, pra cada commit, tem 4 linhas:</p>
+<ul>
+    <li><strong>Hash</strong> — os 40 caracteres do identificador único, em amarelo. Acima dele, em parênteses, aparecem os "ponteiros" — branches que apontam pra esse commit (<code>HEAD</code>, <code>main</code>, <code>origin/main</code>) e tags.</li>
+    <li><strong>Author</strong> — nome e e-mail (configurados no card de Setup).</li>
+    <li><strong>Date</strong> — data e hora do commit, no fuso da máquina.</li>
+    <li><strong>Mensagem</strong> — indentada em 4 espaços abaixo, com linha em branco antes.</li>
+</ul>
+<p>O log abre num <em>pager</em> (geralmente <code>less</code>). Pra navegar:</p>
+<ul>
+    <li><strong>Setas</strong> ou <strong>Page Down</strong> — rolar pra ver commits mais antigos.</li>
+    <li><strong>q</strong> — sair do pager (volta pro terminal).</li>
+    <li><strong>/</strong> — buscar texto dentro do log.</li>
+</ul>
+
+<h2 id="log-oneline" data-toc-title="--oneline" data-sub="Versão compacta">git log --oneline — versão compacta</h2>
+<p>Em projetos com muitos commits, o log padrão fica longo demais. A flag <code>--oneline</code> reduz cada commit a uma linha só:</p>
+<pre><code class="language-bash">git log --oneline</code></pre>
+<p>Cada linha mostra: hash curto (7 caracteres) + mensagem. Sem autor, sem data. Útil pra <strong>varrer rapidamente</strong> os últimos N commits e achar o que você procura. Quando achou, pode usar o hash curto em outros comandos (<code>git show</code>, <code>git diff</code>).</p>
+<pre><code class="language-bash">3f8a9c2 Adiciona DepartamentoForm com 4 campos
+b642616 Corrige NPE no DepartamentoBean.toString
+fc0d512 Refatora ProdutoList pra usar setOnclick</code></pre>
+<p>Combinações úteis com <code>--oneline</code>:</p>
+<ul>
+    <li><code>git log --oneline -10</code> — só os últimos 10 commits.</li>
+    <li><code>git log --oneline --author="Flavio"</code> — só os commits seus.</li>
+    <li><code>git log --oneline --since="1 week ago"</code> — só os commits da última semana.</li>
+</ul>
+
+<h2 id="log-graph" data-toc-title="--graph --all" data-sub="Desenho das branches">git log --graph --all — desenho das branches</h2>
+<p>Quando você começar a usar <strong>branches</strong> (próximos cards do mini-curso), o histórico deixa de ser uma linha reta e vira uma árvore com vários ramos. A flag <code>--graph</code> desenha essa árvore com caracteres ASCII no terminal:</p>
+<pre><code class="language-bash">git log --oneline --graph --all</code></pre>
+<p>O <code>--all</code> inclui <em>todas</em> as branches (não só a atual). O <code>--graph</code> desenha as ramificações com <code>*</code>, <code>|</code>, <code>\</code>, <code>/</code>. Você consegue ver visualmente onde uma branch saiu da outra e onde foram mergeadas.</p>
+<p>Exemplo de output:</p>
+<pre><code class="language-bash">* 3f8a9c2 (HEAD -> dev) Adiciona DepartamentoForm
+* b642616 Corrige NPE no DepartamentoBean
+| * fc0d512 (feature/login) Adiciona tela de login
+|/
+* 0273f34 (main) Junção de projetos
+* 9876abc Setup inicial</code></pre>
+<p>Por enquanto, com uma branch só, o <code>--graph</code> é uma linha reta. Mas vale conhecer o comando — vai virar essencial quando branches entrarem em cena.</p>
+
+<h2 id="diff" data-toc-title="git diff" data-sub="O que mudou">git diff — o que mudou no working tree</h2>
+<p>O <code>git diff</code> mostra as <strong>diferenças entre o working tree e o último commit</strong>. Ou seja, o que você editou desde a última foto, mas <em>ainda não adicionou ao stage</em>.</p>
+<pre><code class="language-bash">git diff</code></pre>
+<p>O output mostra, pra cada arquivo modificado, blocos de mudança (chamados <em>hunks</em>):</p>
+<ul>
+    <li><strong>Linhas removidas</strong> — começam com <code>-</code> e aparecem em vermelho.</li>
+    <li><strong>Linhas adicionadas</strong> — começam com <code>+</code> e aparecem em verde.</li>
+    <li><strong>Linhas de contexto</strong> — começam com espaço e aparecem em cinza/branco. São as linhas em volta da mudança, pra você se localizar no código.</li>
+    <li><strong>Cabeçalho do hunk</strong> — algo tipo <code>@@ -45,7 +45,9 @@</code>. Lê assim: "do arquivo antigo, a partir da linha 45, mostro 7 linhas; do arquivo novo, a partir da linha 45, mostro 9 linhas".</li>
+</ul>
+<p>É a forma mais rápida de revisar o que você fez antes de commitar — sempre rodar <code>git diff</code> antes do <code>git add</code> pra confirmar que as mudanças são as que você esperava.</p>
+
+<h2 id="diff-staged" data-toc-title="diff --staged" data-sub="O que vai no commit">git diff --staged — o que está no stage</h2>
+<p>Depois de rodar <code>git add</code>, o <code>git diff</code> sozinho não mostra mais aquela mudança — porque ela saiu do working tree e foi pro stage. Pra ver o que está no stage:</p>
+<pre><code class="language-bash">git diff --staged</code></pre>
+<p>(Também aceita <code>--cached</code>, é um sinônimo histórico.) Mostra a diferença entre o stage e o último commit — exatamente o que vai virar foto se você der <code>git commit</code> agora.</p>
+<p>Combinando os dois:</p>
+<ul>
+    <li><strong><code>git diff</code></strong> = "o que eu editei e ainda não adicionei" (working tree vs stage)</li>
+    <li><strong><code>git diff --staged</code></strong> = "o que eu adicionei e ainda não commitei" (stage vs último commit)</li>
+</ul>
+<p>Os dois juntos cobrem todas as mudanças pendentes. Se ambos não mostram nada, o repositório está sincronizado com o último commit (<code>working tree clean</code>).</p>
+
+<h2 id="show" data-toc-title="git show" data-sub="Abrir um commit">git show — abrindo uma foto específica</h2>
+<p>O <code>git show</code> abre <strong>um commit específico</strong> e mostra: os metadados (hash, autor, data, mensagem) + o diff completo dele em relação ao commit pai.</p>
+<pre><code class="language-bash">git show 3f8a9c2
+git show HEAD
+git show HEAD~1</code></pre>
+<p>Você pode passar:</p>
+<ul>
+    <li><strong>Hash completo ou curto</strong> — copiado do <code>git log</code>.</li>
+    <li><strong><code>HEAD</code></strong> — o commit atual da branch (o último que você fez).</li>
+    <li><strong><code>HEAD~1</code></strong> — o commit "um antes" do HEAD. <code>HEAD~2</code> é dois antes, e assim por diante.</li>
+    <li><strong>Nome de branch ou tag</strong> — mostra o último commit daquela branch ou o commit marcado pela tag.</li>
+</ul>
+<p>É o comando que você usa quando quer entender <em>o que foi feito num commit específico do passado</em>. Útil quando o <code>git log</code> mostra uma mensagem interessante e você quer ver os detalhes do que mudou.</p>
+
+<h2 id="hash" data-toc-title="Hash curto" data-sub="Como copiar e usar">Hash: curto, longo e como referenciar</h2>
+<p>O hash de um commit tem 40 caracteres (<code>3f8a9c2bd5e1f...</code>). Mas o git aceita versões abreviadas — desde que sejam <strong>únicas</strong> dentro do repositório, normalmente 7 caracteres bastam:</p>
+<pre><code class="language-bash">git show 3f8a9c2     # 7 caracteres — funciona se for único
+git show 3f8a9c2bd5  # mais longo, ainda funciona
+git show 3f          # se só 1 commit começa com "3f", funciona; senão, erro</code></pre>
+<p>O <code>--oneline</code> já mostra o hash em 7 caracteres, então é o tamanho padrão pra trabalho do dia. Se houver ambiguidade, o git avisa e você passa mais caracteres.</p>
+<p>Outras formas comuns de referenciar commits sem hash:</p>
+<ul>
+    <li><code>HEAD</code> — o último commit da branch atual.</li>
+    <li><code>HEAD~N</code> — N commits antes do HEAD (cuidado: <code>~</code>, não <code>-</code>).</li>
+    <li><code>main</code>, <code>dev</code>, <code>feature/login</code> — o último commit daquela branch.</li>
+    <li><code>v1.0</code> — uma tag (vem nos cards finais).</li>
+</ul>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="Os 3 comandos juntos">Os 3 comandos juntos</h2>
+<p>Cenário típico: você quer revisar o que aconteceu na última semana num projeto.</p>
+<ol>
+    <li><strong><code>git log --oneline --since="1 week ago"</code></strong> — varre os commits da semana, lista compacta.</li>
+    <li>Achou um commit interessante na lista (digamos <code>3f8a9c2</code>): <strong><code>git show 3f8a9c2</code></strong> — abre o commit, vê o que mudou.</li>
+    <li>Quer comparar dois commits específicos? <strong><code>git diff &lt;hash1&gt; &lt;hash2&gt;</code></strong> — mostra a diferença entre dois pontos da linha do tempo.</li>
+</ol>
+<p>Esses três comandos cobrem 90% da exploração de histórico. As variações com <code>--graph</code>, <code>--author</code>, <code>--grep</code> (busca por mensagem) entram quando você precisa filtrar mais.</p>
+
+</body>
+</html>

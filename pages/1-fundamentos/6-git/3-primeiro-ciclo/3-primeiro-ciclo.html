@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git — Primeiro ciclo — XT - Treinamento</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Git — Primeiro ciclo</h1>
+
+<div class="audio-player" data-src="audio/3-primeiro-ciclo.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Esse card é o coração do dia a dia: como sair de "fiz uma alteração no código" e chegar em "tirei uma foto e guardei na linha do tempo". Três comandos compõem esse ciclo: <code>git status</code> (o radar), <code>git add</code> (selecionar o que vai virar foto) e <code>git commit -m</code> (tirar a foto). Mas antes dos comandos, é preciso entender <strong>os três estágios</strong> que o git mantém por dentro — sem esse modelo na cabeça, os comandos parecem arbitrários.</p>
+
+<h2 id="estagios" data-toc-title="Os 3 estágios" data-sub="Working tree, stage, repo">Os três estágios do git</h2>
+<p>O git divide os arquivos em três áreas conceituais. Cada arquivo do seu projeto está em um (ou mais) desses estágios a qualquer momento:</p>
+<ol>
+    <li><strong>Working tree</strong> (árvore de trabalho) — os arquivos como você os edita no disco. É onde você abre o VS Code e escreve código. Tudo o que você modifica primeiro passa por aqui.</li>
+    <li><strong>Staging area</strong> (área de espera, ou <em>stage</em>, ou <em>index</em>) — uma "antessala" entre o working tree e o repositório. Você <em>seleciona</em> aqui o que quer que entre no próximo commit. Mudanças que ficam só no working tree NÃO entram no commit.</li>
+    <li><strong>Repository</strong> (repositório, dentro da <code>.git</code>) — onde os commits ficam guardados pra sempre. Quando você commita, o conteúdo do stage vira uma foto definitiva aqui.</li>
+</ol>
+<p>O fluxo é sempre nessa ordem: working tree → stage → repo. Você edita, depois adiciona ao stage, depois commita. Cada comando do ciclo movimenta arquivos de um estágio pro outro.</p>
+<p><strong>Por que existe o stage?</strong> Pra você poder ser <em>seletivo</em>. Imagina: você editou 5 arquivos, mas só 2 estão prontos pra commitar. Os outros 3 estão pela metade. Sem o stage, todo commit pegaria todos os arquivos modificados — você teria que commitar tudo ou nada. Com o stage, você adiciona só os 2 prontos, commita, e os outros 3 continuam no working tree pra você terminar.</p>
+
+<h2 id="status" data-toc-title="git status" data-sub="O comando-radar">git status — o comando-radar</h2>
+<p>O <code>git status</code> mostra em que estado cada arquivo está. É o comando que você roda <strong>o tempo todo</strong> — antes de adicionar, depois de adicionar, antes de commitar, depois de commitar. Ele te diz exatamente o que o git "vê".</p>
+<pre><code class="language-bash">git status</code></pre>
+<p>O output divide os arquivos em três grupos:</p>
+<ul>
+    <li><strong>Changes to be committed</strong> (em verde) — arquivos no <strong>stage</strong>, prontos pra entrar no próximo commit.</li>
+    <li><strong>Changes not staged for commit</strong> (em vermelho) — arquivos modificados no <strong>working tree</strong>, mas que ainda não foram adicionados ao stage.</li>
+    <li><strong>Untracked files</strong> (em vermelho) — arquivos novos que o git ainda não conhece. Não estão sendo versionados.</li>
+</ul>
+<p>Quando o repositório está "limpo" (nenhum arquivo modificado, nada no stage), o git mostra <code>nothing to commit, working tree clean</code>. Esse é o estado-meta depois de cada commit.</p>
+
+<h2 id="add" data-toc-title="git add" data-sub="Selecionar pro stage">git add — selecionando pro stage</h2>
+<p>O <code>git add</code> move um (ou vários) arquivos do <strong>working tree</strong> pro <strong>stage</strong>. É o comando da seleção.</p>
+<pre><code class="language-bash">git add caminho/do/arquivo.java
+git add .
+git add -p</code></pre>
+<p>Três variantes:</p>
+<ul>
+    <li><strong><code>git add &lt;arquivo&gt;</code></strong> — adiciona um arquivo específico. É o jeito <em>seletivo</em>, recomendado quando você quer controle total.</li>
+    <li><strong><code>git add .</code></strong> — adiciona todos os arquivos modificados e novos da pasta atual pra baixo. Mais rápido, mas <strong>perigoso</strong>: pode pegar arquivos sensíveis (<code>.env</code>, credenciais, builds gigantes) sem você ver. Só usar depois de um <code>git status</code> revisado.</li>
+    <li><strong><code>git add -p</code></strong> — modo "patch". O git pergunta arquivo por arquivo, pedaço por pedaço, se você quer adicionar. Útil quando um único arquivo tem mudanças que vão entrar em commits diferentes.</li>
+</ul>
+<p>Detalhe importante: quando você adiciona um arquivo ao stage e depois <strong>edita ele de novo</strong>, a edição posterior fica só no working tree — não entra no stage automaticamente. O <code>git status</code> vai mostrar o mesmo arquivo nos dois lugares (verde + vermelho). Pra incluir a edição nova, roda <code>git add</code> de novo.</p>
+
+<h2 id="commit" data-toc-title="git commit -m" data-sub="Tirar a foto">git commit -m — tirando a foto</h2>
+<p>O <code>git commit</code> pega <strong>tudo o que está no stage</strong> e cria uma foto (commit) na linha do tempo. Tudo o que estava no working tree mas não foi adicionado ao stage <strong>fica de fora</strong>.</p>
+<pre><code class="language-bash">git commit -m "Adiciona DepartamentoForm com 4 campos"</code></pre>
+<p>A flag <code>-m</code> ("message") permite passar a mensagem direto na linha de comando. Sem ela, o git abriria o editor padrão (Vim, ou o que você configurou no card de Setup) pra você digitar a mensagem.</p>
+<p>O que acontece quando você commita:</p>
+<ol>
+    <li>O git pega o conteúdo atual do stage.</li>
+    <li>Junta com sua mensagem, seu nome, e-mail e data/hora.</li>
+    <li>Calcula o hash do conjunto.</li>
+    <li>Grava como novo commit na <code>.git</code>, apontando como pai pro último commit da branch atual.</li>
+    <li>O stage é "esvaziado" (na verdade, ele agora reflete o estado do último commit — que é exatamente o que acabou de virar foto).</li>
+</ol>
+<p>Depois do commit, um novo <code>git status</code> mostra: o que estava só no working tree continua lá; mas o que estava no stage virou histórico — não aparece mais como pendente.</p>
+
+<h2 id="mensagem" data-toc-title="Mensagem" data-sub="O que escrever">Anatomia de uma boa mensagem</h2>
+<p>A mensagem do commit é a parte que vai pro histórico — ela é lida por você daqui um ano, ou por colegas tentando entender o que mudou. Algumas regras práticas:</p>
+<ul>
+    <li><strong>Verbo no presente, no início.</strong> "Adiciona X", "Corrige Y", "Refatora Z". Não "Adicionei", não "Corrigindo". O git usa convenção de presente porque a mensagem descreve <em>o que aquele commit faz</em> ao ser aplicado, não o que você fez.</li>
+    <li><strong>Curta e descritiva.</strong> Máximo ~72 caracteres na primeira linha. Se precisa explicar mais, deixa em branco e escreve um corpo separado (não cabe no <code>-m</code> simples).</li>
+    <li><strong>Foca no "o quê" e "por quê", não no "como".</strong> "Corrige cálculo de imposto" é melhor que "Muda variável de int pra double". O <em>como</em> está no diff.</li>
+    <li><strong>Um commit = uma mudança lógica.</strong> Se você está descrevendo a mensagem com "e" no meio ("adiciona X e corrige Y"), provavelmente deveriam ser dois commits separados.</li>
+</ul>
+<p>Exemplos bons: <code>"Adiciona validação de e-mail no DepartamentoForm"</code>, <code>"Corrige NPE no DepartamentoBean.toString"</code>, <code>"Refatora ProdutoList pra usar setOnclick"</code>.</p>
+<p>Exemplos ruins: <code>"mudancas"</code>, <code>"alteracoes"</code>, <code>"trabalho de hoje"</code>, <code>"."</code>, <code>"WIP"</code>.</p>
+
+<h2 id="ciclo-completo" data-toc-title="O ciclo completo" data-sub="Demonstração">O ciclo completo demonstrado</h2>
+<p>Juntando os três comandos, esse é o ciclo padrão de um commit:</p>
+<pre><code class="language-bash">git status
+# vê: 3 arquivos modificados, 1 novo
+
+git add src/Departamento.java src/DepartamentoForm.java
+# adiciona 2 dos 3 modificados ao stage
+
+git status
+# confirma: 2 no stage (verde), 1 no working tree (vermelho), 1 untracked
+
+git commit -m "Adiciona DepartamentoForm com 4 campos"
+# tira a foto
+
+git status
+# resultado: 1 modificado no working tree, 1 untracked. Stage limpo.</code></pre>
+<p>Repare que rodamos <code>git status</code> três vezes — antes do add, depois do add, depois do commit. Cada passagem confirma o que está pra ser commitado e o que ainda fica de fora.</p>
+
+<h2 id="dicas" data-toc-title="Dicas" data-sub="Erros comuns">Erros comuns no começo</h2>
+<ul>
+    <li><strong>Esquecer o <code>git add</code> antes do commit.</strong> Você edita o arquivo, roda <code>git commit -m "..."</code> direto, e o git diz <em>"nothing to commit"</em>. Faz sentido: você não selecionou nada pro stage. Roda <code>git add</code> primeiro.</li>
+    <li><strong>Commitar arquivo errado com <code>git add .</code>.</strong> O <code>add .</code> pega tudo, inclusive um arquivo de senhas que você esqueceu. Solução: rodar <code>git status</code> antes, conferir a lista, e usar <code>git add &lt;arquivo&gt;</code> específico. Se já commitou, tem como desfazer (vem nos cards finais).</li>
+    <li><strong>Mensagens vazias ou genéricas.</strong> Daqui 6 meses você vai abrir o histórico e não vai entender o que cada "atualização" foi. Investe 10 segundos numa mensagem decente.</li>
+    <li><strong>Não rodar <code>git status</code>.</strong> O status é grátis e instantâneo. Roda sempre. Não tem problema rodar 20 vezes por sessão.</li>
+</ul>
+
+</body>
+</html>

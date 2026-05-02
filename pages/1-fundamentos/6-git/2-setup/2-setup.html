@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git — Setup — XT - Treinamento</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Git — Setup</h1>
+
+<div class="audio-player" data-src="audio/2-setup.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Esse card cobre o que você precisa fazer <strong>uma vez</strong> antes de começar a usar o git: instalar o programa, dizer pro git quem você é (identidade que vai assinar todos os commits), e transformar uma pasta em repositório git. No fim, sua máquina está pronta pra o próximo card, onde a gente faz o primeiro commit de verdade.</p>
+
+<h2 id="instalacao" data-toc-title="Instalação" data-sub="Windows, Mac, Linux">Instalando o git</h2>
+<p>O git é um programa de linha de comando. Não tem interface gráfica nativa — você abre o terminal, digita comandos. Existem clients gráficos (GitHub Desktop, Sourcetree, GitKraken) construídos por cima do git, mas eles só facilitam a vida; por baixo é o git de linha de comando que faz o trabalho.</p>
+<ul>
+    <li><strong>Windows:</strong> baixar o instalador do <a href="https://git-scm.com/download/win" target="_blank">git-scm.com/download/win</a>. Junto vem o <em>Git Bash</em> — um terminal estilo Linux que vai ser onde você vai rodar os comandos. Aceita os defaults na instalação.</li>
+    <li><strong>Mac:</strong> já vem instalado em versão antiga. Pra atualizar, instalar o <a href="https://brew.sh" target="_blank">Homebrew</a> e rodar <code>brew install git</code>.</li>
+    <li><strong>Linux:</strong> <code>sudo apt install git</code> (Debian/Ubuntu) ou <code>sudo dnf install git</code> (Fedora).</li>
+</ul>
+<p>Pra confirmar que instalou, abre o terminal (Git Bash no Windows) e digita:</p>
+<pre><code class="language-bash">git --version</code></pre>
+<p>Se aparecer algo como <code>git version 2.43.0</code>, está tudo certo. Se aparecer "comando não encontrado", a instalação não foi pro PATH — reinstala marcando a opção que adiciona ao PATH.</p>
+
+<h2 id="identidade" data-toc-title="Identidade" data-sub="user.name e user.email">Configurando sua identidade</h2>
+<p>Todo commit é assinado com <strong>nome</strong> e <strong>e-mail</strong>. Quando alguém olha o histórico, vê quem fez cada commit. Essa identidade é configurada uma vez na máquina, depois o git usa em todos os repositórios automaticamente.</p>
+<pre><code class="language-bash">git config --global user.name "Flávio Passos"
+git config --global user.email "flaviovmix@gmail.com"</code></pre>
+<p>Detalhes:</p>
+<ul>
+    <li><strong>Nome</strong> pode ter espaços (precisa estar entre aspas).</li>
+    <li><strong>E-mail</strong> deve ser o mesmo que você usa no GitHub — quando você fizer push, o GitHub usa esse e-mail pra associar o commit ao seu perfil. Se for diferente, o commit aparece "anônimo" lá.</li>
+    <li>Esses comandos não dão output. Pra confirmar, lê com <code>git config --global user.name</code> (sem o valor depois — só leitura).</li>
+</ul>
+
+<h2 id="global-local" data-toc-title="--global vs --local" data-sub="Onde a config vive">Configuração global vs local</h2>
+<p>O git tem três níveis de configuração, do mais geral pro mais específico:</p>
+<ul>
+    <li><strong><code>--system</strong></code> — vale pra todos os usuários da máquina. Raramente usado.</li>
+    <li><strong><code>--global</code></strong> — vale pra todos os repositórios do seu usuário. É o que você usa pra identidade. Vive em <code>~/.gitconfig</code>.</li>
+    <li><strong><code>--local</code></strong> — vale só pro repositório onde você está. Vive em <code>.git/config</code> do repo. Útil quando você precisa usar identidade diferente em algum projeto específico (ex: e-mail corporativo num repo da empresa).</li>
+</ul>
+<p>Sem flag, o git assume <code>--local</code> por padrão se você está dentro de um repo. Por isso a importância de usar <code>--global</code> explícito quando configura identidade — você quer que valha em todos os repos, não só no atual.</p>
+
+<h2 id="init" data-toc-title="git init" data-sub="Criar o repositório">Transformando uma pasta em repositório</h2>
+<p>O comando <code>git init</code> transforma uma pasta qualquer em repositório git. Ele cria a subpasta oculta <code>.git</code> dentro dela — onde o git vai guardar todo o histórico daquele momento em diante.</p>
+<pre><code class="language-bash">cd /caminho/da/pasta
+git init</code></pre>
+<p>O git responde com algo como <code>Initialized empty Git repository in /caminho/da/pasta/.git/</code>. Pronto, a pasta agora é um repositório.</p>
+<p>Detalhes importantes:</p>
+<ul>
+    <li>O <code>git init</code> não toca nos seus arquivos. Eles continuam exatamente onde estavam. Só nasce a <code>.git</code>.</li>
+    <li>O comando é <strong>idempotente</strong> — rodar duas vezes não causa problema. Se a pasta já é um repo, ele só "reinicializa" sem perder nada.</li>
+    <li>Pra desfazer, basta apagar a pasta <code>.git</code>. Os arquivos do projeto ficam, o histórico some. A pasta vira pasta normal.</li>
+    <li>O git por padrão cria a primeira branch chamada <code>main</code> (versões antigas usavam <code>master</code>). Você só vai ver isso depois do primeiro commit, mas a branch já está reservada.</li>
+</ul>
+
+<h2 id="git-folder" data-toc-title="A pasta .git" data-sub="O que tem dentro">A pasta .git por dentro</h2>
+<p>Não precisa decorar, mas é bom desmistificar. Abrindo a <code>.git</code>, você vê:</p>
+<ul>
+    <li><strong><code>HEAD</code></strong> — arquivo apontando pra branch atual.</li>
+    <li><strong><code>config</code></strong> — configurações <em>locais</em> desse repo.</li>
+    <li><strong><code>objects/</code></strong> — onde os snapshots ficam. Cada arquivo aqui é um objeto identificado por hash.</li>
+    <li><strong><code>refs/</code></strong> — referências (branches, tags) apontando pros commits.</li>
+    <li><strong><code>logs/</code></strong> — histórico de movimentações (a chamada <em>reflog</em>).</li>
+</ul>
+<p>Tudo isso é manipulado pelos comandos do git. Não precisa abrir esses arquivos manualmente — e na verdade é desaconselhável fazer isso, porque uma edição errada pode corromper o repositório.</p>
+
+<h2 id="editor" data-toc-title="Editor padrão" data-sub="core.editor (opcional)">Bônus: editor padrão pra mensagens</h2>
+<p>Em alguns comandos do git (commit sem <code>-m</code>, rebase interativo, merge com mensagem grande), o git abre um <strong>editor de texto</strong> pra você digitar a mensagem. Por padrão no Windows é o Vim — que é poderoso mas tem curva de aprendizado.</p>
+<p>Se preferir usar o VS Code ou Notepad++:</p>
+<pre><code class="language-bash">git config --global core.editor "code --wait"
+git config --global core.editor "'C:/Program Files/Notepad++/notepad++.exe' -multiInst -notabbar -nosession -noPlugin"</code></pre>
+<p>O <code>--wait</code> no caso do VS Code faz o git esperar até você fechar o arquivo antes de continuar — sem isso, o git acharia que você não digitou nada e seguiria com mensagem vazia.</p>
+<p>Se você sempre commitar com a flag <code>-m "mensagem"</code> (próximo card), nunca precisa do editor. Configurar isso é opcional.</p>
+
+<h2 id="checklist" data-toc-title="Checklist" data-sub="Antes do próximo card">Checklist do setup</h2>
+<p>Antes de partir pro próximo card, sua máquina deve estar com:</p>
+<ol>
+    <li><code>git --version</code> respondendo com a versão.</li>
+    <li><code>git config --global user.name</code> e <code>git config --global user.email</code> respondendo com seus dados.</li>
+    <li>Uma pasta de teste com <code>.git</code> dentro (depois do <code>git init</code>) — pode ser <code>~/git-teste</code> ou qualquer lugar.</li>
+</ol>
+<p>Se os 3 itens estão OK, você está pronto pra fazer o primeiro commit.</p>
+
+</body>
+</html>

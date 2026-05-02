@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP — Cabeçalhos (headers) — XT - Treinamento</title>
+    <script src="../../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>HTTP — Cabeçalhos (headers)</h1>
+
+<div class="audio-player" data-src="audio/headers.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Se o método e a URI dizem <strong>o que</strong> a requisição quer, os <strong>cabeçalhos</strong> dizem <strong>como</strong>: que formato o cliente aceita, em que idioma, com qual credencial, em qual cookie e por aí vai. Quase tudo de sofisticado no HTTP — autenticação, cache, compressão, CORS, conteúdo dinâmico — vive nos headers.</p>
+
+<h2 id="o-que-sao" data-toc-title="O que são" data-sub="Metadados da mensagem">O que são headers</h2>
+<p>Cabeçalhos são pares <code>Nome: valor</code>, um por linha, vindos logo depois da linha inicial (request-line ou status-line) e <strong>antes</strong> do corpo da mensagem. A separação entre os headers e o corpo é uma <strong>linha em branco</strong> — é literalmente o que o HTTP usa pra saber onde os metadados terminam.</p>
+<pre><code class="language-http">GET /api/produtos HTTP/1.1
+Host: www.meusite.com.br
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
+
+{ corpo aqui, se houver }</code></pre>
+<p>Os headers <strong>descrevem</strong> a mensagem sem fazer parte do conteúdo. O corpo é a carga; os headers são o envelope com remetente, destinatário, tipo de conteúdo e instruções de manuseio.</p>
+
+<h2 id="onde-aparecem" data-toc-title="Onde aparecem" data-sub="Request, response, ambos">Onde aparecem</h2>
+<p>Headers podem aparecer na requisição, na resposta, ou em ambas. Existem quatro categorias úteis na hora de classificar:</p>
+<ul>
+    <li><strong>General</strong> — fazem sentido tanto em request quanto em response e não falam sobre o corpo. Ex: <code>Date</code>, <code>Connection</code>.</li>
+    <li><strong>Request</strong> — só em requisições, descrevem o cliente ou condicionam a resposta. Ex: <code>Host</code>, <code>User-Agent</code>, <code>Accept</code>.</li>
+    <li><strong>Response</strong> — só em respostas, dão informação extra do servidor. Ex: <code>Server</code>, <code>Set-Cookie</code>, <code>Location</code>.</li>
+    <li><strong>Entity / Representation</strong> — descrevem o corpo (request ou response). Ex: <code>Content-Type</code>, <code>Content-Length</code>, <code>Content-Encoding</code>.</li>
+</ul>
+<p>Na prática raramente importa decorar a categoria — basta saber que cada header tem um lado em que faz sentido aparecer.</p>
+
+<h2 id="formato" data-toc-title="Formato" data-sub="Regras do par nome:valor">Formato e regras</h2>
+<ul>
+    <li><strong>Nome do header é case-insensitive.</strong> <code>Content-Type</code>, <code>content-type</code> e <code>CONTENT-TYPE</code> são equivalentes. Convenção: cada palavra capitalizada com hífen no meio.</li>
+    <li><strong>Valor é livre</strong>, mas o significado do valor depende do header. Alguns aceitam case-insensitive (<code>Connection: keep-alive</code>); outros são sensíveis (<code>ETag</code>, tokens, hashes).</li>
+    <li><strong>Múltiplos valores na mesma linha</strong> separados por vírgula: <code>Accept: text/html, application/xhtml+xml, application/json</code>.</li>
+    <li><strong>Mesmo header repetido</strong> em linhas separadas é raro mas válido — o caso clássico é <code>Set-Cookie</code>, que aparece uma vez por cookie.</li>
+    <li><strong>Q-values (qualidade)</strong> indicam preferência: <code>Accept: text/html;q=0.9, application/json;q=1.0</code> diz "prefiro JSON, mas aceito HTML". Sem <code>q</code>, assume-se 1.0.</li>
+    <li><strong>Linha em branco</strong> (CRLF duplo) marca o fim dos headers e o início do corpo.</li>
+</ul>
+
+<h2 id="request" data-toc-title="Cabeçalhos de request" data-sub="O que o cliente envia">Cabeçalhos de requisição mais comuns</h2>
+<table style="width:100%; border-collapse:collapse; margin-top:12px;">
+    <thead>
+        <tr style="background:#f3f4f6;">
+            <th style="padding:8px; text-align:left; border-bottom:2px solid #ddd;">Header</th>
+            <th style="padding:8px; text-align:left; border-bottom:2px solid #ddd;">O que diz</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>Host</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">Domínio do site sendo pedido. <strong>Obrigatório</strong> a partir do HTTP/1.1 — é o que permite vários sites compartilharem o mesmo IP.</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>User-Agent</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">Identifica o cliente (navegador, app, bot). Servidores às vezes mudam o conteúdo conforme essa string.</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>Accept</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">Tipos de conteúdo que o cliente aceita receber. Ex: <code>text/html</code>, <code>application/json</code>, <code>*/*</code> (qualquer coisa).</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>Accept-Language</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">Idiomas preferidos. Ex: <code>pt-BR,pt;q=0.9,en;q=0.8</code>.</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>Accept-Encoding</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">Compressões que o cliente sabe descomprimir. Ex: <code>gzip, deflate, br</code>.</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>Authorization</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">Credencial do cliente. Formatos comuns: <code>Basic base64(user:senha)</code>, <code>Bearer &lt;token&gt;</code>.</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>Cookie</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">Cookies que o navegador devolve pro servidor (foram setados por <code>Set-Cookie</code> antes).</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>Referer</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">URL da página de onde o usuário veio. <em>(Sim, está escrito errado — "referrer" no inglês — mas o erro virou padrão.)</em></td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>Origin</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">Origem (esquema + domínio + porta) que disparou a requisição. Central no CORS.</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>Connection</strong></td><td style="padding:8px; border-bottom:1px solid #eee;"><code>keep-alive</code> (reaproveita TCP) ou <code>close</code> (fecha após a resposta).</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>Content-Type</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">Tipo do <strong>corpo enviado</strong> (em POST/PUT). Ex: <code>application/json</code>, <code>application/x-www-form-urlencoded</code>, <code>multipart/form-data</code>.</td></tr>
+        <tr><td style="padding:8px;"><strong>Content-Length</strong></td><td style="padding:8px;">Tamanho do corpo em bytes. Servidor usa pra saber quanto ler.</td></tr>
+    </tbody>
+</table>
+
+<h2 id="response" data-toc-title="Cabeçalhos de response" data-sub="O que o servidor envia">Cabeçalhos de resposta mais comuns</h2>
+<table style="width:100%; border-collapse:collapse; margin-top:12px;">
+    <thead>
+        <tr style="background:#f3f4f6;">
+            <th style="padding:8px; text-align:left; border-bottom:2px solid #ddd;">Header</th>
+            <th style="padding:8px; text-align:left; border-bottom:2px solid #ddd;">O que diz</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>Content-Type</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">Formato do corpo retornado. Ex: <code>text/html; charset=UTF-8</code>, <code>application/json</code>, <code>image/png</code>.</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>Content-Length</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">Tamanho do corpo em bytes.</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>Content-Encoding</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">Compressão aplicada (<code>gzip</code>, <code>br</code>). O cliente descomprime antes de mostrar.</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>Server</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">Software do servidor. Ex: <code>Apache/2.4.18 (Ubuntu)</code>, <code>nginx</code>. Muitos servidores escondem por segurança.</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>Set-Cookie</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">Pede pro navegador guardar um cookie. Aparece uma vez por cookie sendo setado.</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>Location</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">Pra onde redirecionar. Acompanha status <code>301</code>, <code>302</code>, <code>303</code>, <code>307</code> ou <code>308</code>.</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>Cache-Control</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">Regras de cache: <code>no-store</code>, <code>no-cache</code>, <code>max-age=3600</code>, <code>public</code>, <code>private</code>.</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>ETag</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">"Impressão digital" da versão atual do recurso. Cliente reusa em chamadas futuras pra checar se algo mudou.</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>Date</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">Data e hora em que a resposta foi gerada (em GMT).</td></tr>
+        <tr><td style="padding:8px; border-bottom:1px solid #eee;"><strong>WWW-Authenticate</strong></td><td style="padding:8px; border-bottom:1px solid #eee;">Acompanha <code>401 Unauthorized</code> dizendo o tipo de autenticação esperada (<code>Basic</code>, <code>Bearer</code>).</td></tr>
+        <tr><td style="padding:8px;"><strong>Access-Control-Allow-Origin</strong></td><td style="padding:8px;">Famosa no CORS — diz quais origens podem ler a resposta via JavaScript.</td></tr>
+    </tbody>
+</table>
+
+<h2 id="negociacao" data-toc-title="Negociação de conteúdo" data-sub="Accept ↔ Content-Type">Negociação de conteúdo</h2>
+<p>Um dos truques mais elegantes do HTTP: a mesma URL pode servir <strong>conteúdos diferentes</strong> dependendo do que o cliente pediu. É a <em>content negotiation</em>, e ela funciona em pares:</p>
+<ul>
+    <li><code>Accept</code> (cliente) ↔ <code>Content-Type</code> (servidor) — formato (HTML vs JSON vs XML).</li>
+    <li><code>Accept-Language</code> ↔ <code>Content-Language</code> — idioma.</li>
+    <li><code>Accept-Encoding</code> ↔ <code>Content-Encoding</code> — compressão.</li>
+</ul>
+<p>O cliente diz suas preferências, com pesos opcionais (<code>q=0.9</code>), e o servidor escolhe a melhor opção que consegue oferecer. Se nada bater, devolve <code>406 Not Acceptable</code>.</p>
+<p>Um exemplo prático: a mesma URL <code>/api/produtos</code> pode devolver HTML quando aberta no navegador (<code>Accept: text/html</code>) e JSON quando chamada por uma SPA (<code>Accept: application/json</code>) — sem mudar de endpoint, sem versionar URL.</p>
+
+<h2 id="customizados" data-toc-title="Customizados" data-sub="X-* e o que veio depois">Cabeçalhos customizados</h2>
+<p>Aplicações criam headers próprios pra carregar informação que não cabe nos padrões. Por convenção antiga, custom headers começavam com <code>X-</code>:</p>
+<ul>
+    <li><code>X-Frame-Options</code> — proteção contra clickjacking.</li>
+    <li><code>X-Powered-By</code> — qual framework gerou a resposta.</li>
+    <li><code>X-Forwarded-For</code> — IP original do cliente quando a requisição passou por proxy.</li>
+</ul>
+<p>O problema: alguns desses <code>X-</code> viraram tão comuns que foram padronizados — e aí o <code>X-</code> ficou marcando uma "promessa de não-padrão" que se quebrou. Em <strong>2012</strong> a <strong>RFC 6648</strong> desencorajou o prefixo. Hoje, custom headers novos usam o nome direto, sem <code>X-</code>.</p>
+<p>Na prática, dá pra inventar qualquer header — só não inventar nome que conflite com algum padrão já existente.</p>
+
+<h2 id="inspecionar" data-toc-title="Como inspecionar" data-sub="DevTools, curl, Wireshark">Como inspecionar headers</h2>
+<p>Saber ler headers é a habilidade que separa quem chuta de quem debuga. As três formas mais práticas:</p>
+<ul>
+    <li><strong>DevTools do navegador</strong> (F12) → aba <em>Network/Rede</em> → clicar numa requisição → painel <em>Headers</em> separa <em>Request Headers</em> e <em>Response Headers</em>. Mostra também URL, método, status e tempo.</li>
+    <li><strong>curl -v</strong> na linha de comando — imprime os headers enviados (<code>&gt;</code>) e recebidos (<code>&lt;</code>). Comando: <code>curl -v https://meusite.com.br</code>.</li>
+    <li><strong>Wireshark / mitmproxy</strong> pra inspeção mais profunda — vê os pacotes na rede, útil quando o problema está abaixo do HTTP (TLS, DNS, conexão).</li>
+</ul>
+<p>Casos típicos em que isso salva: API que devolve <code>401</code> sem motivo aparente (falta o <code>Authorization</code>?), CORS bloqueando o front (<code>Origin</code> bate com <code>Access-Control-Allow-Origin</code>?), cache que não atualiza (<code>Cache-Control</code> agressivo?), upload que falha (<code>Content-Type</code> errado no formulário?).</p>
+
+<h2 id="licao" data-toc-title="Lição geral" data-sub="O que fica">Lição geral</h2>
+<p>Headers são o canivete suíço do HTTP. O método e a URI definem a operação; os headers carregam todo o resto: identidade, formato, idioma, compressão, cache, autenticação, segurança. Praticamente toda funcionalidade não-trivial da web é uma combinação específica de headers funcionando juntos.</p>
+<p>Não precisa decorar nomes — precisa <strong>saber que existe</strong> um header pra cada coisa, e saber inspecionar pra descobrir qual quando o sistema reclamar. Os próximos tópicos (cookies, cache, CORS) são, na essência, capítulos de "o que esses headers específicos fazem".</p>
+
+</body>
+</html>

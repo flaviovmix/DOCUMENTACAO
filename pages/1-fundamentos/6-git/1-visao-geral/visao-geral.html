@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git — Visão Geral — XT - Treinamento</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Git — Visão Geral</h1>
+
+<div class="audio-player" data-src="audio/visao-geral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>O <strong>git</strong> é um sistema de controle de versão. Em uma frase: ele tira <em>fotos</em> do seu projeto a cada commit e guarda essas fotos numa linha do tempo. Você pode voltar pra qualquer foto, comparar duas, criar linhas paralelas pra experimentar, e sincronizar tudo entre máquinas. Esse card abre o mini-curso explicando o problema que motivou a criação do git, quem o criou, a ideia central e os três conceitos que sustentam tudo o que vem depois.</p>
+
+<h2 id="problema" data-toc-title="O problema" data-sub="Antes do git existir">O problema — antes do git existir</h2>
+<p>Imagina trabalhar num projeto sozinho, sem versionamento. Você tem uma pasta <code>projeto</code>. De vez em quando dá medo de mexer e perder o que tá funcionando, então copia a pasta inteira: <code>projeto-v1</code>, <code>projeto-v2</code>, <code>projeto-final</code>, <code>projeto-final-DE-VERDADE</code>, <code>projeto-final-DE-VERDADE-mesmo</code>.</p>
+<p>Quem nunca? Esse modelo quebra por três motivos óbvios:</p>
+<ul>
+    <li><strong>Espaço em disco</strong> — cada cópia é o projeto inteiro duplicado. Em projetos grandes (com vídeos, PDFs, dependências) isso vira gigabytes em pouco tempo.</li>
+    <li><strong>Sem histórico real</strong> — você sabe que tem 5 cópias, mas não sabe <em>o que mudou</em> entre uma e outra. Pra descobrir, precisa abrir as duas pastas e comparar arquivo por arquivo.</li>
+    <li><strong>Não escala pra mais de uma pessoa</strong> — se um colega entra, vocês começam a mandar pasta zipada por e-mail. Quem tá com a versão certa? Quem mexeu no quê? Em uma semana, vira caos.</li>
+</ul>
+<p>Pior ainda: se você trabalha em duas máquinas (PC do escritório + notebook em casa), está sempre se perguntando "qual delas tem a versão mais nova?". Não tem fonte da verdade.</p>
+
+<h2 id="quem-criou" data-toc-title="Quem criou" data-sub="Linus, BitKeeper, 2005">Quem criou e por quê</h2>
+<p>O git foi criado por <strong>Linus Torvalds</strong> em 2005 — o mesmo cara que criou o Linux. Ele não criou o git "pra ser ferramenta da indústria" — criou pra resolver um problema bem específico: versionar o kernel do Linux.</p>
+<p><strong>O drama do BitKeeper.</strong> Até 2005, os desenvolvedores do kernel usavam um sistema chamado <strong>BitKeeper</strong>. Era proprietário (pago) mas a empresa tinha liberado licença grátis pros devs do kernel. Em 2005, depois de uma briga (outro dev tentou fazer engenharia reversa do protocolo), a empresa cortou a licença grátis. De um dia pro outro, o projeto Linux ficou sem ferramenta de versionamento.</p>
+<p><strong>10 dias.</strong> Linus começou a escrever o git em 3 de abril de 2005. Em poucos dias já tinha o básico funcionando, e em duas semanas o próprio kernel do Linux já estava sendo versionado nele. O nome "git" é gíria britânica pra "cara desagradável" — Linus brincou que era um sistema "tão simples que beira a estupidez". Brincadeira só, ele construiu um sistema bastante sofisticado por dentro.</p>
+<p><strong>Os requisitos do Linus.</strong> Ele tinha critérios bem claros sobre o que precisava do novo sistema:</p>
+<ul>
+    <li><strong>Rápido</strong> — o kernel tem milhões de linhas. Comandos como ver histórico ou fazer commit precisavam ser instantâneos.</li>
+    <li><strong>Distribuído</strong> — cada desenvolvedor deveria ter uma cópia <em>completa</em> do repositório, com histórico inteiro, sem depender de um servidor central. Isso permite trabalhar offline e elimina ponto único de falha.</li>
+    <li><strong>Branches baratas</strong> — criar uma linha do tempo paralela tinha que ser questão de milissegundos, pra incentivar experimentação.</li>
+    <li><strong>Robusto contra corrupção</strong> — toda foto guardada tem uma assinatura criptográfica (hash). Se um byte é alterado, o git detecta.</li>
+</ul>
+<p><strong>Por que virou padrão de mercado.</strong> Antes do git, o mundo usava sistemas como <strong>CVS</strong> e <strong>SVN</strong> — todos centralizados (precisavam de servidor pra commitar). Git inverteu o modelo: é distribuído, todo mundo tem o repositório completo. Em 2008 nasceu o <strong>GitHub</strong> — um site pra hospedar repositórios git e facilitar colaboração — e a combinação git + GitHub virou padrão de mercado em poucos anos. Hoje, é praticamente impossível trabalhar com código profissionalmente sem git.</p>
+
+<h2 id="ideia" data-toc-title="A ideia" data-sub="Snapshots numa linha do tempo">A ideia do git — snapshots</h2>
+<p>A grande sacada do git é tratar versionamento como uma sequência de <strong>fotos</strong> (snapshots) do projeto inteiro.</p>
+<p>Toda vez que você marca um ponto importante no trabalho (fez uma alteração, ajeitou um bug, terminou uma feature), o git tira uma foto do estado atual de todos os arquivos e guarda numa linha do tempo. Cada foto leva uma <strong>mensagem</strong> sua descrevendo o que foi feito, mais o seu nome e a data.</p>
+<p>O que você ganha com isso:</p>
+<ul>
+    <li><strong>Voltar atrás</strong> — quebrou alguma coisa? Volta na foto anterior, vê o que estava funcionando, descobre o que mudou.</li>
+    <li><strong>Comparar duas fotos</strong> — o que mudou entre ontem e hoje? Entre a versão 1.0 e a 2.0? O git mostra arquivo por arquivo, linha por linha.</li>
+    <li><strong>Histórico explorável</strong> — em vez de "tinha uma pasta projeto-final2 mas não lembro o que mudou", você lê uma lista de mensagens descrevendo cada passo do projeto.</li>
+    <li><strong>Compartilhamento controlado</strong> — quando manda o repositório pra outra pessoa, ela recebe a linha do tempo inteira, não só o estado atual.</li>
+</ul>
+<p><em>Detalhe técnico:</em> o git é esperto e <strong>não duplica</strong> os arquivos que não mudaram entre uma foto e outra. Ele guarda só as diferenças por baixo, mesmo que você "veja" cada foto como um snapshot completo. Isso é o que mantém o repositório leve mesmo com milhares de commits.</p>
+
+<h2 id="conceitos" data-toc-title="3 conceitos" data-sub="Repositório, commit, branch">Os 3 conceitos centrais</h2>
+<p>Antes de mexer em qualquer comando, três conceitos sustentam tudo o que o git faz:</p>
+
+<h3 id="repositorio" data-toc-title="Repositório" data-sub="Pasta + história">Repositório</h3>
+<p>Um <strong>repositório</strong> é a sua pasta de projeto + a história dela. Quando você "transforma uma pasta em repositório git" (com o comando <code>git init</code>, que vem nos próximos cards), o git cria uma subpasta oculta chamada <code>.git</code> dentro dela. Essa pasta <code>.git</code> guarda <em>todas</em> as fotos, mensagens, autores, datas, branches — todo o histórico do projeto desde sempre.</p>
+<p>Ponto importante: você não precisa mexer dentro da <code>.git</code>. Os comandos do git é que escrevem e leem dali. Se você apagar a <code>.git</code>, perde o histórico inteiro mas os arquivos do projeto continuam intactos — vira uma pasta normal de novo.</p>
+
+<h3 id="commit" data-toc-title="Commit" data-sub="Uma foto + mensagem">Commit</h3>
+<p>Um <strong>commit</strong> é uma foto guardada na linha do tempo. Cada commit tem:</p>
+<ul>
+    <li><strong>Snapshot dos arquivos</strong> — o estado completo de todos os arquivos do projeto naquele momento.</li>
+    <li><strong>Mensagem</strong> — texto curto que você escreve descrevendo o que mudou ("ajusta validação do formulário", "adiciona tela de cadastro de produto").</li>
+    <li><strong>Autor</strong> — seu nome e e-mail, configurados uma vez na sua máquina.</li>
+    <li><strong>Data e hora</strong> — quando o commit foi feito.</li>
+    <li><strong>Hash</strong> — um identificador único de 40 caracteres (tipo <code>3f8a9c2...</code>) gerado automaticamente. É o "número de série" daquela foto. Dois commits nunca têm o mesmo hash.</li>
+    <li><strong>Pai</strong> — referência ao commit anterior (a "foto" que veio antes). É isso que cria a linha do tempo encadeada.</li>
+</ul>
+<p>O histórico do projeto inteiro é uma corrente de commits, cada um apontando pro pai. Pra ler a história, o git percorre essa corrente do mais novo pro mais antigo.</p>
+
+<h3 id="branch" data-toc-title="Branch" data-sub="Linha do tempo paralela">Branch</h3>
+<p>Uma <strong>branch</strong> (literalmente "galho", ou "ramo") é uma linha do tempo paralela. A ideia: quero experimentar uma alteração maluca sem mexer no que tá funcionando. Crio uma branch nova, faço meus commits ali, testo. Se ficou bom, junto (faço <em>merge</em>) com a linha principal. Se não ficou, descarto e nada se perde.</p>
+<p>Toda repositório git começa com uma branch chamada <code>main</code> (antigamente <code>master</code>) — é o tronco principal. A partir dela, você cria outras: <code>feature/login</code>, <code>fix/bug-123</code>, <code>experimento-novo</code>. Cada uma é uma linha do tempo independente que pode ser combinada com as outras quando você quiser.</p>
+<p>No XT especificamente, o projeto usa duas branches: <code>dev</code> (onde o trabalho do dia acontece) e <code>main</code> (a versão limpa, com histórico em squash). Esse fluxo aparece em detalhe no último card do mini-curso.</p>
+
+<h2 id="local-remoto" data-toc-title="Local vs remoto" data-sub="Sua máquina e o GitHub">Local versus remoto</h2>
+<p>O git é <strong>distribuído</strong>: não existe "o repositório original" e "as cópias". Toda cópia é completa e equivalente.</p>
+<p>Na prática, você tem dois lugares onde o repositório vive:</p>
+<ul>
+    <li><strong>Local</strong> — a cópia na sua máquina. É onde você faz commits, cria branches, vê histórico, edita arquivos. Funciona offline. Tem a história inteira do projeto na sua <code>.git</code>.</li>
+    <li><strong>Remoto</strong> — uma cópia hospedada num servidor (geralmente <strong>GitHub</strong>, mas existem outros: GitLab, Bitbucket, Gitea, e até servidores próprios). Serve pra <em>backup</em> e <em>colaboração</em>. Outros desenvolvedores acessam o remoto pra trabalhar no mesmo projeto.</li>
+</ul>
+<p>Os dois canais que conectam local e remoto:</p>
+<ul>
+    <li><strong>push</strong> — manda os commits que estão só no seu local pro remoto. Sincroniza pra cima.</li>
+    <li><strong>pull</strong> — traz os commits que estão no remoto e ainda não chegaram no seu local. Sincroniza pra baixo.</li>
+</ul>
+<p>Se você trabalha em duas máquinas (PC + notebook), o fluxo natural vira: <em>commit</em> no PC → <em>push</em> pro GitHub → ir pro notebook → <em>pull</em> do GitHub → continuar de onde parou. O GitHub vira o ponto de encontro entre as suas duas cópias locais.</p>
+<p>O <strong>GitHub não é o git</strong>. Git é a ferramenta (programa instalado na sua máquina), GitHub é um <em>site</em> que hospeda repositórios git. Você pode usar git sem nunca usar GitHub (versionamento puramente local), e em teoria o GitHub poderia desaparecer amanhã que o seu repositório local continuaria funcionando. Na prática, todo projeto sério usa um remoto pra não perder tudo se a máquina queimar.</p>
+
+<h2 id="por-que-aprender" data-toc-title="Por que aprender" data-sub="Os ganhos práticos">Por que aprender git</h2>
+<p>Quatro motivos diretos:</p>
+<ul>
+    <li><strong>Backup automático com histórico.</strong> Cada push pro GitHub é uma cópia de segurança remota da sua linha do tempo inteira. Se a máquina queimar, basta clonar o repositório em outra e continuar de onde parou.</li>
+    <li><strong>Voltar atrás sem medo.</strong> Quebrou tudo e não consegue ver o que mudou? Volta no commit anterior, compara, descobre o erro. Não precisa mais ter pasta-de-segurança copiada antes de mexer.</li>
+    <li><strong>Experimentar sem quebrar.</strong> Cria uma branch, testa uma ideia, se não rolou descarta. A linha principal (<code>main</code>) nunca quebra.</li>
+    <li><strong>Trabalhar com outras pessoas.</strong> Cada um faz seus commits, cada um faz push, o git sabe juntar as alterações. Quando dois mexem no mesmo lugar (conflito), o git avisa e você resolve manualmente. Sem mais arquivos zipados por e-mail.</li>
+</ul>
+<p>Bônus: praticamente todo projeto open-source do mundo está hospedado no GitHub. Saber git é o que te permite ler o código de qualquer biblioteca que você usa, ver o histórico de mudanças, abrir issues, contribuir com pull requests. É uma linguagem comum da indústria.</p>
+
+<h2 id="proximo" data-toc-title="Próximos cards" data-sub="O que vem depois">O que vem nos próximos cards</h2>
+<p>Esse card foi só conceito — sem nenhum comando. Os próximos cards do mini-curso entram nos comandos práticos, seguindo a jornada de quem está começando do zero: <em>setup do git</em>, <em>primeiro commit</em>, <em>histórico</em>, <em>compartilhamento via GitHub</em>, <em>branches</em>, <em>merge</em>, <em>conflitos</em>, <em>desfazer</em>, <em>reescrever histórico</em>, e por fim o <em>fluxo do XT</em> com os 16 passos do <code>/commit</code>. Cada card é uma estação dessa jornada.</p>
+<p>O grid do mini-curso (a página GIT no menu lateral) lista os cards conforme eles forem sendo criados. Volta lá pra ver o roadmap atual.</p>
+
+</body>
+</html>
