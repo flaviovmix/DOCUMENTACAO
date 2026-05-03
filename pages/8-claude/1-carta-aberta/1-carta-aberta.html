@@ -10,29 +10,102 @@
 
 <h1>Carta Aberta</h1>
 
-<div class="audio-player" data-src="audio/carta-aberta.m4a">
-    <audio preload="metadata"></audio>
-    <button class="audio-btn" title="Play / Pause"></button>
-    <div class="audio-progress-wrap">
-        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
-        <div class="audio-progress-fill"></div>
-    </div>
-    <span class="audio-time">0:00 / 0:00</span>
-</div>
-
 <div class="info-accordion">
 
     <div class="info-row open">
         <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-            <span class="info-row-title">Resumo da carta</span>
+            <span class="info-row-title">NOSSA PRIMEIRA FAXINA</span>
             <span class="info-row-btn">+</span>
         </div>
         <div class="info-row-body">
-            <p>Esta pasta <code>src/</code> não nasceu como está hoje. Ela começou com <strong>um projeto só</strong> — o XTtreinamento — e foi crescendo conforme outros projetos foram entrando na minha rotina.</p>
 
-            <p>O motivo de trazer tudo pra dentro de <code>src/</code> foi prático: ter <strong>vários repositórios espalhados</strong> em pastas diferentes do disco fragmentava o contexto. Cada vez que eu pedia ajuda ao Claude num projeto, ele só enxergava aquela pasta — não conseguia, por exemplo, alimentar a documentação centralizada em <code>apoio/documentacao</code> a partir de qualquer projeto.</p>
+            <div class="audio-player" data-src="audio/carta-aberta.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
 
-            <p>Centralizar resolveu o contexto, mas criou um novo problema: <strong>a pasta <code>src/</code> precisa ser organizada</strong>. Hoje ela tem projetos ativos, projetos de referência, apoio compartilhado e outras coisas misturadas. O próximo passo é arrumar essa casa.</p>
+            <h3>O que é essa carta</h3>
+
+            <p>Diferente das <strong>Cartas do Claude</strong> — uma fechou a Fase 0, outra fechou a Fase 1 MVP — onde o Claude observa o Flávio de fora e lista elogios, preocupações e reflexões, esta aqui é o <strong>Flávio falando</strong>.</p>
+
+            <p>O assunto não é parte direta do projeto Nexus. É a <strong>infraestrutura onde o Nexus mora</strong>: a pasta <code>src/</code> no disco.</p>
+
+            <p>A carta tem três movimentos: como o <code>src/</code> começou, por que tudo foi parar lá dentro, e por que agora precisa ser organizado. Tom de relato. Sem trinta observações.</p>
+
+            <h3>A origem — um projeto só</h3>
+
+            <p>A pasta <code>src/</code> não nasceu como está hoje. Ela começou com <strong>um projeto só</strong>: o <strong>XTtreinamento</strong>, módulo de estudo do framework interno do trabalho.</p>
+
+            <p>Por muito tempo foi só isso. Uma pasta no disco com um repositório dentro. Simples.</p>
+
+            <p>Com o tempo, outros projetos foram entrando na rotina. O <strong>Nexus</strong>, segundo cérebro pessoal. O <strong>AFX</strong>, projeto antigo. Pastas de referência. Documentação centralizada. Material de apoio. Podcasts. Imagens. Notas soltas.</p>
+
+            <p>Cada coisa nova chegava com um motivo legítimo e foi parar dentro do <code>src/</code> porque era prático ter perto. <strong>Sem decisão arquitetural grande. Foi acontecendo.</strong></p>
+
+            <h3>Por que centralizar — contexto fragmentado</h3>
+
+            <p>O motivo de trazer tudo pra dentro de <code>src/</code> tem a ver com a forma como o Flávio trabalha hoje. Ele usa o <strong>Claude</strong> como professor particular, par de programação e revisor em quase todas as sessões.</p>
+
+            <p>E o Claude, quando entra numa pasta, <strong>só enxerga aquela pasta</strong>. É a janela dele.</p>
+
+            <p>Quando os repositórios estavam espalhados em pastas diferentes do disco — um aqui, outro lá, documentação num terceiro lugar — cada sessão tinha <strong>contexto fragmentado</strong>:</p>
+
+            <ul>
+                <li>Pedir ajuda no XTtreinamento, e o Claude não enxergava a documentação centralizada que morava em outra pasta.</li>
+                <li>Pedir ajuda no Nexus, e o Claude não conseguia consultar o código do XT pra comparar.</li>
+            </ul>
+
+            <p>Trazer tudo pra dentro de <code>src/</code> resolveu isso. Uma raiz só. Um lugar onde o Claude consegue navegar entre os projetos, alimentar a documentação a partir de qualquer um, comparar padrões.</p>
+
+            <p><strong>A centralização não foi por organização — foi por contexto. E funcionou.</strong></p>
+
+            <h3>O problema novo — a mistura cobra preço</h3>
+
+            <p>Resolver o contexto criou um novo problema: a pasta <code>src/</code> virou uma <strong>mistura</strong>.</p>
+
+            <p>Hoje ela tem:</p>
+
+            <ul>
+                <li><strong>Projetos ativos</strong> — Nexus em desenvolvimento, XTtreinamento que serve de estudo, módulos do laboratório.</li>
+                <li><strong>Projetos de referência</strong> — código de produção pra consultar, projetos antigos arquivados.</li>
+                <li><strong>Apoio compartilhado</strong> — documentação centralizada, podcasts, imagens.</li>
+                <li><strong>Coisas que viraram lixo</strong> — pastas com nome confuso, materiais que não se sabe mais pra que servem.</li>
+            </ul>
+
+            <p><strong>Tudo no mesmo nível.</strong></p>
+
+            <p>Quando uma pessoa olha de fora — ou quando o Claude entra numa sessão nova — não dá pra distinguir o que é projeto vivo do que é referência morta. Não dá pra saber qual pasta é apoio de outra. <strong>O sinal fica perdido no ruído.</strong></p>
+
+            <p>E isso vai piorar. Cada projeto novo, cada referência nova, cada material de apoio novo, vai sendo empilhado por cima.</p>
+
+            <p>A solução não é descentralizar — centralizar foi a decisão certa. A solução é <strong>organizar dentro do <code>src/</code></strong>.</p>
+
+            <h3>Fechamento — arrumar a casa</h3>
+
+            <p>O próximo passo é arrumar essa casa. Definir uma divisão clara. Quatro categorias parecem cobrir bem:</p>
+
+            <ul>
+                <li>Projetos ativos</li>
+                <li>Projetos de referência</li>
+                <li>Apoio compartilhado</li>
+                <li>Lixo a descartar</li>
+            </ul>
+
+            <p>Mover cada pasta pra onde ela pertence. Renomear o que tá com nome confuso. Apagar o que não serve mais.</p>
+
+            <p>Não é tarefa de uma sessão. É <strong>faxina</strong>, igual à faxina que aconteceu na Fase 1 do Nexus. Manutenção consciente antes de seguir.</p>
+
+            <p>Esta carta é o anúncio. A execução vem depois.</p>
+
+            <p>E quando vier, fica registrada — em qual carta foi decidida, em qual sessão foi feita, em que data terminou. Porque é assim que esse projeto funciona: <strong>tudo o que importa tem porquê escrito</strong>.</p>
+
+            <p><em>Carta fechada.</em></p>
+
         </div>
     </div>
 

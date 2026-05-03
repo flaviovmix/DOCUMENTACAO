@@ -56,7 +56,7 @@ var MENU = [
         hidden: true,
         items: [
             { label: 'Visão Geral', arquivo: '2-classes-objetos.html', tipo: 'check' },
-            { label: 'Molde e Instância', arquivo: '1-classe-objeto/1-classe-objeto.html', tipo: 'check' },
+            { label: 'Molde e Instância', arquivo: '1-molde-e-instancia/1-molde-e-instancia.html', tipo: 'check' },
             { label: 'Anatomia da Classe', arquivo: '2-anatomia-classe/2-anatomia-classe.html', tipo: 'check' }
         ],
         pasta: '2-classes-objetos',
