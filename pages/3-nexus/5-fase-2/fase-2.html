@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fase 2 — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+    <style>
+        .ep-sub {
+            color: #6b7280;
+            font-style: italic;
+            margin: 0 0 12px 0;
+            font-size: 0.92em;
+        }
+        .tags { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+        .tag {
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 0.75em;
+            padding: 3px 9px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Nexus — Fase 2 <span class="badge badge-new">3 episódios</span></h1>
+
+<p>Sequência da Fase 2 do Nexus — busca e organização. Busca full-text com Postgres tsvector + GIN + unaccent, tags em relação N-N (backend), e UI completa de tags com paleta fechada de cores e filtro por URL. Faltam ordenação e editor rich-text na fase. 3 episódios entregues, cada um com áudio + resumo.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open" data-toc-title="01 VISÃO GERAL" data-toc-sub="Visão Geral">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">01 - Visão Geral</span><span class="badge" style="margin-left:auto; background:#6366f1; color:#fff;">VISÃO GERAL</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Panorama da Fase 2 — o que entrega, ordem das decisões e onde estamos</p>
+
+            <div class="audio-player" data-src="1-visao-geral/audio/visao-geral.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>A Fase 2 é sobre <strong>encontrar e organizar nota</strong>. A Fase 1 entregou o MVP: criar, listar, editar, apagar. Funciona — mas com 50 notas você não acha mais nada. Fase 2 ataca isso em três frentes: <strong>busca full-text</strong> (digitar palavra → filtra na hora), <strong>tags</strong> (rótulos pra agrupar notas por tema) e <strong>cor de tag</strong> (visual rápido).</p>
+            <p>Ordem das entregas: busca primeiro (2026-05-01) → tags backend (2026-05-02) → cor de tag e tags frontend completo (2026-05-04). Cada uma é independente — dá pra ter busca sem tags, tags sem cor, e assim por diante.</p>
+            <p>Decisões guiando: <strong>tudo no Postgres</strong> (sem serviço de busca externo tipo Meilisearch — o tsvector basta), <strong>tags em tabela normalizada</strong> (não array — escala melhor pra rename e filtro), <strong>paleta fechada de cor</strong> (8 cores enforced no enum Java — sem hex livre, sem CHECK no banco).</p>
+            <div class="tags"><span class="tag">tsvector</span><span class="tag">N-N</span><span class="tag">paleta fechada</span><span class="tag">URL state</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-01"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row" data-toc-title="02 BUSCA" data-toc-sub="Busca full-text">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">02 - Busca full-text</span><span class="badge" style="margin-left:auto; background:#0ea5e9; color:#fff;">tsvector</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Postgres tsvector + GIN + unaccent + prefix matching, type-as-you-search</p>
+
+            <div class="audio-player" data-src="2-busca-full-text/audio/busca-full-text.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Busca full-text dentro do Postgres. <strong>V5</strong> cria índice GIN sobre <code>setweight(to_tsvector('portuguese', title), 'A') || setweight(..., content, 'B')</code> — title pesa mais que content no rank. <strong>V6</strong> resolve acentos: extensão <code>unaccent</code> + função wrapper <code>immutable_unaccent</code> marcada IMMUTABLE pra poder usar em índice funcional (o <code>unaccent</code> nativo é STABLE).</p>
+            <p><strong>Prefix matching</strong> em vez de <code>websearch_to_tsquery</code>: o usuário digita "r" e quero filtrar notas com "reunião". <code>NoteService.toPrefixTsQuery</code> sanitiza o input e converte em <code>palavra:* &amp; outra:*</code> que vai pro <code>to_tsquery</code>. Trade-off: perde a sintaxe Google (frase, OR, NOT), mas ganha filtro instantâneo — mais valioso pra segundo cérebro.</p>
+            <p>UI: input no topo da home com <strong>debounce de 300ms</strong>. Cada tecla cancela o timer anterior. Sem debounce, bateria no backend a cada caractere.</p>
+            <div class="tags"><span class="tag">Flyway V5+V6</span><span class="tag">GIN index</span><span class="tag">unaccent</span><span class="tag">prefix matching</span><span class="tag">debounce</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-02"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row" data-toc-title="03 TAGS BACKEND" data-toc-sub="Tags backend">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">03 - Tags backend</span><span class="badge" style="margin-left:auto; background:#10b981; color:#fff;">N-N</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Migration V7, pacote io.nexus.tags, attach/detach, filtro ?tag=</p>
+
+            <div class="audio-player" data-src="3-tags-backend/audio/tags-backend.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Tag é entidade de primeira classe — não array de string. <strong>V7</strong> cria <code>tags</code> (id + user_id + name + created_at) e <code>notes_tags</code> (PK composta com FK CASCADE em ambos). Unicidade <strong>case-insensitive</strong>: <code>UNIQUE INDEX ON tags(user_id, lower(name))</code> — preserva o case digitado mas evita "Trabalho"/"trabalho" duplicadas.</p>
+            <p>Razão de tabela vs array: <strong>rename é UPDATE de 1 linha</strong> (na tag) em vez de N notas; tag pode ganhar metadata depois (cor, ordem, contagem); <code>@ManyToMany</code> JPA é caminho batido (array Postgres com Hibernate exige converter custom). Custo extra é marginal — 1 entidade + 1 repo.</p>
+            <p>Endpoints: <code>GET/POST/PUT/DELETE /tags</code> pra CRUD, <code>POST/DELETE /notes/{id}/tags/{id}</code> pra anexar/desanexar, <code>GET /notes?tag={id}</code> pra filtrar (JPQL com JOIN). Filtro <strong>não combina com <code>?q=</code></strong>: se ambos vierem, tag ganha (UI típica clica tag e zera busca).</p>
+            <div class="tags"><span class="tag">Flyway V7</span><span class="tag">@ManyToMany</span><span class="tag">notes_tags</span><span class="tag">case-insensitive</span><span class="tag">JPQL JOIN</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-03"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row" data-toc-title="04 COR + TAGS UI" data-toc-sub="Cor + Tags frontend">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">04 - Cor + Tags frontend</span><span class="badge" style="margin-left:auto; background:#a855f7; color:#fff;">SvelteKit</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Paleta fechada de 8 cores, página /tags, anexar no detalhe, chips na home, filtro por URL</p>
+
+            <div class="audio-player" data-src="4-cor-tags-frontend/audio/cor-tags-frontend.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Backend de cor (V8 + enum <code>TagColor</code>): paleta fechada de 8 cores — <em>gray, red, orange, yellow, green, blue, purple, pink</em>. Validação no DTO + service. <strong>Sem CHECK no DB</strong> — adicionar cor nova exige só alterar enum + frontend, sem migration. API+DTO são única porta de entrada, valor inválido nunca chega no banco.</p>
+            <p>Frontend completo: <strong>página <code>/tags</code></strong> com CRUD (input + paleta de bolinhas + edit inline + confirm delete); link no header. <strong>Detalhe da nota</strong>: chips coloridos atuais com × pra desanexar + <code>&lt;select&gt;</code> com tags disponíveis (= todas menos as já anexadas). <strong>Home</strong>: chips coloridos abaixo de cada card (botões fora do <code>&lt;a&gt;</code> pra não navegar) + filtro sincronizado com URL <code>?tag=ID</code> (sobrevive F5 e back/forward) + banner "Filtrando por: X · limpar" substitui input de busca quando filtro ativo.</p>
+            <p>Mapa de cores em <code>lib/tagColors.ts</code> (tons pastel estilo Notion: bg + fg) — espelha o enum Java. Frontend só sabe a paleta como string lowercase.</p>
+            <div class="tags"><span class="tag">Flyway V8</span><span class="tag">enum TagColor</span><span class="tag">paleta fechada</span><span class="tag">$state runes</span><span class="tag">URL state</span><span class="tag">chip clicável</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-04"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script type="text/template" id="tpl-01">
+Visão Geral — arquivos da Fase 2 (resumo)
+
+Migrations Flyway:
+  backend/src/main/resources/db/migration/V5__add_note_search.sql
+  backend/src/main/resources/db/migration/V6__unaccent_search.sql
+  backend/src/main/resources/db/migration/V7__create_tags.sql
+  backend/src/main/resources/db/migration/V8__add_tag_color.sql
+
+Backend novo:
+  backend/src/main/java/io/nexus/tags/Tag.java
+  backend/src/main/java/io/nexus/tags/TagColor.java
+  backend/src/main/java/io/nexus/tags/TagController.java
+  backend/src/main/java/io/nexus/tags/TagRepository.java
+  backend/src/main/java/io/nexus/tags/TagService.java
+  backend/src/main/java/io/nexus/tags/TagNotFoundException.java
+  backend/src/main/java/io/nexus/tags/TagNameAlreadyInUseException.java
+  backend/src/main/java/io/nexus/tags/dto/TagRequest.java
+  backend/src/main/java/io/nexus/tags/dto/TagResponse.java
+
+Backend modificado:
+  backend/src/main/java/io/nexus/notes/Note.java                   (@ManyToMany tags)
+  backend/src/main/java/io/nexus/notes/NoteController.java         (params q + tag, attach/detach)
+  backend/src/main/java/io/nexus/notes/NoteRepository.java         (searchByUser, findByUserAndTagId)
+  backend/src/main/java/io/nexus/notes/NoteService.java            (search, listByTag, toPrefixTsQuery)
+  backend/src/main/java/io/nexus/notes/dto/NoteResponse.java       (campo tags)
+
+Frontend novo:
+  frontend/src/lib/tagColors.ts                                    (mapa de hex)
+  frontend/src/routes/tags/+page.svelte                            (CRUD de tags)
+
+Frontend modificado:
+  frontend/src/lib/api.ts                                          (searchNotes, listTags, attach/detach...)
+  frontend/src/lib/types.ts                                        (Tag, TagColor, TAG_COLORS)
+  frontend/src/routes/+layout.svelte                               (link Tags no header)
+  frontend/src/routes/+page.svelte                                 (busca, chips clicáveis, filtro URL)
+  frontend/src/routes/notes/[id]/+page.svelte                      (anexar/desanexar tags)
+
+Repo: https://github.com/flaviovmix/nexus
+</script>
+
+<script type="text/template" id="tpl-02">
+Busca full-text — código
+
+== V5__add_note_search.sql ==
+(adicionar conteúdo da migration aqui)
+
+== V6__unaccent_search.sql ==
+(adicionar conteúdo da migration aqui)
+
+== NoteRepository.searchByUser ==
+(adicionar @Query nativeQuery aqui)
+
+== NoteService.search + toPrefixTsQuery ==
+(adicionar método aqui)
+
+== NoteController.list — branch q ==
+(adicionar trecho aqui)
+
+== frontend +page.svelte — input + debounce ==
+(adicionar trecho aqui)
+</script>
+
+<script type="text/template" id="tpl-03">
+Tags backend — código
+
+== V7__create_tags.sql ==
+(adicionar conteúdo da migration aqui)
+
+== Tag.java (entidade) ==
+(adicionar classe aqui)
+
+== TagController + TagService + TagRepository ==
+(adicionar classes aqui)
+
+== Note.java — @ManyToMany + JoinTable notes_tags ==
+(adicionar trecho aqui)
+
+== NoteController — attach/detach + filtro ?tag= ==
+(adicionar trechos aqui)
+
+== NoteRepository.findByUserAndTagId ==
+(adicionar @Query JPQL aqui)
+</script>
+
+<script type="text/template" id="tpl-04">
+Cor + Tags frontend — código
+
+== V8__add_tag_color.sql ==
+(adicionar conteúdo da migration aqui)
+
+== TagColor.java (enum) ==
+(adicionar enum aqui)
+
+== TagRequest + TagResponse + Tag (com color) ==
+(adicionar trechos aqui)
+
+== TagService.create/update — validação ==
+(adicionar trecho aqui)
+
+== TagController — handler IllegalArgumentException ==
+(adicionar trecho aqui)
+
+== frontend lib/types.ts — Tag, TagColor, TAG_COLORS ==
+(adicionar trecho aqui)
+
+== frontend lib/tagColors.ts — mapa hex ==
+(adicionar arquivo aqui)
+
+== frontend lib/api.ts — listTags, createTag, attach/detach... ==
+(adicionar trechos aqui)
+
+== frontend /tags/+page.svelte (CRUD) ==
+(adicionar arquivo aqui)
+
+== frontend /+layout.svelte — link Tags ==
+(adicionar trecho aqui)
+
+== frontend /+page.svelte — chips clicáveis + filtro URL ==
+(adicionar trecho aqui)
+
+== frontend /notes/[id]/+page.svelte — anexar/desanexar ==
+(adicionar trecho aqui)
+</script>
+
+</body>
+</html>

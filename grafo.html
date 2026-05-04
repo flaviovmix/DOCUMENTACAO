@@ -122,94 +122,227 @@
         id: 'root', label: 'Home', group: 'root',
         url: 'index.html',
         children: [
+            // ─── FUNDAMENTOS ─────────────────────────────────────────────
             {
-                id: 'nm', label: 'Novo Módulo', group: 'nm',
-                url: 'pages/2-jasap/1-novo-modulo/novo-modulo.html',
-                children: [
-                    { id: 'nm1', label: 'DepartamentoHome',       group: 'nm', url: 'pages/2-jasap/1-novo-modulo/1-DepartamentoHome/1-DepartamentoHome.html' },
-                    { id: 'nm2', label: 'DepartamentoManager',    group: 'nm', url: 'pages/2-jasap/1-novo-modulo/2-DepartamentoManager/2-DepartamentoManager.html' },
-                    { id: 'nm3', label: 'DepartamentoMdFactory',  group: 'nm', url: 'pages/2-jasap/1-novo-modulo/3-DepartamentoMdFactory/3-DepartamentoMdFactory.html' },
-                    { id: 'nm4', label: 'AppsRootModelFactory',   group: 'nm', url: 'pages/2-jasap/1-novo-modulo/4-AppsRootModelFactory/4-AppsRootModelFactory.html' },
-                    { id: 'nm5', label: 'PnlCfg',                 group: 'nm', url: 'pages/2-jasap/1-novo-modulo/5-PnlCfg/5-PnlCfg.html' },
-                    { id: 'nm6', label: 'RootManager',            group: 'nm', url: 'pages/2-jasap/1-novo-modulo/6-RootManager/6-RootManager.html' },
-                    { id: 'nm7', label: 'HomeDesk',               group: 'nm', url: 'pages/2-jasap/1-novo-modulo/7-HomeDesk/7-HomeDesk.html' }
-                ]
-            },
-            {
-                id: 'crud', label: 'CRUD', group: 'crud',
-                url: 'pages/2-jasap/2-crud/crud.html',
+                id: 'fund', label: 'Fundamentos', group: 'fund',
+                url: 'pages/1-fundamentos/fundamentos.html',
                 children: [
                     {
-                        id: 'cr', label: 'Read', group: 'cr',
-                        url: 'pages/2-jasap/2-crud/1-crud-read/crud-read.html',
+                        id: 'java', label: 'Java', group: 'java',
+                        url: 'pages/1-fundamentos/1-java/java.html',
                         children: [
-                            { id: 'cr1', label: 'DepartamentoProdutoBean',   group: 'cr', url: 'pages/2-jasap/2-crud/1-crud-read/1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html' },
-                            { id: 'cr2', label: 'DepartamentoProdutoWBean',  group: 'cr', url: 'pages/2-jasap/2-crud/1-crud-read/2-DepartamentoProdutoWBean/2-DepartamentoProdutoWBean.html' },
-                            { id: 'cr3', label: 'DepartamentoProdutoDAO',    group: 'cr', url: 'pages/2-jasap/2-crud/1-crud-read/3-DepartamentoProdutoDAO/3-DepartamentoProdutoDAO.html' },
-                            { id: 'cr4', label: 'DepartamentoProdutoModel',  group: 'cr', url: 'pages/2-jasap/2-crud/1-crud-read/4-DepartamentoProdutoModel/4-DepartamentoProdutoModel.html' },
-                            { id: 'cr5', label: 'DepartamentoProdutoAction', group: 'cr', url: 'pages/2-jasap/2-crud/1-crud-read/5-DepartamentoProdutoAction/5-DepartamentoProdutoAction.html' },
-                            { id: 'cr6', label: 'getManager',                group: 'cr', url: 'pages/2-jasap/2-crud/1-crud-read/6-getManager/6-getManager.html' },
-                            { id: 'cr7', label: 'DepartamentoMdFactory',     group: 'cr', url: 'pages/2-jasap/2-crud/1-crud-read/7-DepartamentoMdFactory/7-DepartamentoMdFactory.html' },
-                            { id: 'cr8', label: 'DepartamentoProdutoList',   group: 'cr', url: 'pages/2-jasap/2-crud/1-crud-read/8-DepartamentoProdutoList/8-DepartamentoProdutoList.html' },
-                            { id: 'cr9', label: 'DepartamentoHome',          group: 'cr', url: 'pages/2-jasap/2-crud/1-crud-read/9-DepartamentoHome/9-DepartamentoHome.html' }
+                            { id: 'java1', label: 'Visão Geral', group: 'java', url: 'pages/1-fundamentos/1-java/1-visao-geral/1-visao-geral.html' },
+                            {
+                                id: 'java2', label: 'Classes e Objetos', group: 'java',
+                                url: 'pages/1-fundamentos/1-java/2-classes-objetos/2-classes-objetos.html',
+                                children: [
+                                    { id: 'java2-1', label: 'Molde e Instância',  group: 'java', url: 'pages/1-fundamentos/1-java/2-classes-objetos/1-molde-e-instancia/1-molde-e-instancia.html' },
+                                    { id: 'java2-2', label: 'Anatomia da Classe', group: 'java', url: 'pages/1-fundamentos/1-java/2-classes-objetos/2-anatomia-classe/2-anatomia-classe.html' }
+                                ]
+                            },
+                            { id: 'java3', label: '4 Pilares POO',   group: 'java', url: 'pages/1-fundamentos/1-java/3-os-4-pilares-poo/3-os-4-pilares-poo.html' },
+                            { id: 'java4', label: 'Coletor de Lixo', group: 'java', url: 'pages/1-fundamentos/1-java/4-coletor-de-lixo/4-coletor-de-lixo.html' }
                         ]
                     },
                     {
-                        id: 'cd', label: 'Delete', group: 'cd',
-                        url: 'pages/2-jasap/2-crud/2-crud-delete/crud-delete.html',
+                        id: 'sql', label: 'SQL', group: 'sql',
+                        url: 'pages/1-fundamentos/2-sql/sql.html',
                         children: [
-                            { id: 'cd1', label: 'DepartamentoProdutoDAO',  group: 'cd', url: 'pages/2-jasap/2-crud/2-crud-delete/1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html' },
-                            { id: 'cd2', label: 'DepartamentoProdutoList', group: 'cd', url: 'pages/2-jasap/2-crud/2-crud-delete/2-DepartamentoProdutoList/2-DepartamentoProdutoList.html' },
-                            { id: 'cd3', label: 'DepartamentoManager',     group: 'cd', url: 'pages/2-jasap/2-crud/2-crud-delete/3-DepartamentoManager/3-DepartamentoManager.html' }
+                            { id: 'sql1', label: 'Visão Geral', group: 'sql', url: 'pages/1-fundamentos/2-sql/1-visao-geral/1-visao-geral.html' },
+                            { id: 'sql2', label: 'Backup',      group: 'sql', url: 'pages/1-fundamentos/2-sql/2-backup/backup.html' },
+                            { id: 'sql3', label: 'CRUD',        group: 'sql', url: 'pages/1-fundamentos/2-sql/3-crud/crud.html' }
                         ]
                     },
                     {
-                        id: 'cc', label: 'Create', group: 'cc',
-                        url: 'pages/2-jasap/2-crud/3-crud-create/crud-create.html',
+                        id: 'osi', label: 'Modelo OSI', group: 'osi',
+                        url: 'pages/1-fundamentos/3-modelo-osi/modelo-osi.html',
                         children: [
-                            { id: 'cc1', label: 'DepartamentoProdutoDAO',    group: 'cc', url: 'pages/2-jasap/2-crud/3-crud-create/1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html' },
-                            { id: 'cc2', label: 'DepartamentoProdutoAction', group: 'cc', url: 'pages/2-jasap/2-crud/3-crud-create/2-DepartamentoProdutoAction/2-DepartamentoProdutoAction.html' },
-                            { id: 'cc3', label: 'DepartamentoProdutoForm',   group: 'cc', url: 'pages/2-jasap/2-crud/3-crud-create/3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html' },
-                            { id: 'cc4', label: 'DepartamentoProdutoList',   group: 'cc', url: 'pages/2-jasap/2-crud/3-crud-create/4-DepartamentoProdutoList/4-DepartamentoProdutoList.html' },
-                            { id: 'cc5', label: 'DepartamentoManager',       group: 'cc', url: 'pages/2-jasap/2-crud/3-crud-create/5-DepartamentoManager/5-DepartamentoManager.html' }
+                            { id: 'osi0', label: 'Visão Geral',     group: 'osi', url: 'pages/1-fundamentos/3-modelo-osi/0-visao-geral/0-visao-geral.html' },
+                            { id: 'osi1', label: '1. Física',       group: 'osi', url: 'pages/1-fundamentos/3-modelo-osi/1-fisica/1-fisica.html' },
+                            { id: 'osi2', label: '2. Enlace',       group: 'osi', url: 'pages/1-fundamentos/3-modelo-osi/2-enlace/2-enlace.html' },
+                            { id: 'osi3', label: '3. Rede',         group: 'osi', url: 'pages/1-fundamentos/3-modelo-osi/3-rede/3-rede.html' },
+                            { id: 'osi4', label: '4. Transporte',   group: 'osi', url: 'pages/1-fundamentos/3-modelo-osi/4-transporte/4-transporte.html' },
+                            { id: 'osi5', label: '5. Sessão',       group: 'osi', url: 'pages/1-fundamentos/3-modelo-osi/5-sessao/5-sessao.html' },
+                            { id: 'osi6', label: '6. Apresentação', group: 'osi', url: 'pages/1-fundamentos/3-modelo-osi/6-apresentacao/6-apresentacao.html' },
+                            {
+                                id: 'osi7', label: '7. Aplicação', group: 'osi',
+                                url: 'pages/1-fundamentos/3-modelo-osi/7-aplicacao/7-aplicacao.html',
+                                children: [
+                                    { id: 'osi7-1', label: 'HTTP — Como Funciona', group: 'osi', url: 'pages/1-fundamentos/3-modelo-osi/7-aplicacao/http/1-como-funciona/1-como-funciona.html' },
+                                    { id: 'osi7-3', label: 'HTTP — Headers',       group: 'osi', url: 'pages/1-fundamentos/3-modelo-osi/7-aplicacao/http/3-headers/3-headers.html' }
+                                ]
+                            }
                         ]
                     },
                     {
-                        id: 'cu', label: 'Update', group: 'cu',
-                        url: 'pages/2-jasap/2-crud/4-crud-update/crud-update.html',
+                        id: 'html', label: 'HTML/CSS/JS', group: 'html',
+                        url: 'pages/1-fundamentos/4-html-css-js/html-css-js.html',
                         children: [
-                            { id: 'cu1', label: 'DepartamentoProdutoDAO',    group: 'cu', url: 'pages/2-jasap/2-crud/4-crud-update/1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html' },
-                            { id: 'cu2', label: 'DepartamentoProdutoAction', group: 'cu', url: 'pages/2-jasap/2-crud/4-crud-update/2-DepartamentoProdutoAction/2-DepartamentoProdutoAction.html' },
-                            { id: 'cu3', label: 'DepartamentoProdutoForm',   group: 'cu', url: 'pages/2-jasap/2-crud/4-crud-update/3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html' },
-                            { id: 'cu4', label: 'DepartamentoProdutoList',   group: 'cu', url: 'pages/2-jasap/2-crud/4-crud-update/4-DepartamentoProdutoList/4-DepartamentoProdutoList.html' },
-                            { id: 'cu5', label: 'DepartamentoManager',       group: 'cu', url: 'pages/2-jasap/2-crud/4-crud-update/5-DepartamentoManager/5-DepartamentoManager.html' }
+                            { id: 'html1', label: 'Visão Geral', group: 'html', url: 'pages/1-fundamentos/4-html-css-js/1-visao-geral/1-visao-geral.html' },
+                            { id: 'html2', label: 'HTML',        group: 'html', url: 'pages/1-fundamentos/4-html-css-js/2-html/2-html.html' },
+                            { id: 'html3', label: 'CSS',         group: 'html', url: 'pages/1-fundamentos/4-html-css-js/3-css/3-css.html' },
+                            { id: 'html4', label: 'JavaScript',  group: 'html', url: 'pages/1-fundamentos/4-html-css-js/4-javascript/4-javascript.html' }
                         ]
                     },
+                    { id: 'hw', label: 'Hardware', group: 'hw', url: 'pages/1-fundamentos/5-hardware/hardware.html' },
                     {
-                        id: 'cf', label: 'Funcionalidades', group: 'func',
-                        url: 'pages/2-jasap/2-crud/5-funcionalidades/funcionalidades.html',
+                        id: 'git', label: 'Git', group: 'git',
+                        url: 'pages/1-fundamentos/6-git/git.html',
                         children: [
-                            { id: 'cf1', label: 'Sort',        group: 'func', url: 'pages/2-jasap/2-crud/5-funcionalidades/1-sort/sort.html' },
-                            { id: 'cf2', label: 'QuickSearch', group: 'func', url: 'pages/2-jasap/2-crud/5-funcionalidades/2-quicksearch/quicksearch.html' },
-                            { id: 'cf3', label: 'Insert Chk',  group: 'func', url: 'pages/2-jasap/2-crud/5-funcionalidades/3-insert-chk/insert-chk.html' },
-                            { id: 'cf4', label: 'Paginação',   group: 'func', url: 'pages/2-jasap/2-crud/5-funcionalidades/4-paginacao/paginacao.html' },
-                            { id: 'cf5', label: 'Tabs Status', group: 'func', url: 'pages/2-jasap/2-crud/5-funcionalidades/5-tabs-status/tabs-status.html' },
-                            { id: 'cf6', label: 'Delete Form', group: 'func', url: 'pages/2-jasap/2-crud/5-funcionalidades/6-delete-form/delete-form.html' }
+                            { id: 'git1', label: 'Visão Geral',    group: 'git', url: 'pages/1-fundamentos/6-git/1-visao-geral/visao-geral.html' },
+                            { id: 'git2', label: 'Setup',          group: 'git', url: 'pages/1-fundamentos/6-git/2-setup/2-setup.html' },
+                            { id: 'git3', label: 'Primeiro Ciclo', group: 'git', url: 'pages/1-fundamentos/6-git/3-primeiro-ciclo/3-primeiro-ciclo.html' },
+                            { id: 'git4', label: 'Histórico',      group: 'git', url: 'pages/1-fundamentos/6-git/4-historico/4-historico.html' }
                         ]
                     }
                 ]
             },
+            // ─── JASAP ────────────────────────────────────────────────────
             {
                 id: 'ja', label: 'Jasap', group: 'jasap',
                 url: 'pages/2-jasap/jasap.html',
                 children: [
-                    { id: 'ja1', label: 'Manager', group: 'jasap', url: 'pages/2-jasap/1-Manager/1-Manager.html' }
+                    { id: 'ja1', label: 'Manager', group: 'jasap', url: 'pages/2-jasap/1-Manager/1-Manager.html' },
+                    {
+                        id: 'nm', label: 'Novo Módulo', group: 'nm',
+                        url: 'pages/2-jasap/1-novo-modulo/novo-modulo.html',
+                        children: [
+                            { id: 'nm1', label: 'DepartamentoHome',       group: 'nm', url: 'pages/2-jasap/1-novo-modulo/1-DepartamentoHome/1-DepartamentoHome.html' },
+                            { id: 'nm2', label: 'DepartamentoManager',    group: 'nm', url: 'pages/2-jasap/1-novo-modulo/2-DepartamentoManager/2-DepartamentoManager.html' },
+                            { id: 'nm3', label: 'DepartamentoMdFactory',  group: 'nm', url: 'pages/2-jasap/1-novo-modulo/3-DepartamentoMdFactory/3-DepartamentoMdFactory.html' },
+                            { id: 'nm4', label: 'AppsRootModelFactory',   group: 'nm', url: 'pages/2-jasap/1-novo-modulo/4-AppsRootModelFactory/4-AppsRootModelFactory.html' },
+                            { id: 'nm5', label: 'PnlCfg',                 group: 'nm', url: 'pages/2-jasap/1-novo-modulo/5-PnlCfg/5-PnlCfg.html' },
+                            { id: 'nm6', label: 'RootManager',            group: 'nm', url: 'pages/2-jasap/1-novo-modulo/6-RootManager/6-RootManager.html' },
+                            { id: 'nm7', label: 'HomeDesk',               group: 'nm', url: 'pages/2-jasap/1-novo-modulo/7-HomeDesk/7-HomeDesk.html' }
+                        ]
+                    },
+                    {
+                        id: 'crud', label: 'CRUD', group: 'crud',
+                        url: 'pages/2-jasap/2-crud/crud.html',
+                        children: [
+                            {
+                                id: 'cr', label: 'Read', group: 'cr',
+                                url: 'pages/2-jasap/2-crud/1-crud-read/crud-read.html',
+                                children: [
+                                    { id: 'cr1', label: 'DepartamentoProdutoBean',   group: 'cr', url: 'pages/2-jasap/2-crud/1-crud-read/1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html' },
+                                    { id: 'cr2', label: 'DepartamentoProdutoWBean',  group: 'cr', url: 'pages/2-jasap/2-crud/1-crud-read/2-DepartamentoProdutoWBean/2-DepartamentoProdutoWBean.html' },
+                                    { id: 'cr3', label: 'DepartamentoProdutoDAO',    group: 'cr', url: 'pages/2-jasap/2-crud/1-crud-read/3-DepartamentoProdutoDAO/3-DepartamentoProdutoDAO.html' },
+                                    { id: 'cr4', label: 'DepartamentoProdutoModel',  group: 'cr', url: 'pages/2-jasap/2-crud/1-crud-read/4-DepartamentoProdutoModel/4-DepartamentoProdutoModel.html' },
+                                    { id: 'cr5', label: 'DepartamentoProdutoAction', group: 'cr', url: 'pages/2-jasap/2-crud/1-crud-read/5-DepartamentoProdutoAction/5-DepartamentoProdutoAction.html' },
+                                    { id: 'cr6', label: 'getManager',                group: 'cr', url: 'pages/2-jasap/2-crud/1-crud-read/6-getManager/6-getManager.html' },
+                                    { id: 'cr7', label: 'DepartamentoMdFactory',     group: 'cr', url: 'pages/2-jasap/2-crud/1-crud-read/7-DepartamentoMdFactory/7-DepartamentoMdFactory.html' },
+                                    { id: 'cr8', label: 'DepartamentoProdutoList',   group: 'cr', url: 'pages/2-jasap/2-crud/1-crud-read/8-DepartamentoProdutoList/8-DepartamentoProdutoList.html' },
+                                    { id: 'cr9', label: 'DepartamentoHome',          group: 'cr', url: 'pages/2-jasap/2-crud/1-crud-read/9-DepartamentoHome/9-DepartamentoHome.html' }
+                                ]
+                            },
+                            {
+                                id: 'cd', label: 'Delete', group: 'cd',
+                                url: 'pages/2-jasap/2-crud/2-crud-delete/crud-delete.html',
+                                children: [
+                                    { id: 'cd1', label: 'DepartamentoProdutoDAO',  group: 'cd', url: 'pages/2-jasap/2-crud/2-crud-delete/1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html' },
+                                    { id: 'cd2', label: 'DepartamentoProdutoList', group: 'cd', url: 'pages/2-jasap/2-crud/2-crud-delete/2-DepartamentoProdutoList/2-DepartamentoProdutoList.html' },
+                                    { id: 'cd3', label: 'DepartamentoManager',     group: 'cd', url: 'pages/2-jasap/2-crud/2-crud-delete/3-DepartamentoManager/3-DepartamentoManager.html' }
+                                ]
+                            },
+                            {
+                                id: 'cc', label: 'Create', group: 'cc',
+                                url: 'pages/2-jasap/2-crud/3-crud-create/crud-create.html',
+                                children: [
+                                    { id: 'cc1', label: 'DepartamentoProdutoDAO',    group: 'cc', url: 'pages/2-jasap/2-crud/3-crud-create/1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html' },
+                                    { id: 'cc2', label: 'DepartamentoProdutoAction', group: 'cc', url: 'pages/2-jasap/2-crud/3-crud-create/2-DepartamentoProdutoAction/2-DepartamentoProdutoAction.html' },
+                                    { id: 'cc3', label: 'DepartamentoProdutoForm',   group: 'cc', url: 'pages/2-jasap/2-crud/3-crud-create/3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html' },
+                                    { id: 'cc4', label: 'DepartamentoProdutoList',   group: 'cc', url: 'pages/2-jasap/2-crud/3-crud-create/4-DepartamentoProdutoList/4-DepartamentoProdutoList.html' },
+                                    { id: 'cc5', label: 'DepartamentoManager',       group: 'cc', url: 'pages/2-jasap/2-crud/3-crud-create/5-DepartamentoManager/5-DepartamentoManager.html' }
+                                ]
+                            },
+                            {
+                                id: 'cu', label: 'Update', group: 'cu',
+                                url: 'pages/2-jasap/2-crud/4-crud-update/crud-update.html',
+                                children: [
+                                    { id: 'cu1', label: 'DepartamentoProdutoDAO',    group: 'cu', url: 'pages/2-jasap/2-crud/4-crud-update/1-DepartamentoProdutoDAO/1-DepartamentoProdutoDAO.html' },
+                                    { id: 'cu2', label: 'DepartamentoProdutoAction', group: 'cu', url: 'pages/2-jasap/2-crud/4-crud-update/2-DepartamentoProdutoAction/2-DepartamentoProdutoAction.html' },
+                                    { id: 'cu3', label: 'DepartamentoProdutoForm',   group: 'cu', url: 'pages/2-jasap/2-crud/4-crud-update/3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html' },
+                                    { id: 'cu4', label: 'DepartamentoProdutoList',   group: 'cu', url: 'pages/2-jasap/2-crud/4-crud-update/4-DepartamentoProdutoList/4-DepartamentoProdutoList.html' },
+                                    { id: 'cu5', label: 'DepartamentoManager',       group: 'cu', url: 'pages/2-jasap/2-crud/4-crud-update/5-DepartamentoManager/5-DepartamentoManager.html' }
+                                ]
+                            },
+                            {
+                                id: 'cf', label: 'Funcionalidades', group: 'func',
+                                url: 'pages/2-jasap/2-crud/5-funcionalidades/funcionalidades.html',
+                                children: [
+                                    { id: 'cf1', label: 'Sort',        group: 'func', url: 'pages/2-jasap/2-crud/5-funcionalidades/1-sort/sort.html' },
+                                    { id: 'cf2', label: 'QuickSearch', group: 'func', url: 'pages/2-jasap/2-crud/5-funcionalidades/2-quicksearch/quicksearch.html' },
+                                    { id: 'cf3', label: 'Insert Chk',  group: 'func', url: 'pages/2-jasap/2-crud/5-funcionalidades/3-insert-chk/insert-chk.html' },
+                                    { id: 'cf4', label: 'Paginação',   group: 'func', url: 'pages/2-jasap/2-crud/5-funcionalidades/4-paginacao/paginacao.html' },
+                                    { id: 'cf5', label: 'Tabs Status', group: 'func', url: 'pages/2-jasap/2-crud/5-funcionalidades/5-tabs-status/tabs-status.html' },
+                                    { id: 'cf6', label: 'Delete Form', group: 'func', url: 'pages/2-jasap/2-crud/5-funcionalidades/6-delete-form/delete-form.html' },
+                                    {
+                                        id: 'cf7', label: 'LinkBox', group: 'linkbox',
+                                        url: 'pages/2-jasap/2-crud/5-funcionalidades/7-linkbox/linkbox.html',
+                                        children: [
+                                            { id: 'cf7-1', label: 'DepartamentoProdutoBean',    group: 'linkbox', url: 'pages/2-jasap/2-crud/5-funcionalidades/7-linkbox/1-DepartamentoProdutoBean/1-DepartamentoProdutoBean.html' },
+                                            { id: 'cf7-2', label: 'DepartamentoPessoaSelect',   group: 'linkbox', url: 'pages/2-jasap/2-crud/5-funcionalidades/7-linkbox/2-DepartamentoPessoaSelect/2-DepartamentoPessoaSelect.html' },
+                                            { id: 'cf7-3', label: 'DepartamentoProdutoForm',    group: 'linkbox', url: 'pages/2-jasap/2-crud/5-funcionalidades/7-linkbox/3-DepartamentoProdutoForm/3-DepartamentoProdutoForm.html' },
+                                            { id: 'cf7-4', label: 'DepartamentoManager',        group: 'linkbox', url: 'pages/2-jasap/2-crud/5-funcionalidades/7-linkbox/4-DepartamentoManager/4-DepartamentoManager.html' }
+                                        ]
+                                    },
+                                    { id: 'cf8', label: 'Master/Detail', group: 'masterdetail', url: 'pages/2-jasap/2-crud/5-funcionalidades/8-master-detail/master-detail.html' }
+                                ]
+                            }
+                        ]
+                    }
                 ]
             },
-            { id: 'sql', label: 'SQL',              group: 'sql', url: 'pages/1-fundamentos/2-sql/sql.html' },
-            { id: 'fj',  label: 'Fundamentos Java', group: 'fj',  url: 'pages/1-fundamentos/1-java/java.html' },
-            { id: 'hw',  label: 'Hardware',         group: 'hw',  url: 'pages/1-fundamentos/5-hardware/hardware.html' },
-            { id: 'ref', label: 'Referência',       group: 'ref', url: 'referencia/index.html' }
+            // ─── NEXUS ────────────────────────────────────────────────────
+            {
+                id: 'nexus', label: 'Nexus', group: 'nexus',
+                url: 'pages/3-nexus/nexus.html',
+                children: [
+                    {
+                        id: 'comp', label: 'Componentes', group: 'componentes',
+                        url: 'pages/3-nexus/1-componentes/componentes.html',
+                        children: [
+                            { id: 'comp1', label: 'TOC', group: 'componentes', url: 'pages/3-nexus/1-componentes/1-toc/toc.html' }
+                        ]
+                    },
+                    {
+                        id: 'f0', label: 'Fase 0 — Setup', group: 'fase0',
+                        url: 'pages/3-nexus/2-fase-0/fase-0.html',
+                        children: [
+                            { id: 'f01',  label: '1. Visão Geral',          group: 'fase0', url: 'pages/3-nexus/2-fase-0/1-visao-geral/1-visao-geral.html' },
+                            { id: 'f02',  label: '2. Setup do Ambiente',    group: 'fase0', url: 'pages/3-nexus/2-fase-0/2-setup-ambiente/2-setup-ambiente.html' },
+                            { id: 'f03',  label: '3. Spring Initializr',    group: 'fase0', url: 'pages/3-nexus/2-fase-0/3-spring-initializr/3-spring-initializr.html' },
+                            { id: 'f04',  label: '4. application.yml',      group: 'fase0', url: 'pages/3-nexus/2-fase-0/4-application-yml/4-application-yml.html' },
+                            { id: 'f05',  label: '5. Virtual Threads',      group: 'fase0', url: 'pages/3-nexus/2-fase-0/5-virtual-threads/5-virtual-threads.html' },
+                            { id: 'f06',  label: '6. Spring Security',      group: 'fase0', url: 'pages/3-nexus/2-fase-0/6-spring-security-inicial/6-spring-security-inicial.html' },
+                            { id: 'f07',  label: '7. Health Endpoint',      group: 'fase0', url: 'pages/3-nexus/2-fase-0/7-health-endpoint/7-health-endpoint.html' },
+                            { id: 'f08',  label: '8. SvelteKit Setup',      group: 'fase0', url: 'pages/3-nexus/2-fase-0/8-sveltekit-setup/8-sveltekit-setup.html' },
+                            { id: 'f09',  label: '9. Integração Fim a Fim', group: 'fase0', url: 'pages/3-nexus/2-fase-0/9-integracao-fim-a-fim/9-integracao-fim-a-fim.html' },
+                            { id: 'f010', label: '10. Carta do Claude',     group: 'fase0', url: 'pages/3-nexus/2-fase-0/10-carta-do-claude/10-carta-do-claude.html' }
+                        ]
+                    },
+                    { id: 'f1',  label: 'Fase 1 — MVP',     group: 'fase1',  url: 'pages/3-nexus/3-fase-1/fase-1.html' },
+                    { id: 'fxn', label: 'Faxina — Fase 1',  group: 'faxina', url: 'pages/3-nexus/4-fase-1-faxina/fase-1-faxina.html' }
+                ]
+            },
+            // ─── INTERFACE ────────────────────────────────────────────────
+            {
+                id: 'iface', label: 'Interface', group: 'interface',
+                url: 'pages/7-interface/interface.html',
+                children: [
+                    { id: 'iface1', label: 'Visão Geral', group: 'interface', url: 'pages/7-interface/1-visao-geral/1-visao-geral.html' }
+                ]
+            },
+            // ─── CLAUDE ───────────────────────────────────────────────────
+            {
+                id: 'claude', label: 'Claude', group: 'claude',
+                url: 'pages/8-claude/claude.html',
+                children: [
+                    { id: 'claude1', label: 'Carta Aberta', group: 'claude', url: 'pages/8-claude/1-carta-aberta/1-carta-aberta.html' }
+                ]
+            },
+            // ─── REFERÊNCIA ───────────────────────────────────────────────
+            { id: 'ref', label: 'Referência', group: 'ref', url: 'referencia/index.html' }
         ]
     };
 
@@ -300,19 +433,32 @@
                 selectionWidth: 2
             },
             groups: {
-                root:  { color: { background: '#fbbf24', border: '#f59e0b' }, font: { color: '#1e293b' } },
-                nm:    { color: { background: '#a855f7', border: '#c084fc' } },
-                crud:  { color: { background: '#3b82f6', border: '#60a5fa' } },
-                cr:    { color: { background: '#22d3ee', border: '#67e8f9' }, font: { color: '#0f172a' } },
-                cd:    { color: { background: '#f43f5e', border: '#fb7185' } },
-                cc:    { color: { background: '#22c55e', border: '#4ade80' }, font: { color: '#0f172a' } },
-                cu:    { color: { background: '#f59e0b', border: '#fbbf24' }, font: { color: '#0f172a' } },
-                func:  { color: { background: '#6366f1', border: '#818cf8' } },
-                jasap: { color: { background: '#f97316', border: '#fb923c' } },
-                sql:   { color: { background: '#ec4899', border: '#f472b6' } },
-                fj:    { color: { background: '#14b8a6', border: '#2dd4bf' } },
-                hw:    { color: { background: '#64748b', border: '#94a3b8' } },
-                ref:   { color: { background: '#cbd5e1', border: '#e2e8f0' }, font: { color: '#0f172a' } }
+                root:         { color: { background: '#fbbf24', border: '#f59e0b' }, font: { color: '#1e293b' } },
+                fund:         { color: { background: '#fb923c', border: '#fdba74' } },
+                java:         { color: { background: '#14b8a6', border: '#2dd4bf' } },
+                sql:          { color: { background: '#ec4899', border: '#f472b6' } },
+                osi:          { color: { background: '#0ea5e9', border: '#38bdf8' } },
+                html:         { color: { background: '#ef4444', border: '#f87171' } },
+                hw:           { color: { background: '#64748b', border: '#94a3b8' } },
+                git:          { color: { background: '#dc2626', border: '#ef4444' } },
+                jasap:        { color: { background: '#f97316', border: '#fb923c' } },
+                nm:           { color: { background: '#a855f7', border: '#c084fc' } },
+                crud:         { color: { background: '#3b82f6', border: '#60a5fa' } },
+                cr:           { color: { background: '#22d3ee', border: '#67e8f9' }, font: { color: '#0f172a' } },
+                cd:           { color: { background: '#f43f5e', border: '#fb7185' } },
+                cc:           { color: { background: '#22c55e', border: '#4ade80' }, font: { color: '#0f172a' } },
+                cu:           { color: { background: '#f59e0b', border: '#fbbf24' }, font: { color: '#0f172a' } },
+                func:         { color: { background: '#6366f1', border: '#818cf8' } },
+                linkbox:      { color: { background: '#818cf8', border: '#a5b4fc' } },
+                masterdetail: { color: { background: '#4f46e5', border: '#6366f1' } },
+                nexus:        { color: { background: '#10b981', border: '#34d399' } },
+                componentes:  { color: { background: '#c084fc', border: '#d8b4fe' } },
+                fase0:        { color: { background: '#34d399', border: '#6ee7b7' }, font: { color: '#0f172a' } },
+                fase1:        { color: { background: '#059669', border: '#10b981' } },
+                faxina:       { color: { background: '#047857', border: '#059669' } },
+                interface:    { color: { background: '#facc15', border: '#fde047' }, font: { color: '#0f172a' } },
+                claude:       { color: { background: '#d946ef', border: '#e879f9' } },
+                ref:          { color: { background: '#cbd5e1', border: '#e2e8f0' }, font: { color: '#0f172a' } }
             },
             physics: {
                 enabled: true,
@@ -498,6 +644,14 @@
 
     <div class="grafo-legend">
         <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#fbbf24"></span>Home</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#fb923c"></span>Fundamentos</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#14b8a6"></span>Java</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#ec4899"></span>SQL</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#0ea5e9"></span>Modelo OSI</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#ef4444"></span>HTML/CSS/JS</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#64748b"></span>Hardware</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#dc2626"></span>Git</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#f97316"></span>Jasap</div>
         <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#a855f7"></span>Novo Módulo</div>
         <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#3b82f6"></span>CRUD</div>
         <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#22d3ee"></span>Read</div>
@@ -505,10 +659,15 @@
         <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#22c55e"></span>Create</div>
         <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#f59e0b"></span>Update</div>
         <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#6366f1"></span>Funcionalidades</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#f97316"></span>Jasap</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#ec4899"></span>SQL</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#14b8a6"></span>Fund. Java</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#64748b"></span>Hardware</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#818cf8"></span>LinkBox</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#4f46e5"></span>Master/Detail</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#10b981"></span>Nexus</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#c084fc"></span>Componentes</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#34d399"></span>Fase 0</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#059669"></span>Fase 1</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#047857"></span>Faxina</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#facc15"></span>Interface</div>
+        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#d946ef"></span>Claude</div>
         <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#cbd5e1"></span>Referência</div>
     </div>
 
