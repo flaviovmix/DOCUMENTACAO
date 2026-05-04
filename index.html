@@ -20,12 +20,20 @@
         .codex-slider-container.dragging { cursor: grabbing; }
         .codex-slide { width: max-content; display: flex; will-change: transform; }
         .codex-wrapper { width: 250px; height: 30vh; min-height: 230px; max-height: 420px; position: relative; transform: skew(-5deg); border-left: 7px solid #ffffff; box-shadow: -5px 0 7px rgba(0, 0, 0, 0.3); overflow: hidden; margin-left: -4px; flex: 0 0 auto; }
+        @media (max-width: 768px) {
+            .codex-wrapper { height: 60vh; min-height: 0; max-height: none; }
+        }
         .codex-parallax { width: 140%; height: 100%; margin-left: -60px; transform: skew(5deg); background-position: center top; background-repeat: no-repeat; background-size: cover; transition: background-position 0.5s ease; }
         .codex-wrapper:hover .codex-parallax { background-position: center bottom; }
         .codex-card-label { position: absolute; left: 10px; bottom: 4px; z-index: 1; transform: skew(5deg); font-family: Arial, sans-serif; font-size: 16px; font-weight: 700; color: #ffffff; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75); pointer-events: none; opacity: 1; transition: opacity 0.25s ease, transform 0.25s ease; }
         .codex-wrapper:hover .codex-card-label { opacity: 0; transform: skew(5deg) translateY(-6px); }
         .codex-card-link { position: absolute; left: 10px; bottom: 4px; z-index: 2; transform: skew(5deg) translateY(6px); opacity: 0; color: #ffffff; font-family: Arial, sans-serif; font-size: 16px; font-weight: 700; text-decoration: none; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.75); transition: opacity 0.25s ease, transform 0.25s ease; }
         .codex-wrapper:hover .codex-card-link { opacity: 1; transform: skew(5deg) translateY(0); }
+        @media (hover: none) {
+            .codex-wrapper.is-touched .codex-parallax { background-position: center bottom; }
+            .codex-wrapper.is-touched .codex-card-label { opacity: 0; transform: skew(5deg) translateY(-6px); }
+            .codex-wrapper.is-touched .codex-card-link { opacity: 1; transform: skew(5deg) translateY(0); }
+        }
         .codex-dots-bar { min-height: 22px; background-color: #333333; display: flex; align-items: center; justify-content: center; padding: 0 16px; box-sizing: border-box; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18); overflow: visible; }
         .codex-controls-row { display: grid; grid-template-columns: 18px auto 18px; align-items: center; justify-content: center; column-gap: 8px; height: 18px; line-height: 0; overflow: visible; }
         .codex-direction-button { width: 18px; height: 12px; border: 0; background-color: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 3px; padding: 0; appearance: none; line-height: 0; }
@@ -152,7 +160,16 @@
             link.href = '#';
             link.textContent = 'Saiba mais';
             link.addEventListener('pointerdown', event => event.stopPropagation());
-            link.addEventListener('click', event => event.preventDefault());
+            link.addEventListener('click', event => {
+                event.stopPropagation();
+                if (link.getAttribute('href') === '#') event.preventDefault();
+            });
+            wrapper.addEventListener('click', () => {
+                document.querySelectorAll('.codex-wrapper.is-touched').forEach(w => {
+                    if (w !== wrapper) w.classList.remove('is-touched');
+                });
+                wrapper.classList.toggle('is-touched');
+            });
             wrapper.appendChild(parallax);
             wrapper.appendChild(link);
             wrapper.appendChild(label);

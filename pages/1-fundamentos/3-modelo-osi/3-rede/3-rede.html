@@ -47,7 +47,7 @@
 177.32.150.10</code></pre>
 
             <h3>32 bits = 4,3 bilhões de endereços</h3>
-            <p>2<sup>32</sup> ≈ 4.294.967.296. Pareceu muito em 1981. Hoje é pouco — esgotou em 2011. Por isso existe IPv6 (próxima section), mas IPv4 segue dominante por NAT (que vamos ver).</p>
+            <p>2<sup>32</sup> ≈ 4.294.967.296. Pareceu muito em 1981. Hoje é pouco — esgotou em 2011. As próximas seções vão mostrar a gambiarra (NAT) que estendeu IPv4 muito além disso, e mais adiante a solução real que ainda não decolou.</p>
 
             <h3>Estrutura: rede + host</h3>
             <p>Cada IP tem 2 partes — uma identifica a <strong>rede</strong>, outra identifica a <strong>máquina dentro da rede</strong>. A divisão é feita pela máscara de sub-rede (próxima section). Em <code>192.168.0.42</code> com máscara <code>/24</code>: <code>192.168.0</code> é a rede, <code>42</code> é o host.</p>
@@ -65,50 +65,6 @@
 
             <h3>O papel do roteador</h3>
             <p>Roteador é o equipamento da camada 3 — equivalente do switch (camada 2) no nível de redes. Ele lê o IP de destino do pacote e decide pra qual rede vizinha encaminhar, consultando uma <strong>tabela de roteamento</strong>. Cada salto entre roteadores é um <em>hop</em>; um pacote pode dar 10-20 hops até atravessar o mundo.</p>
-        </div>
-    </div>
-
-    <div class="info-row">
-        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-            <span class="info-row-title">IPv6 — o sucessor de 128 bits</span>
-            <span class="info-row-btn">+</span>
-        </div>
-        <div class="info-row-body">
-            <div class="audio-player" data-src="audio/ipv6.m4a">
-                <audio preload="metadata"></audio>
-                <button class="audio-btn" title="Play / Pause"></button>
-                <div class="audio-progress-wrap">
-                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
-                    <div class="audio-progress-fill"></div>
-                </div>
-                <span class="audio-time">0:00 / 0:00</span>
-            </div>
-            <p>IPv6 resolve o esgotamento do IPv4 — endereço de <strong>128 bits</strong> (16 bytes). 2<sup>128</sup> ≈ 340 undecilhões de endereços. Tantos que dá pra cada átomo de matéria do planeta ter o seu.</p>
-
-            <h3>Notação hexadecimal</h3>
-            <p>Em vez de decimal, IPv6 usa <strong>hexadecimal</strong>, separado por dois-pontos, em 8 grupos de 4 dígitos:</p>
-            <pre><code class="language-bash">2001:0db8:85a3:0000:0000:8a2e:0370:7334</code></pre>
-            <p>Pra ficar legível, existem 2 atalhos:</p>
-            <ul>
-                <li><strong>Zeros à esquerda</strong> de cada grupo podem sumir: <code>0db8</code> vira <code>db8</code></li>
-                <li><strong>Sequência de zeros</strong> vira <code>::</code> (uma vez só por endereço)</li>
-            </ul>
-            <p>O exemplo acima fica:</p>
-            <pre><code class="language-bash">2001:db8:85a3::8a2e:370:7334</code></pre>
-
-            <h3>IPs IPv6 famosos</h3>
-            <div class="table-wrap">
-                <table>
-                    <tr><th>IPv6</th><th>Significado</th></tr>
-                    <tr><td><code>::1</code></td><td>Localhost (equivalente a <code>127.0.0.1</code>)</td></tr>
-                    <tr><td><code>::</code></td><td>Endereço não especificado (equivalente a <code>0.0.0.0</code>)</td></tr>
-                    <tr><td><code>fe80::/10</code></td><td>Link-local — só dentro do segmento de rede</td></tr>
-                    <tr><td><code>2001:db8::/32</code></td><td>Reservado pra exemplos/documentação (igual ao "555-0100" do telefone)</td></tr>
-                </table>
-            </div>
-
-            <h3>Por que ainda usamos IPv4?</h3>
-            <p>IPv6 já existe há mais de 20 anos, mas a adoção é lenta — em 2024 ronda 40% globalmente. NAT permitiu que IPv4 esticasse muito além do esgotamento (com sua casa toda usando 1 IP público), tirando a urgência. Sites grandes (Google, Facebook, Cloudflare) já são <strong>dual stack</strong> — falam IPv4 e IPv6 ao mesmo tempo.</p>
         </div>
     </div>
 
@@ -224,8 +180,129 @@
             </ol>
             <p>Resultado: dezenas de aparelhos da casa parecem 1 IP só pra internet. Por isso IPv4 esticou tanto.</p>
 
-            <h3>Efeito colateral: você não pode ser servidor sem ajuda</h3>
-            <p>Se alguém da internet quer falar com seu computador (não você indo pra fora), o pacote chega em <code>177.32.150.10</code> — mas o roteador não sabe pra qual máquina interna entregar. O pacote morre. Por isso pra rodar servidor em casa precisa de <em>port forwarding</em> manual no roteador, ou serviço externo (ngrok, Cloudflare Tunnel, VPN).</p>
+            <h3>Efeito colateral imediato</h3>
+            <p>Quando VOCÊ inicia a conversa (sai pra fora), o NAT funciona perfeito. Mas quando alguém de fora quer chegar até VOCÊ, o pacote chega no roteador sem entrada na tabela NAT — o roteador não sabe pra qual máquina interna entregar, e o pacote morre. <strong>Esse problema é só a ponta do iceberg</strong> — a próxima section mostra o "pesadelo" inteiro que o NAT criou: P2P entre 2 NATs, CGNAT, tudo isso.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Aplicações atrás do NAT — o pesadelo do P2P</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/pesadelo-das-aplicacoes.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>NAT salvou IPv4 do esgotamento — mas criou um problema novo: <strong>aplicações P2P</strong> (peer-to-peer) ficaram MUITO mais difíceis. Videoconferência, jogo online, voz, IoT, tudo isso depende de 2 máquinas falarem direto. Quando as 2 estão atrás de NAT, ninguém consegue iniciar a conversa.</p>
+
+            <h3>O problema em 1 frase</h3>
+            <p>Sua máquina é <code>192.168.0.42</code>. A do amigo é <code>192.168.5.17</code> (rede dele). Os 2 IPs são <em>privados</em> — não existem na internet. Cada um sai pelo NAT do próprio roteador como IP público da casa. Mas <strong>como cada um descobre o IP público do outro?</strong> E mesmo descobrindo, o NAT só abre caminho de dentro pra fora — quando o pacote do amigo chega no seu roteador, não tem entrada na tabela NAT e o pacote morre.</p>
+
+            <h3>Hole punching — o truque das duas saídas simultâneas</h3>
+            <p>A primeira solução foi engenhosa: as 2 máquinas saem ao mesmo tempo. Cada NAT abre um buraco temporário na tabela achando que é uma conexão normal pra fora. Os 2 pacotes se cruzam no caminho, cada um chegando no NAT do outro — onde ENCONTRA a entrada recém-criada e passa direto.</p>
+            <p>Funciona, mas é frágil. Depende do tipo de NAT (alguns são mais restritivos), depende da sincronia, e depende dos 2 lados saberem pra qual IP/porta exata mandar. Pra isso surgiu o STUN.</p>
+
+            <h3>STUN — descobrindo seu IP público</h3>
+            <p><strong>STUN</strong> (Session Traversal Utilities for NAT) é um servidor público gratuito que faz uma coisa só: te diz qual é seu IP público e a porta que o NAT te deu. Sua máquina manda uma pergunta pro STUN, o STUN olha o pacote chegando e responde "você apareceu como <code>177.32.150.10:54321</code>".</p>
+            <p>Agora os 2 pares trocam essa informação (via algum servidor central, tipo o servidor de matchmaking do jogo) e fazem hole punching com IP e porta corretos.</p>
+
+            <h3>TURN — quando hole punching falha (relay)</h3>
+            <p>Em redes restritivas (alguns NATs corporativos, CGNAT — próximo tópico), hole punching simplesmente não funciona. A saída: <strong>TURN</strong> (Traversal Using Relays around NAT). É um servidor público que vira <em>proxy</em> — os 2 pares mandam tudo pra ele, e ele repassa.</p>
+            <p>Funciona sempre, mas é caro pro provedor do servico TURN — todo o tráfego passa pelo servidor. Em chamada de vídeo, isso é megabits por segundo, e o TURN acaba sendo o último recurso.</p>
+
+            <h3>ICE — combinando os 3</h3>
+            <p><strong>ICE</strong> (Interactive Connectivity Establishment) é o protocolo que orquestra tudo: tenta conexão direta primeiro, depois hole punching com STUN, e só cai pro TURN se nada funcionar. É o que <strong>WebRTC</strong> usa por baixo do capô — toda chamada de Google Meet, Discord, Zoom, FaceTime tem isso por trás.</p>
+
+            <h3>CGNAT — quando o provedor faz NAT em cima do NAT</h3>
+            <p>Pior cenário: <strong>Carrier Grade NAT</strong>. Pra economizar IPs públicos ainda mais, o provedor de internet faz NAT no nível dele — sua casa nem ganha IP público de verdade. Você está atrás de 2 NATs (o seu + o do provedor).</p>
+            <p>Sintoma clássico: você configurou port forwarding no roteador de casa, mas mesmo assim ninguém de fora consegue te alcançar. O problema é que o pacote nem chega no seu roteador — para no NAT do provedor antes. CGNAT está crescendo no Brasil; muitos provedores residenciais já usam.</p>
+
+            <h3>Onde o pesadelo aparece pro dev</h3>
+            <ul>
+                <li><strong>WebRTC</strong> — chamada de vídeo/voz em qualquer app web. ICE/STUN/TURN são obrigatórios</li>
+                <li><strong>Jogo online</strong> — PlayStation/Xbox mostram "NAT type strict" quando hole punching falha; matchmaking sofre</li>
+                <li><strong>VoIP corporativo</strong> — telefonia IP em escritório atrás de NAT precisa de SBC (parecido com TURN)</li>
+                <li><strong>IoT P2P</strong> — câmera de segurança que quer falar com app no celular do dono sem servidor no meio</li>
+                <li><strong>Servidor doméstico</strong> — quando port forwarding não basta (CGNAT), usa <code>ngrok</code>, <code>Cloudflare Tunnel</code>, ou VPN reversa</li>
+            </ul>
+
+            <h3>Saída de longo prazo</h3>
+            <p>Toda essa gambiarra existe porque IPv4 esgotou e NAT virou solução universal. <strong>IPv6 mata o problema na raiz</strong> — cada aparelho ganha IP público próprio, sem NAT, sem STUN, sem TURN. A próxima section trata disso.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">IPv6 — o sucessor de 128 bits e o fim do NAT</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/ipv6.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>IPv6 resolve o esgotamento do IPv4 — endereço de <strong>128 bits</strong> (16 bytes). 2<sup>128</sup> ≈ 340 undecilhões de endereços. Tantos que dá pra cada átomo de matéria do planeta ter o seu. E mais importante: <strong>acaba com a necessidade de NAT</strong>.</p>
+
+            <h3>Notação hexadecimal</h3>
+            <p>Em vez de decimal, IPv6 usa <strong>hexadecimal</strong>, separado por dois-pontos, em 8 grupos de 4 dígitos:</p>
+            <pre><code class="language-bash">2001:0db8:85a3:0000:0000:8a2e:0370:7334</code></pre>
+            <p>Pra ficar legível, existem 2 atalhos:</p>
+            <ul>
+                <li><strong>Zeros à esquerda</strong> de cada grupo podem sumir: <code>0db8</code> vira <code>db8</code></li>
+                <li><strong>Sequência de zeros</strong> vira <code>::</code> (uma vez só por endereço)</li>
+            </ul>
+            <p>O exemplo acima fica:</p>
+            <pre><code class="language-bash">2001:db8:85a3::8a2e:370:7334</code></pre>
+
+            <h3>IPs IPv6 famosos</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>IPv6</th><th>Significado</th></tr>
+                    <tr><td><code>::1</code></td><td>Localhost (equivalente a <code>127.0.0.1</code>)</td></tr>
+                    <tr><td><code>::</code></td><td>Endereço não especificado (equivalente a <code>0.0.0.0</code>)</td></tr>
+                    <tr><td><code>fe80::/10</code></td><td>Link-local — só dentro do segmento de rede</td></tr>
+                    <tr><td><code>2001:db8::/32</code></td><td>Reservado pra exemplos/documentação (igual ao "555-0100" do telefone)</td></tr>
+                </table>
+            </div>
+
+            <h3>Como IPv6 mata o NAT</h3>
+            <p>Em IPv6, <strong>cada aparelho do mundo pode ter IP público próprio</strong>. Sua geladeira, sua TV, seu notebook, tudo com endereço único e roteável diretamente da internet. NAT deixa de ser necessário.</p>
+            <p>Consequências práticas pro pesadelo da section anterior:</p>
+            <ul>
+                <li><strong>Hole punching, STUN, TURN, ICE</strong> — viram desnecessários quando as 2 pontas têm IPv6 público</li>
+                <li><strong>P2P fica trivial</strong> — videoconferência, jogo, IoT podem conectar direto</li>
+                <li><strong>CGNAT desaparece</strong> — provedor não precisa economizar IP público porque tem 340 undecilhões</li>
+                <li><strong>Servidor em casa volta a ser fácil</strong> — sua máquina tem endereço público, não precisa de port forwarding nem ngrok</li>
+            </ul>
+            <p>Em compensação, vem responsabilidade nova: cada aparelho da casa fica diretamente exposto à internet. Por isso firewall na borda do roteador continua importante — ele bloqueia conexões de entrada não solicitadas, mesmo sem fazer NAT. Isso chama-se <strong>stateful firewall</strong> e roteadores IPv6 modernos já vêm com isso ligado por default.</p>
+
+            <h3>Por que ainda usamos IPv4 então?</h3>
+            <p>IPv6 já existe há mais de 20 anos. Em 2024 tem ~40% de adoção global (em 2019 era ~25%). Por que não 100%? Três motivos:</p>
+            <ul>
+                <li><strong>NAT funcionou bem demais</strong> — esticou IPv4 muito além do esgotamento, tirou a urgência da migração</li>
+                <li><strong>Inércia gigantesca</strong> — todo equipamento, todo provedor, todo servidor da internet precisa falar IPv6 pra migração ser real. Custo alto</li>
+                <li><strong>Dual stack</strong> — em vez de migrar tudo de uma vez, máquinas modernas falam IPv4 E IPv6 ao mesmo tempo. Quando você acessa <code>google.com</code>, o navegador escolhe IPv6 se conseguir, IPv4 senão</li>
+            </ul>
+
+            <h3>Pra dev — o que muda</h3>
+            <p>Hoje o seu código deve ser preparado pra falar IPv6 mesmo rodando em IPv4. Bibliotecas modernas (Java, Go, Node, Python) já resolvem isso por baixo. Mas:</p>
+            <ul>
+                <li>Em log, você vai começar a ver IPv6 (<code>2001:db8::1</code>) misturado com IPv4 (<code>192.168.0.42</code>)</li>
+                <li>Em config de servidor, "escutar em <code>::</code>" engloba IPv4 + IPv6 simultaneamente em muitas plataformas</li>
+                <li>Em parsers de IP, validar entrada com regex de IPv4 quebra quando chega IPv6 — use bibliotecas, não regex</li>
+            </ul>
         </div>
     </div>
 
