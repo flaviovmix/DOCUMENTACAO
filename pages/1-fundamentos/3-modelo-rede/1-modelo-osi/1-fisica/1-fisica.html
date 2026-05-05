@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Física — Modelo de Rede — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Camada 1 — Física</h1>
+
+<div class="audio-player" data-src="audio/visao-geral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>A camada 1 é onde o bit deixa de ser uma ideia e vira <strong>sinal de verdade</strong>: pulso elétrico no cobre, pulso de luz na fibra ou onda de rádio no ar. É a camada mais concreta do modelo — você pode tocar nela. As camadas de cima só funcionam porque alguém na base resolveu o problema chato de transformar <code>0</code> e <code>1</code> em algo que atravessa metros (ou quilômetros) de espaço físico.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Cabo de cobre — par trançado e RJ-45</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/cabo-de-cobre.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>O cabo Ethernet comum tem <strong>8 fios de cobre</strong> trançados em 4 pares. O trançamento serve pra cancelar interferência eletromagnética (sinais opostos no mesmo par se anulam). Cada bit vira uma <strong>variação de tensão</strong> no fio.</p>
+
+            <h3>Categorias (CAT)</h3>
+            <p>A categoria diz a velocidade e a frequência que o cabo aguenta. Quanto maior, mais blindagem e mais caro:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Categoria</th><th>Velocidade</th><th>Frequência</th><th>Uso típico</th></tr>
+                    <tr><td><strong>CAT-5e</strong></td><td>1 Gbps</td><td>100 MHz</td><td>Casa, escritório (mais comum)</td></tr>
+                    <tr><td><strong>CAT-6</strong></td><td>1 Gbps (10 Gbps até 55m)</td><td>250 MHz</td><td>Empresa, prédios novos</td></tr>
+                    <tr><td><strong>CAT-6a</strong></td><td>10 Gbps</td><td>500 MHz</td><td>Data center, blindagem extra</td></tr>
+                    <tr><td><strong>CAT-7</strong></td><td>10 Gbps</td><td>600 MHz</td><td>Data center, cada par blindado</td></tr>
+                </table>
+            </div>
+
+            <h3>Conector RJ-45 (8P8C)</h3>
+            <p>O conector na ponta do cabo se chama <strong>RJ-45</strong> popularmente, mas o nome técnico é <strong>8P8C</strong> (8 posições, 8 contatos). Os 8 fios entram em ordem padronizada (T568A ou T568B) — se você inverter a ordem, o cabo não funciona ou vira um <em>cabo crossover</em>.</p>
+
+            <h3>Limites práticos</h3>
+            <ul>
+                <li><strong>Distância máxima</strong>: ~100 metros entre dois pontos. Acima disso o sinal degrada e precisa de repetidor ou switch no meio.</li>
+                <li><strong>Sensível a interferência</strong>: motor elétrico, fluorescente, micro-ondas — cabo desblindado pega ruído.</li>
+                <li><strong>Vulnerável a raio</strong>: cobre conduz; tomada elétrica e cabo de rede juntos viram problema em tempestade.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Fibra óptica — luz dentro de vidro</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/fibra-optica.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>Em vez de tensão elétrica, a fibra usa <strong>pulso de luz</strong> dentro de um filete de vidro (ou plástico) muito fino. Bit <code>1</code> = laser ligado, bit <code>0</code> = laser desligado. A luz reflete dentro do núcleo da fibra e percorre o cabo sem escapar.</p>
+
+            <h3>Dois tipos</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Tipo</th><th>Núcleo</th><th>Fonte</th><th>Distância</th><th>Onde</th></tr>
+                    <tr><td><strong>Multi-mode</strong></td><td>Mais grosso (50–62µm)</td><td>LED</td><td>Até ~2 km</td><td>Dentro de prédio, data center</td></tr>
+                    <tr><td><strong>Single-mode</strong></td><td>Fino (~9µm)</td><td>Laser</td><td>Dezenas a 100+ km</td><td>Backbone, ISP, cabos submarinos</td></tr>
+                </table>
+            </div>
+            <p>Single-mode é mais caro mas vai mais longe. A internet entre continentes anda em fibra single-mode dentro de cabos submarinos — milhares de quilômetros de fibra no fundo do oceano.</p>
+
+            <h3>Vantagens</h3>
+            <ul>
+                <li><strong>Sem interferência eletromagnética</strong> — luz não pega ruído de motor, raio, antena.</li>
+                <li><strong>Distância enorme</strong> — não precisa de repetidor a cada 100m.</li>
+                <li><strong>Banda altíssima</strong> — uma fibra carrega centenas de Gbps.</li>
+                <li><strong>Não conduz eletricidade</strong> — segura em ambiente com interferência ou risco de raio.</li>
+            </ul>
+
+            <h3>Desvantagens</h3>
+            <ul>
+                <li>Frágil — vidro quebra se dobrar demais.</li>
+                <li>Conector caro e exige equipamento de emenda.</li>
+                <li>Placa de rede comum não fala fibra direto — precisa de transceiver (SFP) ou conversor pra Ethernet.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Wi-Fi — onda de rádio no ar</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/wi-fi.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>Wi-Fi é o nome comercial do padrão <strong>IEEE 802.11</strong>. Em vez de fio, o sinal é <strong>onda eletromagnética de rádio</strong> propagada pelo ar. Um <em>access point</em> (AP) — em geral o roteador da casa — emite e recebe.</p>
+
+            <h3>Frequências</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Banda</th><th>Alcance</th><th>Velocidade</th><th>Característica</th></tr>
+                    <tr><td><strong>2.4 GHz</strong></td><td>Maior</td><td>Menor</td><td>Atravessa parede melhor, mas lotado (forno micro-ondas, Bluetooth)</td></tr>
+                    <tr><td><strong>5 GHz</strong></td><td>Menor</td><td>Maior</td><td>Mais limpo, mas perde sinal em parede grossa</td></tr>
+                    <tr><td><strong>6 GHz</strong></td><td>Menor ainda</td><td>Maior ainda</td><td>Wi-Fi 6E, banda nova e quase vazia</td></tr>
+                </table>
+            </div>
+
+            <h3>Gerações do padrão</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Padrão</th><th>Nome comercial</th><th>Velocidade máx</th><th>Ano</th></tr>
+                    <tr><td>802.11n</td><td>Wi-Fi 4</td><td>600 Mbps</td><td>2009</td></tr>
+                    <tr><td>802.11ac</td><td>Wi-Fi 5</td><td>~3.5 Gbps</td><td>2013</td></tr>
+                    <tr><td>802.11ax</td><td>Wi-Fi 6 / 6E</td><td>~9.6 Gbps</td><td>2019</td></tr>
+                    <tr><td>802.11be</td><td>Wi-Fi 7</td><td>~46 Gbps</td><td>2024</td></tr>
+                </table>
+            </div>
+
+            <h3>O que afeta o sinal</h3>
+            <ul>
+                <li><strong>Distância</strong> ao AP — sinal cai com o quadrado da distância.</li>
+                <li><strong>Obstáculos</strong> — parede, espelho, metal, água (até pessoa) atenuam.</li>
+                <li><strong>Interferência</strong> — vizinho no mesmo canal, micro-ondas (na 2.4 GHz), Bluetooth.</li>
+                <li><strong>Concorrência</strong> — todo dispositivo no mesmo AP divide a banda; um sozinho pega mais que dez juntos.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Hub — o repetidor burro (extinto)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/hub.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>O <strong>hub</strong> é um dispositivo de camada 1 que recebe um sinal numa porta e <strong>repete em todas as outras</strong>. Não tem inteligência: não sabe quem é destino, não sabe quem é origem, só amplifica e copia.</p>
+
+            <h3>Como funciona</h3>
+            <p>Computador A manda um quadro para o computador B. O hub recebe o sinal na porta de A e replica em todas as portas — B recebe, mas C, D e E também recebem. Cada placa de rede tem que olhar o destino e descartar se não for pra ela. É <strong>broadcast físico obrigatório</strong>.</p>
+
+            <h3>Problemas</h3>
+            <ul>
+                <li><strong>Colisão</strong> — se 2 máquinas mandam ao mesmo tempo, os sinais se misturam e nada chega.</li>
+                <li><strong>Banda compartilhada</strong> — todas as portas dividem a mesma capacidade. Hub de 100 Mbps com 5 máquinas = ~20 Mbps por máquina.</li>
+                <li><strong>Sem segurança</strong> — qualquer máquina ouve tudo que passa (sniffer pega tráfego de todo mundo).</li>
+            </ul>
+
+            <h3>Por que sumiu</h3>
+            <p>O <strong>switch</strong> resolveu tudo isso. Switch opera na camada 2 (Enlace), aprende qual MAC está em qual porta e encaminha o quadro <strong>só</strong> pra porta certa. Sem colisão, sem broadcast físico, banda completa por porta. Hub virou peça de museu — hoje todo equipamento "hub" vendido é, na prática, um switch.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Modem e ONT — a porta de entrada da internet</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/modem-e-ont.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>O sinal que chega da rua não é Ethernet. É um sinal <strong>diferente</strong>, dependendo do tipo de conexão do provedor. Um aparelho na entrada da casa converte esse sinal de fora em Ethernet (ou Wi-Fi) que a rede interna entende. É essa caixinha do provedor.</p>
+
+            <h3>Modem (modulador / demodulador)</h3>
+            <p>O nome vem de <strong>mod</strong>ulador-<strong>dem</strong>odulador. Modula = empacota dado em sinal; demodula = extrai dado do sinal recebido.</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Tipo</th><th>Sinal de entrada</th><th>Onde</th></tr>
+                    <tr><td><strong>Modem DSL</strong></td><td>Linha de telefone (par de cobre)</td><td>Internet sobre telefone (antiga)</td></tr>
+                    <tr><td><strong>Modem cabo (DOCSIS)</strong></td><td>Cabo coaxial (TV a cabo)</td><td>Net, Claro, operadoras de TV</td></tr>
+                </table>
+            </div>
+
+            <h3>ONT (Optical Network Terminal)</h3>
+            <p>Quando a entrada da casa é <strong>fibra óptica</strong>, o aparelho não é "modem", é <strong>ONT</strong>. Recebe o pulso de luz da fibra do provedor (rede GPON), converte em sinal elétrico Ethernet e entrega na rede interna. É a mesma ideia, com tecnologia diferente.</p>
+
+            <h3>Combo modem + roteador</h3>
+            <p>Na maioria das casas, o aparelho do provedor faz <strong>3 papéis ao mesmo tempo</strong>:</p>
+            <ul>
+                <li><strong>Modem / ONT</strong> — converte o sinal externo em Ethernet (camada 1)</li>
+                <li><strong>Roteador</strong> — faz NAT entre IP da rua e IPs da rede interna (camada 3)</li>
+                <li><strong>Access point Wi-Fi</strong> — emite o sinal sem fio (camada 1+2)</li>
+            </ul>
+            <p>Por isso parece "tudo a mesma coisa" — fisicamente é uma caixa só, mas internamente são funções de camadas diferentes empilhadas.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sessão — Modelo de Rede — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Camada 5 — Sessão</h1>
+
+<div class="audio-player" data-src="audio/visao-geral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>A camada 5 é a mais "esvaziada" do modelo de rede. No papel, ela cuida de <strong>abrir, manter e encerrar uma sessão entre dois processos</strong>. Na prática moderna, quase tudo o que ela deveria fazer migrou: parte virou responsabilidade do TCP (camada 4), parte subiu pra aplicação (camada 7) na forma de cookies, JWT, OAuth. Então essa página é deliberadamente curta — não há ferramentas próprias pra debugar, não há catálogo de protocolos da camada 5 pra decorar. Vale ler pra entender o conceito e saber pra onde ele foi.</p>
+
+<h2>O que a camada 5 deveria fazer</h2>
+
+<p>O modelo de rede desenhou a camada 5 como o lugar onde 2 processos <strong>combinam regras de conversa</strong> antes de trocar dados de aplicação. Três responsabilidades clássicas:</p>
+
+<ul>
+    <li><strong>Estabelecer / encerrar sessão</strong> — combinar que vão conversar, com qual identidade, e depois fechar de forma ordenada.</li>
+    <li><strong>Checkpoints / sincronização</strong> — marcar pontos no diálogo pra recuperar de uma falha sem reiniciar tudo. Tipo "se cair, retoma do checkpoint X".</li>
+    <li><strong>Controle de diálogo</strong> — definir quem fala quando. Em half-duplex, alternam; em full-duplex, falam ao mesmo tempo.</li>
+</ul>
+
+<p>Em teoria isso seria útil em qualquer aplicação que mantém uma "conversa" mais longa que uma única requisição. Mas a internet não evoluiu seguindo o OSI à risca — a pilha que prevaleceu (TCP/IP) tem só 4 camadas, e a camada 5 do OSI ficou sem dono claro. As funções foram absorvidas pelas camadas vizinhas.</p>
+
+<h2>Por que ela quase sumiu na prática</h2>
+
+<p>Duas absorções aconteceram, em direções opostas.</p>
+
+<p><strong>Pra baixo, o TCP absorveu.</strong> Tudo o que era "estabelecer/manter/encerrar conexão" — o three-way handshake, o controle de fluxo, a retransmissão, o four-way handshake de fechamento — virou responsabilidade da camada 4. Quando você abre uma conexão TCP, TCP já cuida de garantir que os 2 lados estão prontos, que dado não se perde, e que a conexão fecha ordenadamente. Não sobrou função de "gerenciar sessão de transporte" pra uma camada acima.</p>
+
+<p><strong>Pra cima, a aplicação assumiu.</strong> O conceito de "sessão do usuário" — quem está logado, qual é o estado da conversa, como retomar quando cair — virou problema da camada 7. A web inventou cookies; sistemas modernos usam JWT, refresh tokens, OAuth. Tudo isso é <em>semanticamente</em> sessão, mas tecnicamente é dado dentro de cabeçalhos HTTP — camada 7, não camada 5.</p>
+
+<p>Resultado: a camada 5 ficou como um conceito acadêmico que serve pra ensinar, mas no dia a dia do dev backend não há "stack de camada 5" pra invocar. Você não importa biblioteca de camada 5, não roda comando de camada 5, não debuga camada 5 isoladamente. Ela não está mais lá.</p>
+
+<h2>TLS session — o que mais se parece com "camada 5" hoje</h2>
+
+<p>O candidato mais legítimo a "ainda é camada 5" é o <strong>TLS</strong> (Transport Layer Security) — o protocolo que dá o "S" no HTTPS. Tecnicamente o TLS mora entre as camadas 4 e 7, com partes que se parecem com camada 5 e outras com camada 6 (Apresentação, próxima da trilha).</p>
+
+<p>O que TLS faz que cheira a sessão:</p>
+
+<ul>
+    <li><strong>TLS handshake</strong> — antes de qualquer dado HTTP fluir sobre HTTPS, cliente e servidor trocam mensagens pra negociar versão do TLS, escolher cifra, validar certificado e estabelecer chaves criptográficas. Isso é estabelecer sessão criptográfica.</li>
+    <li><strong>Session resumption</strong> — feature do TLS que permite reusar chaves de uma sessão anterior, pulando parte do handshake quando você reconecta. É literalmente "mantenha minha sessão aberta" no nível criptográfico.</li>
+    <li><strong>Encerramento ordenado</strong> — TLS tem mensagem <code>close_notify</code> pra fechar a sessão criptográfica de forma limpa, separada do TCP fechar a conexão.</li>
+</ul>
+
+<p>Você não programa TLS direto na maioria dos casos — o servidor web (Tomcat, Nginx, Apache) cuida disso, e seu código de aplicação só vê HTTP "puro" depois que o TLS já decifrou. Mas saber que existe ajuda quando aparece erro de certificado, mismatch de versão, ou aviso de "TLS handshake failed" em log.</p>
+
+<h2>Onde o conceito de sessão reaparece — agora em camada 7</h2>
+
+<p>Pro dev backend, "sessão" é palavra do dia a dia, mas tudo isso é <strong>camada 7</strong>, não camada 5:</p>
+
+<ul>
+    <li><strong>Cookie HTTP</strong> — o servidor manda <code>Set-Cookie</code> na resposta, o navegador devolve <code>Cookie</code> em toda requisição seguinte. Conceito puro de "lembrar que você é você entre requisições".</li>
+    <li><strong>JSESSIONID</strong> — cookie clássico do mundo Java/Tomcat. Identifica uma sessão server-side, onde o estado fica em memória do servidor.</li>
+    <li><strong>JWT</strong> (JSON Web Token) — em vez de guardar sessão no servidor, o token assinado vai e volta com o cliente, contendo tudo que precisa.</li>
+    <li><strong>OAuth + refresh token</strong> — fluxo de delegação de autenticação. O <em>access token</em> tem vida curta; o <em>refresh token</em> permite "manter a sessão" sem o usuário relogar.</li>
+    <li><strong>WebSocket</strong> — conexão TCP de longa duração que se comporta como sessão bidirecional persistente. O servidor mantém estado por conexão.</li>
+</ul>
+
+<p>Quando alguém fala "minha sessão expirou", "fui deslogado", "preciso renovar o token", está falando de <strong>camada 7</strong>. Vai aparecer com profundidade na próxima parte da trilha.</p>
+
+<h2>Onde a camada 5 ainda existe de verdade</h2>
+
+<p>Existe um nicho que ainda usa "camada 5 de verdade" — protocolos antigos que nasceram antes do TCP/IP dominar. Os mais conhecidos:</p>
+
+<ul>
+    <li><strong>SMB / CIFS</strong> — compartilhamento de arquivo do Windows. Tem o conceito de "session" entre cliente e servidor SMB, separado da conexão TCP.</li>
+    <li><strong>NetBIOS</strong> — protocolo de descoberta e nomeação em redes Windows antigas. Tem "session service" próprio.</li>
+    <li><strong>RPC clássico</strong> — frameworks de chamada remota mais antigos definiam camada de sessão própria. RPC moderno (gRPC, JSON-RPC) joga tudo em HTTP, ou seja, camada 7.</li>
+</ul>
+
+<p>Pra dev backend de aplicação web tradicional, esses 3 raramente aparecem. Vale conhecer o nome só pra não estranhar quando aparecer em material legado.</p>
+
+<h2>Resumo</h2>
+
+<p>A camada 5 do OSI existe no modelo, mas não tem corpo próprio na pilha que a internet usa. <strong>O que parecia ser dela foi pra baixo (TCP cuida de conexão) ou pra cima (camada 7 cuida de sessão de usuário)</strong>. O que mais se parece com camada 5 hoje é o TLS handshake — sessão criptográfica entre cliente e servidor. Pro dia a dia do dev, "sessão" significa camada 7: cookies, JWT, OAuth. Esse é o caminho da próxima camada da trilha.</p>
+
+</body>
+</html>

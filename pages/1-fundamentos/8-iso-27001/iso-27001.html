@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISO 27001 — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>ISO 27001</h1>
+
+<div class="audio-player" data-src="audio/visao-geral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>A <strong>ISO/IEC 27001</strong> é a norma internacional de gestão da segurança da informação. Não é uma lista de regras técnicas ("use TLS 1.3", "force MFA") — é um <strong>sistema de gestão</strong>: um jeito de organizar como uma empresa identifica risco de informação, decide o que fazer e prova que fez. Empresa certificada ganha confiança de cliente, abre porta pra contrato grande e pra mercado regulado (banco, saúde, governo).</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O que é ISO 27001 — norma de SGSI, não receita técnica</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A ISO 27001 publica os requisitos pra um <strong>SGSI</strong> — Sistema de Gestão de Segurança da Informação. Não diz "use AES-256" nem "rotacione senha a cada 90 dias". Diz coisas como: a empresa precisa identificar seus ativos de informação, avaliar risco, definir controles, monitorar resultado, e melhorar continuamente.</p>
+            <ul>
+                <li><strong>Foco em processo</strong>, não em tecnologia</li>
+                <li><strong>Adaptável ao tamanho</strong> — serve pra startup de 5 e multinacional de 50 mil</li>
+                <li><strong>Reconhecimento internacional</strong> — vale no mundo todo</li>
+                <li><strong>Auditável</strong> — auditor externo confere e certifica</li>
+            </ul>
+            <p>É publicada pela ISO (International Organization for Standardization) junto com a IEC. A versão atual é a <strong>ISO/IEC 27001:2022</strong> — que substituiu a 2013.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Análise de risco — o coração do SGSI</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Toda decisão de segurança parte de uma análise de risco. O processo básico:</p>
+            <ol>
+                <li><strong>Inventário de ativos</strong> — listar tudo que tem valor de informação: bancos de dados, código-fonte, documentos, hardware, gente</li>
+                <li><strong>Identificar ameaças</strong> — o que pode dar errado pra cada ativo? Vazamento, perda, fraude, indisponibilidade</li>
+                <li><strong>Identificar vulnerabilidades</strong> — onde estamos fracos? Senha curta, falta de backup, acesso amplo</li>
+                <li><strong>Avaliar impacto x probabilidade</strong> — risco = probabilidade × impacto</li>
+                <li><strong>Decidir tratamento</strong> — mitigar, transferir (seguro), aceitar ou evitar</li>
+                <li><strong>Aplicar controles</strong> — escolhidos do Anexo A ou customizados</li>
+            </ol>
+            <p>Um risco pequeno e barato de mitigar — mitiga. Um risco grande e caro — talvez transfere pro seguro. Um risco minúsculo e improvável — aceita formalmente.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Anexo A — os 93 controles (versão 2022)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O <strong>Anexo A</strong> da norma é uma "biblioteca" de controles de segurança que a empresa pode usar. A versão 2022 reorganizou o que antes eram 14 domínios em <strong>4 grandes grupos com 93 controles</strong>:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Grupo</th><th>Controles</th><th>Exemplos</th></tr>
+                    <tr><td>Organizacional</td><td>37</td><td>Política de segurança, gestão de fornecedor, classificação de informação</td></tr>
+                    <tr><td>Pessoas</td><td>8</td><td>Triagem na contratação, treinamento, processo de demissão</td></tr>
+                    <tr><td>Físico</td><td>14</td><td>Controle de acesso ao escritório, descarte seguro de hardware</td></tr>
+                    <tr><td>Tecnológico</td><td>34</td><td>Backup, criptografia, log, gestão de vulnerabilidade, MFA</td></tr>
+                </table>
+            </div>
+            <p>A empresa <strong>não precisa aplicar todos</strong>. Aplica os que fazem sentido pro risco dela. O documento que justifica essa escolha se chama <strong>Declaração de Aplicabilidade (SoA)</strong>.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Ciclo PDCA — Plan, Do, Check, Act</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O SGSI vive num ciclo de melhoria contínua chamado PDCA:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Fase</th><th>O que faz</th><th>Saída típica</th></tr>
+                    <tr><td><strong>Plan</strong> (Planejar)</td><td>Análise de risco + escolha de controles + definição de métrica</td><td>Política de segurança, SoA, plano de tratamento de risco</td></tr>
+                    <tr><td><strong>Do</strong> (Executar)</td><td>Implementar os controles na prática</td><td>Sistemas configurados, treinamentos dados, processos rodando</td></tr>
+                    <tr><td><strong>Check</strong> (Verificar)</td><td>Auditoria interna + análise crítica + medição de indicador</td><td>Relatório de auditoria, lista de não-conformidades</td></tr>
+                    <tr><td><strong>Act</strong> (Agir)</td><td>Corrigir o que deu errado, melhorar o que pode melhorar</td><td>Ações corretivas, atualizações na política</td></tr>
+                </table>
+            </div>
+            <p>Não é um ciclo que termina. Roda pra sempre — a cada ano, a cada incidente, a cada mudança grande na empresa.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Como uma empresa se certifica</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Caminho típico, dura de 6 meses a 2 anos dependendo do tamanho:</p>
+            <ol>
+                <li><strong>Decisão da alta direção</strong> — sem patrocínio do topo, projeto morre</li>
+                <li><strong>Definir escopo</strong> — quais áreas/produtos/processos entram na certificação. Pode ser a empresa toda ou só um produto</li>
+                <li><strong>Análise de risco</strong> — identificar ativos, ameaças, vulnerabilidades</li>
+                <li><strong>Implementar controles</strong> — escrever política, configurar sistema, treinar pessoa</li>
+                <li><strong>Documentar tudo</strong> — política, procedimento, registro de evidência. Auditor adora documento</li>
+                <li><strong>Auditoria interna</strong> — testar antes que o auditor externo encontre</li>
+                <li><strong>Auditoria externa fase 1</strong> — auditor revisa documentação</li>
+                <li><strong>Auditoria externa fase 2</strong> — auditor visita, conversa com gente, vê evidência</li>
+                <li><strong>Certificado emitido</strong> — válido por 3 anos</li>
+                <li><strong>Auditorias de manutenção</strong> — todo ano um auditor volta. A cada 3 anos, recertifica</li>
+            </ol>
+            <p>O certificado é emitido por organismo credenciado (no Brasil: BSI, DNV, Bureau Veritas, SGS, TÜV). Não é a ISO direto — a ISO publica a norma, os organismos auditam.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Família ISO 27000 — primas e parentes</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A 27001 não vive sozinha. Faz parte de uma família:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Norma</th><th>Pra que serve</th></tr>
+                    <tr><td><strong>ISO 27000</strong></td><td>Vocabulário e visão geral da família</td></tr>
+                    <tr><td><strong>ISO 27001</strong></td><td>Requisitos do SGSI — é a única certificável</td></tr>
+                    <tr><td><strong>ISO 27002</strong></td><td>Guia detalhado de cada controle do Anexo A</td></tr>
+                    <tr><td><strong>ISO 27005</strong></td><td>Gestão de risco de segurança da informação</td></tr>
+                    <tr><td><strong>ISO 27017</strong></td><td>Segurança em serviços de cloud</td></tr>
+                    <tr><td><strong>ISO 27018</strong></td><td>Proteção de dado pessoal em cloud</td></tr>
+                    <tr><td><strong>ISO 27701</strong></td><td>Privacidade (extensão pra LGPD/GDPR)</td></tr>
+                </table>
+            </div>
+            <p>A 27001 é a "carteira de motorista". A 27002 é o "manual de direção". As outras são especializações.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

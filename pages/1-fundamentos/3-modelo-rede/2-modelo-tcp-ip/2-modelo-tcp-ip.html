@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelo TCP/IP — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+    <div class="home-header">
+        <h1 class="home-title">MODELO TCP/IP</h1>
+        <p class="home-sub">As 4 camadas que rodam de fato na Internet — mais simples que o OSI e alinhado com os protocolos reais</p>
+    </div>
+
+    <div class="home-grid">
+
+        <!-- 0. VISÃO GERAL -->
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Por que o TCP/IP de 4 camadas substituiu o OSI na prática, como os protocolos se encaixam (HTTP, TCP, IP, Ethernet) e o mapeamento camada-a-camada com o OSI.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/visao-geral.png" alt="Visão Geral">
+            </div>
+            <div class="card-bar">
+                <a href="0-visao-geral/0-visao-geral.html" class="card-tag" style="--tag-clr:#eab308;">Visão Geral</a>
+            </div>
+        </div>
+
+        <!-- 4. APLICAÇÃO -->
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Camada 4 — protocolos que o usuário enxerga: HTTP, HTTPS, DNS, SSH, SMTP, FTP. Combina aplicação + apresentação + sessão do OSI numa só.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/aplicacao.png" alt="Aplicação">
+            </div>
+            <div class="card-bar">
+                <a href="4-aplicacao/4-aplicacao.html" class="card-tag" style="--tag-clr:#f97316;">Aplicação</a>
+            </div>
+        </div>
+
+        <!-- 3. TRANSPORTE -->
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Camada 3 — entrega entre processos: TCP (confiável, com handshake e ordem), UDP (sem conexão, rápido) e portas (80, 443, 5432). Idêntica ao OSI.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/transporte.png" alt="Transporte">
+            </div>
+            <div class="card-bar">
+                <a href="3-transporte/3-transporte.html" class="card-tag" style="--tag-clr:#3b82f6;">Transporte</a>
+            </div>
+        </div>
+
+        <!-- 2. INTERNET -->
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Camada 2 — endereço lógico (IP) e roteamento entre redes. IPv4, IPv6, ICMP. Equivalente à camada de Rede no OSI.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/internet.png" alt="Internet">
+            </div>
+            <div class="card-bar">
+                <a href="2-internet/2-internet.html" class="card-tag" style="--tag-clr:#06b6d4;">Internet</a>
+            </div>
+        </div>
+
+        <!-- 1. ACESSO À REDE -->
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Camada 1 — conexão física e local: Ethernet, Wi-Fi, MAC, ARP, cabo, fibra, rádio. Combina enlace + física do OSI numa só.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/acesso-rede.png" alt="Acesso à rede">
+            </div>
+            <div class="card-bar">
+                <a href="1-acesso-rede/1-acesso-rede.html" class="card-tag" style="--tag-clr:#6b7280;">Acesso à rede</a>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

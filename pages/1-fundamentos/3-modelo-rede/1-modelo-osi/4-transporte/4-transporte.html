@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transporte — Modelo de Rede — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Camada 4 — Transporte</h1>
+
+<div class="audio-player" data-src="audio/visao-geral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>A camada 3 entrega pacote pra outra máquina. A camada 4 entrega pra <strong>processo certo</strong> dentro daquela máquina. É aqui que aparecem <strong>portas</strong> (que distinguem Tomcat de Postgres na mesma máquina), <strong>UDP</strong> (rápido, sem garantia) e <strong>TCP</strong> (confiável, com handshake e retransmissão). Toda conexão HTTP, banco, e-mail, SSH, jogo online passa por essa camada.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">UDP — atire e esqueça</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/udp.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p><strong>UDP</strong> (User Datagram Protocol) é o protocolo mais simples da camada 4. <em>Connectionless</em>: você joga o pacote na rede e segue a vida. Sem aperto de mão antes, sem confirmação depois. Se chegou, ótimo. Se perdeu, foi-se.</p>
+
+            <h3>Header minúsculo — só 8 bytes</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Campo</th><th>Tamanho</th><th>O que faz</th></tr>
+                    <tr><td>Porta origem</td><td>2 bytes</td><td>Quem mandou</td></tr>
+                    <tr><td>Porta destino</td><td>2 bytes</td><td>Pra quem é</td></tr>
+                    <tr><td>Tamanho</td><td>2 bytes</td><td>Comprimento total do datagrama</td></tr>
+                    <tr><td>Checksum</td><td>2 bytes</td><td>Detecta corrupção (não corrige)</td></tr>
+                </table>
+            </div>
+            <p>É só isso. Header de 8 bytes. Comparar com TCP que tem 20+ bytes de header — UDP é metade do peso.</p>
+
+            <h3>O que UDP NÃO faz</h3>
+            <ul>
+                <li><strong>Não estabelece conexão</strong> — sem handshake</li>
+                <li><strong>Não garante entrega</strong> — pacote perdido fica perdido</li>
+                <li><strong>Não garante ordem</strong> — pacote pode chegar fora da ordem</li>
+                <li><strong>Não retransmite</strong> — se quiser retentar, é responsabilidade da aplicação</li>
+                <li><strong>Não controla fluxo</strong> — manda na velocidade que quiser</li>
+            </ul>
+
+            <h3>Quando usar UDP</h3>
+            <p>UDP brilha quando <strong>velocidade importa mais que confiabilidade</strong>:</p>
+            <ul>
+                <li><strong>DNS</strong> — pergunta curta, resposta curta (1 pacote pra cada lado). Esperar handshake TCP seria desperdício</li>
+                <li><strong>VoIP / vídeo (chamada ao vivo)</strong> — perder 1 frame de vídeo é melhor que travar 200ms esperando retransmissão</li>
+                <li><strong>Jogo online</strong> — posição do jogador atualiza 60 vezes por segundo; pacote velho perdido é irrelevante, o próximo já vem</li>
+                <li><strong>Streaming ao vivo</strong> — mesma lógica de jogo</li>
+                <li><strong>NTP (sincronização de hora)</strong> — pacotinho minúsculo</li>
+                <li><strong>Multicast</strong> — TCP não suporta; UDP sim</li>
+            </ul>
+
+            <h3>Quando NÃO usar UDP</h3>
+            <p>Tudo que precisa de garantia: HTTP, SSH, e-mail, banco de dados, transferência de arquivo. Pra esses casos, TCP é o caminho.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">TCP — confiável, ordenado e com controle</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/tcp.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p><strong>TCP</strong> (Transmission Control Protocol) é o oposto de UDP. <em>Connection-oriented</em>: estabelece uma sessão, garante entrega, mantém ordem, controla fluxo, retransmite o que perdeu. Você manda 1MB e tem certeza que o outro lado recebeu 1MB completo, na ordem certa, mesmo que internamente isso tenha custado 700 pacotes e 5 retransmissões.</p>
+
+            <h3>O que TCP garante (que UDP não dá)</h3>
+            <ul>
+                <li><strong>Entrega</strong> — pacote perdido é retransmitido até chegar (ou cair a conexão por timeout)</li>
+                <li><strong>Ordem</strong> — pacotes que chegaram fora de ordem são reordenados antes de entregar pra aplicação</li>
+                <li><strong>Sem duplicação</strong> — se o mesmo pacote chega 2 vezes, descarta a cópia</li>
+                <li><strong>Controle de fluxo</strong> — o receptor diz quanto consegue receber por vez (sliding window); o emissor respeita</li>
+                <li><strong>Controle de congestionamento</strong> — se a rede está congestionada, TCP reduz velocidade automaticamente</li>
+            </ul>
+
+            <h3>Header maior — 20 bytes mínimo</h3>
+            <p>Pra dar tudo isso, TCP precisa de mais espaço de cabeçalho:</p>
+            <ul>
+                <li>Porta origem e destino (4 bytes)</li>
+                <li>Sequence number (4 bytes) — qual byte do stream esse pacote começa</li>
+                <li>Acknowledgment number (4 bytes) — até qual byte o receptor já recebeu</li>
+                <li>Flags (SYN, ACK, FIN, RST, PSH, URG)</li>
+                <li>Window size — quanto buffer livre o receptor tem</li>
+                <li>Checksum + opções</li>
+            </ul>
+
+            <h3>Como TCP retransmite</h3>
+            <p>Cada byte enviado tem um número de sequência. O receptor confirma com ACK. Se o emissor mandou bytes 1-100 e só recebeu ACK até 50, ele <strong>retransmite 51-100</strong>. Se nenhum ACK chega em X segundos, retransmite tudo desde o último ACK.</p>
+
+            <h3>Quando usar TCP</h3>
+            <p><strong>Sempre que entrega importa mais que latência</strong>:</p>
+            <ul>
+                <li>HTTP / HTTPS (todo navegador)</li>
+                <li>SSH, SFTP</li>
+                <li>SMTP, IMAP, POP3 (e-mail)</li>
+                <li>Banco de dados (PostgreSQL, MySQL, Redis em modo TCP)</li>
+                <li>Transferência de arquivo (FTP, rsync, Git)</li>
+                <li>Praticamente toda aplicação web tradicional</li>
+            </ul>
+
+            <h3>Custo da confiabilidade</h3>
+            <p>TCP precisa de <strong>handshake antes</strong> (3 mensagens) e <strong>handshake de fechamento</strong> (4 mensagens). Em conexão nova, isso é 1 RTT a mais antes do primeiro byte de dado. Pra resposta curta tipo DNS, esse custo dobra ou triplica o tempo total — daí UDP fazer mais sentido.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Portas — endereçando processos dentro da máquina</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/portas.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>Cada máquina pode ter dezenas de processos rodando ao mesmo tempo: Tomcat na 8080, Postgres na 5432, Redis na 6379, SSH na 22. O IP entrega o pacote na máquina certa. Quem distingue qual processo entrega é a <strong>porta</strong>.</p>
+
+            <h3>16 bits — 65.536 portas</h3>
+            <p>Porta é um número de 16 bits, então vai de <strong>0 a 65535</strong>. Aplicado tanto em TCP quanto em UDP — o mesmo número 5432 pode estar em TCP/5432 (Postgres) E UDP/5432 (outro serviço) sem conflito; são protocolos diferentes.</p>
+
+            <h3>3 faixas oficiais (IANA)</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Faixa</th><th>Nome</th><th>Uso</th></tr>
+                    <tr><td><code>0 – 1023</code></td><td><strong>Well-known</strong></td><td>Reservadas pra serviços padrão (HTTP=80, HTTPS=443, SSH=22). No Linux/Mac precisa de root pra abrir</td></tr>
+                    <tr><td><code>1024 – 49151</code></td><td><strong>Registered</strong></td><td>Serviços comuns mas não tão fundamentais (Postgres=5432, MySQL=3306, Tomcat=8080)</td></tr>
+                    <tr><td><code>49152 – 65535</code></td><td><strong>Dynamic / ephemeral</strong></td><td>Cliente que conecta pega uma daqui automaticamente. Você nunca configura essa</td></tr>
+                </table>
+            </div>
+
+            <h3>O conceito de socket</h3>
+            <p>Uma conexão TCP é identificada por uma <strong>tupla de 5 elementos</strong>:</p>
+            <pre><code class="language-bash">(IP origem, porta origem, IP destino, porta destino, protocolo)</code></pre>
+            <p>Exemplo: você abre o navegador e acessa Google:</p>
+            <pre><code class="language-bash">(192.168.0.42, 54321, 142.250.78.46, 443, TCP)</code></pre>
+            <ul>
+                <li><strong>192.168.0.42</strong> — sua máquina</li>
+                <li><strong>54321</strong> — porta dinâmica que o sistema operacional atribuiu pra esse cliente</li>
+                <li><strong>142.250.78.46</strong> — Google</li>
+                <li><strong>443</strong> — HTTPS (porta fixa do servidor)</li>
+                <li><strong>TCP</strong> — protocolo</li>
+            </ul>
+            <p>Outras conexões pro mesmo Google têm portas dinâmicas diferentes (54322, 54323...) — é assim que o sistema operacional sabe qual resposta entregar pra qual aba do navegador.</p>
+
+            <h3>Server bind vs client connect</h3>
+            <ul>
+                <li><strong>Server</strong> — escolhe uma porta fixa e <em>escuta</em> nela (Tomcat sempre em 8080)</li>
+                <li><strong>Client</strong> — pega uma porta dinâmica automática e conecta pra porta fixa do server</li>
+            </ul>
+            <p>Por isso "porta ocupada" é erro só de servidor — cliente nunca tem esse problema.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Three-way handshake — como o TCP abre uma conexão</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/three-way-handshake.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>Antes de qualquer byte de dado fluir entre cliente e servidor TCP, eles trocam <strong>3 mensagens</strong> pra estabelecer uma conexão. Esse é o <em>three-way handshake</em>.</p>
+
+            <h3>O fluxo passo a passo</h3>
+            <pre><code class="language-bash">CLIENTE                         SERVIDOR
+   |                                |
+   |-------- 1) SYN -------------->|     "Quero conectar. Meu seq inicial é X"
+   |                                |
+   |<------- 2) SYN-ACK -----------|     "Aceito. Meu seq inicial é Y. Confirmo seu X+1"
+   |                                |
+   |-------- 3) ACK -------------->|     "Confirmo seu Y+1"
+   |                                |
+   |======== CONEXÃO ABERTA =======|
+   |                                |
+   |-------- dados ---------------->|     primeiro byte de dado real</code></pre>
+
+            <h3>Por que 3 mensagens (e não 2)</h3>
+            <p>Os 2 primeiros pacotes (SYN do cliente, SYN-ACK do servidor) já estabeleceriam que cliente quer conectar e servidor topa. Mas falta o cliente <strong>confirmar que recebeu a aceitação do servidor</strong>. Sem o terceiro ACK, o servidor não sabe se a resposta dele chegou de fato. Os 3 passos garantem que <strong>os 2 lados sabem que os 2 lados estão prontos</strong>.</p>
+
+            <h3>Estados da conexão (visíveis em <code>ss</code> / <code>netstat</code>)</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Estado</th><th>Significado</th></tr>
+                    <tr><td><code>LISTEN</code></td><td>Servidor está escutando, esperando conexão</td></tr>
+                    <tr><td><code>SYN_SENT</code></td><td>Cliente mandou SYN, esperando SYN-ACK</td></tr>
+                    <tr><td><code>SYN_RECV</code></td><td>Servidor recebeu SYN, mandou SYN-ACK, esperando ACK</td></tr>
+                    <tr><td><code>ESTABLISHED</code></td><td>Conexão aberta, dados podem fluir</td></tr>
+                    <tr><td><code>FIN_WAIT_1</code> / <code>FIN_WAIT_2</code></td><td>Lado pediu pra fechar, aguardando confirmação</td></tr>
+                    <tr><td><code>CLOSE_WAIT</code></td><td>Recebeu pedido de fechamento, mas ainda não fechou do seu lado</td></tr>
+                    <tr><td><code>TIME_WAIT</code></td><td>Conexão fechada, aguardando timeout pra liberar a porta de vez</td></tr>
+                </table>
+            </div>
+
+            <h3>Four-way handshake — fechando a conexão</h3>
+            <p>Pra fechar, são <strong>4 mensagens</strong>. TCP é full-duplex (cada lado pode mandar dado independentemente), então cada lado precisa fechar separado:</p>
+            <pre><code class="language-bash">A                         B
+|------- FIN ------------>|    A diz "terminei de mandar"
+|<------ ACK -------------|    B confirma
+|<------ FIN -------------|    B também terminou
+|------- ACK ------------>|    A confirma. Conexão totalmente fechada.</code></pre>
+
+            <h3>O famoso TIME_WAIT</h3>
+            <p>Depois do último ACK, o lado que iniciou o fechamento entra em <code>TIME_WAIT</code> por ~60 segundos (default Linux). Serve pra garantir que pacotes atrasados ainda no caminho não confundam uma conexão futura na mesma porta.</p>
+            <p>Sintoma clássico: <strong>servidor reiniciado fica "Address already in use"</strong> por 1 minuto. É a porta presa em <code>TIME_WAIT</code>. Soluções: <code>SO_REUSEADDR</code> no socket, ou esperar.</p>
+
+            <h3>Custo do handshake — por que UDP existe</h3>
+            <p>O handshake completo custa <strong>1 RTT</strong> (round-trip time) antes do primeiro byte de dado. Pra ping de 50ms, são 50ms só de overhead. Pra request curto (DNS pede 1 nome, recebe 1 IP), esse 50ms duplica o tempo total. Por isso DNS usa UDP — sem handshake, manda pergunta direto.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Portas famosas — catálogo do dia a dia</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/portas-famosas.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>Decorar as portas mais comuns economiza tempo em config, em log, em debug. Aqui o catálogo prático.</p>
+
+            <h3>Web (camada 7 sobre TCP)</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Porta</th><th>Serviço</th></tr>
+                    <tr><td><code>80</code></td><td><strong>HTTP</strong></td></tr>
+                    <tr><td><code>443</code></td><td><strong>HTTPS</strong> (HTTP + TLS)</td></tr>
+                    <tr><td><code>8080</code></td><td>HTTP alternativo (Tomcat default)</td></tr>
+                    <tr><td><code>8443</code></td><td>HTTPS alternativo (Tomcat default)</td></tr>
+                    <tr><td><code>3000</code></td><td>Node.js dev server (default do <code>npm run dev</code>)</td></tr>
+                    <tr><td><code>5173</code></td><td>Vite dev server</td></tr>
+                </table>
+            </div>
+
+            <h3>Acesso remoto e transferência</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Porta</th><th>Serviço</th></tr>
+                    <tr><td><code>22</code></td><td><strong>SSH</strong> e SFTP</td></tr>
+                    <tr><td><code>21</code></td><td>FTP (controle)</td></tr>
+                    <tr><td><code>23</code></td><td>Telnet (legado, inseguro)</td></tr>
+                    <tr><td><code>3389</code></td><td>RDP (Remote Desktop Windows)</td></tr>
+                </table>
+            </div>
+
+            <h3>E-mail</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Porta</th><th>Serviço</th></tr>
+                    <tr><td><code>25</code></td><td>SMTP (entrega entre servidores)</td></tr>
+                    <tr><td><code>587</code></td><td>SMTP submission (cliente → servidor próprio)</td></tr>
+                    <tr><td><code>465</code></td><td>SMTPS (SMTP + TLS legado)</td></tr>
+                    <tr><td><code>110</code></td><td>POP3</td></tr>
+                    <tr><td><code>995</code></td><td>POP3S (TLS)</td></tr>
+                    <tr><td><code>143</code></td><td>IMAP</td></tr>
+                    <tr><td><code>993</code></td><td>IMAPS (TLS)</td></tr>
+                </table>
+            </div>
+
+            <h3>Banco de dados</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Porta</th><th>Banco</th></tr>
+                    <tr><td><code>3306</code></td><td>MySQL / MariaDB</td></tr>
+                    <tr><td><code>5432</code></td><td>PostgreSQL</td></tr>
+                    <tr><td><code>1433</code></td><td>SQL Server</td></tr>
+                    <tr><td><code>1521</code></td><td>Oracle</td></tr>
+                    <tr><td><code>27017</code></td><td>MongoDB</td></tr>
+                    <tr><td><code>6379</code></td><td>Redis</td></tr>
+                    <tr><td><code>9042</code></td><td>Cassandra</td></tr>
+                </table>
+            </div>
+
+            <h3>Infra e mensageria</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Porta</th><th>Serviço</th></tr>
+                    <tr><td><code>53</code></td><td><strong>DNS</strong> (TCP e UDP)</td></tr>
+                    <tr><td><code>67/68</code></td><td>DHCP</td></tr>
+                    <tr><td><code>123</code></td><td>NTP (relógio)</td></tr>
+                    <tr><td><code>161</code></td><td>SNMP (monitoramento)</td></tr>
+                    <tr><td><code>5672</code></td><td>RabbitMQ / AMQP</td></tr>
+                    <tr><td><code>9092</code></td><td>Kafka</td></tr>
+                    <tr><td><code>5044</code></td><td>Logstash beats</td></tr>
+                </table>
+            </div>
+
+            <h3>Atalho mental</h3>
+            <ul>
+                <li>Web normal: 80/443</li>
+                <li>Web dev (sem permissão pra 80): 3000, 5173, 8080</li>
+                <li>Banco "padrão": 5432 (Postgres) ou 3306 (MySQL)</li>
+                <li>Cache rápido: 6379 (Redis)</li>
+                <li>"+1 secure" — versão TLS quase sempre é a porta normal +1: 80→443? não. Mas 110→995, 143→993, 21→990 (FTPS) — 9 no fim virou padrão informal de "secure"</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Ferramentas de diagnóstico — camada 4 na prática</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/ferramentas-diagnostico.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>Subindo o roteiro depois de camada 1, 2 e 3 — agora as ferramentas pra investigar conexões TCP e portas.</p>
+
+            <h3>ss — quem está escutando, quem está conectado</h3>
+            <pre><code class="language-bash"># Listar todas as portas TCP em LISTEN
+$ ss -tln
+State    Recv-Q    Send-Q    Local Address:Port
+LISTEN   0         128       0.0.0.0:22
+LISTEN   0         128       127.0.0.1:5432
+LISTEN   0         100       0.0.0.0:8080</code></pre>
+            <p>Lê: SSH escutando em 22 em qualquer interface, Postgres em 5432 só localhost (seguro), Tomcat em 8080 em qualquer interface.</p>
+            <pre><code class="language-bash"># Ver conexões TCP estabelecidas
+$ ss -tn
+ESTAB    192.168.0.42:54321    142.250.78.46:443
+ESTAB    192.168.0.42:54322    142.250.78.46:443</code></pre>
+
+            <h3>netstat — versão antiga (depreciado mas ainda comum)</h3>
+            <pre><code class="language-bash">$ netstat -tlnp
+tcp   0   0 0.0.0.0:22       0.0.0.0:*   LISTEN   1234/sshd
+tcp   0   0 127.0.0.1:5432   0.0.0.0:*   LISTEN   2345/postgres
+tcp   0   0 0.0.0.0:8080     0.0.0.0:*   LISTEN   3456/java</code></pre>
+            <p>O <code>-p</code> mostra também qual processo (PID e nome). Útil pra descobrir "quem está usando a porta 8080".</p>
+
+            <h3>lsof -i — quem usa qual porta (Linux/Mac)</h3>
+            <pre><code class="language-bash">$ sudo lsof -i :8080
+COMMAND  PID  USER   FD   TYPE  NODE NAME
+java     3456 flavio 42u  IPv6  TCP  *:8080 (LISTEN)</code></pre>
+            <p>Resposta direta: porta 8080 está com o processo <code>java</code> (PID 3456). Pra matar: <code>kill 3456</code>.</p>
+
+            <h3>telnet host porta — testar se servidor está vivo</h3>
+            <pre><code class="language-bash">$ telnet google.com 443
+Trying 142.250.78.46...
+Connected to google.com.
+Escape character is '^]'.</code></pre>
+            <p>"Connected" = TCP fechou handshake. O servidor existe, escuta na porta, e o caminho está aberto. Pra fechar: <code>Ctrl+]</code> seguido de <code>quit</code>.</p>
+            <pre><code class="language-bash">$ telnet servidor.empresa.com 5432
+Trying ...
+telnet: Unable to connect to remote host: Connection refused</code></pre>
+            <p>"Connection refused" = a máquina existe mas a porta está fechada (servidor caiu, ou firewall bloqueou).</p>
+
+            <h3>nc / netcat — canivete suíço</h3>
+            <pre><code class="language-bash"># Testar porta (estilo telnet, mais limpo)
+$ nc -zv google.com 443
+Connection to google.com 443 port [tcp/https] succeeded!
+
+# Criar listener (servidor improvisado pra teste)
+$ nc -l 9999    # outra máquina pode conectar com nc IP 9999</code></pre>
+
+            <h3>nmap — scanner de portas</h3>
+            <pre><code class="language-bash">$ nmap -p 1-10000 192.168.0.1
+PORT     STATE  SERVICE
+22/tcp   open   ssh
+80/tcp   open   http
+443/tcp  open   https
+8080/tcp open   http-proxy</code></pre>
+            <p>Lista quais portas estão abertas no host. Útil pra inventário de serviço, e pra audit de segurança ("o que estou expondo?").</p>
+
+            <h3>Roteiro de debug — agora cobrindo até camada 4</h3>
+            <ol>
+                <li>Camada 1: cabo plugado, LED aceso?</li>
+                <li>Camada 2: <code>ip link show</code> — placa UP?</li>
+                <li>Camada 2/3: <code>ip neigh show</code>, <code>ping gateway</code></li>
+                <li>Camada 3: <code>ping 8.8.8.8</code> — internet sai?</li>
+                <li>Camada 7 (DNS): <code>ping google.com</code></li>
+                <li><strong>Camada 4: <code>telnet host porta</code> ou <code>nc -zv host porta</code></strong> — porta aberta? serviço escutando?</li>
+                <li><strong>Camada 4 local: <code>ss -tlnp</code></strong> — meu próprio servidor está escutando onde devia?</li>
+            </ol>
+            <p>"Tomcat não responde" → primeiro <code>ss -tlnp | grep 8080</code> pra ver se está mesmo escutando. Se não estiver, problema é de inicialização. Se estiver, próximo passo é firewall ou caminho de rede.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

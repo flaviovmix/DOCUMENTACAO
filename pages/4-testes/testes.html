@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testes — Nexus</title>
+    <script src="../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Testes</h1>
+
+<p>Teste é um código que verifica se outro código funciona. Quando o teste passa, você sabe que a função continua fazendo o que deveria. Quando uma mudança quebra alguma coisa em outro canto, o teste avisa na hora — não na mão do usuário.</p>
+
+<div class="audio-player" data-src="audio/testes.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O que é um teste</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Um teste é um pedaço de código que <strong>chama outro código</strong> e <strong>verifica o resultado</strong>. Se o resultado for o esperado, passa. Se não for, falha — e o teste te diz o que esperava e o que veio.</p>
+
+            <p>Exemplo simples: uma função <code>soma(a, b)</code>. O teste chama <code>soma(2, 3)</code> e verifica se voltou <code>5</code>.</p>
+
+<pre><code class="language-java">// código que vai ser testado
+public int soma(int a, int b) {
+    return a + b;
+}
+
+// código de teste
+@Test
+public void somaDeveRetornarSomaDosDois() {
+    int resultado = soma(2, 3);
+    assertEquals(5, resultado);
+}
+</code></pre>
+
+            <p>Um teste é só isso: chamar e comparar.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Por que evita quebra — regressão</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p><strong>Regressão</strong> é quando uma mudança nova quebra algo que já funcionava. Você arruma o bug em A — e sem perceber quebra B, que dependia de A do jeito antigo.</p>
+
+            <p>Sem teste, você descobre quando o usuário reclama (no pior momento). Com teste, ele falha no segundo em que você salva — porque toda vez que o código muda, todos os testes rodam.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Sem testes</th><th>Com testes</th></tr>
+                    <tr><td>Quebrou e ninguém viu</td><td>Quebrou e o teste apita</td></tr>
+                    <tr><td>Bug aparece em produção</td><td>Bug aparece antes do commit</td></tr>
+                    <tr><td>Refatorar dá medo</td><td>Refatorar é seguro</td></tr>
+                </table>
+            </div>
+
+            <p>O ganho não é só "achar bugs". É <strong>mexer no código sem medo</strong> — porque se você quebrar algo, vai saber.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">TDD — Red, Green, Refactor</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>TDD é <strong>Test-Driven Development</strong> — desenvolvimento guiado por testes. A ordem é invertida: <strong>primeiro o teste, depois o código que faz o teste passar</strong>.</p>
+
+            <p>O ciclo tem 3 passos, repetidos uma feature de cada vez:</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Passo</th><th>O que você faz</th><th>Estado</th></tr>
+                    <tr><td><strong>1. Red</strong></td><td>Escreve o teste do código que ainda <em>não existe</em>. Roda. Ele falha.</td><td>🔴 vermelho</td></tr>
+                    <tr><td><strong>2. Green</strong></td><td>Escreve o código <em>mínimo</em> que faz o teste passar. Roda. Passa.</td><td>🟢 verde</td></tr>
+                    <tr><td><strong>3. Refactor</strong></td><td>Limpa o código (nomes, duplicação) sem quebrar o teste.</td><td>🟢 verde</td></tr>
+                </table>
+            </div>
+
+            <p>Depois do Refactor, volta pro Red da próxima feature. Ciclo de novo.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">TDD — por que escrever o teste antes</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>À primeira vista parece estranho: como testar algo que não existe? Mas é justamente esse o ponto.</p>
+
+            <p>Escrever o teste primeiro <strong>te força a decidir o comportamento antes da implementação</strong>:</p>
+
+            <ul>
+                <li><strong>Como a função vai ser chamada?</strong> O teste responde isso na primeira linha.</li>
+                <li><strong>O que ela deve devolver?</strong> O teste já cobra o resultado esperado.</li>
+                <li><strong>Quais são os casos de erro?</strong> Cada caso vira um teste.</li>
+            </ul>
+
+            <p>Você desenha a <strong>interface</strong> (como o código vai ser usado) antes de pensar em <em>como</em> resolver. E só implementa o que o teste pediu — sem código sobrando, sem feature inventada.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Sem TDD</th><th>Com TDD</th></tr>
+                    <tr><td>Implementa primeiro, testa depois (ou nunca)</td><td>Testa primeiro, implementa depois</td></tr>
+                    <tr><td>Tende a sobrar código "pra todo caso"</td><td>Só existe o que o teste pediu</td></tr>
+                    <tr><td>Interface descoberta no meio do caminho</td><td>Interface decidida antes</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">TDD na prática — exemplo soma(a, b)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Vamos rodar o ciclo Red → Green → Refactor numa função <code>soma(a, b)</code>. Ela ainda não existe.</p>
+
+            <h3>1. Red — escrever o teste primeiro</h3>
+            <p>O código abaixo nem compila ainda — a função <code>soma</code> não existe. É proposital: o teste descreve o que <em>deveria</em> existir.</p>
+
+<pre><code class="language-java">@Test
+public void somaDeveRetornarSomaDosDois() {
+    int resultado = soma(2, 3);
+    assertEquals(5, resultado);
+}
+</code></pre>
+
+            <p>Roda → <strong>falha</strong> (não compila ou o assert quebra). 🔴</p>
+
+            <h3>2. Green — implementação mínima</h3>
+            <p>Agora escreve só o necessário pra esse teste passar. Nada além disso.</p>
+
+<pre><code class="language-java">public int soma(int a, int b) {
+    return a + b;
+}
+</code></pre>
+
+            <p>Roda → <strong>passa</strong>. 🟢</p>
+
+            <h3>3. Refactor — limpar mantendo verde</h3>
+            <p>Olha o código: nome bom, sem duplicação, sem lógica complicada. Não tem nada a melhorar nesse ciclo. Pula pro próximo Red.</p>
+
+            <h3>Próximo ciclo: e se um for negativo?</h3>
+            <p>Você lembra de um caso novo: <code>soma(-1, 1)</code>. Escreve o teste, roda. Já passa? Ótimo, segue. Falha? Volta pro Green.</p>
+
+<pre><code class="language-java">@Test
+public void somaDeveLidarComNegativos() {
+    assertEquals(0, soma(-1, 1));
+}
+</code></pre>
+
+            <p>É assim que o código cresce: <strong>um caso de cada vez, sempre com teste do lado</strong>.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

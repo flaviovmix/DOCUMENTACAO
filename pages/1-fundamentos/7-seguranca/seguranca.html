@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Segurança — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Segurança</h1>
+
+<div class="audio-player" data-src="audio/visao-geral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Segurança em aplicações web não é um <em>feature</em> que você liga no fim — é um conjunto de práticas que atravessam o código todo: como você guarda senha, como autentica usuário, como autoriza ação, como criptografa dado em trânsito, e como evita os erros clássicos que um atacante usa pra entrar. Esta visão geral mostra os conceitos-base que aparecem em qualquer aplicação séria.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Tríade CIA — Confidencialidade, Integridade, Disponibilidade</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Toda discussão de segurança da informação gira em torno de três objetivos:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Pilar</th><th>O que protege</th><th>Exemplo de quebra</th></tr>
+                    <tr><td><strong>Confidencialidade</strong></td><td>Só quem tem direito vê o dado</td><td>Vazamento de senha em log</td></tr>
+                    <tr><td><strong>Integridade</strong></td><td>O dado não foi alterado por quem não devia</td><td>Atacante muda valor de transação no meio do caminho</td></tr>
+                    <tr><td><strong>Disponibilidade</strong></td><td>O sistema responde quando precisa</td><td>Ataque DDoS derruba o site</td></tr>
+                </table>
+            </div>
+            <p>Quando alguém pergunta "esse sistema é seguro?", a resposta começa com "seguro pra qual pilar?". Um banco prioriza integridade. Um chat prioriza confidencialidade. Um e-commerce prioriza disponibilidade no Black Friday.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Autenticação vs Autorização — quem é você vs o que você pode</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Dois conceitos que parecem iguais mas resolvem problemas diferentes:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th></th><th>Autenticação</th><th>Autorização</th></tr>
+                    <tr><td>Pergunta</td><td>"Quem é você?"</td><td>"O que você pode fazer?"</td></tr>
+                    <tr><td>Vem antes ou depois</td><td>Antes</td><td>Depois (já sabe quem é)</td></tr>
+                    <tr><td>Mecanismos</td><td>Senha, biometria, token, JWT, OAuth</td><td>Roles, permissions, ACL, policy</td></tr>
+                    <tr><td>Erro típico</td><td>HTTP 401 (Unauthorized)</td><td>HTTP 403 (Forbidden)</td></tr>
+                </table>
+            </div>
+            <p>Os códigos HTTP confundem: <code>401</code> deveria significar "você é desconhecido" e <code>403</code> "te conheço mas você não pode". Na prática, autenticação primeiro, autorização depois.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Hash de senha — bcrypt, argon2, e por que não MD5</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Senha de usuário NUNCA é guardada em texto claro. NUNCA é guardada com hash rápido (MD5, SHA-1, SHA-256). O motivo: hash rápido pode ser quebrado por força bruta com GPU em segundos.</p>
+            <p>O que se usa é uma função de hash <strong>lenta de propósito</strong>, com <em>salt</em>:</p>
+            <ul>
+                <li><strong>bcrypt</strong> — clássico, simples, ainda muito usado</li>
+                <li><strong>argon2</strong> — vencedor do Password Hashing Competition de 2015, recomendado hoje</li>
+                <li><strong>scrypt</strong> — alternativa, usado em criptomoedas</li>
+            </ul>
+            <p>O salt é um valor aleatório por usuário, guardado junto com o hash. Sem salt, dois usuários com a mesma senha teriam hashes iguais — e tabelas pré-computadas (rainbow tables) quebrariam tudo.</p>
+            <pre><code class="language-java">// ERRADO - hash rápido + sem salt
+String hash = md5(senha);
+
+// CERTO - bcrypt cuida de salt e custo
+String hash = BCrypt.hashpw(senha, BCrypt.gensalt(12));
+</code></pre>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">HTTPS / TLS — criptografar tudo em trânsito</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>HTTP puro envia tudo em texto claro pela rede. Qualquer um no caminho (Wi-Fi público, provedor, atacante na rede local) consegue ler senha, cookie, mensagem.</p>
+            <p>HTTPS envolve o HTTP num lacre criptográfico (TLS — Transport Layer Security). O servidor apresenta um <strong>certificado</strong>, o cliente confere se é confiável, e os dois trocam chaves pra criptografar tudo dali em diante.</p>
+            <ul>
+                <li>Hoje a regra é <strong>HTTPS em tudo</strong>, não só em página de login</li>
+                <li>Certificado grátis: <strong>Let's Encrypt</strong> + cliente automático (certbot)</li>
+                <li>Renovação automática a cada 90 dias</li>
+                <li>Forçar HTTPS via redirect 301 + cabeçalho HSTS</li>
+            </ul>
+            <p>Cuidado com certificado expirado, auto-assinado, ou cadeia incompleta — o navegador bloqueia e o usuário entra em pânico.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">OWASP Top 10 — os erros clássicos que sempre aparecem</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A OWASP (Open Worldwide Application Security Project) publica a cada poucos anos a lista dos 10 erros de segurança mais comuns em apps web. É leitura obrigatória pra dev backend.</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>#</th><th>Categoria</th><th>Exemplo concreto</th></tr>
+                    <tr><td>A01</td><td>Quebra de controle de acesso</td><td>Usuário comum acessa rota de admin</td></tr>
+                    <tr><td>A02</td><td>Falhas criptográficas</td><td>Senha em MD5, dado em texto claro</td></tr>
+                    <tr><td>A03</td><td>Injeção (SQL, comando, LDAP)</td><td>Input do usuário concatenado direto na query</td></tr>
+                    <tr><td>A04</td><td>Design inseguro</td><td>Esquecer rate-limit em endpoint de login</td></tr>
+                    <tr><td>A05</td><td>Configuração errada</td><td>Painel admin exposto na internet, S3 público</td></tr>
+                    <tr><td>A06</td><td>Componente vulnerável</td><td>Lib desatualizada com CVE conhecido (Log4Shell)</td></tr>
+                    <tr><td>A07</td><td>Falha de autenticação</td><td>Sessão sem expiração, senha "123456" aceita</td></tr>
+                    <tr><td>A08</td><td>Falha de integridade de software</td><td>CI/CD que aceita código de qualquer fonte</td></tr>
+                    <tr><td>A09</td><td>Falha de log e monitoramento</td><td>Sem alerta quando 1000 logins falham seguidos</td></tr>
+                    <tr><td>A10</td><td>SSRF</td><td>Servidor faz request pra URL escolhida pelo usuário</td></tr>
+                </table>
+            </div>
+            <p>A maioria dos vazamentos famosos cai num desses 10. Vale revisar a lista de tempos em tempos.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Princípios gerais — defesa em profundidade, menor privilégio, fail safe</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Alguns princípios atravessam tudo:</p>
+            <ul>
+                <li><strong>Defesa em profundidade</strong> — várias camadas de proteção, pra que furar uma não chegue no dado. Firewall + autenticação + autorização + criptografia + log.</li>
+                <li><strong>Menor privilégio</strong> — cada usuário, processo, serviço tem o mínimo de permissão pra fazer o que precisa. Aplicação não roda como root, banco não dá GRANT ALL.</li>
+                <li><strong>Fail safe</strong> — quando algo dá errado, falha pro lado seguro. Token inválido? Negar acesso, não liberar.</li>
+                <li><strong>Validar input do usuário sempre</strong> — nunca confiar em dado vindo de fora. Validar tipo, tamanho, formato, range.</li>
+                <li><strong>Não reinventar criptografia</strong> — usar lib madura (Bouncy Castle, libsodium). Crypto feito em casa quase sempre tem furo.</li>
+                <li><strong>Manter dependência atualizada</strong> — Dependabot, Snyk. Versão antiga = CVE conhecido pra todo mundo.</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

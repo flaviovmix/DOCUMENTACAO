@@ -27,9 +27,9 @@
 
 <nav class="page-toc"></nav>
 
-<h1>Nexus — Fase 2 <span class="badge badge-new">3 episódios</span></h1>
+<h1>Nexus — Fase 2 <span class="badge badge-new">5 episódios</span></h1>
 
-<p>Sequência da Fase 2 do Nexus — busca e organização. Busca full-text com Postgres tsvector + GIN + unaccent, tags em relação N-N (backend), e UI completa de tags com paleta fechada de cores e filtro por URL. Faltam ordenação e editor rich-text na fase. 3 episódios entregues, cada um com áudio + resumo.</p>
+<p>Sequência da Fase 2 do Nexus — encontrar e organizar nota. Busca full-text com Postgres tsvector + GIN + unaccent, tags em relação N-N com paleta fechada de cores, ordenação dinâmica sincronizada com URL e editor rich-text com TipTap. Fase fechada — 5 episódios entregues, cada um com áudio + resumo.</p>
 
 <div class="info-accordion">
 
@@ -52,10 +52,10 @@
             </div>
 
             <h3>Resumo</h3>
-            <p>A Fase 2 é sobre <strong>encontrar e organizar nota</strong>. A Fase 1 entregou o MVP: criar, listar, editar, apagar. Funciona — mas com 50 notas você não acha mais nada. Fase 2 ataca isso em três frentes: <strong>busca full-text</strong> (digitar palavra → filtra na hora), <strong>tags</strong> (rótulos pra agrupar notas por tema) e <strong>cor de tag</strong> (visual rápido).</p>
-            <p>Ordem das entregas: busca primeiro (2026-05-01) → tags backend (2026-05-02) → cor de tag e tags frontend completo (2026-05-04). Cada uma é independente — dá pra ter busca sem tags, tags sem cor, e assim por diante.</p>
-            <p>Decisões guiando: <strong>tudo no Postgres</strong> (sem serviço de busca externo tipo Meilisearch — o tsvector basta), <strong>tags em tabela normalizada</strong> (não array — escala melhor pra rename e filtro), <strong>paleta fechada de cor</strong> (8 cores enforced no enum Java — sem hex livre, sem CHECK no banco).</p>
-            <div class="tags"><span class="tag">tsvector</span><span class="tag">N-N</span><span class="tag">paleta fechada</span><span class="tag">URL state</span></div>
+            <p>A Fase 2 é sobre <strong>encontrar e organizar nota</strong>. A Fase 1 entregou o MVP: criar, listar, editar, apagar. Funciona — mas com 50 notas você não acha mais nada. Fase 2 ataca isso em cinco frentes: <strong>busca full-text</strong> (digitar palavra → filtra na hora), <strong>tags</strong> (rótulos pra agrupar notas por tema), <strong>cor de tag</strong> (visual rápido), <strong>ordenação</strong> (por data, título) e <strong>editor rich-text</strong> (negrito, títulos, listas).</p>
+            <p>Ordem das entregas: busca primeiro (2026-05-01) → tags backend (2026-05-02) → cor de tag, tags frontend, ordenação e rich-text (2026-05-04). Cada uma é independente — dá pra ter busca sem tags, tags sem cor, e assim por diante.</p>
+            <p>Decisões guiando: <strong>tudo no Postgres</strong> (sem serviço de busca externo tipo Meilisearch — o tsvector basta), <strong>tags em tabela normalizada</strong> (não array — escala melhor pra rename e filtro), <strong>paleta fechada de cor</strong> (8 cores enforced no enum Java — sem hex livre, sem CHECK no banco), <strong>TipTap</strong> em vez de BlockNote (mais leve, headless, controle total da UI), <strong>JSON ProseMirror</strong> em <code>content</code> + coluna derivada <code>content_text</code> (texto plano extraído pra alimentar o índice GIN).</p>
+            <div class="tags"><span class="tag">tsvector</span><span class="tag">N-N</span><span class="tag">paleta fechada</span><span class="tag">URL state</span><span class="tag">TipTap</span><span class="tag">ProseMirror</span></div>
 
             <div class="info-accordion">
                 <div class="info-row">
@@ -185,6 +185,82 @@
         </div>
     </div>
 
+    <div class="info-row" data-toc-title="05 ORDENAÇÃO" data-toc-sub="Ordenação">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">05 - Ordenação</span><span class="badge" style="margin-left:auto; background:#f97316; color:#fff;">Sort</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Enum NoteSort + ORDER BY dinâmico em native query, sync com URL ?sort=</p>
+
+            <div class="audio-player" data-src="5-ordenacao/audio/ordenacao.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Enum <code>NoteSort</code> (UPDATED_DESC/ASC, CREATED_DESC/ASC, TITLE_ASC/DESC) traduz string da API (<code>"updatedAt:desc"</code>) pra <code>Sort</code> do Spring Data. <code>NoteService.list/listByTag/search</code> aceitam <code>NoteSort</code>. Repository: <code>findByUser(User, Sort)</code> substitui derived query antiga; <code>findByUserAndTagId</code> perde <code>ORDER BY</code> hard-coded e ganha <code>Sort</code> parameter (Spring Data appenda).</p>
+            <p><strong>Custom repository pattern</strong> pra busca: <code>NoteRepositoryCustom</code> + <code>NoteRepositoryImpl</code> usa <code>EntityManager.createNativeQuery</code> e monta <code>ORDER BY</code> string a partir do <code>Sort</code> (mapeamento JPA→SQL: <code>updatedAt</code>→<code>n.updated_at</code>, etc.). Sem risco de SQL injection — valores vêm do enum, controle estático.</p>
+            <p>Comportamento na busca: por padrão usa <code>ts_rank_cd DESC</code> (relevância) com sort como tiebreaker; quando o usuário escolhe sort manual (<code>?sort=</code> na URL), rank é descartado e <code>ORDER BY</code> é estritamente o sort. Frontend: <code>&lt;select&gt;</code> na toolbar; <code>changeSort</code> atualiza URL preservando <code>?tag=</code>; <code>sortExplicit</code> derivado de <code>searchParams.has('sort')</code> decide se passa sort pra <code>searchNotes</code>.</p>
+            <div class="tags"><span class="tag">enum NoteSort</span><span class="tag">EntityManager</span><span class="tag">native query</span><span class="tag">$derived</span><span class="tag">URL state</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-05"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row" data-toc-title="06 RICH-TEXT" data-toc-sub="Editor rich-text">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">06 - Editor rich-text</span><span class="badge" style="margin-left:auto; background:#ec4899; color:#fff;">TipTap</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">TipTap + JSON ProseMirror + coluna derivada content_text pra busca full-text</p>
+
+            <div class="audio-player" data-src="6-rich-text/audio/rich-text.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Stack: <strong>TipTap</strong> (vs BlockNote) — wrapper headless sobre ProseMirror, ~50-80kb, permite UI custom, comunidade Svelte boa. Persistência: campo <code>content</code> em <code>notes</code> passa a guardar JSON ProseMirror.</p>
+            <p>Migration <strong>V9</strong> adiciona <code>content_text TEXT NOT NULL DEFAULT ''</code>. Backend (<code>RichTextExtractor</code> com Jackson) percorre o JSON ao salvar e popula <code>content_text</code>. O índice GIN da V5/V6 é dropado e recriado apontando pra essa coluna em vez de <code>content</code> direto. Notas legadas (plain text antes do editor): se o JSON-parse falha, retorna a string como está — fallback transparente, sem perda de dado.</p>
+            <p>Frontend: <code>lib/components/TipTapEditor.svelte</code> (StarterKit + Placeholder), toolbar com B/I/H1/H2/listas/code; <code>parseContent</code> no mount detecta JSON vs plain text e envolve plain em paragraph (migração transparente do client). Util <code>lib/contentPreview.ts</code> (<code>contentToPlainText</code>) espelha o RichTextExtractor pra preview na home.</p>
+            <div class="tags"><span class="tag">TipTap</span><span class="tag">ProseMirror</span><span class="tag">Flyway V9</span><span class="tag">content_text</span><span class="tag">Jackson</span><span class="tag">RichTextExtractor</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-06"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <script type="text/template" id="tpl-01">
@@ -195,8 +271,9 @@ Migrations Flyway:
   backend/src/main/resources/db/migration/V6__unaccent_search.sql
   backend/src/main/resources/db/migration/V7__create_tags.sql
   backend/src/main/resources/db/migration/V8__add_tag_color.sql
+  backend/src/main/resources/db/migration/V9__add_note_content_text.sql
 
-Backend novo:
+Backend novo (tags):
   backend/src/main/java/io/nexus/tags/Tag.java
   backend/src/main/java/io/nexus/tags/TagColor.java
   backend/src/main/java/io/nexus/tags/TagController.java
@@ -207,23 +284,32 @@ Backend novo:
   backend/src/main/java/io/nexus/tags/dto/TagRequest.java
   backend/src/main/java/io/nexus/tags/dto/TagResponse.java
 
+Backend novo (ordenação + rich-text):
+  backend/src/main/java/io/nexus/notes/NoteSort.java
+  backend/src/main/java/io/nexus/notes/NoteRepositoryCustom.java
+  backend/src/main/java/io/nexus/notes/NoteRepositoryImpl.java
+  backend/src/main/java/io/nexus/notes/RichTextExtractor.java
+
 Backend modificado:
-  backend/src/main/java/io/nexus/notes/Note.java                   (@ManyToMany tags)
-  backend/src/main/java/io/nexus/notes/NoteController.java         (params q + tag, attach/detach)
-  backend/src/main/java/io/nexus/notes/NoteRepository.java         (searchByUser, findByUserAndTagId)
-  backend/src/main/java/io/nexus/notes/NoteService.java            (search, listByTag, toPrefixTsQuery)
+  backend/src/main/java/io/nexus/notes/Note.java                   (@ManyToMany tags + contentText)
+  backend/src/main/java/io/nexus/notes/NoteController.java         (params q + tag + sort, attach/detach)
+  backend/src/main/java/io/nexus/notes/NoteRepository.java         (findByUser/Sort, JPQL sem ORDER BY)
+  backend/src/main/java/io/nexus/notes/NoteService.java            (search/listByTag/list com NoteSort, RichTextExtractor)
   backend/src/main/java/io/nexus/notes/dto/NoteResponse.java       (campo tags)
 
 Frontend novo:
   frontend/src/lib/tagColors.ts                                    (mapa de hex)
+  frontend/src/lib/contentPreview.ts                               (contentToPlainText pra preview)
+  frontend/src/lib/components/TipTapEditor.svelte                  (editor + toolbar)
   frontend/src/routes/tags/+page.svelte                            (CRUD de tags)
 
 Frontend modificado:
-  frontend/src/lib/api.ts                                          (searchNotes, listTags, attach/detach...)
-  frontend/src/lib/types.ts                                        (Tag, TagColor, TAG_COLORS)
+  frontend/src/lib/api.ts                                          (searchNotes, listTags, sort, attach/detach)
+  frontend/src/lib/types.ts                                        (Tag, TagColor, NoteSort, NOTE_SORTS)
   frontend/src/routes/+layout.svelte                               (link Tags no header)
-  frontend/src/routes/+page.svelte                                 (busca, chips clicáveis, filtro URL)
-  frontend/src/routes/notes/[id]/+page.svelte                      (anexar/desanexar tags)
+  frontend/src/routes/+page.svelte                                 (busca, chips clicáveis, filtro URL, dropdown sort, preview)
+  frontend/src/routes/notes/new/+page.svelte                       (TipTapEditor)
+  frontend/src/routes/notes/[id]/+page.svelte                      (anexar/desanexar tags + TipTapEditor)
 
 Repo: https://github.com/flaviovmix/nexus
 </script>
@@ -309,6 +395,68 @@ Cor + Tags frontend — código
 (adicionar trecho aqui)
 
 == frontend /notes/[id]/+page.svelte — anexar/desanexar ==
+(adicionar trecho aqui)
+</script>
+
+<script type="text/template" id="tpl-05">
+Ordenação — código
+
+== NoteSort.java (enum) ==
+(adicionar enum aqui)
+
+== NoteRepositoryCustom.java + NoteRepositoryImpl.java ==
+(adicionar interface + impl com EntityManager aqui)
+
+== NoteRepository.java — findByUser(Sort), findByUserAndTagId com Sort ==
+(adicionar trechos aqui)
+
+== NoteService.list/listByTag/search — NoteSort + sortExplicit ==
+(adicionar trechos aqui)
+
+== NoteController.list — @RequestParam sort + handler IAE ==
+(adicionar trecho aqui)
+
+== frontend lib/types.ts — NOTE_SORTS, NoteSort ==
+(adicionar trecho aqui)
+
+== frontend lib/api.ts — listNotes/searchNotes/listNotesByTag com sort ==
+(adicionar trechos aqui)
+
+== frontend /+page.svelte — sortValue derived + dropdown + changeSort ==
+(adicionar trechos aqui)
+</script>
+
+<script type="text/template" id="tpl-06">
+Editor rich-text — código
+
+== V9__add_note_content_text.sql ==
+(adicionar conteúdo da migration aqui)
+
+== Note.java — campo contentText ==
+(adicionar trecho aqui)
+
+== RichTextExtractor.java (Jackson) ==
+(adicionar classe aqui)
+
+== NoteService.create/update — RichTextExtractor.toPlainText ==
+(adicionar trechos aqui)
+
+== NoteRepositoryImpl — busca aponta pra n.content_text ==
+(adicionar trecho aqui)
+
+== frontend lib/components/TipTapEditor.svelte ==
+(adicionar componente aqui)
+
+== frontend lib/contentPreview.ts ==
+(adicionar arquivo aqui)
+
+== frontend /notes/new/+page.svelte — substitui textarea ==
+(adicionar trecho aqui)
+
+== frontend /notes/[id]/+page.svelte — substitui textarea ==
+(adicionar trecho aqui)
+
+== frontend /+page.svelte — preview via contentToPlainText ==
 (adicionar trecho aqui)
 </script>
 

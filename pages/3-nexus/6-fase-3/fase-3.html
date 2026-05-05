@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fase 3 — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+    <style>
+        .ep-sub {
+            color: #6b7280;
+            font-style: italic;
+            margin: 0 0 12px 0;
+            font-size: 0.92em;
+        }
+        .tags { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+        .tag {
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 0.75em;
+            padding: 3px 9px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Nexus — Fase 3 <span class="badge badge-new">7 episódios</span></h1>
+
+<p>Sequência da Fase 3 do Nexus — hierarquia e organização Notion-like. Notas viram árvore (parent/child) com sidebar à esquerda mostrando a estrutura, drag &amp; drop pra mover, blocos extras no editor (checklist, citação, divisor), attachments (imagem anexada por upload/paste/drop) e markdown import/export. <strong>Fase fechada — 6/6 sub-entregas</strong>.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open" data-toc-title="01 VISÃO GERAL" data-toc-sub="Visão Geral">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">01 - Visão Geral</span><span class="badge" style="margin-left:auto; background:#6366f1; color:#fff;">VISÃO GERAL</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Panorama da Fase 3 fechada — 3 decisões iniciais + 6 frentes entregues</p>
+
+            <div class="audio-player" data-src="1-visao-geral/audio/visao-geral.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>A Fase 3 é sobre <strong>hierarquia</strong>. A Fase 2 entregou busca e tags pra achar nota; mas a lista continua plana. Pra organização vertical (pasta dentro de pasta dentro de pasta — estilo Notion) a gente precisa de árvore. A Fase 3 fechou as 6 sub-entregas planejadas.</p>
+            <p>Decisões iniciais (antes de codar): <strong>JSON do TipTap</strong> em <code>pages.content</code> (não tabela <code>blocks</code> — TipTap já produz JSON ProseMirror, salvar é 1 UPDATE, reordenar é grátis); <strong>imagens locais</strong> no servidor próprio (não R2/S3 — coerente com §3.8 do plano, dado pessoal sob controle); <strong>drag &amp; drop com <code>svelte-dnd-action</code></strong> (HTML5 nativo machuca pra árvore com mover-entre-pais).</p>
+            <p>6 entregas em sequência: <strong>3.1 backend</strong> (V10 com parent_id + position, /tree, /move com validação de ciclo) → <strong>3.2 sidebar frontend</strong> (PageTree recursivo, store global, layout colapsável) → <strong>3.3 drag &amp; drop</strong> (svelte-dnd-action com dndzone aninhada por nível) → <strong>3.4 blocos extras</strong> (checklist, citação, linha horizontal) → <strong>3.5 attachments</strong> (V11 + UUID público + paste/drop/upload) → <strong>3.6 markdown</strong> (export hand-rolled + import via marked, tudo no frontend).</p>
+            <div class="tags"><span class="tag">parent_id CASCADE</span><span class="tag">position gap-friendly</span><span class="tag">JSONB TipTap</span><span class="tag">store global runes</span><span class="tag">svelte-dnd-action</span><span class="tag">TaskList</span><span class="tag">UUID público</span><span class="tag">marked</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-01"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row" data-toc-title="02 HIERARQUIA" data-toc-sub="Hierarquia backend">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">02 - Hierarquia backend</span><span class="badge" style="margin-left:auto; background:#0ea5e9; color:#fff;">parent_id</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">V10 (parent_id + position), entidade Note self-reference, /tree, /move com validação de ciclo</p>
+
+            <div class="audio-player" data-src="2-hierarquia-backend/audio/hierarquia-backend.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Nota vira nó de árvore. <strong>Migration V10</strong> adiciona <code>parent_id BIGINT NULL REFERENCES notes(id) ON DELETE CASCADE</code> (NULL = raiz; deletar pai apaga subárvore inteira) e <code>position INT NOT NULL DEFAULT 0</code> (ordem entre irmãos). Dois índices: <code>idx_notes_parent_id</code> pra buscar filhos, e composto <code>(user_id, parent_id, position)</code> pra render da sidebar. Notas existentes ficam com <code>parent_id NULL</code> e <code>position 0</code> — todas viram raízes automaticamente, migração transparente.</p>
+            <p>Entidade <code>Note</code> ganha <code>Long parentId</code> e <code>int position</code>. <strong>Sem <code>@ManyToOne</code></strong> — Long puro, mais simples: a sidebar não navega <code>parent → children</code> via JPA, monta a árvore no client a partir da lista flat. <code>NoteRequest</code> ganha <code>parentId</code> opcional; <code>NoteResponse</code> expõe <code>parentId</code> e <code>position</code>. Novo DTO <code>NoteMoveRequest</code> (<code>{parentId, position}</code>).</p>
+            <p>Service: <code>create</code> valida que o pai existe e pertence ao user (sem isso, dava pra anexar nota ao pai de outro user — vazamento de hierarquia) e aloca <code>position = MAX(position dos irmãos) + 1</code> (gap-friendly, sem repacking). <code>move(id, MoveRequest)</code> valida ownership do pai novo + chama <code>ensureNoCycle</code> que sobe a cadeia de ancestrais a partir do candidato; se em algum ponto encontrar o id da nota que tá movendo, rejeita com 400. Profundidade típica é baixa (segundo cérebro raramente passa de 5-10 níveis); se virar gargalo, troca por recursive CTE depois.</p>
+            <p>Endpoints novos: <code>GET /notes/tree</code> retorna lista flat de todas as notas (sem filtro), ordenada por <code>(parentId, position)</code> — frontend agrupa por <code>parentId</code> e ordena os filhos por <code>position</code>. <code>PATCH /notes/{id}/move</code> recebe <code>{parentId, position}</code> e aplica via <code>NoteService.move</code>. <code>PUT /notes/{id}</code> NÃO mexe em hierarquia — isso é responsabilidade só do <code>move</code>.</p>
+            <p>Testes: <strong>47 verdes</strong> (era 42, +5 da Fase 3.1). 4 novos no <code>NoteControllerTest</code> (tree, move 200/400/404), 1 novo no <code>NexusIntegrationTest</code> (cria árvore 3 níveis, move neto pra raiz, tenta ciclo, tenta self-move, tenta pai 404). Backend ainda compatível com frontend antigo: POST sem <code>parentId</code> = nota raiz, GET retorna campos extras que o cliente velho ignora.</p>
+            <div class="tags"><span class="tag">Flyway V10</span><span class="tag">parent_id CASCADE</span><span class="tag">position gap-friendly</span><span class="tag">/notes/tree</span><span class="tag">PATCH /move</span><span class="tag">ensureNoCycle</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-02"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row" data-toc-title="03 SIDEBAR" data-toc-sub="Sidebar frontend">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">03 - Sidebar frontend</span><span class="badge" style="margin-left:auto; background:#a855f7; color:#fff;">SvelteKit</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">PageTree recursivo, store global tree.svelte.ts, layout com sidebar 17rem colapsável, ?parent= no /notes/new</p>
+
+            <div class="audio-player" data-src="3-sidebar-frontend/audio/sidebar-frontend.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Sidebar à esquerda mostra árvore de páginas. <strong>Estado global</strong> em <code>lib/tree.svelte.ts</code>: classe <code>TreeStore</code> com runes (<code>$state</code> em <code>notes</code>, <code>loading</code>, <code>error</code>) + métodos <code>refresh()</code> e <code>clear()</code>. Páginas chamam <code>tree.refresh()</code> depois de criar/editar/deletar pra manter sidebar em sincronia, sem prop drilling. <code>+layout.svelte</code> dispara <code>refresh</code> ao logar e <code>clear</code> no logout.</p>
+            <p><strong>PageTree.svelte</strong>: header "PÁGINAS" + "+" pra criar raiz, lista das raízes filtrada da store. Constrói uma árvore aninhada local em <code>$state</code> a partir do flat (groupBy <code>parentId</code> + sort por <code>position</code>) — isso é necessário pra biblioteca de drag mutar arrays nativos por zona (ver episódio 04).</p>
+            <p><strong>PageTreeNode.svelte</strong> (recursivo, importa a si mesmo): caret "▾/▸" pra expand/collapse (escondido se não tem filho), label clicável que navega pra <code>/notes/{id}</code>, ações no hover ("+" pra criar filho, "⋯" abre menu com Excluir). <code>activeId</code> recebido por prop destaca a nota aberta em laranja. Indentação por <code>depth * 0.9rem</code>.</p>
+            <p><strong>Layout</strong>: header full-width com botão ☰ no canto que toggla a sidebar. Sidebar de <code>17rem</code> com <code>overflow-y: auto</code>, <code>position: sticky</code> pra rolar junto com a página. Main vira flex sem max-width quando sidebar está aberta (caso contrário, mantém os <code>720px</code> centralizados originais).</p>
+            <p><strong>Criar filho</strong>: dois fluxos. Direto da sidebar — clica "+" num nó → <code>api.createNote({title:"Sem título", content:"", parentId})</code>, refresh, navega pro detalhe (UX Notion-like, criação instantânea). Pelo formulário — <code>/notes/new?parent=ID</code>; o <code>+page.svelte</code> derivada o <code>parentId</code> da URL e passa pro create. Se URL não tiver <code>?parent=</code>, cria como raiz (mesmo comportamento de antes). Detalhe: ao salvar, refresh pega rename do título; ao excluir, refresh + redirect pra home (CASCADE no backend pega filhos).</p>
+            <p>Compatibilidade: tipos <code>Note</code> ganham <code>parentId</code> e <code>position</code>; <code>NoteRequest</code> ganha <code>parentId?</code>; novo <code>NoteMoveRequest</code>. <code>api.ts</code> ganha <code>treeNotes()</code> e <code>moveNote()</code>.</p>
+            <div class="tags"><span class="tag">PageTree recursivo</span><span class="tag">$state runes</span><span class="tag">store global</span><span class="tag">sidebar sticky</span><span class="tag">?parent= URL</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-03"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row" data-toc-title="04 DRAG &amp; DROP" data-toc-sub="Drag and Drop">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">04 - Drag and Drop</span><span class="badge" style="margin-left:auto; background:#f97316; color:#fff;">svelte-dnd-action</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">dndzone aninhada por nível, consider/finalize, padrão "só zona destino persiste", refresh como sincronização</p>
+
+            <div class="audio-player" data-src="4-drag-and-drop/audio/drag-and-drop.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Stack: <strong><code>svelte-dnd-action</code></strong> (~10kb). HTML5 nativo machuca em árvore com mover-entre-pais — distinguir "antes/dentro/depois", bloquear ciclo, animação. Lib resolve isso pronto. Cada nível da árvore vira uma <code>dndzone</code>: filhos da raiz são uma zona, filhos de cada nó expandido são outras zonas. Quando o usuário arrasta nó da zona A pra B, ambas recebem evento — só a zona DESTINO (a que <em>contém</em> o item ao final) chama o backend, evita 2 chamadas.</p>
+            <p><strong>Eventos:</strong> <code>consider</code> dispara durante o arrasto (a cada movimento), atualiza array bound pra animação funcionar; <code>finalize</code> dispara quando o usuário solta. No <code>finalize</code>, pega <code>e.detail.info.id</code> (id do item movido) e <code>findIndex</code> no novo array. Se <code>idx === -1</code>, item saiu desta zona — outra zona vai persistir, então não faz nada. Se <code>info.trigger === TRIGGERS.DRAG_STOPPED</code>, é cancelamento (ESC) — também não chama o backend.</p>
+            <p><strong>Fluxo de persistência:</strong> <code>applyMove(noteId, parentId, position)</code> chama <code>api.moveNote</code> + <code>tree.refresh()</code>. Se backend rejeita (ciclo, ownership), mostra alert + refresh mesmo assim — refresh sincroniza nested local com a verdade do servidor, descartando a alteração visual feita no <code>consider</code>. Servidor é a fonte da verdade; cliente só animaa.</p>
+            <p><strong>Limitação v1:</strong> pra dropar dentro de nó colapsado, expandir primeiro (zona dos filhos não existe se colapsado). Notion expande automaticamente no hover-during-drag — polish pra próxima versão. Validação de ciclo só no servidor por ora — cliente aceita arrasto inválido, vê alerta e refresha (piscadinha visual aceitável).</p>
+            <div class="tags"><span class="tag">svelte-dnd-action</span><span class="tag">dndzone aninhada</span><span class="tag">consider/finalize</span><span class="tag">só destino persiste</span><span class="tag">DRAG_STOPPED ESC</span><span class="tag">servidor = verdade</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-04"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row" data-toc-title="05 BLOCOS EXTRAS" data-toc-sub="Blocos extras no editor">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">05 - Blocos extras</span><span class="badge" style="margin-left:auto; background:#ec4899; color:#fff;">TipTap</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">TaskList nested + Blockquote + HorizontalRule, escritório não muda (RichTextExtractor já era genérico)</p>
+
+            <div class="audio-player" data-src="5-blocos-extras/audio/blocos-extras.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Editor da Fase 2 só tinha B/I/H1/H2/listas/code. Faltava 3 blocos pra segundo cérebro: <strong>checklist</strong> (caixinha pra marcar tarefa), <strong>citação</strong> (barrinha esquerda), <strong>linha horizontal</strong> (separador).</p>
+            <p>Instalação: <code>npm i @tiptap/extension-task-list @tiptap/extension-task-item</code>. <code>TaskItem.configure({ nested: true })</code> permite Tab pra aninhar checklist. Blockquote e HorizontalRule já vinham no <code>StarterKit</code> — só faltava expor na toolbar (descoberta tardia: parte do "novo" era só ler doc da lib).</p>
+            <p><strong>Toolbar</strong> ganha 3 botões (☐ checklist, ❝ blockquote, ── divisor) + 3 cases no <code>exec()</code>: <code>toggleTaskList()</code>, <code>toggleBlockquote()</code>, <code>setHorizontalRule()</code>. Convenção TipTap: <code>toggleX</code> liga/desliga bloco no cursor; <code>setX</code> só insere (HR não tem "estado", é nó separado).</p>
+            <p><strong>CSS por bloco:</strong> blockquote ganha <code>border-left: 3px solid #ddd</code> + cor cinza; HR vira linha cinza com margem; checklist é mais delicada — TipTap renderiza cada item como <code>li[data-type="taskList"]</code> com <code>label</code> + <code>div</code>. Quando user marca, <code>data-checked="true"</code> entra no DOM. Seletor de atributo aplica linha sobre o texto via CSS — sem JS extra.</p>
+            <p><strong>Por que o backend não mudou:</strong> <code>RichTextExtractor</code> da Fase 2 é genérico — percorre o JSON ProseMirror coletando qualquer campo <code>"text"</code> via recursão em <code>"content"</code>. Não sabe quais tipos de nó existem; coleta texto de qualquer um. Checklist no JSON é só um nó <code>taskList</code> com filhos <code>taskItem</code> com paragraph/text dentro — extractor desce e pega. <strong>Princípio:</strong> estrutura desenhada pra extensão, mesmo sem saber a extensão, paga dividendos depois.</p>
+            <div class="tags"><span class="tag">TaskList nested</span><span class="tag">Blockquote</span><span class="tag">HorizontalRule</span><span class="tag">data-checked</span><span class="tag">RichTextExtractor genérico</span><span class="tag">extensibilidade</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-05"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row" data-toc-title="06 ATTACHMENTS" data-toc-sub="Attachments (imagens)">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">06 - Attachments</span><span class="badge" style="margin-left:auto; background:#14b8a6; color:#fff;">UUID público</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">V11 + mesa user-scoped + /attachments/{uuid} público (sem auth) + paste/drop/upload no TipTap</p>
+
+            <div class="audio-player" data-src="6-attachments/audio/attachments.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Imagem na nota precisa de dois lugares: arquivo no <strong>disco do servidor</strong>, metadado no <strong>arquivo morto</strong>. Migration <strong>V11</strong> cria mesa <code>attachments</code> com <code>user_id</code>, <code>uuid</code>, <code>filename</code>, <code>mime</code>, <code>size_bytes</code>. Sem <code>note_id</code> — link entre attachment e nota vive no JSON ProseMirror via <code>&lt;img src&gt;</code>; cleanup de órfão fica pra job futuro. <code>application.yml</code> ganha multipart 10MB e <code>nexus.uploads.dir</code> (default <code>~/.nexus/uploads/</code>).</p>
+            <p><strong>UUID público sem auth:</strong> <code>GET /attachments/{uuid}</code> liberado no <code>SecurityConfig</code> via <code>requestMatchers(HttpMethod.GET, "/attachments/*").permitAll()</code>. Por quê? Porque a tag <code>&lt;img src&gt;</code> NÃO manda JWT no header — pra funcionar como imagem normal, GET tem que ser público. Como evitar acesso indesejado? UUID v4 é inadivinhável; URL só vaza via JSON da nota, que é auth-protegida. <code>POST</code>/<code>DELETE</code> seguem auth normal.</p>
+            <p><strong>AttachmentService:</strong> <code>upload</code> valida (não-vazio, ≤10MB, mime image/*), gera UUID v4, salva no disco como <code>{uuid}.{ext}</code> (extensão extraída do filename original). Filename original sanitizado (separadores e controles → underscore) — vai pro DB e pro response, mas <strong>NUNCA toca o filesystem</strong> (storage real é UUID, imune a path traversal). <code>loadByUuid</code> busca + valida arquivo existe + devolve Path pro controller streamar com <code>FileSystemResource</code>. <code>delete</code> confere ownership, apaga disco + DB; se disco resistir (lock/permissão), apaga só o DB e segue.</p>
+            <p><strong>Frontend (TipTapEditor):</strong> 3 entradas pra inserir imagem. <strong>Botão 🖼</strong> na toolbar abre file picker. <strong>Paste (Ctrl+V):</strong> <code>handlePaste</code> percorre <code>clipboardData.items</code>, se algum é file image/* faz upload. <strong>Drop:</strong> <code>handleDrop</code> mesmo padrão pra <code>dataTransfer.files</code>. Todos chamam <code>uploadAndInsert(file)</code> que faz <code>fetch</code> com <code>FormData</code> (sem Content-Type manual — browser gera o boundary multipart) e usa <code>editor.chain().setImage({src, alt})</code> pra inserir o nó <code>image</code> no JSON.</p>
+            <div class="tags"><span class="tag">Flyway V11</span><span class="tag">UUID v4 público</span><span class="tag">multipart</span><span class="tag">FileSystemResource</span><span class="tag">handlePaste/Drop</span><span class="tag">setImage TipTap</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-06"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row" data-toc-title="07 MARKDOWN" data-toc-sub="Markdown import/export">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">07 - Markdown</span><span class="badge" style="margin-left:auto; background:#22c55e; color:#fff;">marked</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Export hand-rolled (TipTap JSON → MD) + import via marked (MD → tokens → ProseMirror), tudo no frontend</p>
+
+            <div class="audio-player" data-src="7-markdown/audio/markdown.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>JSON ProseMirror é bom pra TipTap, ruim pra portabilidade. <strong>Markdown é lingua franca</strong> de notas (Notion exporta MD, Obsidian é MD, GitHub README é MD). A Fase 3.6 entrega import + export — <strong>tudo no frontend</strong>, sem mudança no backend (frontend já tem o JSON em mãos via <code>GET /notes/{id}</code>; converter no client evita endpoint duplicado e permite iterar sem deploy).</p>
+            <p><strong>Stack:</strong> <code>marked</code> (~50kb, GFM nativo) pra parsear MD em tokens estruturados; <code>prosemirror-markdown</code> instalado mas não usado (schema diferente do TipTap, sai mais barato escrever serializer próprio).</p>
+            <p><strong>Export — <code>noteJsonToMarkdown(json)</code></strong>: walker recursivo. <code>renderBlock(node, depth)</code> faz dispatch por <code>node.type</code> — paragraph, heading (H1-H6 via <code>'#'.repeat(level)</code>), bulletList/orderedList, taskList (vira <code>- [ ]</code>/<code>- [x]</code> GFM), blockquote, codeBlock, horizontalRule, image. <code>renderInline</code> aplica marks: bold (<code>**</code>), italic (<code>*</code>), code (<code>`</code>), strike (<code>~~</code>), link (<code>[]()</code>). Listas e quote chamam <code>renderBlock</code> recursivo com <code>depth+1</code> pra indentar.</p>
+            <p><strong>Import — <code>markdownToNoteJson(md)</code></strong>: <code>marked.lexer(md, {gfm: true})</code> → array de tokens. <code>tokenToNode</code> faz dispatch por <code>tok.type</code>: paragraph, heading, list (<strong>detecta checklist via <code>items.every(i =&gt; i.task)</code></strong> — se todos têm flag task, vira taskList; senão bulletList/orderedList), blockquote, code, hr. <code>inlineTokens</code> processa strong/em/codespan/del/link/image em recursão, empilhando marks no nó text.</p>
+            <p><strong>Botões na UI:</strong> 📥 MD no detalhe da nota usa <code>Blob</code> + <code>URL.createObjectURL</code> + âncora invisível pra disparar download (filename = título sanitizado). 📤 Importar MD na home tem file picker; lê texto, extrai H1 do começo como título (se houver), converte corpo, cria nota via <code>POST /notes</code>, refresh da árvore, navega pro detalhe.</p>
+            <p><strong>Limitações conhecidas:</strong> round-trip não é 100% perfeito (marks aninhadas podem reordenar). Imagens (attachments) viram <code>![alt](url)</code> apontando pro UUID — só funcionam com backend acessível; pra round-trip completo entre máquinas, precisaria embutir como base64 ou empacotar em zip. Fica pra futuro.</p>
+            <div class="tags"><span class="tag">marked GFM</span><span class="tag">walker recursivo</span><span class="tag">só frontend</span><span class="tag">Blob download</span><span class="tag">H1 = título</span><span class="tag">checklist GFM</span></div>
+
+            <div class="info-accordion">
+                <div class="info-row">
+                    <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+                        <span class="info-row-title">CÓDIGO COMPLETO</span>
+                        <button class="info-row-btn">+</button>
+                    </div>
+                    <div class="info-row-body">
+                        <pre><code class="language-plaintext" data-tpl="tpl-07"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script type="text/template" id="tpl-01">
+Visão Geral — arquivos da Fase 3 (resumo)
+
+Backend novo:
+  backend/src/main/resources/db/migration/V10__add_note_hierarchy.sql
+  backend/src/main/resources/db/migration/V11__create_attachments.sql
+  backend/src/main/java/io/nexus/notes/dto/NoteMoveRequest.java
+  backend/src/main/java/io/nexus/attachments/Attachment.java
+  backend/src/main/java/io/nexus/attachments/AttachmentRepository.java
+  backend/src/main/java/io/nexus/attachments/AttachmentService.java
+  backend/src/main/java/io/nexus/attachments/AttachmentController.java
+  backend/src/main/java/io/nexus/attachments/AttachmentNotFoundException.java
+  backend/src/main/java/io/nexus/attachments/InvalidAttachmentException.java
+  backend/src/main/java/io/nexus/attachments/dto/AttachmentResponse.java
+
+Backend modificado:
+  backend/src/main/java/io/nexus/notes/Note.java                   (parentId + position)
+  backend/src/main/java/io/nexus/notes/dto/NoteRequest.java        (parentId?)
+  backend/src/main/java/io/nexus/notes/dto/NoteResponse.java       (parentId + position)
+  backend/src/main/java/io/nexus/notes/NoteRepository.java         (findMaxPositionAmongSiblings)
+  backend/src/main/java/io/nexus/notes/NoteService.java            (create valida pai, move + ensureNoCycle, tree)
+  backend/src/main/java/io/nexus/notes/NoteController.java         (GET /tree + PATCH /{id}/move)
+  backend/src/main/java/io/nexus/common/SecurityConfig.java        (GET /attachments/* permitAll)
+  backend/src/main/resources/application.yml                       (multipart 10MB + nexus.uploads.dir)
+
+Backend testes:
+  backend/src/test/java/io/nexus/notes/NoteControllerTest.java     (+4: tree, move 200/400/404)
+  backend/src/test/java/io/nexus/NexusIntegrationTest.java         (+1: hierarquia ponta a ponta)
+
+Frontend novo:
+  frontend/src/lib/tree.svelte.ts                                  (TreeStore com runes)
+  frontend/src/lib/components/PageTree.svelte                      (raiz + dndzone)
+  frontend/src/lib/components/PageTreeNode.svelte                  (recursivo + dndzone aninhada)
+  frontend/src/lib/markdown.ts                                     (export hand-rolled + import via marked)
+
+Frontend modificado:
+  frontend/src/lib/types.ts                                        (Note ganha parentId/position, NoteMoveRequest)
+  frontend/src/lib/api.ts                                          (treeNotes + moveNote + uploadAttachment + attachmentUrl)
+  frontend/src/lib/components/TipTapEditor.svelte                  (TaskList + Blockquote + HR + Image + paste/drop/upload)
+  frontend/src/routes/+layout.svelte                               (sidebar colapsável + refresh/clear)
+  frontend/src/routes/+page.svelte                                 (botão Importar MD + handleImport)
+  frontend/src/routes/notes/new/+page.svelte                       (?parent= da URL)
+  frontend/src/routes/notes/[id]/+page.svelte                      (tree.refresh em save/delete + Exportar MD)
+
+Pacotes novos no frontend:
+  svelte-dnd-action
+  @tiptap/extension-task-list
+  @tiptap/extension-task-item
+  @tiptap/extension-image
+  marked
+  prosemirror-markdown    (instalado, não usado — schema diferente do TipTap)
+
+Repo: https://github.com/flaviovmix/nexus
+</script>
+
+<script type="text/template" id="tpl-02">
+Hierarquia backend — código
+
+== V10__add_note_hierarchy.sql ==
+(adicionar conteúdo da migration aqui)
+
+== Note.java — campos parentId e position ==
+(adicionar trecho aqui)
+
+== NoteRequest + NoteResponse + NoteMoveRequest ==
+(adicionar records aqui)
+
+== NoteRepository.findMaxPositionAmongSiblings ==
+(adicionar @Query JPQL aqui)
+
+== NoteService.create — valida pai + aloca position ==
+(adicionar trecho aqui)
+
+== NoteService.move + ensureNoCycle ==
+(adicionar trechos aqui)
+
+== NoteService.tree ==
+(adicionar trecho aqui)
+
+== NoteController — GET /tree + PATCH /{id}/move ==
+(adicionar trechos aqui)
+
+== Testes — NoteControllerTest (tree, move 200/400/404) ==
+(adicionar testes aqui)
+
+== Testes — NexusIntegrationTest (hierarquia ponta a ponta) ==
+(adicionar teste aqui)
+</script>
+
+<script type="text/template" id="tpl-03">
+Sidebar frontend — código
+
+== lib/types.ts — Note (parentId/position), NoteMoveRequest ==
+(adicionar trechos aqui)
+
+== lib/api.ts — treeNotes + moveNote ==
+(adicionar trechos aqui)
+
+== lib/tree.svelte.ts — store TreeStore com runes ==
+(adicionar arquivo aqui)
+
+== lib/components/PageTree.svelte — header + build da nested + render dos roots ==
+(adicionar componente aqui — IGNORAR partes de dndzone, foco em build/effect/each)
+
+== lib/components/PageTreeNode.svelte (recursivo) — caret, label, ações ==
+(adicionar componente aqui — IGNORAR partes de dndzone, foco em recursão e ações)
+
+== routes/+layout.svelte — sidebar + toggle + refresh no login/clear no logout ==
+(adicionar trecho aqui)
+
+== routes/notes/new/+page.svelte — ?parent= da URL + tree.refresh ==
+(adicionar trecho aqui)
+
+== routes/notes/[id]/+page.svelte — tree.refresh em save/delete ==
+(adicionar trecho aqui)
+</script>
+
+<script type="text/template" id="tpl-04">
+Drag and Drop — código
+
+== package.json — svelte-dnd-action ==
+(linha do dependency)
+
+== lib/components/PageTree.svelte — dndzone na raiz + handleDndConsider/Finalize + applyMove ==
+(adicionar trechos aqui — foco em use:dndzone, eventos, applyMove com api.moveNote + tree.refresh)
+
+== lib/components/PageTreeNode.svelte — dndzone nos children (quando expandido) + handleConsider/Finalize ==
+(adicionar trechos aqui — foco em mutação de note.children, padrão "só zona destino persiste")
+
+== Padrão "só zona destino" — findIndex !== -1 ==
+(adicionar comentário/explicação aqui)
+
+== TRIGGERS.DRAG_STOPPED — cancelar com ESC ==
+(adicionar trecho aqui)
+
+== applyMove — refresh em sucesso E em erro ==
+(adicionar trecho aqui)
+</script>
+
+<script type="text/template" id="tpl-05">
+Blocos extras — código
+
+== package.json — @tiptap/extension-task-list + @tiptap/extension-task-item ==
+(linhas do dependency)
+
+== TipTapEditor.svelte — extensions array (TaskList + TaskItem nested) ==
+(adicionar trecho aqui)
+
+== TipTapEditor.svelte — exec() novos cases (task/quote/hr) ==
+(adicionar trechos aqui)
+
+== TipTapEditor.svelte — toolbar com 3 botões novos ==
+(adicionar trecho aqui)
+
+== TipTapEditor.svelte — CSS pra blockquote / hr / checklist (com data-checked) ==
+(adicionar trechos aqui)
+
+== RichTextExtractor.java — POR QUE NÃO MUDA: função genérica que coleta qualquer "text" recursivamente ==
+(adicionar trecho aqui)
+</script>
+
+<script type="text/template" id="tpl-06">
+Attachments — código
+
+== V11__create_attachments.sql ==
+(adicionar conteúdo da migration aqui)
+
+== application.yml — multipart + nexus.uploads.dir ==
+(adicionar trecho aqui)
+
+== Attachment.java (entidade com UUID coluna) ==
+(adicionar arquivo aqui)
+
+== AttachmentRepository — findByUuid + findByIdAndUser ==
+(adicionar interface aqui)
+
+== AttachmentService — upload (validação + UUID + sanitize), loadByUuid, delete ==
+(adicionar arquivo aqui)
+
+== AttachmentController — POST autenticado / GET público / DELETE autenticado ==
+(adicionar arquivo aqui)
+
+== SecurityConfig — requestMatchers GET /attachments/* permitAll ==
+(adicionar trecho aqui)
+
+== api.ts (frontend) — uploadAttachment com FormData + attachmentUrl ==
+(adicionar trechos aqui)
+
+== TipTapEditor.svelte — Image extension + handlePaste + handleDrop + uploadAndInsert + botão 🖼 ==
+(adicionar trechos aqui)
+</script>
+
+<script type="text/template" id="tpl-07">
+Markdown — código
+
+== package.json — marked + prosemirror-markdown ==
+(linhas do dependency)
+
+== lib/markdown.ts — noteJsonToMarkdown (renderBlock + renderInline + applyMarks + renderTaskList) ==
+(adicionar trechos aqui)
+
+== lib/markdown.ts — markdownToNoteJson (marked.lexer + tokenToNode + detecção isTask via items.every) ==
+(adicionar trechos aqui)
+
+== lib/markdown.ts — inlineTokens (strong/em/codespan/del/link/image/br) ==
+(adicionar trecho aqui)
+
+== routes/notes/[id]/+page.svelte — exportMarkdown (Blob + URL.createObjectURL + sanitize filename) ==
+(adicionar trecho aqui)
+
+== routes/+page.svelte — pickImport + handleImport (extrai H1 como título, cria nota, refresh tree) ==
+(adicionar trecho aqui)
+</script>
+
+</body>
+</html>

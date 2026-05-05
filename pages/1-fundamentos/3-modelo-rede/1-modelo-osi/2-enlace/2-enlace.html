@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enlace — Modelo de Rede — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Camada 2 — Enlace</h1>
+
+<div class="audio-player" data-src="audio/visao-geral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>A camada 2 transforma o sinal cru da camada 1 em <strong>quadros endereçados</strong>. Cada placa de rede ganha um identificador único (o MAC), os bits viram blocos com cabeçalho e rodapé (o frame Ethernet), e um equipamento esperto (o switch) aprende quem está em qual porta pra entregar cada quadro só pra o destinatário certo. É aqui que a rede local começa a fazer sentido — vizinhos do mesmo barramento conversando direto, sem precisar do mundo lá fora.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">MAC address — a digital da placa de rede</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/mac-address.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>Cada placa de rede no mundo tem um <strong>MAC address</strong> — 48 bits (6 bytes) que identificam aquela placa específica, em qualquer lugar do planeta. É um número de série gravado na fábrica.</p>
+
+            <h3>Formato</h3>
+            <p>Escrito em hexadecimal, separado por <code>:</code> ou <code>-</code>:</p>
+            <pre><code class="language-bash">A4:5E:60:C2:1F:8B</code></pre>
+            <ul>
+                <li><strong>Primeiros 3 bytes (OUI)</strong> — identificam o fabricante (Apple, Intel, Dell). A IEEE distribui esses prefixos.</li>
+                <li><strong>Últimos 3 bytes</strong> — número serial da placa dentro do fabricante.</li>
+            </ul>
+            <p>Pelos 3 primeiros bytes dá pra descobrir quem fabricou a placa (existem sites que fazem essa busca).</p>
+
+            <h3>Endereços especiais</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Endereço</th><th>Significado</th></tr>
+                    <tr><td><code>FF:FF:FF:FF:FF:FF</code></td><td><strong>Broadcast</strong> — vai pra todas as máquinas da rede local</td></tr>
+                    <tr><td><code>01:00:5E:xx:xx:xx</code></td><td><strong>Multicast IPv4</strong> — vai pra um grupo específico</td></tr>
+                    <tr><td><code>33:33:xx:xx:xx:xx</code></td><td><strong>Multicast IPv6</strong></td></tr>
+                </table>
+            </div>
+
+            <h3>MAC randomization</h3>
+            <p>Celular moderno (iPhone, Android) <strong>troca o MAC</strong> a cada Wi-Fi diferente, por privacidade. Sem isso, qualquer rede pública conseguiria rastrear seu aparelho pelo MAC fixo. O MAC "real" só aparece em ambiente onde já tem login.</p>
+
+            <h3>MAC vs IP</h3>
+            <p>MAC é fixo (gravado na placa). IP é configurado/alocado por software. Quando você troca de rede Wi-Fi, o MAC continua o mesmo, mas o IP muda. Quando o roteador de casa quer mandar um pacote pra uma máquina interna, ele usa o IP pra saber pra quem é, mas precisa do MAC pra entregar de fato (é aí que entra o ARP, mais adiante).</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Switch — quem aprende e direciona</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/switch.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>O <strong>switch</strong> é o sucessor inteligente do hub. Mesma cara fisicamente (várias portas), mas internamente lê o MAC de destino do quadro e envia <strong>só pra porta certa</strong>.</p>
+
+            <h3>A MAC table — o cérebro do switch</h3>
+            <p>O switch mantém uma tabela na memória que mapeia <strong>MAC ↔ porta</strong>. Cada entrada diz "esse MAC está conectado nesta porta".</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>MAC</th><th>Porta</th></tr>
+                    <tr><td>A4:5E:60:C2:1F:8B</td><td>3</td></tr>
+                    <tr><td>D8:90:E8:11:22:33</td><td>7</td></tr>
+                    <tr><td>00:1B:21:55:66:77</td><td>12</td></tr>
+                </table>
+            </div>
+
+            <h3>Como aprende — sozinho</h3>
+            <p>Switch é <em>self-learning</em>. Ninguém configura essa tabela:</p>
+            <ol>
+                <li>Quadro chega na <strong>porta 3</strong> com origem <code>A4:5E:60:C2:1F:8B</code></li>
+                <li>Switch anota: "esse MAC está na porta 3"</li>
+                <li>Da próxima vez que alguém mandar quadro pra esse MAC, o switch já sabe pra qual porta enviar</li>
+            </ol>
+
+            <h3>Flooding — quando não sabe ainda</h3>
+            <p>Se o switch recebe um quadro pra um MAC que ele não tem na tabela, ele faz <strong>flooding</strong>: envia o quadro pra todas as portas (menos a que recebeu). É um broadcast temporário. Quando o destinatário responder, o switch aprende a porta dele e da próxima não precisa floodar.</p>
+
+            <h3>Broadcast domain</h3>
+            <p>Quadro com destino <code>FF:FF:FF:FF:FF:FF</code> (broadcast) o switch <strong>sempre</strong> floodar. Toda máquina conectada ao mesmo switch (ou conjunto de switches) forma um <strong>broadcast domain</strong>. Pra separar broadcast domains, precisa de roteador (camada 3) ou VLAN.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Quadro Ethernet — o envelope da camada 2</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/quadro-ethernet.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>O <strong>quadro</strong> (frame) é o "envelope" da camada 2. Tudo que passa no cabo Ethernet vai dentro de um quadro com formato fixo: cabeçalho com endereços, payload com o pacote IP da camada 3 lá dentro, e rodapé com checksum.</p>
+
+            <h3>Formato (Ethernet II — o mais comum)</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Campo</th><th>Tamanho</th><th>Pra que serve</th></tr>
+                    <tr><td><strong>MAC destino</strong></td><td>6 bytes</td><td>Pra quem é o quadro</td></tr>
+                    <tr><td><strong>MAC origem</strong></td><td>6 bytes</td><td>Quem mandou</td></tr>
+                    <tr><td><strong>EtherType</strong></td><td>2 bytes</td><td>Que protocolo está dentro (<code>0x0800</code> = IPv4, <code>0x86DD</code> = IPv6, <code>0x0806</code> = ARP)</td></tr>
+                    <tr><td><strong>Payload</strong></td><td>46 a 1500 bytes</td><td>O pacote IP (ou ARP, etc.)</td></tr>
+                    <tr><td><strong>FCS</strong></td><td>4 bytes</td><td>Checksum (Frame Check Sequence) — detecta corrupção</td></tr>
+                </table>
+            </div>
+
+            <h3>MTU — Maximum Transmission Unit</h3>
+            <p>O payload máximo de um quadro Ethernet padrão é <strong>1500 bytes</strong>. Esse número é a <strong>MTU</strong>. Tudo na internet acima disso precisa ser fragmentado.</p>
+            <ul>
+                <li>Pacote IP de 3000 bytes → vira <strong>2 quadros</strong> de ~1500 bytes (fragmentação na camada 3)</li>
+                <li>Em VPN (que envelopa pacote em outro pacote) a MTU efetiva fica menor — daí problemas de "site abre mas não carrega"</li>
+                <li>Em túnel cloud (AWS, GCP) a MTU pode ser ainda menor — sintoma clássico que parece bug de aplicação mas é MTU</li>
+            </ul>
+
+            <h3>Jumbo frames</h3>
+            <p>Em data center, alguns equipamentos suportam <strong>jumbo frames</strong> — payload de até 9000 bytes. Reduz overhead em transferência grande (backup, storage). Não funciona na internet pública, só em rede controlada.</p>
+
+            <h3>FCS — checksum no rodapé</h3>
+            <p>Os 4 bytes finais são um CRC32 calculado sobre o quadro inteiro. Se o switch ou a placa de rede de destino calcular um CRC diferente do que está no rodapé, o quadro foi corrompido no caminho — descarta. Não tenta consertar; manda fora. Se a aplicação precisava daquele dado, alguém em camada superior (TCP, geralmente) vai pedir retransmissão.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">ARP — traduzindo IP em MAC</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/arp.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>Quando seu computador quer mandar um pacote pra <code>192.168.0.10</code>, ele sabe o IP — mas o quadro Ethernet exige o <strong>MAC</strong> do destinatário, não o IP. Quem traduz IP em MAC é o <strong>ARP</strong> (Address Resolution Protocol).</p>
+
+            <h3>O fluxo</h3>
+            <ol>
+                <li>Computador A quer falar com IP <code>192.168.0.10</code> e não conhece o MAC dele</li>
+                <li>A manda um quadro <strong>broadcast</strong> (destino <code>FF:FF:FF:FF:FF:FF</code>) perguntando: "quem tem o IP <code>192.168.0.10</code>? me responde"</li>
+                <li>Todos na rede recebem (broadcast). Só a máquina B, que tem aquele IP, responde direto pra A: "sou eu, meu MAC é <code>D8:90:E8:11:22:33</code>"</li>
+                <li>A guarda na <strong>cache ARP</strong> e, da próxima vez, manda direto pra B sem broadcast</li>
+            </ol>
+
+            <h3>Cache ARP — local em cada máquina</h3>
+            <p>Cada máquina mantém uma tabelinha em memória:</p>
+            <pre><code class="language-bash">$ arp -a
+? (192.168.0.1) at 00:1b:21:55:66:77 [ether] on eth0
+? (192.168.0.10) at d8:90:e8:11:22:33 [ether] on eth0
+? (192.168.0.50) at a4:5e:60:c2:1f:8b [ether] on eth0</code></pre>
+            <p>Entradas expiram (default ~60s). Depois disso, o ARP refaz a pergunta.</p>
+
+            <h3>Gratuitous ARP</h3>
+            <p>Máquina anuncia o próprio MAC no broadcast sem ninguém ter perguntado — <em>gratuitous ARP</em>. Acontece quando uma máquina entra na rede ou troca o MAC, pra que os vizinhos atualizem a cache ARP deles.</p>
+
+            <h3>ARP poisoning (segurança)</h3>
+            <p>Atacante na mesma rede manda gratuitous ARP falso dizendo "<code>192.168.0.1</code> (gateway) é o meu MAC". Vítimas atualizam a cache e passam a mandar todo o tráfego pro atacante, achando que é o roteador. <strong>Man-in-the-middle clássico</strong>. Por isso ARP é tema de segurança em rede local.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Ferramentas de diagnóstico — camada 2 na prática</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/ferramentas-diagnostico.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>Quando algo de rede quebra, vale subir camada por camada. Aqui as ferramentas práticas pra debugar a camada 2.</p>
+
+            <h3>Ver o MAC da própria placa</h3>
+            <pre><code class="language-bash"># Linux moderno
+$ ip link show
+2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt;
+    link/ether a4:5e:60:c2:1f:8b brd ff:ff:ff:ff:ff:ff
+
+# Windows
+&gt; ipconfig /all
+Endereço Físico . . . . . . . . . . . . : A4-5E-60-C2-1F-8B</code></pre>
+
+            <h3>Ver a tabela ARP</h3>
+            <pre><code class="language-bash"># Linux antigo
+$ arp -a
+
+# Linux moderno (preferido)
+$ ip neigh show
+192.168.0.1 dev eth0 lladdr 00:1b:21:55:66:77 REACHABLE
+192.168.0.10 dev eth0 lladdr d8:90:e8:11:22:33 STALE</code></pre>
+            <p>Estados: <code>REACHABLE</code> (recém-confirmado), <code>STALE</code> (cache válido mas precisa revalidar), <code>FAILED</code> (não respondeu).</p>
+
+            <h3>Ver velocidade e duplex da placa</h3>
+            <pre><code class="language-bash">$ ethtool eth0
+Settings for eth0:
+    Speed: 1000Mb/s
+    Duplex: Full
+    Link detected: yes</code></pre>
+            <p>Diagnostica problemas físicos camuflados como "lentidão" — placa caiu pra 100 Mbps por cabo ruim, half-duplex em vez de full, etc.</p>
+
+            <h3>Capturar quadros (inclui cabeçalho de camada 2)</h3>
+            <pre><code class="language-bash"># tcpdump com -e mostra MAC origem/destino
+$ sudo tcpdump -i eth0 -e -n
+13:42:01.123 a4:5e:60:c2:1f:8b > 00:1b:21:55:66:77, ethertype IPv4, ...</code></pre>
+            <p>Pra análise visual, <strong>Wireshark</strong> mostra cada campo do quadro (MAC, EtherType, payload) numa árvore navegável.</p>
+
+            <h3>LEDs da placa de rede</h3>
+            <ul>
+                <li><strong>Link</strong> (verde fixo) — cabo conectado, negociou velocidade</li>
+                <li><strong>Activity</strong> (verde piscando) — quadros passando agora</li>
+                <li><strong>Speed</strong> (cor varia) — geralmente verde = 1Gbps, laranja = 100Mbps, apagado = 10Mbps</li>
+            </ul>
+            <p>Diagnóstico de campo: olhou pro switch, viu apagado, é problema físico. Não precisa de nenhuma ferramenta.</p>
+
+            <h3>Roteiro de debug</h3>
+            <ol>
+                <li><strong>Cabo plugado?</strong> LED de link aceso? (camada 1)</li>
+                <li><strong><code>ip link show</code></strong> — placa <em>UP</em>? velocidade certa?</li>
+                <li><strong><code>ip neigh show</code></strong> — gateway aparece? <code>REACHABLE</code>?</li>
+                <li>Se gateway não responde → ARP não está fechando → problema camada 2</li>
+                <li>Se gateway responde → camada 2 OK, sobe pra camada 3 (<code>ping</code>, <code>traceroute</code>)</li>
+            </ol>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

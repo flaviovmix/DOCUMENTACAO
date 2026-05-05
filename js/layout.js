@@ -1,4 +1,4 @@
-﻿﻿﻿// =====================================================================
+﻿﻿// =====================================================================
 // LAYOUT.JS — Estrutura completa da documentação Nexus
 //
 // Único script necessário em cada HTML. Faz tudo:
@@ -27,12 +27,12 @@ var MENU = [
         subgrupos: [
             { label: 'JAVA',         href: '1-java/java.html',               pasta: '1-java' },
             { label: 'SQL',          href: '2-sql/sql.html',                 pasta: '2-sql' },
-            { label: 'MODELO OSI',   href: '3-modelo-osi/modelo-osi.html',   pasta: '3-modelo-osi' },
+            { label: 'MODELO DE REDE',   href: '3-modelo-rede/modelo-rede.html',   pasta: '3-modelo-rede' },
             { label: 'HTML-CSS-JS',  href: '4-html-css-js/html-css-js.html', pasta: '4-html-css-js' },
             { label: 'HARDWARE',     href: '5-hardware/hardware.html',       pasta: '5-hardware' },
             { label: 'GIT',          href: '6-git/git.html',                 pasta: '6-git' }
         ],
-        subpastas: ['1-java', '2-sql', '3-modelo-osi', '4-html-css-js', '5-hardware', '6-git'],
+        subpastas: ['1-java', '2-sql', '3-modelo-rede', '4-html-css-js', '5-hardware', '6-git'],
         pasta: '1-fundamentos'
     },
     {
@@ -76,12 +76,23 @@ var MENU = [
         basePath: '1-fundamentos/2-sql'
     },
     {
-        grupo: 'MODELO OSI',
-        pagina: 'modelo-osi.html',
+        grupo: 'MODELO DE REDE',
+        pagina: 'modelo-rede.html',
         parent: { label: 'FUNDAMENTOS', href: '1-fundamentos/fundamentos.html' },
         hidden: true,
         items: [
-            { label: 'Cards',         arquivo: 'modelo-osi.html', tipo: 'check' },
+            { label: 'Modelo OSI',    arquivo: '1-modelo-osi/1-modelo-osi.html', tipo: 'check' }
+        ],
+        pasta: '3-modelo-rede',
+        basePath: '1-fundamentos/3-modelo-rede'
+    },
+    {
+        grupo: 'MODELO OSI',
+        pagina: '1-modelo-osi.html',
+        parent: { label: 'MODELO DE REDE', href: '1-fundamentos/3-modelo-rede/modelo-rede.html' },
+        hidden: true,
+        items: [
+            { label: 'Cards',         arquivo: '1-modelo-osi.html', tipo: 'check' },
             { label: 'Visão Geral',   arquivo: '0-visao-geral/0-visao-geral.html', tipo: 'check' },
             { label: 'Aplicação',     arquivo: '7-aplicacao/7-aplicacao.html', tipo: 'check' },
             { label: 'Apresentação',  arquivo: '6-apresentacao/6-apresentacao.html', tipo: 'check' },
@@ -91,8 +102,8 @@ var MENU = [
             { label: 'Enlace',        arquivo: '2-enlace/2-enlace.html', tipo: 'check' },
             { label: 'Física',        arquivo: '1-fisica/1-fisica.html', tipo: 'check' }
         ],
-        pasta: '3-modelo-osi',
-        basePath: '1-fundamentos/3-modelo-osi'
+        pasta: '1-modelo-osi',
+        basePath: '1-fundamentos/3-modelo-rede/1-modelo-osi'
     },
     {
         grupo: 'HTML-CSS-JS',
@@ -111,78 +122,78 @@ var MENU = [
     {
         grupo: 'VISÃO GERAL',
         pagina: '0-visao-geral.html',
-        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-osi/modelo-osi.html' },
+        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-rede/1-modelo-osi/1-modelo-osi.html' },
         hidden: true,
         pasta: '0-visao-geral',
-        basePath: '1-fundamentos/3-modelo-osi/0-visao-geral'
+        basePath: '1-fundamentos/3-modelo-rede/1-modelo-osi/0-visao-geral'
     },
     {
         grupo: 'REDE',
         pagina: '3-rede.html',
-        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-osi/modelo-osi.html' },
+        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-rede/1-modelo-osi/1-modelo-osi.html' },
         hidden: true,
         pasta: '3-rede',
-        basePath: '1-fundamentos/3-modelo-osi/3-rede'
+        basePath: '1-fundamentos/3-modelo-rede/1-modelo-osi/3-rede'
     },
     {
         grupo: 'APRESENTAÇÃO',
         pagina: '6-apresentacao.html',
-        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-osi/modelo-osi.html' },
+        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-rede/1-modelo-osi/1-modelo-osi.html' },
         hidden: true,
         pasta: '6-apresentacao',
-        basePath: '1-fundamentos/3-modelo-osi/6-apresentacao'
+        basePath: '1-fundamentos/3-modelo-rede/1-modelo-osi/6-apresentacao'
     },
     {
         grupo: 'SESSÃO',
         pagina: '5-sessao.html',
-        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-osi/modelo-osi.html' },
+        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-rede/1-modelo-osi/1-modelo-osi.html' },
         hidden: true,
         pasta: '5-sessao',
-        basePath: '1-fundamentos/3-modelo-osi/5-sessao'
+        basePath: '1-fundamentos/3-modelo-rede/1-modelo-osi/5-sessao'
     },
     {
         grupo: 'TRANSPORTE',
         pagina: '4-transporte.html',
-        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-osi/modelo-osi.html' },
+        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-rede/1-modelo-osi/1-modelo-osi.html' },
         hidden: true,
         pasta: '4-transporte',
-        basePath: '1-fundamentos/3-modelo-osi/4-transporte'
+        basePath: '1-fundamentos/3-modelo-rede/1-modelo-osi/4-transporte'
     },
     {
         grupo: 'ENLACE',
         pagina: '2-enlace.html',
-        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-osi/modelo-osi.html' },
+        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-rede/1-modelo-osi/1-modelo-osi.html' },
         hidden: true,
         pasta: '2-enlace',
-        basePath: '1-fundamentos/3-modelo-osi/2-enlace'
+        basePath: '1-fundamentos/3-modelo-rede/1-modelo-osi/2-enlace'
     },
     {
         grupo: 'FÍSICA',
         pagina: '1-fisica.html',
-        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-osi/modelo-osi.html' },
+        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-rede/1-modelo-osi/1-modelo-osi.html' },
         hidden: true,
         pasta: '1-fisica',
-        basePath: '1-fundamentos/3-modelo-osi/1-fisica'
+        basePath: '1-fundamentos/3-modelo-rede/1-modelo-osi/1-fisica'
     },
     {
         grupo: 'APLICAÇÃO',
         pagina: '7-aplicacao.html',
-        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-osi/modelo-osi.html' },
+        parent: { label: 'MODELO OSI', href: '1-fundamentos/3-modelo-rede/1-modelo-osi/1-modelo-osi.html' },
         hidden: true,
         items: [
             { label: 'Visão Geral', arquivo: '7-aplicacao.html', tipo: 'check' },
             { label: 'HTTP',        arquivo: 'http/http.html', tipo: 'check' }
         ],
         pasta: '7-aplicacao',
-        basePath: '1-fundamentos/3-modelo-osi/7-aplicacao'
+        basePath: '1-fundamentos/3-modelo-rede/1-modelo-osi/7-aplicacao'
     },
     {
         grupo: 'HTTP',
         pagina: 'http.html',
-        parent: { label: 'APLICAÇÃO', href: '1-fundamentos/3-modelo-osi/7-aplicacao/7-aplicacao.html' },
+        parent: { label: 'APLICAÇÃO', href: '1-fundamentos/3-modelo-rede/1-modelo-osi/7-aplicacao/7-aplicacao.html' },
         hidden: true,
         pasta: 'http',
-        basePath: '1-fundamentos/3-modelo-osi/7-aplicacao/http'
+        basePath: '1-fundamentos/3-modelo-rede/1-modelo-osi/7-aplicacao/http'
     },
     {
         grupo: 'HARDWARE',
@@ -450,6 +461,15 @@ var MENU = [
         ],
         pasta: '4-fase-1-faxina',
         basePath: '3-nexus/4-fase-1-faxina'
+    },
+    {
+        grupo: 'TESTES',
+        pagina: 'testes.html',
+        items: [
+            { label: 'Visão Geral', arquivo: 'testes.html', tipo: 'check' }
+        ],
+        pasta: '4-testes',
+        basePath: '4-testes'
     }
 ];
 

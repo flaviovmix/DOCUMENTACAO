@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rede — Modelo de Rede — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Camada 3 — Rede</h1>
+
+<div class="audio-player" data-src="audio/visao-geral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>A camada 2 entrega entre vizinhos da mesma rede local. A camada 3 entrega <strong>entre redes diferentes</strong> — atravessando roteadores no caminho. É aqui que cada máquina no mundo ganha um endereço lógico (o IP), que pode atravessar fronteiras. Aqui também vivem as ideias que mais aparecem no dia do dev: máscara de sub-rede, redes privadas, NAT, e os IPs famosos (<code>127.0.0.1</code>, <code>8.8.8.8</code>) que todo mundo encontra.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">IPv4 — o endereço de 32 bits</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/ipv4.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>O <strong>IPv4</strong> é o protocolo que dá endereço lógico pra cada máquina na rede. Tamanho: <strong>32 bits</strong> (4 bytes). Notação dotted-decimal — 4 números de 0 a 255 separados por ponto:</p>
+            <pre><code class="language-bash">192.168.0.42
+8.8.8.8
+177.32.150.10</code></pre>
+
+            <h3>32 bits = 4,3 bilhões de endereços</h3>
+            <p>2<sup>32</sup> ≈ 4.294.967.296. Pareceu muito em 1981. Hoje é pouco — esgotou em 2011. As próximas seções vão mostrar a gambiarra (NAT) que estendeu IPv4 muito além disso, e mais adiante a solução real que ainda não decolou.</p>
+
+            <h3>Estrutura: rede + host</h3>
+            <p>Cada IP tem 2 partes — uma identifica a <strong>rede</strong>, outra identifica a <strong>máquina dentro da rede</strong>. A divisão é feita pela máscara de sub-rede (próxima section). Em <code>192.168.0.42</code> com máscara <code>/24</code>: <code>192.168.0</code> é a rede, <code>42</code> é o host.</p>
+
+            <h3>Classes A/B/C (legado)</h3>
+            <p>Originalmente, IPv4 era dividido em classes pelo primeiro byte. Hoje obsoleto (substituído por CIDR), mas o vocabulário ainda aparece:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Classe</th><th>Faixa</th><th>Tamanho da rede</th></tr>
+                    <tr><td>A</td><td><code>1.x.x.x</code> a <code>126.x.x.x</code></td><td>16 milhões de hosts (gigantesca)</td></tr>
+                    <tr><td>B</td><td><code>128.x.x.x</code> a <code>191.x.x.x</code></td><td>65 mil hosts (média)</td></tr>
+                    <tr><td>C</td><td><code>192.x.x.x</code> a <code>223.x.x.x</code></td><td>254 hosts (pequena)</td></tr>
+                </table>
+            </div>
+
+            <h3>O papel do roteador</h3>
+            <p>Roteador é o equipamento da camada 3 — equivalente do switch (camada 2) no nível de redes. Ele lê o IP de destino do pacote e decide pra qual rede vizinha encaminhar, consultando uma <strong>tabela de roteamento</strong>. Cada salto entre roteadores é um <em>hop</em>; um pacote pode dar 10-20 hops até atravessar o mundo.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Máscara de sub-rede e CIDR — separando rede de host</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/mascara-de-subrede.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>A <strong>máscara de sub-rede</strong> é a régua que diz: "destes 32 bits do IP, X bits são da rede, e o resto é do host". Sem máscara, o IP é só um número — não dá pra saber onde acaba a rede e começa a máquina.</p>
+
+            <h3>Notação CIDR — o jeito moderno</h3>
+            <p>CIDR (Classless Inter-Domain Routing) escreve a máscara como <code>/N</code> — onde N é quantos bits são da rede:</p>
+            <pre><code class="language-bash">192.168.0.0/24</code></pre>
+            <p>O <code>/24</code> diz: 24 bits de rede, 8 bits de host. Num IP de 32 bits, isso significa:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Bits</th><th>Conteúdo</th></tr>
+                    <tr><td>1–24</td><td><code>192.168.0</code> — fixo (identifica a rede)</td></tr>
+                    <tr><td>25–32</td><td>0–255 — varia (identifica a máquina)</td></tr>
+                </table>
+            </div>
+
+            <h3>Notação antiga — máscara em dotted-decimal</h3>
+            <p>Antes do CIDR, escrevia-se a máscara como um IP de 32 bits onde os bits "1" são da rede e os "0" são do host:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>CIDR</th><th>Máscara antiga</th><th>Hosts disponíveis</th></tr>
+                    <tr><td><code>/8</code></td><td><code>255.0.0.0</code></td><td>16.777.214</td></tr>
+                    <tr><td><code>/16</code></td><td><code>255.255.0.0</code></td><td>65.534</td></tr>
+                    <tr><td><code>/24</code></td><td><code>255.255.255.0</code></td><td>254</td></tr>
+                    <tr><td><code>/30</code></td><td><code>255.255.255.252</code></td><td>2</td></tr>
+                </table>
+            </div>
+
+            <h3>Como calcular: regra dos -2</h3>
+            <p>Pra uma máscara <code>/N</code>:</p>
+            <ul>
+                <li><strong>Bits de host</strong> = 32 − N</li>
+                <li><strong>Total de endereços</strong> = 2<sup>(32−N)</sup></li>
+                <li><strong>Hosts utilizáveis</strong> = 2<sup>(32−N)</sup> − 2 (descontando endereço de rede e broadcast)</li>
+            </ul>
+            <p>Exemplo: <code>/24</code> → 32−24 = 8 bits → 2<sup>8</sup> = 256 endereços → 254 hosts utilizáveis.</p>
+
+            <h3>Endereços especiais dentro da rede</h3>
+            <ul>
+                <li><strong>Primeiro endereço</strong> (todos os bits de host = 0) — endereço da rede em si. Ex: <code>192.168.0.0</code> em <code>/24</code></li>
+                <li><strong>Último endereço</strong> (todos os bits de host = 1) — broadcast da rede. Ex: <code>192.168.0.255</code> em <code>/24</code></li>
+                <li><strong>Os do meio</strong> — utilizáveis pra hosts. Ex: <code>192.168.0.1</code> a <code>192.168.0.254</code></li>
+            </ul>
+
+            <h3>Atalho mental</h3>
+            <p>As máscaras mais comuns valem decorar:</p>
+            <ul>
+                <li><code>/24</code> — 256 endereços (rede de casa típica, "192.168.0.x")</li>
+                <li><code>/16</code> — 65k endereços (rede grande)</li>
+                <li><code>/8</code> — 16M endereços (gigante)</li>
+                <li><code>/30</code> — 4 endereços, 2 utilizáveis (link ponto-a-ponto entre roteadores)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Redes privadas e NAT — por que sua casa é 192.168</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/redes-privadas-e-nat.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>A internet pública não tem IPs suficientes pra todo aparelho do mundo. A solução: <strong>redes privadas</strong> + <strong>NAT</strong>. Sua casa, o escritório, a empresa toda — usam IPs reservados que NÃO atravessam a internet, e um único IP público representa todo mundo lá fora.</p>
+
+            <h3>RFC 1918 — as 3 faixas privadas</h3>
+            <p>Em 1996, a RFC 1918 reservou 3 blocos de IP que NUNCA são roteados na internet pública:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Faixa</th><th>CIDR</th><th>Tamanho</th><th>Onde aparece</th></tr>
+                    <tr><td><code>10.0.0.0</code> a <code>10.255.255.255</code></td><td><code>10.0.0.0/8</code></td><td>16 milhões</td><td>Empresa grande, cloud (AWS VPC)</td></tr>
+                    <tr><td><code>172.16.0.0</code> a <code>172.31.255.255</code></td><td><code>172.16.0.0/12</code></td><td>1 milhão</td><td>Empresa média, Docker default</td></tr>
+                    <tr><td><code>192.168.0.0</code> a <code>192.168.255.255</code></td><td><code>192.168.0.0/16</code></td><td>65 mil</td><td>Casa, escritório pequeno</td></tr>
+                </table>
+            </div>
+            <p>Essas faixas podem ser usadas livremente por qualquer um, em qualquer lugar do mundo. Sua casa em <code>192.168.0.x</code>, a do vizinho em <code>192.168.0.x</code> também — não há conflito porque nenhum desses IPs aparece na internet pública.</p>
+
+            <h3>Por que sua casa é 192.168</h3>
+            <p>O roteador de casa vem configurado de fábrica com a faixa <code>192.168.0.0/24</code> ou <code>192.168.1.0/24</code>. É convenção dos fabricantes. Você poderia trocar pra <code>10.0.0.0/24</code> e ia funcionar igual — só não é o default.</p>
+
+            <h3>NAT — a tradução de IPs</h3>
+            <p><strong>NAT</strong> (Network Address Translation) é o que faz vários IPs privados compartilharem 1 IP público. Mora no roteador. Funciona assim:</p>
+            <ol>
+                <li>Sua máquina (<code>192.168.0.42</code>) manda pacote pra <code>8.8.8.8</code></li>
+                <li>O pacote chega no roteador, que tem 2 IPs: o privado da rede de casa (<code>192.168.0.1</code>) e o público da rua (<code>177.32.150.10</code>)</li>
+                <li>O roteador <strong>reescreve</strong> o IP de origem: troca <code>192.168.0.42</code> por <code>177.32.150.10</code></li>
+                <li>Anota numa tabela: "porta X = computador 192.168.0.42"</li>
+                <li>O servidor responde pra <code>177.32.150.10</code>, porta X</li>
+                <li>O roteador olha a tabela, vê que aquela porta era do computador <code>192.168.0.42</code>, traduz de volta e entrega</li>
+            </ol>
+            <p>Resultado: dezenas de aparelhos da casa parecem 1 IP só pra internet. Por isso IPv4 esticou tanto.</p>
+
+            <h3>Efeito colateral imediato</h3>
+            <p>Quando VOCÊ inicia a conversa (sai pra fora), o NAT funciona perfeito. Mas quando alguém de fora quer chegar até VOCÊ, o pacote chega no roteador sem entrada na tabela NAT — o roteador não sabe pra qual máquina interna entregar, e o pacote morre. <strong>Esse problema é só a ponta do iceberg</strong> — a próxima section mostra o "pesadelo" inteiro que o NAT criou: P2P entre 2 NATs, CGNAT, tudo isso.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Aplicações atrás do NAT — o pesadelo do P2P</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/pesadelo-das-aplicacoes.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>NAT salvou IPv4 do esgotamento — mas criou um problema novo: <strong>aplicações P2P</strong> (peer-to-peer) ficaram MUITO mais difíceis. Videoconferência, jogo online, voz, IoT, tudo isso depende de 2 máquinas falarem direto. Quando as 2 estão atrás de NAT, ninguém consegue iniciar a conversa.</p>
+
+            <h3>O problema em 1 frase</h3>
+            <p>Sua máquina é <code>192.168.0.42</code>. A do amigo é <code>192.168.5.17</code> (rede dele). Os 2 IPs são <em>privados</em> — não existem na internet. Cada um sai pelo NAT do próprio roteador como IP público da casa. Mas <strong>como cada um descobre o IP público do outro?</strong> E mesmo descobrindo, o NAT só abre caminho de dentro pra fora — quando o pacote do amigo chega no seu roteador, não tem entrada na tabela NAT e o pacote morre.</p>
+
+            <h3>Hole punching — o truque das duas saídas simultâneas</h3>
+            <p>A primeira solução foi engenhosa: as 2 máquinas saem ao mesmo tempo. Cada NAT abre um buraco temporário na tabela achando que é uma conexão normal pra fora. Os 2 pacotes se cruzam no caminho, cada um chegando no NAT do outro — onde ENCONTRA a entrada recém-criada e passa direto.</p>
+            <p>Funciona, mas é frágil. Depende do tipo de NAT (alguns são mais restritivos), depende da sincronia, e depende dos 2 lados saberem pra qual IP/porta exata mandar. Pra isso surgiu o STUN.</p>
+
+            <h3>STUN — descobrindo seu IP público</h3>
+            <p><strong>STUN</strong> (Session Traversal Utilities for NAT) é um servidor público gratuito que faz uma coisa só: te diz qual é seu IP público e a porta que o NAT te deu. Sua máquina manda uma pergunta pro STUN, o STUN olha o pacote chegando e responde "você apareceu como <code>177.32.150.10:54321</code>".</p>
+            <p>Agora os 2 pares trocam essa informação (via algum servidor central, tipo o servidor de matchmaking do jogo) e fazem hole punching com IP e porta corretos.</p>
+
+            <h3>TURN — quando hole punching falha (relay)</h3>
+            <p>Em redes restritivas (alguns NATs corporativos, CGNAT — próximo tópico), hole punching simplesmente não funciona. A saída: <strong>TURN</strong> (Traversal Using Relays around NAT). É um servidor público que vira <em>proxy</em> — os 2 pares mandam tudo pra ele, e ele repassa.</p>
+            <p>Funciona sempre, mas é caro pro provedor do servico TURN — todo o tráfego passa pelo servidor. Em chamada de vídeo, isso é megabits por segundo, e o TURN acaba sendo o último recurso.</p>
+
+            <h3>ICE — combinando os 3</h3>
+            <p><strong>ICE</strong> (Interactive Connectivity Establishment) é o protocolo que orquestra tudo: tenta conexão direta primeiro, depois hole punching com STUN, e só cai pro TURN se nada funcionar. É o que <strong>WebRTC</strong> usa por baixo do capô — toda chamada de Google Meet, Discord, Zoom, FaceTime tem isso por trás.</p>
+
+            <h3>CGNAT — quando o provedor faz NAT em cima do NAT</h3>
+            <p>Pior cenário: <strong>Carrier Grade NAT</strong>. Pra economizar IPs públicos ainda mais, o provedor de internet faz NAT no nível dele — sua casa nem ganha IP público de verdade. Você está atrás de 2 NATs (o seu + o do provedor).</p>
+            <p>Sintoma clássico: você configurou port forwarding no roteador de casa, mas mesmo assim ninguém de fora consegue te alcançar. O problema é que o pacote nem chega no seu roteador — para no NAT do provedor antes. CGNAT está crescendo no Brasil; muitos provedores residenciais já usam.</p>
+
+            <h3>Onde o pesadelo aparece pro dev</h3>
+            <ul>
+                <li><strong>WebRTC</strong> — chamada de vídeo/voz em qualquer app web. ICE/STUN/TURN são obrigatórios</li>
+                <li><strong>Jogo online</strong> — PlayStation/Xbox mostram "NAT type strict" quando hole punching falha; matchmaking sofre</li>
+                <li><strong>VoIP corporativo</strong> — telefonia IP em escritório atrás de NAT precisa de SBC (parecido com TURN)</li>
+                <li><strong>IoT P2P</strong> — câmera de segurança que quer falar com app no celular do dono sem servidor no meio</li>
+                <li><strong>Servidor doméstico</strong> — quando port forwarding não basta (CGNAT), usa <code>ngrok</code>, <code>Cloudflare Tunnel</code>, ou VPN reversa</li>
+            </ul>
+
+            <h3>Saída de longo prazo</h3>
+            <p>Toda essa gambiarra existe porque IPv4 esgotou e NAT virou solução universal. <strong>IPv6 mata o problema na raiz</strong> — cada aparelho ganha IP público próprio, sem NAT, sem STUN, sem TURN. A próxima section trata disso.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">IPv6 — o sucessor de 128 bits e o fim do NAT</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/ipv6.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>IPv6 resolve o esgotamento do IPv4 — endereço de <strong>128 bits</strong> (16 bytes). 2<sup>128</sup> ≈ 340 undecilhões de endereços. Tantos que dá pra cada átomo de matéria do planeta ter o seu. E mais importante: <strong>acaba com a necessidade de NAT</strong>.</p>
+
+            <h3>Notação hexadecimal</h3>
+            <p>Em vez de decimal, IPv6 usa <strong>hexadecimal</strong>, separado por dois-pontos, em 8 grupos de 4 dígitos:</p>
+            <pre><code class="language-bash">2001:0db8:85a3:0000:0000:8a2e:0370:7334</code></pre>
+            <p>Pra ficar legível, existem 2 atalhos:</p>
+            <ul>
+                <li><strong>Zeros à esquerda</strong> de cada grupo podem sumir: <code>0db8</code> vira <code>db8</code></li>
+                <li><strong>Sequência de zeros</strong> vira <code>::</code> (uma vez só por endereço)</li>
+            </ul>
+            <p>O exemplo acima fica:</p>
+            <pre><code class="language-bash">2001:db8:85a3::8a2e:370:7334</code></pre>
+
+            <h3>IPs IPv6 famosos</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>IPv6</th><th>Significado</th></tr>
+                    <tr><td><code>::1</code></td><td>Localhost (equivalente a <code>127.0.0.1</code>)</td></tr>
+                    <tr><td><code>::</code></td><td>Endereço não especificado (equivalente a <code>0.0.0.0</code>)</td></tr>
+                    <tr><td><code>fe80::/10</code></td><td>Link-local — só dentro do segmento de rede</td></tr>
+                    <tr><td><code>2001:db8::/32</code></td><td>Reservado pra exemplos/documentação (igual ao "555-0100" do telefone)</td></tr>
+                </table>
+            </div>
+
+            <h3>Como IPv6 mata o NAT</h3>
+            <p>Em IPv6, <strong>cada aparelho do mundo pode ter IP público próprio</strong>. Sua geladeira, sua TV, seu notebook, tudo com endereço único e roteável diretamente da internet. NAT deixa de ser necessário.</p>
+            <p>Consequências práticas pro pesadelo da section anterior:</p>
+            <ul>
+                <li><strong>Hole punching, STUN, TURN, ICE</strong> — viram desnecessários quando as 2 pontas têm IPv6 público</li>
+                <li><strong>P2P fica trivial</strong> — videoconferência, jogo, IoT podem conectar direto</li>
+                <li><strong>CGNAT desaparece</strong> — provedor não precisa economizar IP público porque tem 340 undecilhões</li>
+                <li><strong>Servidor em casa volta a ser fácil</strong> — sua máquina tem endereço público, não precisa de port forwarding nem ngrok</li>
+            </ul>
+            <p>Em compensação, vem responsabilidade nova: cada aparelho da casa fica diretamente exposto à internet. Por isso firewall na borda do roteador continua importante — ele bloqueia conexões de entrada não solicitadas, mesmo sem fazer NAT. Isso chama-se <strong>stateful firewall</strong> e roteadores IPv6 modernos já vêm com isso ligado por default.</p>
+
+            <h3>Por que ainda usamos IPv4 então?</h3>
+            <p>IPv6 já existe há mais de 20 anos. Em 2024 tem ~40% de adoção global (em 2019 era ~25%). Por que não 100%? Três motivos:</p>
+            <ul>
+                <li><strong>NAT funcionou bem demais</strong> — esticou IPv4 muito além do esgotamento, tirou a urgência da migração</li>
+                <li><strong>Inércia gigantesca</strong> — todo equipamento, todo provedor, todo servidor da internet precisa falar IPv6 pra migração ser real. Custo alto</li>
+                <li><strong>Dual stack</strong> — em vez de migrar tudo de uma vez, máquinas modernas falam IPv4 E IPv6 ao mesmo tempo. Quando você acessa <code>google.com</code>, o navegador escolhe IPv6 se conseguir, IPv4 senão</li>
+            </ul>
+
+            <h3>Pra dev — o que muda</h3>
+            <p>Hoje o seu código deve ser preparado pra falar IPv6 mesmo rodando em IPv4. Bibliotecas modernas (Java, Go, Node, Python) já resolvem isso por baixo. Mas:</p>
+            <ul>
+                <li>Em log, você vai começar a ver IPv6 (<code>2001:db8::1</code>) misturado com IPv4 (<code>192.168.0.42</code>)</li>
+                <li>Em config de servidor, "escutar em <code>::</code>" engloba IPv4 + IPv6 simultaneamente em muitas plataformas</li>
+                <li>Em parsers de IP, validar entrada com regex de IPv4 quebra quando chega IPv6 — use bibliotecas, não regex</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">IPs especiais e quentes — os números que todo dev encontra</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/ips-especiais.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>Tem alguns IPs que aparecem TODO DIA no terminal, em log, em config. Decorar economiza tempo de pesquisa.</p>
+
+            <h3>Endereços reservados (todo IPv4)</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>IP</th><th>Significado</th><th>Quando aparece</th></tr>
+                    <tr><td><code>127.0.0.1</code></td><td><strong>Localhost</strong> — a própria máquina</td><td>Tomcat rodando local, debug, banco em dev</td></tr>
+                    <tr><td><code>127.0.0.0/8</code></td><td>Loopback inteiro — <code>127.x.x.x</code> tudo é localhost</td><td>Raríssimo usar outro que não <code>127.0.0.1</code></td></tr>
+                    <tr><td><code>0.0.0.0</code></td><td>"Qualquer IP" — em config significa "escute em todas as interfaces"</td><td>Server bindado em <code>0.0.0.0:8080</code> aceita conexão de qualquer lugar</td></tr>
+                    <tr><td><code>255.255.255.255</code></td><td>Broadcast geral da rede local</td><td>DHCP, descoberta de rede</td></tr>
+                    <tr><td><code>169.254.x.x</code></td><td><strong>APIPA</strong> — DHCP falhou, máquina escolheu IP sozinha</td><td>Sintoma clássico de "rede está sem internet" — máquina deu IP de emergência pra si mesma</td></tr>
+                    <tr><td><code>224.0.0.0/4</code></td><td>Multicast — grupo de máquinas</td><td>Streaming, descoberta de impressora, mDNS</td></tr>
+                </table>
+            </div>
+
+            <h3>DNS públicos famosos (servidores reais na internet)</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>IP</th><th>Quem é</th><th>Por que decorar</th></tr>
+                    <tr><td><code>8.8.8.8</code> e <code>8.8.4.4</code></td><td>Google Public DNS</td><td>Default fácil de lembrar; teste rápido pra saber se a internet está OK</td></tr>
+                    <tr><td><code>1.1.1.1</code> e <code>1.0.0.1</code></td><td>Cloudflare DNS</td><td>Mais novo, foco em privacidade; o mais curto possível</td></tr>
+                    <tr><td><code>9.9.9.9</code></td><td>Quad9 DNS</td><td>Filtro de domínio malicioso embutido</td></tr>
+                    <tr><td><code>208.67.222.222</code></td><td>OpenDNS</td><td>Filtro parental opcional, antigo</td></tr>
+                </table>
+            </div>
+
+            <h3>O teste do "ping 8.8.8.8"</h3>
+            <p>Quando alguém diz "minha internet está caindo", o primeiro teste é <code>ping 8.8.8.8</code>:</p>
+            <ul>
+                <li><strong>Funciona</strong> → camadas 1-3 OK, internet OK. Problema é em camada superior (DNS? aplicação?)</li>
+                <li><strong>Não funciona</strong> → problema é roteamento, gateway, ou link com o provedor</li>
+            </ul>
+            <p>Em seguida, <code>ping google.com</code>:</p>
+            <ul>
+                <li><strong>Funciona</strong> → DNS está OK, tudo OK</li>
+                <li><strong>Não funciona, mas IP funciona</strong> → DNS quebrado (camada 7)</li>
+            </ul>
+            <p>Esses 2 comandos diagnosticam metade dos casos de "tá sem internet".</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Ferramentas de diagnóstico — camada 3 na prática</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="audio-player" data-src="audio/ferramentas-diagnostico.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+            <p>Subindo o roteiro: depois das ferramentas de camada 2 (cabo, link, ARP), agora as de camada 3.</p>
+
+            <h3>ping — está vivo?</h3>
+            <pre><code class="language-bash">$ ping -c 4 8.8.8.8
+PING 8.8.8.8 (8.8.8.8) 56(84) bytes of data.
+64 bytes from 8.8.8.8: icmp_seq=1 ttl=117 time=12.3 ms
+64 bytes from 8.8.8.8: icmp_seq=2 ttl=117 time=11.9 ms
+...
+4 packets transmitted, 4 received, 0% packet loss</code></pre>
+            <p>Manda pacote ICMP echo. Se volta, o destino está vivo e o caminho funciona. Tempo (RTT) e perda de pacote (packet loss) são as métricas. <strong>0% loss e tempo estável</strong> = saúde boa. Loss alto ou tempo irregular = caminho com problema.</p>
+
+            <h3>traceroute / tracert — qual caminho?</h3>
+            <pre><code class="language-bash">$ traceroute google.com
+ 1  192.168.0.1   1.2 ms     ← gateway de casa
+ 2  10.50.0.1     8.5 ms     ← rede do provedor
+ 3  177.32.0.1    12.1 ms    ← borda do provedor
+ 4  ... (10 a 15 hops até Google) ...
+15  142.250.78.46 22.0 ms    ← Google</code></pre>
+            <p>Mostra cada roteador (hop) entre você e o destino. Útil pra:</p>
+            <ul>
+                <li>Saber onde está o gargalo (qual hop demora mais)</li>
+                <li>Ver onde a conexão morre (último hop que respondeu = onde quebrou)</li>
+                <li>Entender geograficamente por onde passa</li>
+            </ul>
+            <p>No Windows o comando é <code>tracert</code>.</p>
+
+            <h3>mtr — ping + traceroute juntos</h3>
+            <p><code>mtr</code> é a versão "live" — mostra ping contínuo pra cada hop ao mesmo tempo. Detecta perda intermitente que <code>ping</code> sozinho mascara.</p>
+            <pre><code class="language-bash">$ mtr google.com
+HOST           Loss%   Avg   Last  Best  Wrst
+1. gateway     0.0%    1.2   1.0   0.9   2.3
+2. provedor    0.0%    8.5   8.2   7.9   9.8
+3. borda       2.5%    12.1  11.8  11.2  18.4    ← perda aqui
+...</code></pre>
+
+            <h3>ip route / route -n — tabela de roteamento da máquina</h3>
+            <pre><code class="language-bash">$ ip route show
+default via 192.168.0.1 dev wlan0
+192.168.0.0/24 dev wlan0 proto kernel scope link src 192.168.0.42</code></pre>
+            <p>Mostra pra onde a máquina envia cada faixa de IP. <code>default via X</code> é o gateway — pra onde vai TUDO que não é da rede local. Linha por linha:</p>
+            <ul>
+                <li><strong>default</strong> — qualquer IP fora da rede local vai pra <code>192.168.0.1</code></li>
+                <li><strong>192.168.0.0/24</strong> — IPs da rede local saem direto pela placa Wi-Fi (sem passar pelo gateway)</li>
+            </ul>
+
+            <h3>whois — quem é dono daquele IP?</h3>
+            <pre><code class="language-bash">$ whois 8.8.8.8
+NetName: GOGL
+OrgName: Google LLC
+Country: US</code></pre>
+            <p>Lookup público de quem registrou aquele IP. Útil pra identificar IP suspeito em log, ver país de origem, descobrir provedor.</p>
+
+            <h3>Roteiro de debug atualizado (camadas 1-3)</h3>
+            <ol>
+                <li>Cabo plugado, LED aceso? (camada 1)</li>
+                <li><code>ip link show</code> — placa UP? (camada 2)</li>
+                <li><code>ip neigh show</code> — gateway REACHABLE? (camada 2 / ARP)</li>
+                <li><code>ping 192.168.0.1</code> — gateway responde? (camada 3 local)</li>
+                <li><code>ping 8.8.8.8</code> — internet sai? (camada 3 internet)</li>
+                <li><code>ping google.com</code> — DNS funciona? (camada 7)</li>
+                <li><code>traceroute google.com</code> — onde para? (camada 3 caminho)</li>
+            </ol>
+            <p>Cada falha aponta exatamente em qual camada o problema mora. Esse roteiro resolve a maioria dos sintomas de "rede está estranha".</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
