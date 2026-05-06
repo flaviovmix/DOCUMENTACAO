@@ -12,6 +12,52 @@
 
 <div class="info-accordion">
 
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">BRONCAS — META (SRC/, SKILLS, MODOS)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+
+            <div class="audio-player" data-src="audio/quarta-carta.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>O que é essa carta</h3>
+
+            <p>Quarta carta da sequência. As anteriores foram: a primeira fechou a Fase 0 do Nexus, a segunda fechou a Fase 1 com broncas autorizadas, a terceira foi a <strong>Carta Aberta sobre o <code>src/</code></strong> (acordeon de baixo).</p>
+
+            <p>Esta volta ao formato Carta do Claude — Claude observa o Flávio de fora, broncas autorizadas. Mas o tema <strong>não</strong> é fechamento de fase do Nexus. É <strong>meta</strong>: olhar pro ferramental ao redor.</p>
+
+            <h3>Os três focos</h3>
+
+            <ul>
+                <li><strong>Organização do <code>src/</code></strong> — a faxina anunciada na Carta 3 aconteceu pela metade. Projetos foram pra <code>PROJETOS/</code>, mas as 4 categorias (ativos / referência / apoio / lixo) não viraram pastas. E tem <code>referencias/</code> em dois lugares.</li>
+                <li><strong>Skills</strong> — split <code>xt</code>/<code>fundamentos</code> e separação <code>html</code>/<code>podcast</code> são decisões certas. 10 skills focadas. Pergunta: falta um expert pro lado novo (Spring/SvelteKit)?</li>
+                <li><strong>Modos (estudante/laboratório/produtivo)</strong> — refator de <code>_perfil/</code> pra slash commands é vitória estrutural. Faltam: registro do modo default e gatilho pro Claude sugerir trocar.</li>
+            </ul>
+
+            <h3>Eco da Carta 2</h3>
+
+            <p>A observação 1 da Carta 2 ("intensidade do 23/04 preocupa, quanto fixou?") <strong>não pegou</strong>. Em 11 dias depois daquela carta: Fase 2 inteira + Fase 3 inteira + V1 a V11 migrations. O ritmo subiu, não calibrou.</p>
+
+            <h3>Pergunta aberta — respondida durante a aprovação</h3>
+
+            <p>"Quando você imagina o Nexus daqui a 6 meses, ele tá te servindo pra que concretamente?"</p>
+
+            <p>Resposta do Flávio: <em>"pra eu ter aprendido sobre desenvolvimento e organizar minhas atividades diárias e coisas do dia a dia como eu faço com o Notion hoje"</em>. Confirma o casamento veículo (aprender) + destino (substituir Notion). Roadmap segue válido.</p>
+
+            <p><em>Carta fechada.</em></p>
+
+        </div>
+    </div>
+
     <div class="info-row open">
         <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
             <span class="info-row-title">NOSSA PRIMEIRA FAXINA</span>
