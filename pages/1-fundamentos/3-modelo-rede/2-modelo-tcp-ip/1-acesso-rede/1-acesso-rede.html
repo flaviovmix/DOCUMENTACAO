@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acesso à Rede — Modelo TCP/IP — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Camada 1 — Acesso à Rede</h1>
+
+<div class="audio-player" data-src="audio/acesso-rede.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>A camada 1 do TCP/IP é a base — combina o que o OSI separava em duas (<strong>Enlace</strong> + <strong>Física</strong>) numa só. Cuida de duas coisas: transformar bits em sinal físico (pulso elétrico no cobre, luz na fibra, onda de rádio no Wi-Fi) e entregar quadros entre vizinhos da mesma rede local. Quando o pacote precisa sair pra outra rede, quem assume é a camada 2 (Internet).</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Por que enlace e física viraram uma só</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Na prática, quem mexe com hardware de rede — instala cabo, configura switch, troca placa — não separa "isso é enlace, aquilo é físico". Quando o cabo desconecta, sumiram os dois ao mesmo tempo. Quando a placa para, sumiram os dois.</p>
+            <p>O TCP/IP simplifica porque a vida real já era assim. Em vez de duas camadas teóricas, uma só — chamada <strong>Acesso à Rede</strong> — que cobre todo o trecho local entre máquinas que estão no mesmo cabo, no mesmo Wi-Fi, ou no mesmo "bairro de switch".</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Os dois trabalhos da camada — bits no fio + entrega entre vizinhos</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p><strong>Primeiro trabalho — bits viram sinal físico.</strong> Cada meio carrega bit de um jeito:</p>
+            <ul>
+                <li>Cabo de cobre — pulso elétrico</li>
+                <li>Fibra óptica — pulso de luz</li>
+                <li>Wi-Fi — onda de rádio</li>
+            </ul>
+            <p>Em todos os casos, alguém transforma 0 e 1 em alguma coisa que viaja pelo meio físico — e do outro lado, transforma de volta. Quem faz isso é a camada 1.</p>
+            <p><strong>Segundo trabalho — entregar quadros entre vizinhos da rede local.</strong> "Vizinho" aqui significa: máquina no mesmo cabo, ou no mesmo switch, ou no mesmo Wi-Fi. Pra entregar de vizinho a vizinho, a camada usa um endereço diferente do IP — usa o <strong>MAC</strong>.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">MAC address — endereço físico da placa</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O MAC é o endereço físico da placa de rede. Tem 48 bits, escrito em hexadecimal separado por dois-pontos: <code>a4:c3:f0:1f:b2:de</code>.</p>
+            <ul>
+                <li><strong>Vem de fábrica</strong> — gravado na placa. Cada placa tem um único no mundo</li>
+                <li><strong>Não muda de rede</strong> — leva o notebook pra cafeteria, o MAC continua o mesmo. Só o IP muda</li>
+                <li><strong>Vale só na rede local</strong> — quando o pacote sai da rede, o MAC não acompanha</li>
+            </ul>
+            <p>Analogia útil: o MAC é como o número do <strong>chassi</strong> do carro — vem de fábrica, é único, não muda. O IP é como o número da <strong>casa</strong> onde o carro está estacionado — muda conforme onde está.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Frame Ethernet — o envelope da camada</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Quando a camada 1 vai entregar dados pra um vizinho, ela monta um <strong>frame Ethernet</strong>. Frame é o envelope dessa camada.</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Campo</th><th>O que é</th></tr>
+                    <tr><td>MAC origem</td><td>Quem mandou</td></tr>
+                    <tr><td>MAC destino</td><td>Quem recebe (vizinho local)</td></tr>
+                    <tr><td>Payload</td><td>O pacote IP da camada 2 lá dentro</td></tr>
+                    <tr><td>Checksum</td><td>Verificação de erro no fim</td></tr>
+                </table>
+            </div>
+            <p>A camada 1 não olha o conteúdo do pacote IP. Não sabe se lá dentro tem HTTP, banco de dado, e-mail. Só sabe que recebeu um pacote IP pra empacotar e mandar pra um MAC específico.</p>
+            <p>O <strong>switch</strong> local usa o MAC de destino pra decidir em qual porta dele o frame vai sair. Switch não sabe nada de IP — só olha MAC e porta física.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">ARP — descobrindo o MAC pelo IP</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Surge um problema: a camada 1 trabalha com MAC, mas a camada de cima trabalha com IP. Como a camada 1 sabe qual MAC corresponde a um IP?</p>
+            <p>A solução é o <strong>ARP — Address Resolution Protocol</strong>. Quando a camada 1 precisa mandar pra um IP local que ela ainda não conhece, ela <em>grita</em> pra rede inteira:</p>
+            <pre><code class="language-bash">"Quem aqui tem o IP 192.168.1.5? Manda seu MAC"</code></pre>
+            <p>A máquina que tem aquele IP responde com o MAC dela. A camada 1 guarda isso numa <strong>tabela ARP</strong> por alguns minutos pra não precisar perguntar de novo.</p>
+            <p>ARP só funciona dentro da rede local. Pra IPs fora da rede, quem cuida é o roteador.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Limite da camada — quando o pacote sai do bairro</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Analogia do bairro: o switch local é como um <strong>carteiro do bairro</strong>. Sabe entregar de uma casa pra outra ali mesmo. Quando a carta tem destino fora do bairro, o carteiro do bairro não sabe o caminho — entrega no posto de saída do bairro, que é o <strong>roteador</strong>.</p>
+            <p>Em termos técnicos: quando a camada 1 entrega o frame ao roteador, o roteador "abre" o frame, lê o pacote IP lá dentro, e usa o IP de destino pra decidir pra qual rede mandar em seguida. A partir dali é trabalho da camada 2 (Internet).</p>
+            <p><strong>Detalhe importante:</strong> cada salto entre redes é um frame Ethernet novo, com MACs novos. O IP permanece, mas o MAC muda a cada salto. Por isso o MAC não é endereço de internet — só de bairro.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Tipos físicos comuns + diagnóstico do dia a dia</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A camada 1 cobre vários tipos de meio físico:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Tipo</th><th>Característica</th><th>Onde usa</th></tr>
+                    <tr><td>Cabo de cobre (Ethernet)</td><td>Velocidade alta, distância curta</td><td>Padrão em rede de empresa</td></tr>
+                    <tr><td>Fibra óptica</td><td>Velocidade muito alta, distância muito longa</td><td>Espinhas dorsais, fibra até a casa</td></tr>
+                    <tr><td>Wi-Fi</td><td>Sem fio, conveniente, instabilidade</td><td>Casa, escritório, café</td></tr>
+                    <tr><td>4G/5G</td><td>Sem fio de longa distância</td><td>Celular, IoT remoto</td></tr>
+                </table>
+            </div>
+            <p>Sintomas típicos de problema na camada 1:</p>
+            <ul>
+                <li><strong>Cabo desconectado</strong> — óbvio</li>
+                <li><strong>Sem conexão Wi-Fi</strong> — sinal de rádio não chega, ou senha errada</li>
+                <li><strong>Velocidade baixa em Wi-Fi perto de micro-ondas</strong> — interferência de rádio</li>
+                <li><strong>Driver da placa de rede com problema</strong> — software que conversa com o hardware</li>
+            </ul>
+            <p>Pra dev de aplicação, a camada 1 é quase sempre invisível. Você só percebe ela quando dá problema.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

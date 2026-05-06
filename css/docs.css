@@ -1518,7 +1518,7 @@ body.dark .carousel-dot.active { background: #89b4fa; }
 @media (max-width: 768px) {
     .carousel { width: 100%; }
     .carousel-slide { aspect-ratio: auto; height: 60vh; }
-    .card { flex: 1 1 100%; max-width: 100%; min-width: 0; aspect-ratio: 3 / 3.5; }
+    .card { flex: 1 1 calc(50% - 12px); max-width: calc(50% - 12px); min-width: 0; aspect-ratio: 3 / 4.5; }
     .card-menu { opacity: 1; }
 }
 
