@@ -2063,6 +2063,9 @@ function initPageToc(inner) {
         a.addEventListener('click', function(e) {
             if (a.dataset.tocTop) {
                 e.preventDefault();
+                document.querySelectorAll('.info-row.open').forEach(function(row) {
+                    row.classList.remove('open');
+                });
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } else if (a.dataset.tocBottom) {
                 e.preventDefault();

@@ -1,165 +1,254 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modelo OSI — Nexus</title>
     <script src="../../../../js/layout.js"></script>
+    <style>
+        .ep-sub {
+            color: #6b7280;
+            font-style: italic;
+            margin: 0 0 12px 0;
+            font-size: 0.92em;
+        }
+        .tags { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+        .tag {
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 0.75em;
+            padding: 3px 9px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="home-header">
-        <h1 class="home-title">MODELO OSI</h1>
-        <p class="home-sub">As 7 camadas que fazem dois computadores conversarem — da aplicação que o usuário enxerga até o cabo de cobre</p>
+<nav class="page-toc"></nav>
+
+<h1>MODELO OSI <span class="badge badge-new">8 episódios</span></h1>
+<p>As 7 camadas que fazem dois computadores conversarem — da aplicação que o usuário enxerga até o cabo de cobre. Aqui é o tour conceitual; o aprofundamento prático fica no <a href="../2-modelo-tcp-ip/2-modelo-tcp-ip.html">Modelo TCP/IP</a>, que é o usado na vida real.</p>
+
+<div class="info-accordion">
+
+    <!-- 00 - VISÃO GERAL -->
+    <div class="info-row" data-toc-title="00 VISÃO GERAL" data-toc-sub="Visão Geral">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">00 - Visão Geral</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Como o pacote viaja por todas as 7 camadas — encapsulamento, desencapsulamento e o porquê de cada camada</p>
+
+            <div class="audio-player" data-src="0-visao-geral/audio/visao-geral.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>O modelo OSI é um modelo conceitual com 7 camadas que descreve como dois computadores se comunicam pela rede. Cada camada tem um trabalho específico e só conversa com a camada imediatamente acima e a imediatamente abaixo — esconde a complexidade do que está embaixo e oferece um serviço pronto pra quem está em cima.</p>
+            <p>Quando você manda uma requisição HTTP, ela desce pela pilha no remetente: aplicação → apresentação → sessão → transporte → rede → enlace → física. Em cada camada o pacote ganha um envelope (cabeçalho) com a informação que aquela camada precisa. No destino, o processo se inverte: o sinal sobe pela pilha, cada camada tira seu envelope, e a aplicação do outro lado recebe a requisição original. Isso é encapsulamento e desencapsulamento.</p>
+            <p>Na prática, o modelo de fato implementado na internet é o TCP/IP (4 camadas). O OSI continua útil como vocabulário comum: quando alguém fala "isso é problema de camada 3" ou "o TLS roda na camada 6", todo mundo entende.</p>
+            <div class="tags"><span class="tag">7 camadas</span><span class="tag">encapsulamento</span><span class="tag">vocabulário</span></div>
+        </div>
     </div>
 
-    <div class="home-grid">
-
-        <!-- 0. VISÃO GERAL -->
-        <div class="card">
-            <div class="card-menu btnMenuCard">
-                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
-            </div>
-            <div class="card-info">
-                <div class="card-resumo">
-                    <p>O modelo de 7 camadas em conjunto — por que existe, como o pacote viaja de cima até embaixo (encapsulamento) e como cada camada esconde da outra.</p>
-                </div>
-            </div>
-            <div class="card-img">
-                <img src="img/visao-geral.png" alt="Visão Geral">
-            </div>
-            <div class="card-bar">
-                <a href="0-visao-geral/0-visao-geral.html" class="card-tag" style="--tag-clr:#eab308;">Visão Geral</a>
-            </div>
+    <!-- 01 - FÍSICA -->
+    <div class="info-row" data-toc-title="01 FÍSICA" data-toc-sub="Física">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">01 - Física</span>
+            <button class="info-row-btn">+</button>
         </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Bits viram sinal de verdade — cabo de cobre, fibra óptica e onda no ar</p>
 
-        <!-- 7. APLICAÇÃO -->
-        <div class="card">
-            <div class="card-menu btnMenuCard">
-                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
-            </div>
-            <div class="card-info">
-                <div class="card-resumo">
-                    <p>Camada 7 — protocolos que o usuário enxerga: HTTP, e-mail, transferência de arquivo, mensageria.</p>
+            <div class="audio-player" data-src="1-fisica/audio/visao-geral.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
                 </div>
+                <span class="audio-time">0:00 / 0:00</span>
             </div>
-            <div class="card-img">
-                <img src="img/aplicacao.png" alt="Aplicação">
-            </div>
-            <div class="card-bar">
-                <a href="7-aplicacao/7-aplicacao.html" class="card-tag" style="--tag-clr:#f97316;">Aplicação</a>
-            </div>
-        </div>
 
-        <!-- 6. APRESENTAÇÃO -->
-        <div class="card">
-            <div class="card-menu btnMenuCard">
-                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
-            </div>
-            <div class="card-info">
-                <div class="card-resumo">
-                    <p>Camada 6 — formato e segurança dos bytes: criptografia (TLS), compressão e charset (UTF-8). Onde o HTTPS realmente acontece.</p>
-                </div>
-            </div>
-            <div class="card-img">
-                <img src="img/apresentacao.png" alt="Apresentação">
-            </div>
-            <div class="card-bar">
-                <a href="6-apresentacao/6-apresentacao.html" class="card-tag" style="--tag-clr:#10b981;">Apresentação</a>
-            </div>
+            <h3>Resumo</h3>
+            <p>A camada 1 tem um trabalho só: transformar bits em sinal e sinal em bits. Quando o computador quer mandar um <code>1</code>, a camada física gera um pulso elétrico no cabo (ou luz na fibra, ou onda no ar). Do outro lado, o receptor mede o sinal e converte de volta em bit.</p>
+            <p>Os 3 tipos de meio físico do dia a dia: <strong>cabo de cobre</strong> (par trançado UTP, conector RJ45, até 100 metros, sofre interferência), <strong>fibra óptica</strong> (luz num vidro, dezenas de quilômetros sem perda, base dos cabos submarinos) e <strong>sem fio</strong> (Wi-Fi, 4G, 5G, Bluetooth — onda eletromagnética). Numa conexão típica, o sinal passa por mais de um meio.</p>
+            <p>Equipamentos: placa de rede, cabo, hub (raro hoje), repetidor. Você não escreve código nessa camada, mas problemas dela aparecem direto: cabo desconectado, link apagado, Wi-Fi fraco — quando a camada 1 cai, tudo cai junto.</p>
+            <div class="tags"><span class="tag">cabo</span><span class="tag">fibra</span><span class="tag">wi-fi</span><span class="tag">hub</span></div>
         </div>
-
-        <!-- 5. SESSÃO -->
-        <div class="card">
-            <div class="card-menu btnMenuCard">
-                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
-            </div>
-            <div class="card-info">
-                <div class="card-resumo">
-                    <p>Camada 5 — abrir, manter e encerrar sessões entre processos. Na prática, a maior parte do trabalho ficou na aplicação (cookies, JSESSIONID).</p>
-                </div>
-            </div>
-            <div class="card-img">
-                <img src="img/sessao.png" alt="Sessão">
-            </div>
-            <div class="card-bar">
-                <a href="5-sessao/5-sessao.html" class="card-tag" style="--tag-clr:#8b5cf6;">Sessão</a>
-            </div>
-        </div>
-
-        <!-- 4. TRANSPORTE -->
-        <div class="card">
-            <div class="card-menu btnMenuCard">
-                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
-            </div>
-            <div class="card-info">
-                <div class="card-resumo">
-                    <p>Camada 4 — entrega entre processos: TCP (confiável, com handshake e ordem), UDP (sem conexão, rápido) e portas (80, 443, 5432).</p>
-                </div>
-            </div>
-            <div class="card-img">
-                <img src="img/transporte.png" alt="Transporte">
-            </div>
-            <div class="card-bar">
-                <a href="4-transporte/4-transporte.html" class="card-tag" style="--tag-clr:#3b82f6;">Transporte</a>
-            </div>
-        </div>
-
-        <!-- 3. REDE -->
-        <div class="card">
-            <div class="card-menu btnMenuCard">
-                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
-            </div>
-            <div class="card-info">
-                <div class="card-resumo">
-                    <p>Camada 3 — endereço lógico (IP) e roteamento. Como o pacote acha o caminho entre redes, IPv4 vs IPv6, roteador escolhendo a rota.</p>
-                </div>
-            </div>
-            <div class="card-img">
-                <img src="img/rede.png" alt="Rede">
-            </div>
-            <div class="card-bar">
-                <a href="3-rede/3-rede.html" class="card-tag" style="--tag-clr:#06b6d4;">Rede</a>
-            </div>
-        </div>
-
-        <!-- 2. ENLACE -->
-        <div class="card">
-            <div class="card-menu btnMenuCard">
-                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
-            </div>
-            <div class="card-info">
-                <div class="card-resumo">
-                    <p>Camada 2 — entrega entre vizinhos da mesma rede local: Ethernet, Wi-Fi, MAC address, switch, frame.</p>
-                </div>
-            </div>
-            <div class="card-img">
-                <img src="img/enlace.png" alt="Enlace">
-            </div>
-            <div class="card-bar">
-                <a href="2-enlace/2-enlace.html" class="card-tag" style="--tag-clr:#6366f1;">Enlace</a>
-            </div>
-        </div>
-
-        <!-- 1. FÍSICA -->
-        <div class="card">
-            <div class="card-menu btnMenuCard">
-                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
-            </div>
-            <div class="card-info">
-                <div class="card-resumo">
-                    <p>Camada 1 — o sinal no fio: cabo de cobre, fibra óptica, rádio (Wi-Fi). Bits viram pulso elétrico, luz ou onda e voltam.</p>
-                </div>
-            </div>
-            <div class="card-img">
-                <img src="img/fisica.png" alt="Física">
-            </div>
-            <div class="card-bar">
-                <a href="1-fisica/1-fisica.html" class="card-tag" style="--tag-clr:#6b7280;">Física</a>
-            </div>
-        </div>
-
     </div>
+
+    <!-- 02 - ENLACE -->
+    <div class="info-row" data-toc-title="02 ENLACE" data-toc-sub="Enlace">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">02 - Enlace</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Entrega entre vizinhos da mesma rede local — MAC, switch, frame Ethernet</p>
+
+            <div class="audio-player" data-src="2-enlace/audio/visao-geral.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>A camada 2 cuida da entrega entre máquinas que estão na <strong>mesma rede local</strong>. Ela usa um endereço diferente do IP: o <strong>MAC address</strong>, que é o número de série da placa de rede (gravado de fábrica, único no mundo).</p>
+            <p>A unidade de transmissão é o <strong>frame Ethernet</strong> — um pacote com cabeçalho contendo MAC de origem, MAC de destino e o conteúdo. O equipamento principal é o <strong>switch</strong>: ele aprende quais MACs estão em quais portas e entrega o frame só pra porta certa (diferente do hub antigo, que mandava pra todo mundo).</p>
+            <p>Pra descobrir "qual MAC tem o IP X" dentro da rede local, existe o <strong>ARP</strong>: o computador grita "quem tem o IP 192.168.0.5?" e o dono responde. A camada 2 só funciona dentro de uma rede local; pra sair dela, precisa subir pra camada 3.</p>
+            <div class="tags"><span class="tag">MAC</span><span class="tag">switch</span><span class="tag">Ethernet</span><span class="tag">ARP</span></div>
+        </div>
+    </div>
+
+    <!-- 03 - REDE -->
+    <div class="info-row" data-toc-title="03 REDE" data-toc-sub="Rede">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">03 - Rede</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Endereço lógico e roteamento entre redes diferentes — IP, roteador, NAT</p>
+
+            <div class="audio-player" data-src="3-rede/audio/visao-geral.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>A camada 3 conecta redes diferentes umas com as outras — é onde o pacote sai da sua rede local e cruza o mundo até o destino. O endereço dessa camada é o <strong>IP</strong>: lógico, atribuído por software (não é o MAC da placa). O equipamento é o <strong>roteador</strong>, que decide pra qual próxima rede mandar o pacote.</p>
+            <p>O IPv4 (4 bilhões de endereços) já não dá conta. As três gambiarras que estenderam a vida dele: <strong>redes privadas</strong> (faixas como 192.168.x.x reutilizadas em milhões de casas), <strong>NAT</strong> (o roteador troca o IP privado pelo público na saída) e <strong>portas</strong> emprestadas da camada 4 pra distinguir várias conexões saindo do mesmo IP.</p>
+            <p>O <strong>IPv6</strong> é a solução real: 128 bits de endereço, suficiente pra cada átomo da Terra. Ainda em transição. Ferramentas de diagnóstico dessa camada: <code>ping</code>, <code>traceroute</code>, <code>ipconfig</code>/<code>ifconfig</code>.</p>
+            <div class="tags"><span class="tag">IP</span><span class="tag">roteador</span><span class="tag">NAT</span><span class="tag">IPv6</span></div>
+        </div>
+    </div>
+
+    <!-- 04 - TRANSPORTE -->
+    <div class="info-row" data-toc-title="04 TRANSPORTE" data-toc-sub="Transporte">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">04 - Transporte</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Entrega entre processos dentro do computador — TCP, UDP e portas</p>
+
+            <div class="audio-player" data-src="4-transporte/audio/visao-geral.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>A camada 3 entrega o pacote no computador certo. A camada 4 entrega no <strong>processo certo</strong> dentro daquele computador (o navegador? o cliente de email? o servidor de banco?). A ferramenta pra isso é a <strong>porta</strong>: um número de 16 bits (0 a 65535) que identifica o serviço.</p>
+            <p>Dois protocolos principais. <strong>UDP</strong>: simples, rápido, sem garantia. Você manda e torce. Bom pra streaming, jogos, DNS — onde perder um pacote é melhor do que esperar a retransmissão. <strong>TCP</strong>: confiável, com handshake de 3 vias (SYN → SYN-ACK → ACK), confirmação de cada pacote, retransmissão automática e ordem garantida. Praticamente tudo que precisa "chegar inteiro" usa TCP.</p>
+            <p>Portas famosas: <strong>80</strong> (HTTP), <strong>443</strong> (HTTPS), <strong>22</strong> (SSH), <strong>5432</strong> (PostgreSQL), <strong>3306</strong> (MySQL). Ferramentas: <code>netstat</code>, <code>ss</code>, <code>tcpdump</code>.</p>
+            <div class="tags"><span class="tag">TCP</span><span class="tag">UDP</span><span class="tag">portas</span><span class="tag">handshake</span></div>
+        </div>
+    </div>
+
+    <!-- 05 - SESSÃO -->
+    <div class="info-row" data-toc-title="05 SESSÃO" data-toc-sub="Sessão">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">05 - Sessão</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Abrir, manter e encerrar conversas longas — na prática, ficou na aplicação</p>
+
+            <div class="audio-player" data-src="5-sessao/audio/visao-geral.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>A camada 5 era pra cuidar de <strong>sessões longas</strong> entre processos: abrir uma conversa, mantê-la viva por minutos ou horas, sincronizar pontos de checkpoint pra retomar caso caia, e fechar de forma ordenada.</p>
+            <p>Na prática da internet moderna, essa camada quase não existe como camada separada. A maior parte do trabalho de "manter quem é o usuário" foi pra dentro da própria aplicação (camada 7): <strong>cookies</strong>, <strong>JSESSIONID</strong>, tokens JWT, <code>localStorage</code>, sessões em memória do servidor.</p>
+            <p>É a camada mais "fantasma" do OSI — útil como conceito quando alguém fala "estamos perdendo sessão", mas raramente um pedaço de código que você toca diretamente.</p>
+            <div class="tags"><span class="tag">cookie</span><span class="tag">JSESSIONID</span><span class="tag">checkpoint</span></div>
+        </div>
+    </div>
+
+    <!-- 06 - APRESENTAÇÃO -->
+    <div class="info-row" data-toc-title="06 APRESENTAÇÃO" data-toc-sub="Apresentação">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">06 - Apresentação</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Formato e segurança dos bytes — TLS, compressão, charset</p>
+
+            <div class="audio-player" data-src="6-apresentacao/audio/visao-geral.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>A camada 6 cuida do <strong>formato</strong> e da <strong>segurança</strong> dos bytes que vão e voltam. Três trabalhos clássicos: criptografia, compressão e tradução de charset.</p>
+            <p><strong>Criptografia</strong>: o <strong>TLS</strong> mora aqui. É o "S" do HTTPS — o que transforma uma conexão clara em uma conexão onde só os dois lados entendem o que está passando, mesmo que alguém capture o tráfego no meio do caminho. <strong>Compressão</strong>: gzip, brotli — diminuir o tamanho dos bytes antes de mandar pelo cabo. <strong>Charset</strong>: garantir que o byte que chega seja interpretado como UTF-8 e não Latin-1, evitando aquele ã virar Ã.</p>
+            <p>Na vida real, TLS muitas vezes é descrito como "entre a 4 e a 7", e nem todo mundo concorda que cabe estritamente na 6. Mas como vocabulário, é onde HTTPS realmente acontece.</p>
+            <div class="tags"><span class="tag">TLS</span><span class="tag">HTTPS</span><span class="tag">UTF-8</span><span class="tag">gzip</span></div>
+        </div>
+    </div>
+
+    <!-- 07 - APLICAÇÃO -->
+    <div class="info-row" data-toc-title="07 APLICAÇÃO" data-toc-sub="Aplicação">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">07 - Aplicação</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Os protocolos que o usuário enxerga — HTTP, SMTP, FTP, DNS</p>
+
+            <div class="audio-player" data-src="7-aplicacao/audio/visao-geral.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>A camada 7 é onde mora tudo que tem nome próprio que o usuário conhece. Os <strong>protocolos de aplicação</strong>: <strong>HTTP</strong> (web), <strong>SMTP/IMAP/POP3</strong> (email), <strong>FTP/SFTP</strong> (transferência de arquivo), <strong>DNS</strong> (traduzir nome de site em IP), <strong>SSH</strong> (terminal remoto), <strong>WebSocket</strong> (canal aberto pra mensagem).</p>
+            <p>Cada um desses protocolos tem suas regras: HTTP pede com <code>GET</code>/<code>POST</code> e responde com status code; SMTP fala em <code>HELO</code>/<code>MAIL FROM</code>/<code>RCPT TO</code>; DNS pergunta "qual o IP de google.com?" e recebe a resposta. É a camada onde o desenvolvedor passa quase 100% do tempo.</p>
+            <p>Tudo o que está abaixo (transporte, rede, enlace, física) existe pra entregar a mensagem dessa camada do remetente até o destinatário sem que o usuário precise pensar em nada disso.</p>
+            <div class="tags"><span class="tag">HTTP</span><span class="tag">SMTP</span><span class="tag">DNS</span><span class="tag">SSH</span></div>
+        </div>
+    </div>
+
+</div>
 
 </body>
 </html>

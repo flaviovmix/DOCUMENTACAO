@@ -1,0 +1,220 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transporte — Modelo TCP/IP — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+    <style>
+        .ep-sub {
+            color: #6b7280;
+            font-style: italic;
+            margin: 0 0 12px 0;
+            font-size: 0.92em;
+        }
+        .tags { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+        .tag {
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 0.75em;
+            padding: 3px 9px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Camada 3 — Transporte <span class="badge badge-new">7 episódios</span></h1>
+<p>A camada que entrega no <strong>processo certo</strong> — não basta chegar no computador, precisa chegar no navegador, no servidor de banco, no cliente de email. TCP, UDP e portas.</p>
+
+<div class="info-accordion">
+
+    <!-- 00 - VISÃO GERAL -->
+    <div class="info-row" data-toc-title="00 VISÃO GERAL" data-toc-sub="Visão Geral">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">00 - Visão Geral</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Entrega entre processos via portas — TCP confiável vs UDP rápido</p>
+
+            <div class="audio-player" data-src="audio/transporte.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>A camada Internet entrega o pacote no computador certo. A camada Transporte entrega no <strong>processo certo</strong> dentro daquele computador — o navegador? o servidor SQL? o cliente de email? A ferramenta pra isso é a <strong>porta</strong>: número de 16 bits que identifica o serviço.</p>
+            <p>Dois protocolos principais: <strong>TCP</strong> (confiável, com handshake e ordem garantida) e <strong>UDP</strong> (rápido, sem garantia). A escolha depende do caso — TCP pra transferência de arquivo, UDP pra streaming. <strong>No OSI essa é exatamente a camada 4 (Transporte) — sem mudança de mapeamento.</strong></p>
+            <div class="tags"><span class="tag">TCP</span><span class="tag">UDP</span><span class="tag">portas</span></div>
+        </div>
+    </div>
+
+    <!-- 01 - UDP -->
+    <div class="info-row" data-toc-title="01 UDP" data-toc-sub="UDP">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">01 - UDP</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Você manda e torce — sem conexão, sem garantia, mas rápido</p>
+
+            <div class="audio-player" data-src="audio/udp.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>O UDP (User Datagram Protocol) é o protocolo simples e rápido. Sem conexão (não tem handshake), sem garantia de entrega, sem ordem, sem retransmissão. Você manda o pacote e torce. Cabeçalho minúsculo: porta origem, porta destino, tamanho, checksum — só isso.</p>
+            <p>Quando vale a pena: <strong>streaming</strong> (perdeu um quadro? melhor pular do que travar), <strong>jogos online</strong> (latência baixa importa mais que perda de 1 pacote), <strong>DNS</strong> (consulta pequena, resposta rápida — perde? pergunta de novo), <strong>VoIP</strong> (voz não pode esperar retransmissão). Não vale pra transferência de arquivo, página web, banco de dados. <strong>No OSI seria camada 4 (Transporte).</strong></p>
+            <div class="tags"><span class="tag">sem conexão</span><span class="tag">streaming</span><span class="tag">DNS</span><span class="tag">jogos</span></div>
+        </div>
+    </div>
+
+    <!-- 02 - TCP -->
+    <div class="info-row" data-toc-title="02 TCP" data-toc-sub="TCP">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">02 - TCP</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Conexão confiável com handshake, retransmissão e ordem garantida</p>
+
+            <div class="audio-player" data-src="audio/tcp.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>O TCP (Transmission Control Protocol) é o oposto do UDP: <strong>conexão estabelecida</strong> via handshake de 3 vias, <strong>confirmação de recebimento</strong> de cada pacote (ACK), <strong>retransmissão automática</strong> se não chegou, <strong>ordem garantida</strong> mesmo se os pacotes chegarem fora de ordem, e <strong>controle de fluxo</strong> pra não afogar quem está recebendo.</p>
+            <p>Praticamente tudo que precisa "chegar inteiro" usa TCP: HTTP/HTTPS (web), SSH, FTP, IMAP/SMTP (email), banco de dados. O custo é overhead — cabeçalho maior, mais idas-e-voltas, mais latência. Por isso o HTTP/3 está mudando pra QUIC (sobre UDP) tentando juntar o melhor dos dois. <strong>No OSI seria camada 4 (Transporte).</strong></p>
+            <div class="tags"><span class="tag">handshake</span><span class="tag">ACK</span><span class="tag">retransmissão</span><span class="tag">HTTP</span></div>
+        </div>
+    </div>
+
+    <!-- 03 - PORTAS -->
+    <div class="info-row" data-toc-title="03 PORTAS" data-toc-sub="Portas">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">03 - Portas</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Número de 16 bits — qual processo recebe o pacote dentro do computador</p>
+
+            <div class="audio-player" data-src="audio/portas.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>A porta é um número de 16 bits (0 a 65535) que identifica o processo destinatário. O IP leva o pacote até o computador; a porta leva até o programa. Quando você acessa <code>https://exemplo.com</code>, na verdade vai pra <code>exemplo.com:443</code> — porta 443 é o servidor HTTPS.</p>
+            <p>Três faixas: <strong>well-known (0–1023)</strong> reservadas pros serviços padrão (80=HTTP, 443=HTTPS, 22=SSH); <strong>registered (1024–49151)</strong> pra apps específicas (3306=MySQL, 5432=PostgreSQL); <strong>dynamic (49152–65535)</strong> pra conexões temporárias do cliente. Quando seu navegador conecta no servidor, ele usa uma porta dinâmica de origem que dura só o tempo da conexão. <strong>No OSI seria camada 4 (Transporte).</strong></p>
+            <div class="tags"><span class="tag">16 bits</span><span class="tag">well-known</span><span class="tag">443</span><span class="tag">socket</span></div>
+        </div>
+    </div>
+
+    <!-- 04 - THREE-WAY HANDSHAKE -->
+    <div class="info-row" data-toc-title="04 HANDSHAKE" data-toc-sub="Three-Way Handshake">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">04 - Three-Way Handshake</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">SYN → SYN-ACK → ACK — como TCP estabelece conexão antes de mandar dados</p>
+
+            <div class="audio-player" data-src="audio/three-way-handshake.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Antes de mandar qualquer dado, o TCP estabelece conexão com 3 mensagens: <strong>SYN</strong> (cliente: "quero conversar, número de sequência X") → <strong>SYN-ACK</strong> (servidor: "ok, recebi seu SYN, meu sequência é Y") → <strong>ACK</strong> (cliente: "recebi seu SYN-ACK, estamos conectados"). Só depois disso os dados começam a fluir.</p>
+            <p>Por que 3 e não 2? Pra ambos os lados confirmarem que <strong>conseguem mandar E receber</strong> — não basta saber só metade. O custo é uma volta inteira (round-trip) antes de qualquer dado útil. Pra fechar a conexão, existe o handshake reverso com FIN. Esse overhead é uma das razões pelas quais HTTP/3 mudou pra QUIC. <strong>No OSI seria camada 4 (Transporte).</strong></p>
+            <div class="tags"><span class="tag">SYN</span><span class="tag">ACK</span><span class="tag">FIN</span><span class="tag">round-trip</span></div>
+        </div>
+    </div>
+
+    <!-- 05 - PORTAS FAMOSAS -->
+    <div class="info-row" data-toc-title="05 PORTAS FAMOSAS" data-toc-sub="Portas Famosas">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">05 - Portas Famosas</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">22 SSH, 80 HTTP, 443 HTTPS, 5432 PostgreSQL — as que todo dev decora</p>
+
+            <div class="audio-player" data-src="audio/portas-famosas.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Lista das portas que todo dev acaba decorando: <strong>22</strong> (SSH), <strong>25</strong> (SMTP — envio email), <strong>53</strong> (DNS), <strong>80</strong> (HTTP), <strong>110</strong> (POP3), <strong>143</strong> (IMAP), <strong>443</strong> (HTTPS), <strong>3306</strong> (MySQL), <strong>5432</strong> (PostgreSQL), <strong>6379</strong> (Redis), <strong>8080</strong> (HTTP alternativo), <strong>27017</strong> (MongoDB).</p>
+            <p>São convenções, não regras — você pode rodar HTTP em qualquer porta. Mas usar a padrão evita ter que digitar a porta na URL (<code>https://site.com</code> em vez de <code>https://site.com:443</code>). E facilita firewall: "libere 443" todo mundo entende. <strong>No OSI seria camada 4 (Transporte).</strong></p>
+            <div class="tags"><span class="tag">22</span><span class="tag">443</span><span class="tag">5432</span><span class="tag">8080</span></div>
+        </div>
+    </div>
+
+    <!-- 06 - FERRAMENTAS DE DIAGNÓSTICO -->
+    <div class="info-row" data-toc-title="06 FERRAMENTAS" data-toc-sub="Ferramentas de Diagnóstico">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">06 - Ferramentas de Diagnóstico</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">netstat, ss, lsof, telnet, nc, tcpdump — investigando portas e conexões</p>
+
+            <div class="audio-player" data-src="audio/ferramentas-diagnostico.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Ferramentas pra debug de camada 4. <code>ss -tulpn</code> (substituto moderno do <code>netstat</code>) mostra todas as portas em escuta e conexões ativas, com qual processo. <code>lsof -i :8080</code> mostra qual processo está usando uma porta específica. <code>telnet host porta</code> ou <code>nc -zv host porta</code> testam se a porta está aberta e aceita conexão.</p>
+            <p><code>tcpdump -i any port 5432</code> captura pacotes de uma porta específica pra investigar protocolo. <code>iptables</code>/<code>ufw</code> controla firewall (libera ou bloqueia portas). Quando um serviço "não conecta", o checklist é: a porta está em escuta? o firewall libera? o cliente está mandando pra IP+porta certos? <strong>No OSI seria camada 4 (Transporte).</strong></p>
+            <div class="tags"><span class="tag">ss</span><span class="tag">netstat</span><span class="tag">tcpdump</span><span class="tag">firewall</span></div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
