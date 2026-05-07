@@ -1,0 +1,246 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internet — Modelo TCP/IP — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+    <style>
+        .ep-sub {
+            color: #6b7280;
+            font-style: italic;
+            margin: 0 0 12px 0;
+            font-size: 0.92em;
+        }
+        .tags { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+        .tag {
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 0.75em;
+            padding: 3px 9px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Camada 2 — Internet <span class="badge badge-new">8 episódios</span></h1>
+<p>A camada que faz o pacote sair da rede local e cruzar o mundo. Endereço lógico (IP), roteamento entre redes, e as gambiarras que estenderam a vida do IPv4.</p>
+
+<div class="info-accordion">
+
+    <!-- 00 - VISÃO GERAL -->
+    <div class="info-row" data-toc-title="00 VISÃO GERAL" data-toc-sub="Visão Geral">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">00 - Visão Geral</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Endereço lógico, roteamento, e o pacote saindo do bairro</p>
+
+            <div class="audio-player" data-src="audio/internet.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>A camada Internet do TCP/IP é equivalente à camada 3 do OSI (Rede). Aqui mora o <strong>IP</strong> — endereço lógico, atribuído por software (não é o MAC da placa). E o <strong>roteador</strong>, que decide pra qual próxima rede mandar o pacote.</p>
+            <p>O IPv4 (4 bilhões de endereços) já não dá conta. As três gambiarras que estenderam a vida dele — redes privadas, NAT e portas — são o assunto dos próximos episódios. O IPv6 é a solução real, mas a transição é lenta. <strong>No OSI seria camada 3 (Rede).</strong></p>
+            <div class="tags"><span class="tag">IP</span><span class="tag">roteador</span><span class="tag">roteamento</span></div>
+        </div>
+    </div>
+
+    <!-- 01 - IPV4 -->
+    <div class="info-row" data-toc-title="01 IPV4" data-toc-sub="IPv4">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">01 - IPv4</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">32 bits, 4 octetos, ~4 bilhões de endereços que esgotaram em 2011</p>
+
+            <div class="audio-player" data-src="audio/ipv4.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>O IPv4 é o endereço de internet que todo dev conhece: <code>192.168.0.1</code>. São <strong>32 bits</strong>, divididos em 4 octetos de 8 bits cada (0 a 255). No total, ~4,3 bilhões de endereços possíveis — parecia muito em 1981, esgotou em 2011.</p>
+            <p>Cada IP identifica unicamente uma interface de rede na internet pública. Mas como tem mais dispositivos do que IPs disponíveis, o mundo se virou com gambiarras (redes privadas + NAT) que vamos ver nos próximos episódios. <strong>No OSI seria camada 3 (Rede).</strong></p>
+            <div class="tags"><span class="tag">32 bits</span><span class="tag">octetos</span><span class="tag">esgotamento</span></div>
+        </div>
+    </div>
+
+    <!-- 02 - MÁSCARA DE SUB-REDE -->
+    <div class="info-row" data-toc-title="02 MÁSCARA SUBREDE" data-toc-sub="Máscara de Sub-rede">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">02 - Máscara de Sub-rede</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">/24, /16, /8 — onde termina a rede e começa o host</p>
+
+            <div class="audio-player" data-src="audio/mascara-de-subrede.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>A máscara separa o IP em duas partes: <strong>parte da rede</strong> (igual em todas as máquinas do bairro) e <strong>parte do host</strong> (única dentro da rede). Notação CIDR: <code>192.168.0.5/24</code> significa "os primeiros 24 bits são a rede, os 8 últimos são o host".</p>
+            <p>Máscaras comuns: <code>/24</code> (255 hosts, casa típica), <code>/16</code> (65 mil hosts, empresa média), <code>/8</code> (16 milhões, redes muito grandes). Quando o computador vai mandar um pacote, ele compara o IP destino com sua máscara: se a parte da rede bate, o destino é local (manda direto via ARP). Se não bate, manda pro gateway. <strong>No OSI seria camada 3 (Rede).</strong></p>
+            <div class="tags"><span class="tag">CIDR</span><span class="tag">/24</span><span class="tag">prefixo</span><span class="tag">subnet</span></div>
+        </div>
+    </div>
+
+    <!-- 03 - REDES PRIVADAS E NAT -->
+    <div class="info-row" data-toc-title="03 REDES PRIVADAS / NAT" data-toc-sub="Redes Privadas e NAT">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">03 - Redes Privadas e NAT</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">192.168.x.x reusado em milhões de casas — NAT troca IP privado por público</p>
+
+            <div class="audio-player" data-src="audio/redes-privadas-e-nat.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>A primeira gambiarra contra o esgotamento: três faixas de IP foram reservadas como <strong>privadas</strong> e podem ser reusadas em qualquer rede local. As mais conhecidas: <code>192.168.0.0/16</code> (casa), <code>10.0.0.0/8</code> (corporativa), <code>172.16.0.0/12</code> (intermediária). Milhões de casas usam o mesmo <code>192.168.0.5</code> sem conflito porque esses IPs nunca aparecem na internet pública.</p>
+            <p>Pra saírem da rede privada e chegarem na internet, entra o <strong>NAT (Network Address Translation)</strong>. O roteador troca o IP privado pelo IP público dele na saída e desfaz a tradução na volta. Mantém uma tabela em memória pra saber qual conexão pertence a qual máquina interna. <strong>No OSI seria camada 3 (Rede).</strong></p>
+            <div class="tags"><span class="tag">192.168</span><span class="tag">NAT</span><span class="tag">RFC 1918</span><span class="tag">tradução</span></div>
+        </div>
+    </div>
+
+    <!-- 04 - PESADELO DAS APLICAÇÕES -->
+    <div class="info-row" data-toc-title="04 PESADELO P2P" data-toc-sub="Pesadelo das Aplicações">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">04 - Pesadelo das Aplicações</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Por que P2P, jogos online e VoIP sofrem — NAT quebrou o "todo IP é alcançável"</p>
+
+            <div class="audio-player" data-src="audio/pesadelo-das-aplicacoes.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>O NAT salvou o IPv4 mas quebrou um princípio fundamental: na internet original, qualquer máquina podia falar com qualquer outra. Com NAT, só o que sai funciona — o que entra não tem como chegar até a máquina certa atrás do roteador. Isso virou pesadelo pra <strong>P2P</strong> (BitTorrent), <strong>jogos online</strong>, <strong>VoIP</strong> (chamada de voz), <strong>WebRTC</strong> e qualquer coisa onde dois clientes precisam se conectar diretamente.</p>
+            <p>As soluções que apareceram são todas gambiarras em cima da gambiarra: <strong>STUN</strong> (descobre o IP público), <strong>TURN</strong> (relay quando não funciona direto), <strong>UPnP</strong> (configura o roteador automaticamente). O IPv6 resolveria isso devolvendo IPs públicos pra todos, mas a transição é lenta. <strong>No OSI seria camada 3 (Rede).</strong></p>
+            <div class="tags"><span class="tag">P2P</span><span class="tag">STUN</span><span class="tag">WebRTC</span><span class="tag">VoIP</span></div>
+        </div>
+    </div>
+
+    <!-- 05 - IPV6 -->
+    <div class="info-row" data-toc-title="05 IPV6" data-toc-sub="IPv6">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">05 - IPv6</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">128 bits — endereços suficientes pra cada átomo da Terra</p>
+
+            <div class="audio-player" data-src="audio/ipv6.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>O IPv6 é a solução real pro esgotamento. Endereço de <strong>128 bits</strong> (IPv4 tem 32) — 340 undecilhões de endereços, suficientes pra cada átomo da Terra ter o seu. Notação em hexadecimal separado por dois-pontos: <code>2001:0db8:85a3::8a2e:0370:7334</code>.</p>
+            <p>Com IPv6 cada dispositivo volta a ter IP público — não precisa mais NAT, P2P volta a funcionar limpo. A transição é lenta porque depende de operadora, roteador, sistema operacional e aplicação suportarem. Hoje (2026) está em torno de 40% do tráfego mundial. Endereços com <code>fe80::</code> são link-local (só rede local), com <code>::1</code> é o loopback. <strong>No OSI seria camada 3 (Rede).</strong></p>
+            <div class="tags"><span class="tag">128 bits</span><span class="tag">hex</span><span class="tag">sem NAT</span><span class="tag">transição</span></div>
+        </div>
+    </div>
+
+    <!-- 06 - IPS ESPECIAIS -->
+    <div class="info-row" data-toc-title="06 IPS ESPECIAIS" data-toc-sub="IPs Especiais">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">06 - IPs Especiais</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">127.0.0.1, 0.0.0.0, 169.254.x.x — os IPs que todo dev encontra</p>
+
+            <div class="audio-player" data-src="audio/ips-especiais.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Alguns endereços IPv4 têm significado especial. <code>127.0.0.1</code> (toda faixa <code>127.0.0.0/8</code>) é <strong>loopback</strong> — sempre aponta pra própria máquina, usado pra rodar serviço local sem rede. <code>0.0.0.0</code> é o <strong>wildcard</strong> — quando um servidor faz <em>bind</em> em <code>0.0.0.0:8080</code>, ele aceita conexão em qualquer IP da máquina.</p>
+            <p><code>169.254.x.x</code> é o <strong>link-local automático</strong> (APIPA): aparece quando o computador não consegue pegar IP do DHCP — quase sempre indica problema. <code>255.255.255.255</code> é o <strong>broadcast limitado</strong> — manda pra todo mundo da rede local. <code>224.0.0.0/4</code> é faixa de <strong>multicast</strong>. <strong>No OSI seria camada 3 (Rede).</strong></p>
+            <div class="tags"><span class="tag">127.0.0.1</span><span class="tag">loopback</span><span class="tag">0.0.0.0</span><span class="tag">APIPA</span></div>
+        </div>
+    </div>
+
+    <!-- 07 - FERRAMENTAS DE DIAGNÓSTICO -->
+    <div class="info-row" data-toc-title="07 FERRAMENTAS" data-toc-sub="Ferramentas de Diagnóstico">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">07 - Ferramentas de Diagnóstico</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">ping, traceroute, ip route, mtr — investigando o caminho do pacote</p>
+
+            <div class="audio-player" data-src="audio/ferramentas-diagnostico.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Ferramentas que o dev usa pra debug de camada 3 (Internet). <code>ping &lt;ip&gt;</code> testa se o destino responde — mostra latência e perda de pacote. <code>traceroute</code> (ou <code>tracert</code> no Windows) mostra cada salto entre seu computador e o destino — útil pra descobrir onde o pacote está parando.</p>
+            <p><code>ip route</code> mostra a tabela de roteamento local: qual gateway pra qual destino. <code>mtr</code> combina ping + traceroute em tempo real, mostrando perda em cada salto. <code>nslookup</code> e <code>dig</code> resolvem nome em IP via DNS. Regra: sempre verificar com ping antes de assumir que o problema é na aplicação. <strong>No OSI seria camada 3 (Rede).</strong></p>
+            <div class="tags"><span class="tag">ping</span><span class="tag">traceroute</span><span class="tag">mtr</span><span class="tag">ICMP</span></div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

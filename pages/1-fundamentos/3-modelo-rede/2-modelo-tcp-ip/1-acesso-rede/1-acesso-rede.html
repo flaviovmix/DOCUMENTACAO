@@ -1,146 +1,320 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acesso à Rede — Modelo TCP/IP — Nexus</title>
     <script src="../../../../../js/layout.js"></script>
+    <style>
+        .ep-sub {
+            color: #6b7280;
+            font-style: italic;
+            margin: 0 0 12px 0;
+            font-size: 0.92em;
+        }
+        .tags { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+        .tag {
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 0.75em;
+            padding: 3px 9px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+    </style>
 </head>
 <body>
 
 <nav class="page-toc"></nav>
 
-<h1>Camada 1 — Acesso à Rede</h1>
-
-<div class="audio-player" data-src="audio/acesso-rede.m4a">
-    <audio preload="metadata"></audio>
-    <button class="audio-btn" title="Play / Pause"></button>
-    <div class="audio-progress-wrap">
-        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
-        <div class="audio-progress-fill"></div>
-    </div>
-    <span class="audio-time">0:00 / 0:00</span>
-</div>
-
-<p>A camada 1 do TCP/IP é a base — combina o que o OSI separava em duas (<strong>Enlace</strong> + <strong>Física</strong>) numa só. Cuida de duas coisas: transformar bits em sinal físico (pulso elétrico no cobre, luz na fibra, onda de rádio no Wi-Fi) e entregar quadros entre vizinhos da mesma rede local. Quando o pacote precisa sair pra outra rede, quem assume é a camada 2 (Internet).</p>
+<h1>Camada 1 — Acesso à Rede <span class="badge badge-new">11 episódios</span></h1>
+<p>A camada 1 do TCP/IP — combina o que o OSI separava em duas (<strong>Física</strong> + <strong>Enlace</strong>). Cuida do sinal físico (cobre, fibra, rádio) e da entrega entre vizinhos da mesma rede local (MAC, switch, ARP).</p>
 
 <div class="info-accordion">
 
-    <div class="info-row open">
-        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-            <span class="info-row-title">Por que enlace e física viraram uma só</span>
-            <span class="info-row-btn">+</span>
+    <!-- 00 - VISÃO GERAL -->
+    <div class="info-row" data-toc-title="00 VISÃO GERAL" data-toc-sub="Visão Geral">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">00 - Visão Geral</span>
+            <button class="info-row-btn">+</button>
         </div>
         <div class="info-row-body">
-            <p>Na prática, quem mexe com hardware de rede — instala cabo, configura switch, troca placa — não separa "isso é enlace, aquilo é físico". Quando o cabo desconecta, sumiram os dois ao mesmo tempo. Quando a placa para, sumiram os dois.</p>
-            <p>O TCP/IP simplifica porque a vida real já era assim. Em vez de duas camadas teóricas, uma só — chamada <strong>Acesso à Rede</strong> — que cobre todo o trecho local entre máquinas que estão no mesmo cabo, no mesmo Wi-Fi, ou no mesmo "bairro de switch".</p>
-        </div>
-    </div>
+            <p class="ep-sub">A camada que faz o bit virar sinal e entrega quadros entre vizinhos da rede local</p>
 
-    <div class="info-row">
-        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-            <span class="info-row-title">Os dois trabalhos da camada — bits no fio + entrega entre vizinhos</span>
-            <span class="info-row-btn">+</span>
-        </div>
-        <div class="info-row-body">
-            <p><strong>Primeiro trabalho — bits viram sinal físico.</strong> Cada meio carrega bit de um jeito:</p>
-            <ul>
-                <li>Cabo de cobre — pulso elétrico</li>
-                <li>Fibra óptica — pulso de luz</li>
-                <li>Wi-Fi — onda de rádio</li>
-            </ul>
-            <p>Em todos os casos, alguém transforma 0 e 1 em alguma coisa que viaja pelo meio físico — e do outro lado, transforma de volta. Quem faz isso é a camada 1.</p>
-            <p><strong>Segundo trabalho — entregar quadros entre vizinhos da rede local.</strong> "Vizinho" aqui significa: máquina no mesmo cabo, ou no mesmo switch, ou no mesmo Wi-Fi. Pra entregar de vizinho a vizinho, a camada usa um endereço diferente do IP — usa o <strong>MAC</strong>.</p>
-        </div>
-    </div>
-
-    <div class="info-row">
-        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-            <span class="info-row-title">MAC address — endereço físico da placa</span>
-            <span class="info-row-btn">+</span>
-        </div>
-        <div class="info-row-body">
-            <p>O MAC é o endereço físico da placa de rede. Tem 48 bits, escrito em hexadecimal separado por dois-pontos: <code>a4:c3:f0:1f:b2:de</code>.</p>
-            <ul>
-                <li><strong>Vem de fábrica</strong> — gravado na placa. Cada placa tem um único no mundo</li>
-                <li><strong>Não muda de rede</strong> — leva o notebook pra cafeteria, o MAC continua o mesmo. Só o IP muda</li>
-                <li><strong>Vale só na rede local</strong> — quando o pacote sai da rede, o MAC não acompanha</li>
-            </ul>
-            <p>Analogia útil: o MAC é como o número do <strong>chassi</strong> do carro — vem de fábrica, é único, não muda. O IP é como o número da <strong>casa</strong> onde o carro está estacionado — muda conforme onde está.</p>
-        </div>
-    </div>
-
-    <div class="info-row">
-        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-            <span class="info-row-title">Frame Ethernet — o envelope da camada</span>
-            <span class="info-row-btn">+</span>
-        </div>
-        <div class="info-row-body">
-            <p>Quando a camada 1 vai entregar dados pra um vizinho, ela monta um <strong>frame Ethernet</strong>. Frame é o envelope dessa camada.</p>
-            <div class="table-wrap">
-                <table>
-                    <tr><th>Campo</th><th>O que é</th></tr>
-                    <tr><td>MAC origem</td><td>Quem mandou</td></tr>
-                    <tr><td>MAC destino</td><td>Quem recebe (vizinho local)</td></tr>
-                    <tr><td>Payload</td><td>O pacote IP da camada 2 lá dentro</td></tr>
-                    <tr><td>Checksum</td><td>Verificação de erro no fim</td></tr>
-                </table>
+            <div class="audio-player" data-src="audio/acesso-rede.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
             </div>
-            <p>A camada 1 não olha o conteúdo do pacote IP. Não sabe se lá dentro tem HTTP, banco de dado, e-mail. Só sabe que recebeu um pacote IP pra empacotar e mandar pra um MAC específico.</p>
-            <p>O <strong>switch</strong> local usa o MAC de destino pra decidir em qual porta dele o frame vai sair. Switch não sabe nada de IP — só olha MAC e porta física.</p>
+
+            <h3>Resumo</h3>
+            <p>A camada 1 do TCP/IP é a base — combina o que o OSI separava em duas (Enlace + Física) numa só. Faz duas coisas: transformar bits em sinal físico (pulso elétrico no cobre, luz na fibra, onda de rádio no Wi-Fi) e entregar quadros entre vizinhos da mesma rede local usando o MAC address.</p>
+            <p>Quando o pacote precisa sair pra outra rede (passar do bairro), quem assume é a camada 2 (Internet). A camada 1 só cuida do trecho local. Os 10 episódios seguintes detalham cada peça desse trabalho.</p>
+            <div class="tags"><span class="tag">sinal físico</span><span class="tag">MAC</span><span class="tag">rede local</span></div>
         </div>
     </div>
 
-    <div class="info-row">
-        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-            <span class="info-row-title">ARP — descobrindo o MAC pelo IP</span>
-            <span class="info-row-btn">+</span>
+    <!-- 01 - CABO DE COBRE -->
+    <div class="info-row" data-toc-title="01 CABO DE COBRE" data-toc-sub="Cabo de Cobre">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">01 - Cabo de Cobre</span>
+            <button class="info-row-btn">+</button>
         </div>
         <div class="info-row-body">
-            <p>Surge um problema: a camada 1 trabalha com MAC, mas a camada de cima trabalha com IP. Como a camada 1 sabe qual MAC corresponde a um IP?</p>
-            <p>A solução é o <strong>ARP — Address Resolution Protocol</strong>. Quando a camada 1 precisa mandar pra um IP local que ela ainda não conhece, ela <em>grita</em> pra rede inteira:</p>
-            <pre><code class="language-bash">"Quem aqui tem o IP 192.168.1.5? Manda seu MAC"</code></pre>
-            <p>A máquina que tem aquele IP responde com o MAC dela. A camada 1 guarda isso numa <strong>tabela ARP</strong> por alguns minutos pra não precisar perguntar de novo.</p>
-            <p>ARP só funciona dentro da rede local. Pra IPs fora da rede, quem cuida é o roteador.</p>
-        </div>
-    </div>
+            <p class="ep-sub">Par trançado, RJ-45, categorias — o cabo azul que todo dev já viu</p>
 
-    <div class="info-row">
-        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-            <span class="info-row-title">Limite da camada — quando o pacote sai do bairro</span>
-            <span class="info-row-btn">+</span>
-        </div>
-        <div class="info-row-body">
-            <p>Analogia do bairro: o switch local é como um <strong>carteiro do bairro</strong>. Sabe entregar de uma casa pra outra ali mesmo. Quando a carta tem destino fora do bairro, o carteiro do bairro não sabe o caminho — entrega no posto de saída do bairro, que é o <strong>roteador</strong>.</p>
-            <p>Em termos técnicos: quando a camada 1 entrega o frame ao roteador, o roteador "abre" o frame, lê o pacote IP lá dentro, e usa o IP de destino pra decidir pra qual rede mandar em seguida. A partir dali é trabalho da camada 2 (Internet).</p>
-            <p><strong>Detalhe importante:</strong> cada salto entre redes é um frame Ethernet novo, com MACs novos. O IP permanece, mas o MAC muda a cada salto. Por isso o MAC não é endereço de internet — só de bairro.</p>
-        </div>
-    </div>
-
-    <div class="info-row">
-        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-            <span class="info-row-title">Tipos físicos comuns + diagnóstico do dia a dia</span>
-            <span class="info-row-btn">+</span>
-        </div>
-        <div class="info-row-body">
-            <p>A camada 1 cobre vários tipos de meio físico:</p>
-            <div class="table-wrap">
-                <table>
-                    <tr><th>Tipo</th><th>Característica</th><th>Onde usa</th></tr>
-                    <tr><td>Cabo de cobre (Ethernet)</td><td>Velocidade alta, distância curta</td><td>Padrão em rede de empresa</td></tr>
-                    <tr><td>Fibra óptica</td><td>Velocidade muito alta, distância muito longa</td><td>Espinhas dorsais, fibra até a casa</td></tr>
-                    <tr><td>Wi-Fi</td><td>Sem fio, conveniente, instabilidade</td><td>Casa, escritório, café</td></tr>
-                    <tr><td>4G/5G</td><td>Sem fio de longa distância</td><td>Celular, IoT remoto</td></tr>
-                </table>
+            <div class="audio-player" data-src="audio/cabo-de-cobre.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
             </div>
-            <p>Sintomas típicos de problema na camada 1:</p>
-            <ul>
-                <li><strong>Cabo desconectado</strong> — óbvio</li>
-                <li><strong>Sem conexão Wi-Fi</strong> — sinal de rádio não chega, ou senha errada</li>
-                <li><strong>Velocidade baixa em Wi-Fi perto de micro-ondas</strong> — interferência de rádio</li>
-                <li><strong>Driver da placa de rede com problema</strong> — software que conversa com o hardware</li>
-            </ul>
-            <p>Pra dev de aplicação, a camada 1 é quase sempre invisível. Você só percebe ela quando dá problema.</p>
+
+            <h3>Resumo</h3>
+            <p>O cabo de cobre é o meio físico mais comum em rede de empresa. Padrão UTP (par trançado), conector RJ-45 (nome técnico 8P8C), funciona até cerca de 100 metros. As categorias (Cat 5, 5e, 6, 6a, 7) determinam a velocidade máxima — Cat 5e suporta gigabit, Cat 6a suporta 10 gigabit.</p>
+            <p>O sinal é pulso elétrico: tensão alta vira <code>1</code>, tensão baixa vira <code>0</code>. Sofre interferência eletromagnética (motor, micro-ondas) — por isso o "trançado": cada par invertido cancela ruído. <strong>No OSI seria camada 1 (Física).</strong></p>
+            <div class="tags"><span class="tag">UTP</span><span class="tag">RJ-45</span><span class="tag">Cat 6</span><span class="tag">EMI</span></div>
+        </div>
+    </div>
+
+    <!-- 02 - FIBRA ÓPTICA -->
+    <div class="info-row" data-toc-title="02 FIBRA ÓPTICA" data-toc-sub="Fibra Óptica">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">02 - Fibra Óptica</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Luz num vidro fino — cabos submarinos, longa distância, sem interferência</p>
+
+            <div class="audio-player" data-src="audio/fibra-optica.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Na fibra óptica o sinal é luz, gerada por laser ou LED, viajando dentro de um vidro fino. Duas grandes vantagens: <strong>distância</strong> (fibra mono modo aguenta dezenas de quilômetros sem repetição) e <strong>imunidade a interferência eletromagnética</strong> (luz não se importa com motor, raio, ou linha de força).</p>
+            <p>É a base da internet entre cidades, países e continentes. Os cabos submarinos que cruzam oceanos são fibra. Dentro do data center também — entre racks. Em casa chegou via FTTH (Fiber To The Home) com a ONT no lugar do modem antigo. <strong>No OSI seria camada 1 (Física).</strong></p>
+            <div class="tags"><span class="tag">FTTH</span><span class="tag">mono modo</span><span class="tag">submarino</span><span class="tag">10 Gbps+</span></div>
+        </div>
+    </div>
+
+    <!-- 03 - WI-FI -->
+    <div class="info-row" data-toc-title="03 WI-FI" data-toc-sub="Wi-Fi">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">03 - Wi-Fi</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Onda de rádio no ar — 802.11, frequências, gerações (Wi-Fi 4, 5, 6)</p>
+
+            <div class="audio-player" data-src="audio/wi-fi.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Wi-Fi é o nome popular do padrão IEEE 802.11. O sinal é onda eletromagnética viajando pelo ar — o "cabo" é o ar mesmo. Funciona em duas faixas principais: <strong>2,4 GHz</strong> (mais alcance, mais lenta, mais interferência de micro-ondas e Bluetooth) e <strong>5 GHz</strong> (menos alcance, mais rápida, menos interferência).</p>
+            <p>As gerações renomeadas pra ficar simples: <strong>Wi-Fi 4</strong> (802.11n, 2009), <strong>Wi-Fi 5</strong> (802.11ac, 2014), <strong>Wi-Fi 6</strong> (802.11ax, 2019). Desvantagens: alcance limitado, sofre interferência (fones, micro-ondas), e qualquer um pode escutar o ar — por isso a criptografia WPA2/WPA3 é obrigatória. <strong>No OSI seria camada 1 (Física).</strong></p>
+            <div class="tags"><span class="tag">802.11</span><span class="tag">2,4 GHz</span><span class="tag">5 GHz</span><span class="tag">WPA2</span></div>
+        </div>
+    </div>
+
+    <!-- 04 - HUB -->
+    <div class="info-row" data-toc-title="04 HUB" data-toc-sub="Hub">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">04 - Hub</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">O repetidor burro que sumiu — recebe numa porta, repete em todas as outras</p>
+
+            <div class="audio-player" data-src="audio/hub.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>O hub é equipamento histórico, hoje praticamente extinto. Ele tinha várias portas (4, 8, 16…) e fazia uma coisa só: recebia o sinal numa porta e repetia em todas as outras. Não olhava endereço, não decidia nada — só amplificava e replicava sinal.</p>
+            <p>Três problemas matavam o hub: <strong>privacidade</strong> (todo mundo escutava tudo), <strong>colisão</strong> (duas máquinas falando ao mesmo tempo embaralhavam o sinal) e <strong>banda compartilhada</strong> (todos dividiam a mesma velocidade total). O switch resolveu os três ao olhar o MAC e mandar o frame só pra porta certa. <strong>No OSI seria camada 1 (Física).</strong></p>
+            <div class="tags"><span class="tag">repetidor</span><span class="tag">colisão</span><span class="tag">extinto</span></div>
+        </div>
+    </div>
+
+    <!-- 05 - MODEM E ONT -->
+    <div class="info-row" data-toc-title="05 MODEM E ONT" data-toc-sub="Modem e ONT">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">05 - Modem e ONT</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">A entrada da internet em casa — combo de 3 funções num aparelho só</p>
+
+            <div class="audio-player" data-src="audio/modem-e-ont.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>O <strong>modem</strong> traduz o sinal externo (DSL, cabo coaxial) em bits que a rede da casa entende. A <strong>ONT</strong> faz o mesmo papel mas pra fibra óptica (Optical Network Terminal) — converte luz em bits. Ambos são camada 1 conceitual.</p>
+            <p>Aquela "caixinha que veio da operadora" geralmente combina três aparelhos num só: <strong>modem/ONT</strong> (camada 1, traduz sinal externo), <strong>roteador</strong> (camada 3, decide pra qual rede mandar) e <strong>access point Wi-Fi</strong> (camada 1+2, gera o sinal sem fio). Por isso a confusão — quando dizem "meu roteador caiu", muitas vezes é o modem na verdade. <strong>No OSI seria camada 1 (Física), mas o combo todo cruza várias camadas.</strong></p>
+            <div class="tags"><span class="tag">DSL</span><span class="tag">FTTH</span><span class="tag">ONT</span><span class="tag">combo</span></div>
+        </div>
+    </div>
+
+    <!-- 06 - MAC ADDRESS -->
+    <div class="info-row" data-toc-title="06 MAC ADDRESS" data-toc-sub="MAC Address">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">06 - MAC Address</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">Endereço físico da placa — vem de fábrica, único no mundo, não muda de rede</p>
+
+            <div class="audio-player" data-src="audio/mac-address.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>O MAC é o endereço físico da placa de rede. 48 bits, em hexadecimal separado por dois-pontos: <code>a4:c3:f0:1f:b2:de</code>. <strong>Vem de fábrica</strong> (gravado na placa, único no mundo), <strong>não muda de rede</strong> (leva o notebook pra cafeteria, MAC continua o mesmo, IP que muda) e <strong>vale só na rede local</strong> (quando o pacote sai do bairro, o MAC não acompanha).</p>
+            <p>Analogia útil: o MAC é como o número do <strong>chassi</strong> do carro — vem de fábrica, é único, não muda. O IP é como o número da <strong>casa</strong> onde o carro está estacionado — muda conforme onde o carro está. <strong>No OSI seria camada 2 (Enlace).</strong></p>
+            <div class="tags"><span class="tag">48 bits</span><span class="tag">fábrica</span><span class="tag">chassi</span></div>
+        </div>
+    </div>
+
+    <!-- 07 - SWITCH -->
+    <div class="info-row" data-toc-title="07 SWITCH" data-toc-sub="Switch">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">07 - Switch</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">O carteiro do bairro — aprende quais MACs estão em quais portas e direciona</p>
+
+            <div class="audio-player" data-src="audio/switch.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>O switch resolveu os três problemas do hub. Ele tem uma <strong>tabela MAC</strong> (também chamada CAM table) que mapeia MAC → porta física. Quando chega um frame, lê o MAC de destino, consulta a tabela e manda <strong>só pra porta certa</strong>. Resto do bairro nem fica sabendo.</p>
+            <p>Aprende sozinho: cada vez que vê um frame entrando, anota o MAC de origem + a porta. Aos poucos a tabela se forma. Quando o destino é desconhecido, manda pra todas as portas (flood) — mas isso é exceção, não regra. <strong>O limite do switch é o broadcast domain</strong>: ele não atravessa para outras redes. Pra isso, precisa de roteador (camada 3). <strong>No OSI seria camada 2 (Enlace).</strong></p>
+            <div class="tags"><span class="tag">tabela MAC</span><span class="tag">CAM</span><span class="tag">broadcast domain</span></div>
+        </div>
+    </div>
+
+    <!-- 08 - QUADRO ETHERNET -->
+    <div class="info-row" data-toc-title="08 QUADRO ETHERNET" data-toc-sub="Quadro Ethernet">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">08 - Quadro Ethernet</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">O envelope da camada — MAC origem, MAC destino, payload, checksum</p>
+
+            <div class="audio-player" data-src="audio/quadro-ethernet.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Tudo na camada 1 viaja em <strong>quadros</strong> (frames em inglês). Quadro é um bloco de bits com formato fixo. O Ethernet II (o mais comum hoje) tem: <strong>preâmbulo</strong> (sincronização), <strong>MAC destino</strong> (6 bytes), <strong>MAC origem</strong> (6 bytes), <strong>tipo</strong> (qual protocolo está dentro — IP, ARP), <strong>payload</strong> (o pacote IP — 46 a 1500 bytes), <strong>checksum FCS</strong> (verificação de erro).</p>
+            <p>O <strong>tamanho máximo do payload é 1500 bytes</strong> — esse é o famoso MTU (Maximum Transmission Unit) do Ethernet. Quando o pacote IP não cabe num frame, vira problema da camada 3 que precisa fragmentar. O FCS no final detecta corrupção: se não bate com o conteúdo, o frame é jogado fora silenciosamente. <strong>No OSI seria camada 2 (Enlace).</strong></p>
+            <div class="tags"><span class="tag">frame</span><span class="tag">MTU 1500</span><span class="tag">FCS</span><span class="tag">payload</span></div>
+        </div>
+    </div>
+
+    <!-- 09 - ARP -->
+    <div class="info-row" data-toc-title="09 ARP" data-toc-sub="ARP">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">09 - ARP</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">A cola entre IP e MAC — "quem aqui tem 192.168.1.5? Manda seu MAC"</p>
+
+            <div class="audio-player" data-src="audio/arp.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Surge um problema: a camada 1 trabalha com MAC, a camada de cima trabalha com IP. Como descobrir o MAC de um IP? A solução é o <strong>ARP — Address Resolution Protocol</strong>. Quando a máquina precisa mandar pra um IP local que não conhece, ela <em>grita</em> em broadcast pra rede inteira: "quem tem 192.168.1.5? Manda seu MAC".</p>
+            <p>A máquina dona daquele IP responde com o MAC dela. Ambos guardam essa informação na <strong>tabela ARP</strong> por alguns minutos pra não precisar perguntar de novo. ARP só funciona dentro da rede local — pra IPs fora, quem cuida é o roteador. <strong>É provavelmente o protocolo mais importante de camada 2 pro dev — quando aparece IP duplicado ou ARP poisoning, problema sério. No OSI seria camada 2 (Enlace).</strong></p>
+            <div class="tags"><span class="tag">broadcast</span><span class="tag">tabela ARP</span><span class="tag">resolução</span></div>
+        </div>
+    </div>
+
+    <!-- 10 - FERRAMENTAS DE DIAGNOSTICO -->
+    <div class="info-row" data-toc-title="10 FERRAMENTAS" data-toc-sub="Ferramentas de Diagnóstico">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">10 - Ferramentas de Diagnóstico</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">ip link, ip neigh, ethtool, tcpdump — debug prático da camada 1</p>
+
+            <div class="audio-player" data-src="audio/ferramentas-diagnostico.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>Episódio prático que fecha a camada. Ferramentas que o dev usa pra investigar problema de camada 1 na vida real: <code>ip link show</code> (placa UP ou DOWN, MAC), <code>ip neigh show</code> (tabela ARP), <code>ethtool eth0</code> (velocidade, duplex, link), <code>tcpdump -e -i eth0</code> (captura quadros incluindo cabeçalho de camada 2), e a inspeção visual antiga e gloriosa: o LED do cabo está aceso?</p>
+            <p>Regra do bom debug de rede: <strong>sobe sempre da camada 1 pra cima</strong>. Cabo plugado? Link aceso? Placa UP? ARP funcionando? Só depois investiga IP, TCP, HTTP. Não adianta debugar HTTP se a camada 1 está caída. <strong>No OSI essas ferramentas mistura camada 1 e 2.</strong></p>
+            <div class="tags"><span class="tag">tcpdump</span><span class="tag">ip link</span><span class="tag">ethtool</span><span class="tag">debug</span></div>
         </div>
     </div>
 

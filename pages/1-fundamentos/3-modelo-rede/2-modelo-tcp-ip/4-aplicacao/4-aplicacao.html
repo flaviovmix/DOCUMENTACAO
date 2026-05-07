@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplicação — Modelo TCP/IP — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+    <style>
+        .ep-sub {
+            color: #6b7280;
+            font-style: italic;
+            margin: 0 0 12px 0;
+            font-size: 0.92em;
+        }
+        .tags { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+        .tag {
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 0.75em;
+            padding: 3px 9px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Camada 4 — Aplicação <span class="badge badge-new">2 episódios</span></h1>
+<p>Os protocolos que o usuário enxerga — HTTP, SMTP, DNS, SSH. No TCP/IP essa camada combina <strong>aplicação + apresentação + sessão</strong> do OSI numa só.</p>
+
+<div class="info-accordion">
+
+    <!-- 00 - VISÃO GERAL -->
+    <div class="info-row" data-toc-title="00 VISÃO GERAL" data-toc-sub="Visão Geral">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">00 - Visão Geral</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">A camada onde o dev passa quase 100% do tempo — protocolos com nome próprio</p>
+
+            <div class="audio-player" data-src="audio/aplicacao.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>A camada Aplicação do TCP/IP é onde mora tudo que tem nome próprio que o usuário conhece: <strong>HTTP</strong> (web), <strong>SMTP/IMAP/POP3</strong> (email), <strong>FTP/SFTP</strong> (transferência de arquivo), <strong>DNS</strong> (traduzir nome em IP), <strong>SSH</strong> (terminal remoto), <strong>WebSocket</strong> (canal aberto pra mensagem).</p>
+            <p>Tudo o que está abaixo (transporte, internet, acesso à rede) existe pra entregar a mensagem dessa camada do remetente até o destinatário sem que o usuário precise pensar em nada disso. <strong>No OSI essa camada combina 5 (Sessão) + 6 (Apresentação) + 7 (Aplicação) — o TCP/IP juntou tudo numa só porque na prática essas três sempre acabam misturadas dentro da aplicação.</strong></p>
+            <div class="tags"><span class="tag">HTTP</span><span class="tag">SMTP</span><span class="tag">DNS</span><span class="tag">SSH</span></div>
+        </div>
+    </div>
+
+    <!-- 01 - HTTP -->
+    <div class="info-row" data-toc-title="01 HTTP" data-toc-sub="HTTP">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">01 - HTTP</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+            <p class="ep-sub">O protocolo da web — métodos, headers, status codes</p>
+
+            <div class="audio-player" data-src="audio/http.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>Resumo</h3>
+            <p>O HTTP (HyperText Transfer Protocol) é a base da web. Modelo simples: cliente faz <strong>request</strong>, servidor manda <strong>response</strong>. O request tem método (<code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>DELETE</code>, <code>PATCH</code>), URL, headers (Cookie, User-Agent, Authorization) e opcionalmente um body. A response tem status code (200 OK, 404 Not Found, 500 Internal Server Error), headers e body (geralmente HTML, JSON ou imagem).</p>
+            <p>Versões importantes: <strong>HTTP/1.1</strong> (1997, ainda muito usado, conexão keep-alive), <strong>HTTP/2</strong> (2015, multiplexação binária — várias requests na mesma conexão), <strong>HTTP/3</strong> (2022, sobre QUIC/UDP, sem head-of-line blocking). <strong>HTTPS</strong> é HTTP rodando em cima de TLS — porta 443. <strong>No OSI seria camada 7 (Aplicação) com partes na 6 (TLS na Apresentação).</strong></p>
+            <div class="tags"><span class="tag">GET/POST</span><span class="tag">status code</span><span class="tag">HTTPS</span><span class="tag">HTTP/3</span></div>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
