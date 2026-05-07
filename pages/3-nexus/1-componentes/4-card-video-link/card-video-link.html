@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>card-video-link — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>card-video-link — card com vídeo e lista de links</h1>
+
+<p>Variante do componente <code>card</code> com vídeo em loop autoplay como mídia de fundo, e painel de info contendo uma <strong>lista de sub-links</strong> (<code>ul.card-links</code>) que entra em cascata com ícones FontAwesome. Para variante com texto descritivo no painel, veja <code>card-video-texto</code>.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<h3>index.html</h3>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang="pt-BR"&gt;
+
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;card-video — variante lista de links&lt;/title&gt;
+    &lt;link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"&gt;
+    &lt;link rel="stylesheet" href="style.css"&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+
+    &lt;div class="demo-stage"&gt;
+
+        &lt;div class="card" data-href="https://example.com"&gt;
+            &lt;div class="card-menu btnMenuCard"&gt;
+                &lt;svg viewBox="0 0 350 350"&gt;&lt;circle cx="39" cy="55" r="39"/&gt;&lt;circle cx="39" cy="175" r="39"/&gt;&lt;circle cx="39" cy="295" r="39"/&gt;&lt;path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/&gt;&lt;path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/&gt;&lt;path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/&gt;&lt;/svg&gt;
+            &lt;/div&gt;
+            &lt;div class="card-info"&gt;
+                &lt;ul class="card-links"&gt;
+                    &lt;li&gt;&lt;a href="https://example.com/intro"&gt;Introdução &lt;i class="fa-solid fa-arrow-right"&gt;&lt;/i&gt;&lt;/a&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;a href="https://example.com/setup"&gt;Setup &lt;i class="fa-solid fa-gear"&gt;&lt;/i&gt;&lt;/a&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;a href="https://example.com/api"&gt;API &lt;i class="fa-solid fa-code"&gt;&lt;/i&gt;&lt;/a&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;a href="https://example.com/exemplos"&gt;Exemplos &lt;i class="fa-solid fa-flask"&gt;&lt;/i&gt;&lt;/a&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;a href="https://example.com/faq"&gt;FAQ &lt;i class="fa-solid fa-circle-question"&gt;&lt;/i&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;/ul&gt;
+            &lt;/div&gt;
+            &lt;div class="card-img"&gt;
+                &lt;button class="card-pause btnPauseCard" aria-label="Pausar/tocar vídeo"&gt;
+                    &lt;svg class="ic-pause" viewBox="0 0 24 24"&gt;&lt;rect x="6" y="5" width="4" height="14" rx="1"/&gt;&lt;rect x="14" y="5" width="4" height="14" rx="1"/&gt;&lt;/svg&gt;
+                    &lt;svg class="ic-play" viewBox="0 0 24 24"&gt;&lt;path d="M7 4v16l13-8z"/&gt;&lt;/svg&gt;
+                &lt;/button&gt;
+                &lt;video src="video.mp4#t=0.1" muted loop playsinline preload="auto" data-name="DEMO"&gt;&lt;/video&gt;
+            &lt;/div&gt;
+            &lt;div class="card-bar"&gt;
+                &lt;a href="https://example.com" class="card-tag" style="--tag-clr:#10b981;"&gt;Demo&lt;/a&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+
+    &lt;/div&gt;
+
+    &lt;script src="script.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+
+&lt;/html&gt;</code></pre>
+
+<h3 style="margin-top:24px;">style.css</h3>
+<pre><code class="language-css">.card-info, .card-info * {
+    box-sizing: border-box;
+}
+
+/* Stage só pra visualização standalone */
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: #f5f5f7;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.demo-stage {
+    width: 100%;
+    max-width: 320px;
+    padding: 40px;
+}
+
+/* --- Card --- */
+.card {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3.5 / 4.5;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: default;
+    background: #1a1a1a;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.card:hover {
+    transform: scale(1.06);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+    z-index: 1;
+}
+
+/* --- Mídia --- */
+.card-img {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    bottom: 56px;
+}
+
+.card-img video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    transition: filter 0.5s ease;
+}
+
+/* --- Barra inferior --- */
+.card-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    box-shadow: 0 -3px 6px rgba(0,0,0,0.15);
+    z-index: 2;
+}
+
+.card-tag {
+    flex: 1;
+    text-align: center;
+    font-size: 0.85em;
+    font-weight: 700;
+    color: var(--tag-clr, #555);
+    border: 2px solid var(--tag-clr, #555);
+    border-radius: 6px;
+    padding: 8px 10px;
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background 0.3s, color 0.3s;
+}
+
+.card:hover .card-tag {
+    background: var(--tag-clr, #555);
+    color: #fff;
+}
+
+/* --- Botão menu (3 bolinhas) --- */
+.card-menu {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    z-index: 5;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    overflow: visible;
+}
+
+.card:hover .card-menu {
+    opacity: 1;
+}
+
+.card-menu svg {
+    width: 32px;
+    height: 32px;
+    fill: #fff;
+    filter: drop-shadow(0 0 3px rgba(0,0,0,0.5));
+    background: rgba(255,255,255,0.25);
+    border-radius: 6px;
+    padding: 4px;
+    box-sizing: content-box;
+    transition: opacity 0.2s;
+}
+
+.card-menu.aberto svg {
+    opacity: 0;
+}
+
+.card-menu::after {
+    content: '\00d7';
+    position: absolute;
+    top: -16px;
+    right: -10px;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 0 4px rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.35);
+    border-radius: 10px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    cursor: pointer;
+}
+
+.card-menu.aberto::after {
+    opacity: 1;
+}
+
+/* --- Botão pause/play (canto superior esquerdo) --- */
+.card-pause {
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    z-index: 5;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    background: rgba(255,255,255,0.25);
+    border: none;
+    border-radius: 6px;
+    padding: 4px;
+    box-sizing: content-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card:hover .card-pause {
+    opacity: 1;
+}
+
+.card:has(.card-info.aberto) .card-pause {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.card-pause svg {
+    width: 24px;
+    height: 24px;
+    fill: #fff;
+    filter: drop-shadow(0 0 3px rgba(0,0,0,0.5));
+    display: block;
+}
+
+.card-pause .ic-pause { display: none; }
+.card-pause.playing .ic-pause { display: block; }
+.card-pause.playing .ic-play  { display: none; }
+
+/* --- Painel de info (slide da direita) --- */
+.card-info {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 56px;
+    overflow: hidden;
+    width: 100%;
+    padding: 5px;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    transform: translateX(100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.card-info::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 2s ease;
+    z-index: -1;
+}
+
+.card-info.aberto {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.card-info.aberto::before {
+    opacity: 1;
+}
+
+/* --- Lista de links --- */
+.card-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.card-links li {
+    opacity: 0;
+    transform: translateX(40px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.card-info.aberto .card-links li {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.card-info.aberto .card-links li:nth-child(1) { transition-delay: 0.25s; }
+.card-info.aberto .card-links li:nth-child(2) { transition-delay: 0.30s; }
+.card-info.aberto .card-links li:nth-child(3) { transition-delay: 0.35s; }
+.card-info.aberto .card-links li:nth-child(4) { transition-delay: 0.40s; }
+.card-info.aberto .card-links li:nth-child(5) { transition-delay: 0.45s; }
+.card-info.aberto .card-links li:nth-child(6) { transition-delay: 0.50s; }
+.card-info.aberto .card-links li:nth-child(7) { transition-delay: 0.55s; }
+.card-info.aberto .card-links li:nth-child(8) { transition-delay: 0.60s; }
+
+.card-links li a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    font-size: 0.9em;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-decoration: none;
+    background: rgba(255,255,255,0.5);
+    border-radius: 6px;
+    border: 1px solid rgba(0,0,0,0.1);
+    transition: background 0.2s, transform 0.15s;
+}
+
+.card-links li a i {
+    font-size: 0.85em;
+    opacity: 0.5;
+    margin-left: 8px;
+}
+
+.card-links li a:hover {
+    background: rgba(255,255,255,0.85);
+    transform: translateX(4px);
+}
+
+/* Blur na mídia quando info aberto */
+.card-info.aberto ~ .card-img video {
+    filter: blur(6px) grayscale(20%);
+}</code></pre>
+
+<h3 style="margin-top:24px;">script.js</h3>
+<pre><code class="language-javascript">document.querySelectorAll('.card').forEach(function(card) {
+    var btn = card.querySelector('.btnMenuCard');
+    var info = card.querySelector('.card-info');
+
+    if (btn && info) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            info.classList.toggle('aberto');
+            btn.classList.toggle('aberto');
+        });
+    }
+
+    var cardHref = card.getAttribute('data-href');
+    if (cardHref) {
+        card.addEventListener('click', function(e) {
+            if (e.target.closest('a[href]') || e.target.closest('.btnMenuCard')) return;
+            window.location.href = cardHref;
+        });
+    }
+
+    var video = card.querySelector('.card-img video');
+    if (video) {
+        card.addEventListener('mouseenter', function() {
+            video.play().catch(function() {});
+        }, { once: true });
+
+        var pauseBtn = card.querySelector('.btnPauseCard');
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (video.paused) video.play().catch(function() {});
+                else video.pause();
+            });
+            video.addEventListener('play',  function() { pauseBtn.classList.add('playing'); });
+            video.addEventListener('pause', function() { pauseBtn.classList.remove('playing'); });
+        }
+    }
+});</code></pre>
+
+        </div>
+    </div>
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Como usar — pra quem vai aplicar numa página</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/como-usar.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<h3>Quando usar</h3>
+<p><strong>Usar quando:</strong></p>
+<ul>
+    <li>O card representa uma seção/área que tem várias páginas filhas (ex: hub de uma trilha)</li>
+    <li>O painel deve servir como "atalho" pras sub-páginas, não como descrição</li>
+    <li>Você tem um <code>.mp4</code> mostrando movimento + uma lista de 3–10 sub-links</li>
+</ul>
+<p><strong>Não usar quando:</strong></p>
+<ul>
+    <li>O painel deve mostrar texto descritivo → use <code>card-video-texto</code></li>
+    <li>A mídia é estática → use <code>card-image</code> + o conteúdo de texto</li>
+</ul>
+
+<h3 style="margin-top:24px;">HTML mínimo</h3>
+<p>O painel troca o <code>.card-resumo</code> por <code>ul.card-links</code>:</p>
+<pre><code class="language-html">&lt;div class="card" data-href="..."&gt;
+    &lt;div class="card-menu btnMenuCard"&gt;
+        &lt;svg viewBox="0 0 350 350"&gt;...3 bolinhas...&lt;/svg&gt;
+    &lt;/div&gt;
+    &lt;div class="card-info"&gt;
+        &lt;ul class="card-links"&gt;
+            &lt;li&gt;&lt;a href="..."&gt;Introdução &lt;i class="fa-solid fa-arrow-right"&gt;&lt;/i&gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href="..."&gt;Setup &lt;i class="fa-solid fa-gear"&gt;&lt;/i&gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href="..."&gt;API &lt;i class="fa-solid fa-code"&gt;&lt;/i&gt;&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/div&gt;
+    &lt;div class="card-img"&gt;
+        &lt;button class="card-pause btnPauseCard"&gt;...&lt;/button&gt;
+        &lt;video src="video.mp4#t=0.1" muted loop playsinline preload="auto"&gt;&lt;/video&gt;
+    &lt;/div&gt;
+    &lt;div class="card-bar"&gt;
+        &lt;a href="..." class="card-tag" style="--tag-clr:#14b8a6;"&gt;Demo&lt;/a&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+
+<h3 style="margin-top:24px;">FontAwesome</h3>
+<p>Os ícones <code>&lt;i class="fa-solid fa-..."&gt;</code> precisam do FontAwesome carregado. No layout principal já vem incluído; em demos isoladas, adicione no <code>&lt;head&gt;</code>:</p>
+<pre><code class="language-html">&lt;link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"&gt;</code></pre>
+
+<h3 style="margin-top:24px;">Limite recomendado de links</h3>
+<p>O CSS pré-define delays de cascata para até <strong>10 itens</strong>. Mais que isso, o último item espera ~0.7s pra aparecer e o ritmo perde graça:</p>
+<pre><code class="language-css">.card-info.aberto .card-links li:nth-child(1) { transition-delay: 0.25s; }
+/* ...0.30s, 0.35s, 0.40s... */
+.card-info.aberto .card-links li:nth-child(10) { transition-delay: 0.70s; }</code></pre>
+<p>Pra mais de 10 links, considera usar <code>card-video-texto</code> com link "Ver todos →" ou criar uma página intermediária.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Como funciona por dentro — pra quem quer entender a mecânica</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/como-funciona.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<h3>Cascata dos links</h3>
+<p>Cada <code>&lt;li&gt;</code> começa fora-de-cena (<code>opacity: 0; translateX(40px)</code>) e entra com fade + slide quando o painel ganha <code>.aberto</code>:</p>
+<pre><code class="language-css">.card-links li {
+    opacity: 0;
+    transform: translateX(40px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.card-info.aberto .card-links li {
+    opacity: 1;
+    transform: translateX(0);
+}</code></pre>
+<p>Os delays escalonados (0.25s → 0.70s) criam efeito cascata — links aparecem da esquerda em sequência, dando ritmo à abertura do painel.</p>
+
+<h3 style="margin-top:24px;">Hover de cada link</h3>
+<pre><code class="language-css">.card-links li a:hover {
+    background: rgba(255,255,255,0.85);
+    transform: translateX(4px);
+}</code></pre>
+<p>Um leve deslocamento horizontal (<code>4px</code>) reforça que aquele item virou clicável — comum em listas de menu.</p>
+
+<h3 style="margin-top:24px;">Padding extra no painel</h3>
+<p>O <code>.card-info</code> default tem <code>padding: 0</code> (porque o <code>.card-resumo</code> já é absoluto com <code>inset: 10px</code>). A variante com links precisa de respiro nas bordas:</p>
+<pre><code class="language-css">.card-info:has(.card-links) {
+    padding: 10px 10px;
+    overflow: hidden;
+}</code></pre>
+<p>O seletor <code>:has()</code> aplica o padding só quando há <code>.card-links</code> dentro — mantém o <code>.card-resumo</code> sem mudança.</p>
+
+<h3 style="margin-top:24px;">Decisões de design</h3>
+
+<p><strong>Por que cascata em vez de aparecer todos juntos?</strong><br>
+Aparecer simultâneo dá sensação de "tela carregando" — bagunça visual. Cascata cria narrativa: "este painel se montou sob demanda", reforçando que cada link foi pensado individualmente.</p>
+
+<p><strong>Por que delays começam em 0.25s?</strong><br>
+O <code>.card-info</code> tem <code>transition: transform 0.4s</code>. Se os links começassem em 0s, apareceriam no meio do slide do painel — visualmente confuso. 0.25s dá tempo do painel chegar perto da posição final antes.</p>
+
+<p><strong>Por que slide horizontal e não vertical?</strong><br>
+O painel inteiro entra da direita (<code>translateX(100%) → 0</code>). Os links seguindo a mesma direção reforçam o fluxo visual. Slide vertical romperia o vetor de movimento.</p>
+
+<p><strong>Por que ícone separado do texto via <code>justify-content: space-between</code>?</strong><br>
+Texto à esquerda, ícone à direita. Padrão de menu reconhecível. O ícone funciona como dica do tipo de destino (seta = página linear, código = ref técnica, engrenagem = setup).</p>
+
+<p><strong>Por que <code>:has()</code> em vez de adicionar uma classe modifier?</strong><br>
+A presença do <code>.card-links</code> já é o sinal — não precisa de <code>.card-info--with-links</code> redundante. O <code>:has()</code> deixa o HTML mais limpo (sem classes de estado deriváveis).</p>
+
+<h3 style="margin-top:24px;">Comportamento no mobile</h3>
+<ul>
+    <li>Sem hover, o painel só abre via tap no menu de 3 bolinhas (<code>.btnMenuCard</code>)</li>
+    <li>Tap em um link interno do painel navega normalmente — propagação até o card é interrompida pelo <code>e.target.closest('a[href]')</code> guard no handler de <code>data-href</code></li>
+    <li>Cascata dos links acontece igual — não depende de <code>:hover</code></li>
+</ul>
+<p>Em telas estreitas, considera reduzir o número de links visíveis ou usar fontes menores via media query.</p>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

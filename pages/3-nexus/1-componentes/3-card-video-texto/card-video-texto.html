@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>card-video-texto — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>card-video-texto — card com vídeo e painel de texto</h1>
+
+<p>Variante do componente <code>card</code> com vídeo em loop autoplay como mídia de fundo, botão pause/play que aparece no hover, e painel de info contendo um texto descritivo (<code>.card-resumo</code>). Para variante com lista de sub-links, veja <code>card-video-link</code>.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<h3>index.html</h3>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang="pt-BR"&gt;
+
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;card-video — variante texto&lt;/title&gt;
+    &lt;link rel="stylesheet" href="style.css"&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+
+    &lt;div class="demo-stage"&gt;
+
+        &lt;div class="card" data-href="https://example.com"&gt;
+            &lt;div class="card-menu btnMenuCard"&gt;
+                &lt;svg viewBox="0 0 350 350"&gt;&lt;circle cx="39" cy="55" r="39"/&gt;&lt;circle cx="39" cy="175" r="39"/&gt;&lt;circle cx="39" cy="295" r="39"/&gt;&lt;path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/&gt;&lt;path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/&gt;&lt;path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/&gt;&lt;/svg&gt;
+            &lt;/div&gt;
+            &lt;div class="card-info"&gt;
+                &lt;div class="card-resumo"&gt;
+                    &lt;strong&gt;Demo&lt;/strong&gt;
+                    &lt;p&gt;Vídeo em loop autoplay no primeiro hover. Botão pause/play aparece no canto superior esquerdo ao passar o mouse.&lt;/p&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class="card-img"&gt;
+                &lt;button class="card-pause btnPauseCard" aria-label="Pausar/tocar vídeo"&gt;
+                    &lt;svg class="ic-pause" viewBox="0 0 24 24"&gt;&lt;rect x="6" y="5" width="4" height="14" rx="1"/&gt;&lt;rect x="14" y="5" width="4" height="14" rx="1"/&gt;&lt;/svg&gt;
+                    &lt;svg class="ic-play" viewBox="0 0 24 24"&gt;&lt;path d="M7 4v16l13-8z"/&gt;&lt;/svg&gt;
+                &lt;/button&gt;
+                &lt;video src="video.mp4#t=0.1" muted loop playsinline preload="auto" data-name="DEMO"&gt;&lt;/video&gt;
+            &lt;/div&gt;
+            &lt;div class="card-bar"&gt;
+                &lt;a href="https://example.com" class="card-tag" style="--tag-clr:#10b981;"&gt;Demo&lt;/a&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+
+    &lt;/div&gt;
+
+    &lt;script src="script.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+
+&lt;/html&gt;</code></pre>
+
+<h3 style="margin-top:24px;">style.css</h3>
+<pre><code class="language-css">/* Stage só pra visualização standalone */
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: #f5f5f7;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.demo-stage {
+    width: 100%;
+    max-width: 320px;
+    padding: 40px;
+}
+
+/* --- Card --- */
+.card {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3.5 / 4.5;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: default;
+    background: #1a1a1a;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.card:hover {
+    transform: scale(1.06);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+    z-index: 1;
+}
+
+/* --- Mídia --- */
+.card-img {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    bottom: 56px;
+}
+
+.card-img video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    transition: filter 0.5s ease;
+}
+
+/* --- Barra inferior --- */
+.card-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    box-shadow: 0 -3px 6px rgba(0,0,0,0.15);
+    z-index: 2;
+}
+
+.card-tag {
+    flex: 1;
+    text-align: center;
+    font-size: 0.85em;
+    font-weight: 700;
+    color: var(--tag-clr, #555);
+    border: 2px solid var(--tag-clr, #555);
+    border-radius: 6px;
+    padding: 8px 10px;
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background 0.3s, color 0.3s;
+}
+
+.card:hover .card-tag {
+    background: var(--tag-clr, #555);
+    color: #fff;
+}
+
+/* --- Botão menu (3 bolinhas) --- */
+.card-menu {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    z-index: 5;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    overflow: visible;
+}
+
+.card:hover .card-menu {
+    opacity: 1;
+}
+
+.card-menu svg {
+    width: 32px;
+    height: 32px;
+    fill: #fff;
+    filter: drop-shadow(0 0 3px rgba(0,0,0,0.5));
+    background: rgba(255,255,255,0.25);
+    border-radius: 6px;
+    padding: 4px;
+    box-sizing: content-box;
+    transition: opacity 0.2s;
+}
+
+.card-menu.aberto svg {
+    opacity: 0;
+}
+
+.card-menu::after {
+    content: '\00d7';
+    position: absolute;
+    top: -16px;
+    right: -10px;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 0 4px rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.35);
+    border-radius: 10px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    cursor: pointer;
+}
+
+.card-menu.aberto::after {
+    opacity: 1;
+}
+
+/* --- Botão pause/play (canto superior esquerdo) --- */
+.card-pause {
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    z-index: 5;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    background: rgba(255,255,255,0.25);
+    border: none;
+    border-radius: 6px;
+    padding: 4px;
+    box-sizing: content-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card:hover .card-pause {
+    opacity: 1;
+}
+
+.card:has(.card-info.aberto) .card-pause {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.card-pause svg {
+    width: 24px;
+    height: 24px;
+    fill: #fff;
+    filter: drop-shadow(0 0 3px rgba(0,0,0,0.5));
+    display: block;
+}
+
+.card-pause .ic-pause { display: none; }
+.card-pause.playing .ic-pause { display: block; }
+.card-pause.playing .ic-play  { display: none; }
+
+/* --- Painel de info (slide da direita) --- */
+.card-info {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 56px;
+    overflow: hidden;
+    width: 100%;
+    padding: 0;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    transform: translateX(100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.card-info::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 2s ease;
+    z-index: -1;
+}
+
+.card-info.aberto {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.card-info.aberto::before {
+    opacity: 1;
+}
+
+.card-resumo {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    font-size: 0.85em;
+    line-height: 1.6;
+    color: #1a1a1a;
+    text-align: left;
+    padding: 6px 8px;
+    overflow-y: auto;
+    background: rgba(255,255,255,0.4);
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.card-resumo strong {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.card-resumo p {
+    margin: 6px 0 0;
+}
+
+/* Blur na mídia quando info aberto */
+.card-info.aberto ~ .card-img video {
+    filter: blur(6px) grayscale(20%);
+}</code></pre>
+
+<h3 style="margin-top:24px;">script.js</h3>
+<pre><code class="language-javascript">document.querySelectorAll('.card').forEach(function(card) {
+    var btn = card.querySelector('.btnMenuCard');
+    var info = card.querySelector('.card-info');
+
+    if (btn && info) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            info.classList.toggle('aberto');
+            btn.classList.toggle('aberto');
+        });
+    }
+
+    var cardHref = card.getAttribute('data-href');
+    if (cardHref) {
+        card.addEventListener('click', function(e) {
+            if (e.target.closest('a[href]') || e.target.closest('.btnMenuCard')) return;
+            window.location.href = cardHref;
+        });
+    }
+
+    var video = card.querySelector('.card-img video');
+    if (video) {
+        card.addEventListener('mouseenter', function() {
+            video.play().catch(function() {});
+        }, { once: true });
+
+        var pauseBtn = card.querySelector('.btnPauseCard');
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (video.paused) video.play().catch(function() {});
+                else video.pause();
+            });
+            video.addEventListener('play',  function() { pauseBtn.classList.add('playing'); });
+            video.addEventListener('pause', function() { pauseBtn.classList.remove('playing'); });
+        }
+    }
+});</code></pre>
+
+        </div>
+    </div>
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Como usar — pra quem vai aplicar numa página</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/como-usar.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<h3>Quando usar</h3>
+<p><strong>Usar quando:</strong></p>
+<ul>
+    <li>A mídia mostra <strong>movimento</strong> (clique numa tela, animação de tabela, demo de uso)</li>
+    <li>O loop curto (5–15s) comunica a função do que o card representa</li>
+    <li>Você tem um <code>.mp4</code> já gerado e quer mostrar uma descrição em texto livre</li>
+</ul>
+<p><strong>Não usar quando:</strong></p>
+<ul>
+    <li>A mídia é estática (logo, retrato, ilustração) → use <code>card-image</code></li>
+    <li>O painel deve mostrar uma <strong>lista de sub-links</strong> em vez de texto → use <code>card-video-link</code></li>
+</ul>
+
+<h3 style="margin-top:24px;">HTML mínimo</h3>
+<pre><code class="language-html">&lt;div class="card" data-href="..."&gt;
+    &lt;div class="card-menu btnMenuCard"&gt;
+        &lt;svg viewBox="0 0 350 350"&gt;...3 bolinhas...&lt;/svg&gt;
+    &lt;/div&gt;
+    &lt;div class="card-info"&gt;
+        &lt;div class="card-resumo"&gt;
+            &lt;strong&gt;Demo&lt;/strong&gt;
+            &lt;p&gt;Texto descritivo do card.&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="card-img"&gt;
+        &lt;button class="card-pause btnPauseCard" aria-label="Pausar/tocar vídeo"&gt;
+            &lt;svg class="ic-pause" viewBox="0 0 24 24"&gt;...&lt;/svg&gt;
+            &lt;svg class="ic-play" viewBox="0 0 24 24"&gt;...&lt;/svg&gt;
+        &lt;/button&gt;
+        &lt;video src="video.mp4#t=0.1" muted loop playsinline preload="auto" data-name="DEMO"&gt;&lt;/video&gt;
+    &lt;/div&gt;
+    &lt;div class="card-bar"&gt;
+        &lt;a href="..." class="card-tag" style="--tag-clr:#10b981;"&gt;Demo&lt;/a&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+
+<h3 style="margin-top:24px;">Atributos do <code>&lt;video&gt;</code></h3>
+<table style="width:100%; border-collapse:collapse; margin-top:12px;">
+    <thead>
+        <tr style="background:#f3f4f6;">
+            <th style="padding:8px; text-align:left; border-bottom:2px solid #ddd;">Atributo</th>
+            <th style="padding:8px; text-align:left; border-bottom:2px solid #ddd;">Por que</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="padding:8px; border-bottom:1px solid #eee;"><code>src="...#t=0.1"</code></td>
+            <td style="padding:8px; border-bottom:1px solid #eee;">O <code>#t=0.1</code> força o browser a renderizar o frame em 0.1s em vez de tela preta.</td>
+        </tr>
+        <tr>
+            <td style="padding:8px; border-bottom:1px solid #eee;"><code>muted</code></td>
+            <td style="padding:8px; border-bottom:1px solid #eee;">Browsers bloqueiam autoplay se o vídeo tiver áudio.</td>
+        </tr>
+        <tr>
+            <td style="padding:8px; border-bottom:1px solid #eee;"><code>loop</code></td>
+            <td style="padding:8px; border-bottom:1px solid #eee;">Vídeo recomeça automaticamente; tem que ser curto (5–15s).</td>
+        </tr>
+        <tr>
+            <td style="padding:8px; border-bottom:1px solid #eee;"><code>playsinline</code></td>
+            <td style="padding:8px; border-bottom:1px solid #eee;">iOS Safari não toma fullscreen ao tentar tocar.</td>
+        </tr>
+        <tr>
+            <td style="padding:8px; border-bottom:1px solid #eee;"><code>preload="auto"</code></td>
+            <td style="padding:8px; border-bottom:1px solid #eee;">Browser baixa o vídeo logo no load (imagem pronta antes do hover).</td>
+        </tr>
+        <tr>
+            <td style="padding:8px;"><code>data-name</code></td>
+            <td style="padding:8px;">Nome lógico do vídeo/card. Não controla o texto do botão.</td>
+        </tr>
+    </tbody>
+</table>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Como funciona por dentro — pra quem quer entender a mecânica</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/como-funciona.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<h3>Anatomia</h3>
+<pre><code class="language-text">.card
+  ├── .card-menu .btnMenuCard            hamburger top-right (abre painel info)
+  ├── .card-info                         painel deslizante (.aberto = visível)
+  │   └── .card-resumo                   strong + p de descrição
+  ├── .card-img                          vídeo cobrindo o card
+  │   ├── .card-pause .btnPauseCard      botão pause/play top-left
+  │   │   ├── svg.ic-pause
+  │   │   └── svg.ic-play
+  │   └── &lt;video muted loop playsinline preload="auto"&gt;
+  └── .card-bar
+      └── a.card-tag                     nome fixo do card</code></pre>
+
+<h3 style="margin-top:24px;">Autoplay no primeiro hover</h3>
+<p>Vídeo começa pausado. O <code>{ once: true }</code> garante que o autoplay só dispara uma vez — depois disso o controle é do botão pause/play:</p>
+<pre><code class="language-javascript">card.addEventListener('mouseenter', function() {
+    video.play().catch(function() {});
+}, { once: true });</code></pre>
+<p>O <code>.catch(noop)</code> evita warning no console — browsers retornam Promise rejeitada se autoplay for bloqueado pela política do user agent.</p>
+
+<h3 style="margin-top:24px;">Botão pause/play</h3>
+<pre><code class="language-javascript">pauseBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (video.paused) video.play().catch(function() {});
+    else video.pause();
+});
+video.addEventListener('play',  function() { pauseBtn.classList.add('playing'); });
+video.addEventListener('pause', function() { pauseBtn.classList.remove('playing'); });</code></pre>
+<p>O <code>e.stopPropagation()</code> impede que o click propague pro card (que pode ter <code>data-href</code>) — sem isso, tentar pausar acabava redirecionando.</p>
+
+<h3 style="margin-top:24px;">Cross-fade dos ícones via classe <code>.playing</code></h3>
+<pre><code class="language-css">.card-pause .ic-pause { display: none; }
+.card-pause.playing .ic-pause { display: block; }
+.card-pause.playing .ic-play  { display: none; }</code></pre>
+<p>O CSS controla qual SVG mostrar baseado em <code>.playing</code>. O JS só adiciona/remove a classe nos eventos <code>play</code>/<code>pause</code> do video. Mais robusto: se o vídeo termina o loop em momento estranho, o estado visual continua sincronizado.</p>
+
+<h3 style="margin-top:24px;">Botão pause some quando o painel abre</h3>
+<pre><code class="language-css">.card:has(.card-info.aberto) .card-pause {
+    opacity: 0;
+    pointer-events: none;
+}</code></pre>
+<p>Sem isso, o botão ficaria flutuando sobre o painel aberto e podendo receber click acidental. Quando o painel fecha, a regra <code>:hover</code> reassume e o botão reaparece naturalmente.</p>
+
+<h3 style="margin-top:24px;">Decisões de design</h3>
+
+<p><strong>Por que vídeo começa pausado?</strong><br>
+Autoplay imediato em todos os cards consome CPU/bateria sem benefício se o usuário não está interessado. O modelo "primeiro hover dá play" é responsivo à intenção: cursor sobre o card já sinaliza interesse.</p>
+
+<p><strong>Por que <code>{ once: true }</code> no listener do mouseenter?</strong><br>
+Garante que o autoplay só dispara uma vez. Depois disso o controle é manual (botão).</p>
+
+<p><strong>Por que botão pause oculto até hover?</strong><br>
+<code>opacity: 0</code> por padrão, <code>1</code> no <code>:hover</code> do card. Mantém o card visualmente limpo e o botão só aparece quando relevante (mouse já está perto).</p>
+
+<p><strong>Por que troca de ícone via classe <code>.playing</code> em vez de JS direto?</strong><br>
+CSS controla qual SVG mostrar baseado em <code>.playing</code>. Mais robusto: se o vídeo termina o loop em momento estranho, o estado visual continua sincronizado com o estado real do <code>&lt;video&gt;</code>.</p>
+
+<p><strong>Por que <code>#t=0.1</code> no <code>src</code>?</strong><br>
+Força renderização do primeiro frame antes do user dar hover. Sem isso, o card mostra preto até o vídeo carregar.</p>
+
+<p><strong>Por que mídia só com blur ao abrir o painel?</strong><br>
+A versão antiga combinava blur com <code>scale(1.1)</code> pra dar profundidade, mas o movimento da mídia competia com o slide do painel e poluía a leitura. Agora o efeito é puramente óptico: o que estava nítido fica desfocado, ponto.</p>
+
+<h3 style="margin-top:24px;">Comportamento no mobile</h3>
+<ul>
+    <li>O <strong>botão pause</strong> tem <code>opacity: 0</code> e só vira 1 no <code>:hover</code> do card. Em mobile fica permanentemente invisível.</li>
+    <li>O <strong>autoplay no primeiro hover</strong> depende do <code>mouseenter</code>, que touch devices não disparam. Em mobile o vídeo fica no frame inicial (<code>#t=0.1</code>) e não toca.</li>
+    <li>Click no card vai direto pro destino via <code>data-href</code>.</li>
+    <li>Mudança de cor da <code>.card-tag</code> no hover não aparece.</li>
+</ul>
+<p><strong>Limitação conhecida:</strong> se quiser que o vídeo toque no mobile, precisa de outro evento (ex: <code>IntersectionObserver</code> quando o card entra na viewport).</p>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

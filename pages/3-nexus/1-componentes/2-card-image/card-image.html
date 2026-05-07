@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>card-image — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>card-image — card com imagem estática</h1>
+
+<p>Card retangular com imagem estática como mídia de fundo, painel de info que desliza da direita ao clicar no menu de três bolinhas, e barra inferior com tag/botão. Variante irmã: <code>card-video</code> — pra mídia em movimento.</p>
+
+<p>Veja o componente em ação na <a href="../componentes.html">própria home de componentes</a> — cada card listado lá usa este padrão.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">CÓDIGO COMPLETO</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<h3>index.html</h3>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang="pt-BR"&gt;
+
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;card-image — exemplo individual&lt;/title&gt;
+    &lt;link rel="stylesheet" href="style.css"&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+
+    &lt;div class="demo-stage"&gt;
+
+        &lt;div class="card" data-href="https://example.com"&gt;
+            &lt;div class="card-menu btnMenuCard"&gt;
+                &lt;svg viewBox="0 0 350 350"&gt;&lt;circle cx="39" cy="55" r="39"/&gt;&lt;circle cx="39" cy="175" r="39"/&gt;&lt;circle cx="39" cy="295" r="39"/&gt;&lt;path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/&gt;&lt;path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/&gt;&lt;path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/&gt;&lt;/svg&gt;
+            &lt;/div&gt;
+            &lt;div class="card-info"&gt;
+                &lt;div class="card-resumo"&gt;
+                    &lt;strong&gt;Componentes&lt;/strong&gt;
+                    &lt;p&gt;Descrição curta do que esse card representa. Este painel desliza da direita ao clicar no menu de três bolinhas.&lt;/p&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class="card-img"&gt;
+                &lt;img src="img.png" alt="Exemplo"&gt;
+            &lt;/div&gt;
+            &lt;div class="card-bar"&gt;
+                &lt;a href="https://example.com" class="card-tag" style="--tag-clr:#8b5cf6;"&gt;Componentes&lt;/a&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+
+    &lt;/div&gt;
+
+    &lt;script src="script.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+
+&lt;/html&gt;</code></pre>
+
+<h3 style="margin-top:24px;">style.css</h3>
+<pre><code class="language-css">/* Stage só pra visualização standalone */
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: #f5f5f7;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.demo-stage {
+    width: 100%;
+    max-width: 320px;
+    padding: 40px;
+}
+
+/* --- Card --- */
+.card {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3.5 / 4.5;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: default;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.card:hover {
+    transform: scale(1.06);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+    z-index: 1;
+}
+
+/* --- Imagem --- */
+.card-img {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.card-img:has(img) {
+    inset: auto;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 56px;
+}
+
+.card-img img {
+    width: 130%;
+    height: auto;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: top 0.6s ease, transform 0.6s ease, filter 0.5s ease;
+}
+
+.card:hover .card-img img {
+    top: 100%;
+    transform: translateX(-50%) translateY(-100%);
+}
+
+/* --- Barra inferior --- */
+.card-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    box-shadow: 0 -3px 6px rgba(0,0,0,0.15);
+    z-index: 2;
+}
+
+.card-tag {
+    flex: 1;
+    text-align: center;
+    font-size: 0.85em;
+    font-weight: 700;
+    color: var(--tag-clr, #555);
+    border: 2px solid var(--tag-clr, #555);
+    border-radius: 6px;
+    padding: 8px 10px;
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background 0.3s, color 0.3s;
+}
+
+.card:hover .card-tag {
+    background: var(--tag-clr, #555);
+    color: #fff;
+}
+
+/* --- Botão menu (3 bolinhas) --- */
+.card-menu {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    z-index: 5;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    overflow: visible;
+}
+
+.card:hover .card-menu {
+    opacity: 1;
+}
+
+.card-menu svg {
+    width: 32px;
+    height: 32px;
+    fill: #fff;
+    filter: drop-shadow(0 0 3px rgba(0,0,0,0.5));
+    background: rgba(255,255,255,0.25);
+    border-radius: 6px;
+    padding: 4px;
+    box-sizing: content-box;
+    transition: opacity 0.2s;
+}
+
+.card-menu.aberto svg {
+    opacity: 0;
+}
+
+.card-menu::after {
+    content: '\00d7';
+    position: absolute;
+    top: -16px;
+    right: -10px;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 0 4px rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.35);
+    border-radius: 10px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    cursor: pointer;
+}
+
+.card-menu.aberto::after {
+    opacity: 1;
+}
+
+/* --- Painel de info (slide da direita) --- */
+.card-info {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 56px;
+    overflow: hidden;
+    width: 100%;
+    padding: 0;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    transform: translateX(100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.card-info::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 2s ease;
+    z-index: -1;
+}
+
+.card-info.aberto {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.card-info.aberto::before {
+    opacity: 1;
+}
+
+.card-resumo {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    font-size: 0.85em;
+    line-height: 1.6;
+    color: #1a1a1a;
+    text-align: left;
+    padding: 6px 8px;
+    overflow-y: auto;
+    background: rgba(255,255,255,0.4);
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.card-resumo strong {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.card-resumo p {
+    margin: 6px 0 0;
+}
+
+/* Blur na imagem quando info aberto */
+.card-info.aberto ~ .card-img img {
+    filter: blur(6px) grayscale(20%);
+}</code></pre>
+
+<h3 style="margin-top:24px;">script.js</h3>
+<pre><code class="language-javascript">document.querySelectorAll('.card').forEach(function(card) {
+    var btn = card.querySelector('.btnMenuCard');
+    var info = card.querySelector('.card-info');
+
+    if (btn && info) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            info.classList.toggle('aberto');
+            btn.classList.toggle('aberto');
+        });
+    }
+
+    var cardHref = card.getAttribute('data-href');
+    if (cardHref) {
+        card.addEventListener('click', function(e) {
+            if (e.target.closest('a[href]') || e.target.closest('.btnMenuCard')) return;
+            window.location.href = cardHref;
+        });
+    }
+});</code></pre>
+
+        </div>
+    </div>
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Como usar — pra quem vai aplicar numa página</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/como-usar.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<h3>Quando usar</h3>
+<p><strong>Usar quando:</strong></p>
+<ul>
+    <li>Uma imagem estática representa bem o conteúdo</li>
+    <li>Ainda não existe vídeo gerado</li>
+    <li>A mídia é simbólica/decorativa, não demonstrativa</li>
+    <li>A página precisa de cards de navegação visual</li>
+</ul>
+<p><strong>Não usar quando:</strong></p>
+<ul>
+    <li>Já existe um <code>.mp4</code> mostrando interação ou movimento → use <code>card-video</code></li>
+</ul>
+
+<h3 style="margin-top:24px;">HTML mínimo</h3>
+<pre><code class="language-html">&lt;div class="card" data-href="pages/foo/foo.html"&gt;
+    &lt;div class="card-menu btnMenuCard"&gt;
+        &lt;svg viewBox="0 0 350 350"&gt;...3 bolinhas...&lt;/svg&gt;
+    &lt;/div&gt;
+    &lt;div class="card-info"&gt;
+        &lt;div class="card-resumo"&gt;
+            &lt;p&gt;Descrição curta do que esse card representa.&lt;/p&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="card-img"&gt;
+        &lt;img src="img/componentes.png" alt="Componentes"&gt;
+    &lt;/div&gt;
+    &lt;div class="card-bar"&gt;
+        &lt;a href="pages/foo/foo.html" class="card-tag" style="--tag-clr:#8b5cf6;"&gt;Componentes&lt;/a&gt;
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+<p>O texto do <code>&lt;a class="card-tag"&gt;</code> é sempre o nome fixo do card. No hover, muda apenas cor/fundo pelo CSS — não troca pra "Ver docs".</p>
+
+<h3 style="margin-top:24px;">Atributos</h3>
+<table style="width:100%; border-collapse:collapse; margin-top:12px;">
+    <thead>
+        <tr style="background:#f3f4f6;">
+            <th style="padding:8px; text-align:left; border-bottom:2px solid #ddd;">Elemento</th>
+            <th style="padding:8px; text-align:left; border-bottom:2px solid #ddd;">Atributo</th>
+            <th style="padding:8px; text-align:left; border-bottom:2px solid #ddd;">Uso</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td style="padding:8px; border-bottom:1px solid #eee;"><code>.card</code></td>
+            <td style="padding:8px; border-bottom:1px solid #eee;"><code>data-href</code></td>
+            <td style="padding:8px; border-bottom:1px solid #eee;">Faz o card inteiro navegar ao clicar fora do menu e fora do <code>&lt;a&gt;</code>.</td>
+        </tr>
+        <tr>
+            <td style="padding:8px; border-bottom:1px solid #eee;"><code>&lt;img&gt;</code></td>
+            <td style="padding:8px; border-bottom:1px solid #eee;"><code>src</code> / <code>alt</code></td>
+            <td style="padding:8px; border-bottom:1px solid #eee;">Caminho relativo da imagem e texto acessível.</td>
+        </tr>
+        <tr>
+            <td style="padding:8px; border-bottom:1px solid #eee;"><code>.card-tag</code></td>
+            <td style="padding:8px; border-bottom:1px solid #eee;"><code>href</code></td>
+            <td style="padding:8px; border-bottom:1px solid #eee;">Destino do link.</td>
+        </tr>
+        <tr>
+            <td style="padding:8px; border-bottom:1px solid #eee;"><code>.card-tag</code></td>
+            <td style="padding:8px; border-bottom:1px solid #eee;"><code>style="--tag-clr:#8b5cf6;"</code></td>
+            <td style="padding:8px; border-bottom:1px solid #eee;">Cor do texto/borda e preenchimento no hover.</td>
+        </tr>
+        <tr>
+            <td style="padding:8px;"><code>.card-tag</code></td>
+            <td style="padding:8px;">Texto interno</td>
+            <td style="padding:8px;">Nome fixo do card. Permanece igual em estado normal e hover.</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3 style="margin-top:24px;">Variação sem <code>data-href</code></h3>
+<p>Se quiser que apenas o botão/tag seja clicável, omita o <code>data-href</code> no wrapper. Uso raro — o padrão do projeto é card inteiro clicável.</p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="toggleInfoRow(this.querySelector('.info-row-btn'))">
+            <span class="info-row-title">Como funciona por dentro — pra quem quer entender a mecânica</span>
+            <button class="info-row-btn">+</button>
+        </div>
+        <div class="info-row-body">
+
+<div class="audio-player" data-src="audio/como-funciona.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<h3>Anatomia</h3>
+<pre><code class="language-text">.card
+  ├── .card-menu .btnMenuCard      menu de três bolinhas
+  ├── .card-info                   painel deslizante de resumo
+  │   └── .card-resumo
+  ├── .card-img
+  │   └── img
+  └── .card-bar
+      └── a.card-tag               nome fixo do card</code></pre>
+
+<h3 style="margin-top:24px;">Hover do card</h3>
+<p>O card escala 1.06x e ganha sombra mais profunda. A imagem desliza de cima pra baixo (pan vertical) — o <code>top: 100%</code> + <code>translateY(-100%)</code> revela a parte de baixo da imagem que estava escondida.</p>
+
+<h3 style="margin-top:24px;">Card inteiro clicável</h3>
+<p>O <code>layout.js</code> usa <code>data-href</code> pra transformar o card todo em área clicável:</p>
+<pre><code class="language-javascript">var cardHref = card.getAttribute('data-href');
+if (cardHref) {
+    card.addEventListener('click', function(e) {
+        if (e.target.closest('a[href]') || e.target.closest('.btnMenuCard')) return;
+        window.location.href = cardHref;
+    });
+}</code></pre>
+<p>O guard <code>e.target.closest()</code> evita disparar quando o usuário clica no menu (3 bolinhas) ou no próprio <code>&lt;a&gt;</code> da tag.</p>
+
+<h3 style="margin-top:24px;">Menu de info abre painel</h3>
+<p>Click no menu de três bolinhas alterna a classe <code>.aberto</code> no <code>.card-info</code>. <code>e.stopPropagation()</code> impede que o clique propague pro card e dispare o navigate:</p>
+<pre><code class="language-javascript">btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    info.classList.toggle('aberto');
+    btn.classList.toggle('aberto');
+});</code></pre>
+
+<h3 style="margin-top:24px;">Blur sem movimento ao abrir o painel</h3>
+<p>Quando o painel está com <code>.aberto</code>, a imagem recebe <code>filter: blur(6px) grayscale(20%)</code>. Não há mais <code>transform: scale()</code> — o efeito é puramente óptico:</p>
+<pre><code class="language-css">.card-info.aberto ~ .card-img img {
+    filter: blur(6px) grayscale(20%);
+}
+
+.card-img img {
+    transition: top 0.6s ease, transform 0.6s ease, filter 0.5s ease;
+}</code></pre>
+<p>A <code>transition</code> inclui <code>filter</code> pra que o blur entre/saia em fade ao abrir/fechar.</p>
+
+<h3 style="margin-top:24px;">Decisões de design</h3>
+
+<p><strong>Por que tag fixa em vez de "Ver docs"?</strong><br>
+O texto do card precisa ficar estável. Trocar para "Ver docs" no hover adiciona movimento sem acrescentar informação, além de criar diferença entre estado parado e estado hover.</p>
+
+<p><strong>Por que blur sem movimento ao abrir o painel?</strong><br>
+A versão antiga combinava <code>filter: blur()</code> com <code>transform: scale(1.1)</code> na mídia. O scale junto com o slide do painel criava dois movimentos competindo na mesma área. A regra atual mantém só o filter, com transition em fade. A mensagem visual é clara: "isso aqui ficou em segundo plano enquanto você lê o painel".</p>
+
+<p><strong>Por que <code>alt</code> separado do texto do botão?</strong><br>
+O <code>alt</code> descreve a imagem pra acessibilidade. O texto do <code>.card-tag</code> é o rótulo visual. Normalmente os dois podem ser iguais, mas um não deve controlar o outro via JavaScript.</p>
+
+<p><strong>Por que sem botão pause?</strong><br>
+Imagem estática não tem nada pra pausar. O botão pause/play pertence apenas ao <code>card-video</code>.</p>
+
+<h3 style="margin-top:24px;">Comportamento no mobile</h3>
+<p>Touch devices não disparam <code>:hover</code>:</p>
+<ul>
+    <li>O efeito visual de hover (mudança de cor da <code>.card-tag</code>) não aparece</li>
+    <li>Click no card vai direto pro destino via <code>data-href</code></li>
+    <li>O painel <code>.card-info</code> abre via tap no menu de 3 bolinhas — handler usa <code>e.stopPropagation()</code> pra não disparar o navigate</li>
+</ul>
+<p>Diferente do <code>codex-wrapper</code> (carrossel), o <code>.card</code> não usa tap-to-reveal. O fluxo é direto: tap no card = abre. Tap no menu = abre painel. Sem estado intermediário "revelado".</p>
+
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
