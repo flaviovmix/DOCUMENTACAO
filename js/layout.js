@@ -30,9 +30,10 @@ var MENU = [
             { label: 'MODELO DE REDE',   href: '3-modelo-rede/modelo-rede.html',   pasta: '3-modelo-rede' },
             { label: 'HTML-CSS-JS',  href: '4-html-css-js/html-css-js.html', pasta: '4-html-css-js' },
             { label: 'HARDWARE',     href: '5-hardware/hardware.html',       pasta: '5-hardware' },
-            { label: 'GIT',          href: '6-git/git.html',                 pasta: '6-git' }
+            { label: 'GIT',          href: '6-git/git.html',                 pasta: '6-git' },
+            { label: 'ALGORITMOS',   href: '10-algoritmos/algoritmos.html',  pasta: '10-algoritmos' }
         ],
-        subpastas: ['1-java', '2-sql', '3-modelo-rede', '4-html-css-js', '5-hardware', '6-git'],
+        subpastas: ['1-java', '2-sql', '3-modelo-rede', '4-html-css-js', '5-hardware', '6-git', '10-algoritmos'],
         pasta: '1-fundamentos'
     },
     {
@@ -68,12 +69,24 @@ var MENU = [
         parent: { label: 'FUNDAMENTOS', href: '1-fundamentos/fundamentos.html' },
         hidden: true,
         items: [
-            { label: '1 - Visão Geral', arquivo: '1-visao-geral/1-visao-geral.html', tipo: 'check' },
-            { label: '2 - Backup',      arquivo: '2-backup/backup.html',             tipo: 'check' },
-            { label: '3 - CRUD',        arquivo: '3-crud/crud.html',                 tipo: 'check' }
+            { label: '1 - Visão Geral',     arquivo: '1-visao-geral/1-visao-geral.html',         tipo: 'check' },
+            { label: '2 - Backup',          arquivo: '2-backup/backup.html',                     tipo: 'check' },
+            { label: '3 - CRUD',            arquivo: '3-crud/crud.html',                         tipo: 'check' },
+            { label: '4 - Relacionamentos', arquivo: '4-relacionamentos/4-relacionamentos.html', tipo: 'check' }
         ],
         pasta: '2-sql',
         basePath: '1-fundamentos/2-sql'
+    },
+    {
+        grupo: 'RELACIONAMENTOS',
+        pagina: '4-relacionamentos.html',
+        parent: { label: 'SQL', href: '1-fundamentos/2-sql/sql.html' },
+        hidden: true,
+        items: [
+            { label: '1 - Visão Geral', arquivo: '1-visao-geral/1-visao-geral.html', tipo: 'check' }
+        ],
+        pasta: '4-relacionamentos',
+        basePath: '1-fundamentos/2-sql/4-relacionamentos'
     },
     {
         grupo: 'MODELO DE REDE',
@@ -118,6 +131,28 @@ var MENU = [
         ],
         pasta: '4-html-css-js',
         basePath: '1-fundamentos/4-html-css-js'
+    },
+    {
+        grupo: 'ALGORITMOS',
+        pagina: 'algoritmos.html',
+        parent: { label: 'FUNDAMENTOS', href: '1-fundamentos/fundamentos.html' },
+        hidden: true,
+        items: [
+            { label: '1 - Visão Geral',            arquivo: '1-visao-geral/algoritmo.html',                     tipo: 'check' },
+            { label: '2 - Estruturas de Controle', arquivo: '2-estruturas-controle/2-estruturas-controle.html', tipo: 'check' },
+            { label: '3 - Funções e Recursão',     arquivo: '3-funcoes-recursao/3-funcoes-recursao.html',       tipo: 'check' },
+            { label: '4 - Big O',                  arquivo: '4-big-o/4-big-o.html',                             tipo: 'check' },
+            { label: '5 - Arrays e Listas',        arquivo: '5-arrays-listas/5-arrays-listas.html',             tipo: 'check' },
+            { label: '6 - Pilha e Fila',           arquivo: '6-pilha-fila/6-pilha-fila.html',                   tipo: 'check' },
+            { label: '7 - Hash / Dicionário',      arquivo: '7-hash-dicionario/7-hash-dicionario.html',         tipo: 'check' },
+            { label: '8 - Árvores',                arquivo: '8-arvores/8-arvores.html',                         tipo: 'check' },
+            { label: '9 - Grafos',                 arquivo: '9-grafos/9-grafos.html',                           tipo: 'check' },
+            { label: '10 - Busca',                 arquivo: '10-busca/10-busca.html',                           tipo: 'check' },
+            { label: '11 - Ordenação',             arquivo: '11-ordenacao/11-ordenacao.html',                   tipo: 'check' },
+            { label: '12 - Avançados',             arquivo: '12-avancados/12-avancados.html',                   tipo: 'check' }
+        ],
+        pasta: '10-algoritmos',
+        basePath: '1-fundamentos/10-algoritmos'
     },
     {
         grupo: 'VISÃO GERAL',
@@ -847,7 +882,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // ── Zoom controls ──
     var zoomHTML =
-        '<div style="margin-left:auto;display:flex;align-items:center;gap:4px;">' +
+        '<div style="display:flex;align-items:center;gap:4px;">' +
             '<button onclick="changeZoom(-0.1)" title="Diminuir zoom" style="background:none;border:none;cursor:pointer;color:#555;font-size:1.1em;padding:4px 8px;line-height:1;" onmouseover="this.style.color=\'#2563eb\'" onmouseout="this.style.color=\'#555\'">\u2212</button>' +
             '<span id="zoom-label" onclick="toggleZoomMenu()" style="cursor:pointer;font-size:0.82em;color:#555;min-width:40px;text-align:center;position:relative;">100%' +
                 '<div id="zoom-menu" style="display:none;position:absolute;top:100%;left:50%;transform:translateX(-50%);background:#fff;border:1px solid #dde1e7;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.1);margin-top:8px;z-index:300;padding:4px 0;white-space:nowrap;">' +

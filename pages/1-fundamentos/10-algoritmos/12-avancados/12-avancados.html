@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avançados — Algoritmos — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Algoritmos Avançados</h1>
+
+<div class="audio-player" data-src="audio/avancados.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Quando um problema não cede a uma volta só — quando você precisa de <strong>estratégia</strong> e não só de <strong>força bruta</strong> — entram em cena três técnicas clássicas: <strong>Programação Dinâmica</strong>, <strong>Algoritmos Gulosos</strong> e <strong>Backtracking</strong>. Cada uma resolve uma família diferente de problemas, e saber qual escolher é metade da batalha.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Por que existem técnicas avançadas — quando força bruta não basta</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Os algoritmos do dia a dia (busca, ordenação, percurso de árvore) são <strong>diretos</strong> — você percorre os dados uma ou poucas vezes e chega no resultado. Mas existe uma classe de problemas onde isso <strong>não funciona</strong>:</p>
+
+            <ul>
+                <li><strong>Problemas com explosão combinatória</strong> — todas as combinações possíveis crescem exponencialmente. Tentar todas é proibitivo.</li>
+                <li><strong>Problemas com subproblemas repetidos</strong> — a mesma conta aparece várias vezes na recursão.</li>
+                <li><strong>Problemas de otimização</strong> — não basta achar uma solução; precisa achar <em>a melhor</em>.</li>
+            </ul>
+
+            <p>Pra esses casos, força bruta (testar tudo) tem complexidade <code>O(2ⁿ)</code> ou pior — em 30 itens já travou. As três técnicas desta página são estratégias diferentes pra <strong>cortar esse custo</strong>:</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Técnica</th><th>Estratégia</th><th>Quando usar</th></tr>
+                    <tr><td><strong>Programação Dinâmica</strong></td><td>Lembrar resultados de subproblemas pra não recalcular</td><td>Subproblemas se repetem</td></tr>
+                    <tr><td><strong>Algoritmos Gulosos</strong></td><td>Escolher o melhor local em cada passo, sem voltar atrás</td><td>Escolha local leva à ótima global</td></tr>
+                    <tr><td><strong>Backtracking</strong></td><td>Explorar tudo, mas voltar e cortar caminhos sem solução</td><td>Precisa de todas as soluções, mas dá pra podar</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Programação Dinâmica — não calcule a mesma coisa duas vezes</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A ideia central da <strong>Programação Dinâmica (DP)</strong> é simples: se a recursão calcula a mesma coisa várias vezes, <strong>guarde o resultado</strong> e reuse. Esse "guardar" se chama <strong>memoização</strong>.</p>
+
+            <h3>O exemplo clássico — Fibonacci</h3>
+
+            <p>Fibonacci é a sequência <code>1, 1, 2, 3, 5, 8, 13, 21...</code> onde cada número é a soma dos dois anteriores. A definição recursiva é direta:</p>
+
+            <pre><code class="language-java">// Fibonacci ingênuo — O(2ⁿ)
+public int fib(int n) {
+    if (n &lt;= 1) return n;
+    return fib(n - 1) + fib(n - 2);
+}</code></pre>
+
+            <p>O problema: <code>fib(5)</code> chama <code>fib(4)</code> e <code>fib(3)</code>. <code>fib(4)</code> chama <code>fib(3)</code> e <code>fib(2)</code>. <code>fib(3)</code> aparece <strong>duas vezes</strong>. <code>fib(2)</code> aparece <strong>três vezes</strong>. Em <code>fib(50)</code>, são <strong>bilhões</strong> de chamadas redundantes.</p>
+
+            <p>Solução com memoização:</p>
+
+            <pre><code class="language-java">// Fibonacci memoizado — O(n)
+private Map&lt;Integer, Integer&gt; cache = new HashMap&lt;&gt;();
+
+public int fib(int n) {
+    if (n &lt;= 1) return n;
+    if (cache.containsKey(n)) return cache.get(n);
+
+    int resultado = fib(n - 1) + fib(n - 2);
+    cache.put(n, resultado);
+    return resultado;
+}</code></pre>
+
+            <p>Cada <code>fib(n)</code> é calculado <strong>uma vez só</strong>. <code>fib(50)</code> que demorava minutos passa a rodar em microssegundos.</p>
+
+            <h3>Top-down vs Bottom-up</h3>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Abordagem</th><th>Como funciona</th><th>Quando preferir</th></tr>
+                    <tr><td><strong>Top-down (memoização)</strong></td><td>Recursão + cache. Resolve só os subproblemas necessários.</td><td>Mais natural quando você já tem a recursão. Fácil de adaptar.</td></tr>
+                    <tr><td><strong>Bottom-up (tabulação)</strong></td><td>Loop iterativo preenchendo uma tabela do menor pro maior subproblema.</td><td>Sem stack overhead da recursão. Mais eficiente em memória.</td></tr>
+                </table>
+            </div>
+
+            <pre><code class="language-java">// Bottom-up — sem recursão, sem cache, só array
+public int fib(int n) {
+    if (n &lt;= 1) return n;
+    int[] dp = new int[n + 1];
+    dp[0] = 0;
+    dp[1] = 1;
+    for (int i = 2; i &lt;= n; i++) {
+        dp[i] = dp[i - 1] + dp[i - 2];
+    }
+    return dp[n];
+}</code></pre>
+
+            <h3>Outros problemas clássicos de DP</h3>
+            <ul>
+                <li><strong>Problema do troco</strong> — qual a quantidade mínima de moedas pra dar X de troco?</li>
+                <li><strong>Mochila (Knapsack)</strong> — dado um peso máximo e itens com peso/valor, qual a melhor combinação?</li>
+                <li><strong>Subsequência comum mais longa (LCS)</strong> — usado em diff, controle de versão.</li>
+                <li><strong>Distância de edição (Levenshtein)</strong> — quantas operações pra transformar uma string em outra. Usado em corretor ortográfico.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Algoritmos Gulosos — escolha local sem volta</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Um algoritmo <strong>guloso</strong> (greedy) faz a escolha que <em>parece melhor agora</em>, sem se preocupar com o futuro. <strong>Nunca volta atrás</strong>. É rápido e simples — quando funciona.</p>
+
+            <h3>Exemplo — problema do troco</h3>
+
+            <p>Você precisa dar R$ 0,67 de troco com moedas de 50, 25, 10, 5 e 1 centavo. A estratégia gulosa: pega a maior moeda que cabe, repete.</p>
+
+            <pre><code class="language-java">public List&lt;Integer&gt; troco(int valor, int[] moedas) {
+    Arrays.sort(moedas);  // ordem crescente
+    List&lt;Integer&gt; resultado = new ArrayList&lt;&gt;();
+
+    for (int i = moedas.length - 1; i &gt;= 0; i--) {
+        while (valor &gt;= moedas[i]) {
+            resultado.add(moedas[i]);
+            valor -= moedas[i];
+        }
+    }
+    return resultado;
+}</code></pre>
+
+            <p>Pra 67: pega 50 (sobra 17), pega 10 (sobra 7), pega 5 (sobra 2), pega 1 + 1 (sobra 0). Resultado: <code>[50, 10, 5, 1, 1]</code>. Cinco moedas. Ótimo.</p>
+
+            <h3>Quando greedy falha</h3>
+
+            <p>Imagina um sistema com moedas <code>[1, 3, 4]</code> e você precisa dar troco de 6. O greedy pega <code>4 + 1 + 1</code> = 3 moedas. Mas a solução ótima é <code>3 + 3</code> = 2 moedas. <strong>Greedy errou</strong> porque pegar 4 primeiro foi a melhor escolha local, mas não a melhor global.</p>
+
+            <p>Greedy só funciona quando o problema tem a propriedade da <strong>escolha gulosa ótima</strong> — ou seja, fazer a melhor escolha local <em>realmente</em> leva à melhor solução global. Provar isso é matemática, não intuição.</p>
+
+            <h3>Algoritmos gulosos famosos</h3>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Algoritmo</th><th>O que faz</th><th>Onde aparece</th></tr>
+                    <tr><td><strong>Dijkstra</strong></td><td>Caminho mais curto em grafo com pesos positivos</td><td>GPS, rede de computadores</td></tr>
+                    <tr><td><strong>Kruskal / Prim</strong></td><td>Árvore geradora mínima — conectar nós com custo mínimo</td><td>Cabeamento de rede, design de circuitos</td></tr>
+                    <tr><td><strong>Huffman</strong></td><td>Compressão de dados — códigos curtos pros mais frequentes</td><td>ZIP, MP3, JPEG</td></tr>
+                    <tr><td><strong>Job Scheduling</strong></td><td>Maximizar tarefas em prazo</td><td>Sistemas operacionais, agendamento</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Backtracking — tenta, falha, volta atrás</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p><strong>Backtracking</strong> é busca exaustiva organizada: tenta uma decisão, segue em frente, e se chegar num beco sem saída <strong>volta um passo</strong> (backtrack) e tenta outra. É como navegar um labirinto marcando o caminho com giz e voltando quando bate em parede.</p>
+
+            <h3>O exemplo clássico — 8 rainhas</h3>
+
+            <p>Coloque 8 rainhas num tabuleiro 8×8 sem que nenhuma ataque outra (nenhuma na mesma linha, coluna ou diagonal). Existem 92 soluções distintas.</p>
+
+            <p>Força bruta tentaria todas as <code>64!/(64-8)!</code> ≈ 178 bilhões de posições. Backtracking corta drasticamente: coloca uma rainha por linha, e <strong>aborta</strong> assim que detecta conflito — nunca exploramos posições derivadas de uma escolha já inválida.</p>
+
+            <pre><code class="language-java">public boolean resolver(int[] tabuleiro, int linha) {
+    if (linha == 8) return true;  // todas colocadas
+
+    for (int col = 0; col &lt; 8; col++) {
+        if (seguro(tabuleiro, linha, col)) {
+            tabuleiro[linha] = col;       // tenta
+            if (resolver(tabuleiro, linha + 1)) {
+                return true;
+            }
+            // backtrack — tenta a próxima coluna
+        }
+    }
+    return false;  // nenhuma coluna funcionou
+}</code></pre>
+
+            <h3>A árvore de decisão</h3>
+
+            <p>Backtracking explora uma <strong>árvore implícita</strong> de decisões. Cada nó é uma escolha parcial. <strong>Folhas</strong> são soluções completas (ou becos sem saída). A poda corta sub-árvores inteiras quando você detecta que não levam a lugar nenhum.</p>
+
+            <p>Quanto mais cedo você detectar o beco, mais ramos você poda — e maior a economia. Detectar tarde = backtracking vira força bruta disfarçada.</p>
+
+            <h3>Onde aparece</h3>
+            <ul>
+                <li><strong>Sudoku</strong> — testa números numa célula vazia, segue em frente, volta se travar</li>
+                <li><strong>Labirinto</strong> — explora caminhos, marca becos, retorna</li>
+                <li><strong>Permutações e combinações</strong> — gera todas as ordens possíveis</li>
+                <li><strong>Parser de expressões</strong> — testa interpretações alternativas</li>
+                <li><strong>Resolver Captchas / IA simbólica</strong> — busca em árvore com poda</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Quando usar qual — guia rápido</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Reconhecer o tipo de problema é o pulo do gato. Algumas perguntas pra fazer ao analisar:</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Pergunta</th><th>Se sim → técnica</th></tr>
+                    <tr><td>"Eu já calculei isso antes na recursão?"</td><td><strong>Programação Dinâmica</strong></td></tr>
+                    <tr><td>"A melhor escolha agora é provavelmente a melhor escolha global?"</td><td><strong>Algoritmo Guloso</strong></td></tr>
+                    <tr><td>"Preciso explorar todas as possibilidades, mas tem como descartar caminhos cedo?"</td><td><strong>Backtracking</strong></td></tr>
+                </table>
+            </div>
+
+            <h3>Comparação direta</h3>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Aspecto</th><th>DP</th><th>Greedy</th><th>Backtracking</th></tr>
+                    <tr><td><strong>Custo típico</strong></td><td>O(n²) ou O(n·m)</td><td>O(n log n)</td><td>O(2ⁿ) com poda</td></tr>
+                    <tr><td><strong>Memória</strong></td><td>Alta (cache/tabela)</td><td>Baixa</td><td>Stack da recursão</td></tr>
+                    <tr><td><strong>Volta atrás?</strong></td><td>Não (constrói uma vez)</td><td>Não (decide e segue)</td><td>Sim (essência da técnica)</td></tr>
+                    <tr><td><strong>Garante ótimo?</strong></td><td>Sim</td><td>Só em problemas certos</td><td>Sim (busca tudo)</td></tr>
+                    <tr><td><strong>Implementação</strong></td><td>Média</td><td>Curta</td><td>Recursiva, com poda</td></tr>
+                </table>
+            </div>
+
+            <h3>Combinar técnicas</h3>
+
+            <p>Muito problema real combina mais de uma. Dijkstra é guloso mas usa fila de prioridade (heap, uma estrutura de dado eficiente). Branch-and-bound é backtracking + poda gulosa. Compiladores usam DP pra otimização e backtracking pra parsing. As técnicas são <strong>blocos de construção</strong>, não escolhas mutuamente exclusivas.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

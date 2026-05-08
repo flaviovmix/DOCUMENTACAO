@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visão Geral — Relacionamentos — SQL — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Visão Geral — Relacionamentos</h1>
+
+<div class="audio-player" data-src="audio/visao-geral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Banco de dados relacional ganhou esse nome justamente porque as tabelas se conversam entre si. Uma tabela de pedido aponta pro cliente que fez o pedido. Uma tabela de produto aponta pra categoria a que pertence. Esse "apontar" é o que chamamos de <strong>relacionamento</strong> — e em SQL ele é feito com <strong>chave estrangeira</strong>.</p>
+
+<p>Essa página cobre o panorama: o que é uma chave estrangeira, os 3 tipos de cardinalidade (1-1, 1-N, N-N), o papel da tabela associativa e as regras de ON DELETE/UPDATE. Os detalhes de cada tipo entram em páginas próprias da trilha.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Chave primária e chave estrangeira — o mecanismo</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Toda tabela tem uma <strong>chave primária</strong> (PK) — uma coluna (geralmente <code>id</code>) cujo valor é único pra cada linha. É o RG da linha.</p>
+
+            <p>Quando uma tabela quer apontar pra outra, ela guarda o valor da PK da outra numa coluna própria. Essa coluna se chama <strong>chave estrangeira</strong> (FK, foreign key).</p>
+
+            <pre><code class="language-sql">-- tabela referenciada (lado "1")
+CREATE TABLE categoria (
+    id   SERIAL PRIMARY KEY,
+    nome TEXT NOT NULL
+);
+
+-- tabela que aponta (lado "N")
+CREATE TABLE produto (
+    id           SERIAL PRIMARY KEY,
+    nome         TEXT NOT NULL,
+    categoria_id INTEGER REFERENCES categoria(id)
+);</code></pre>
+
+            <p>A linha <code>REFERENCES categoria(id)</code> é o que cria a FK. A partir desse momento o banco passa a <strong>garantir integridade</strong>: não dá pra inserir um produto com <code>categoria_id = 999</code> se não existir uma categoria com <code>id = 999</code>. O banco bloqueia.</p>
+
+            <p>Esse é o ponto principal: relacionamento em SQL não é uma convenção de programador, é uma regra que o próprio banco força.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Cardinalidade — quantos de um lado, quantos do outro</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Quando duas tabelas se conectam, a primeira pergunta é: <strong>quantas linhas de um lado podem se ligar a quantas do outro?</strong> Essa resposta é a <strong>cardinalidade</strong>.</p>
+
+            <p>Existem 3 cardinalidades em SQL:</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Tipo</th><th>Leitura</th><th>Exemplo do dia a dia</th></tr>
+                    <tr><td><strong>1-1</strong></td><td>Uma linha de A liga em no máximo uma linha de B</td><td>Pessoa ↔ Passaporte</td></tr>
+                    <tr><td><strong>1-N</strong></td><td>Uma linha de A liga em várias linhas de B</td><td>Categoria ↔ Produtos</td></tr>
+                    <tr><td><strong>N-N</strong></td><td>Várias linhas de A ligam em várias linhas de B</td><td>Aluno ↔ Disciplinas</td></tr>
+                </table>
+            </div>
+
+            <p>O número antes do hífen é o lado A, depois é o lado B. <strong>1-N</strong> é de longe o tipo mais comum num sistema real — ~80% dos relacionamentos. <strong>N-N</strong> aparece sempre que existe uma "matrícula", "associação" ou "vínculo" entre dois cadastros independentes.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Um para um (1-1)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Cada linha de A se liga a no máximo uma linha de B, e vice-versa. É o tipo mais raro. Aparece principalmente em 2 cenários:</p>
+
+            <ol>
+                <li><strong>Separar dados sensíveis ou opcionais</strong> da tabela principal (ex: <code>usuario</code> + <code>usuario_perfil</code> com bio, foto, link de redes sociais).</li>
+                <li><strong>Especialização</strong> — uma tabela genérica + uma tabela com colunas extras de um subtipo (ex: <code>pessoa</code> + <code>pessoa_juridica</code> com CNPJ).</li>
+            </ol>
+
+            <pre><code class="language-sql">CREATE TABLE usuario (
+    id    SERIAL PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL
+);
+
+CREATE TABLE usuario_perfil (
+    usuario_id INTEGER PRIMARY KEY REFERENCES usuario(id),
+    bio        TEXT,
+    foto_url   TEXT
+);</code></pre>
+
+            <p>Repare no truque: a coluna <code>usuario_id</code> é PK e FK ao mesmo tempo. Como PK ela garante que não existem 2 perfis pro mesmo usuário (limita o lado B a 1). Como FK ela aponta pro usuário.</p>
+
+            <p>Na prática, 1-1 quase sempre poderia ter sido uma só tabela com mais colunas. Existe quando faz sentido separar fisicamente — por desempenho, por permissão, ou por organização.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Um para muitos (1-N)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O tipo mais comum. Uma linha do lado "1" pode aparecer em várias linhas do lado "N". O exemplo clássico é categoria de produto: uma categoria tem vários produtos, mas cada produto pertence a uma categoria só.</p>
+
+            <pre><code class="language-sql">CREATE TABLE categoria (
+    id   SERIAL PRIMARY KEY,
+    nome TEXT NOT NULL
+);
+
+CREATE TABLE produto (
+    id           SERIAL PRIMARY KEY,
+    nome         TEXT NOT NULL,
+    preco        NUMERIC(10,2),
+    categoria_id INTEGER NOT NULL REFERENCES categoria(id)
+);</code></pre>
+
+            <p><strong>A FK fica sempre no lado "N".</strong> Foi assim que o banco entende que o produto é o lado "muitos" e a categoria é o lado "um" — porque o produto carrega o ponteiro, não a categoria. Se a categoria carregasse o ponteiro, ela só conseguiria apontar pra um produto.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Cenário do dia a dia</th><th>Lado "1"</th><th>Lado "N"</th></tr>
+                    <tr><td>Pedido e itens</td><td>pedido</td><td>item_pedido</td></tr>
+                    <tr><td>Cliente e endereços</td><td>cliente</td><td>endereco</td></tr>
+                    <tr><td>Post e comentários</td><td>post</td><td>comentario</td></tr>
+                    <tr><td>Departamento e funcionários</td><td>departamento</td><td>funcionario</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Muitos para muitos (N-N) — a tabela associativa</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Quando os dois lados podem se ligar a vários do outro lado, FK simples não resolve. Exemplo: um aluno cursa várias disciplinas, e cada disciplina tem vários alunos. Se você colocasse <code>aluno_id</code> em <code>disciplina</code> só caberia um aluno; se colocasse <code>disciplina_id</code> em <code>aluno</code> só caberia uma disciplina.</p>
+
+            <p>A solução é uma <strong>terceira tabela</strong> — chamada de <strong>tabela associativa</strong> ou <strong>tabela de junção</strong> — que guarda os pares.</p>
+
+            <pre><code class="language-sql">CREATE TABLE aluno (
+    id   SERIAL PRIMARY KEY,
+    nome TEXT NOT NULL
+);
+
+CREATE TABLE disciplina (
+    id   SERIAL PRIMARY KEY,
+    nome TEXT NOT NULL
+);
+
+-- a tabela associativa
+CREATE TABLE matricula (
+    aluno_id      INTEGER NOT NULL REFERENCES aluno(id),
+    disciplina_id INTEGER NOT NULL REFERENCES disciplina(id),
+    PRIMARY KEY (aluno_id, disciplina_id)
+);</code></pre>
+
+            <p>Cada linha da <code>matricula</code> representa <strong>um vínculo</strong> entre um aluno e uma disciplina. A PK composta <code>(aluno_id, disciplina_id)</code> garante que o mesmo par não aparece duas vezes — não dá pra matricular o mesmo aluno na mesma disciplina duas vezes.</p>
+
+            <p>Olhando assim, a N-N é só um <strong>par de 1-N</strong>: aluno tem várias matrículas (1-N), disciplina tem várias matrículas (1-N), e a matrícula é o ponto onde os dois se encontram.</p>
+
+            <h3>Tabela associativa pode ter colunas próprias</h3>
+
+            <p>Não precisa ser só <code>aluno_id + disciplina_id</code>. Quando o vínculo carrega informação própria, a tabela ganha colunas extras:</p>
+
+            <pre><code class="language-sql">CREATE TABLE matricula (
+    aluno_id      INTEGER NOT NULL REFERENCES aluno(id),
+    disciplina_id INTEGER NOT NULL REFERENCES disciplina(id),
+    nota          NUMERIC(4,2),
+    data_matricula DATE NOT NULL DEFAULT CURRENT_DATE,
+    PRIMARY KEY (aluno_id, disciplina_id)
+);</code></pre>
+
+            <p><code>nota</code> e <code>data_matricula</code> não pertencem nem ao aluno nem à disciplina — pertencem ao vínculo. É justamente quando você precisa guardar uma propriedade do vínculo que a tabela associativa deixa de ser "técnica" e vira parte importante do modelo.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">ON DELETE e ON UPDATE — o que acontece quando o pai some</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Toda FK guarda uma referência. Pergunta natural: e se a linha referenciada for apagada? Se a categoria com <code>id = 5</code> for deletada, o que acontece com os produtos que apontavam pra ela?</p>
+
+            <p>Esse comportamento é definido na FK com as cláusulas <code>ON DELETE</code> e <code>ON UPDATE</code>. As 4 opções principais:</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Opção</th><th>O que faz quando o pai é apagado</th></tr>
+                    <tr><td><code>RESTRICT</code> (padrão)</td><td>Bloqueia o DELETE. Não deixa apagar a categoria enquanto existir produto apontando pra ela.</td></tr>
+                    <tr><td><code>CASCADE</code></td><td>Apaga em cascata. Deletou a categoria, todos os produtos dela vão junto.</td></tr>
+                    <tr><td><code>SET NULL</code></td><td>Deixa o filho órfão. <code>categoria_id</code> dos produtos vira <code>NULL</code> (a coluna precisa permitir nulo).</td></tr>
+                    <tr><td><code>SET DEFAULT</code></td><td>Coloca o valor default da coluna no lugar (ex: <code>categoria_id = 1</code> "Sem categoria").</td></tr>
+                </table>
+            </div>
+
+            <pre><code class="language-sql">CREATE TABLE produto (
+    id           SERIAL PRIMARY KEY,
+    nome         TEXT NOT NULL,
+    categoria_id INTEGER REFERENCES categoria(id)
+                 ON DELETE SET NULL
+                 ON UPDATE CASCADE
+);</code></pre>
+
+            <p>A escolha não é técnica — é de regra de negócio. Apagar pedido leva os itens junto? CASCADE. Apagar cliente é proibido enquanto tiver pedido? RESTRICT. Apagar categoria deixa os produtos sem categoria? SET NULL.</p>
+
+            <p>O <code>ON UPDATE</code> é mais raro — só importa quando a PK muda de valor (o que quase nunca acontece se a PK é <code>SERIAL</code>). Aparece mais quando a PK é uma string editável tipo um código.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Resumo</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <ul>
+                <li><strong>FK</strong> é uma coluna que guarda a PK de outra tabela. Cria a ponte entre duas tabelas e o banco força a integridade.</li>
+                <li><strong>Cardinalidade</strong> é "quantos de um lado, quantos do outro": 1-1, 1-N, N-N.</li>
+                <li><strong>1-N</strong> é o mais comum. FK fica sempre no lado "N".</li>
+                <li><strong>N-N</strong> precisa de uma tabela associativa (matrícula, vínculo, item_pedido). Pode ter colunas próprias quando o vínculo carrega informação.</li>
+                <li><strong>ON DELETE / ON UPDATE</strong> controlam o que acontece quando o pai some — RESTRICT bloqueia, CASCADE apaga junto, SET NULL deixa órfão.</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

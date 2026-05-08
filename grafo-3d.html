@@ -4,38 +4,70 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gráfico 3D — Nexus</title>
-    <script src="https://unpkg.com/three@0.150.1/build/three.min.js"></script>
+    <!-- three.js antes do 3d-force-graph (UMD) -->
+    <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three-spritetext@1.8.2/dist/three-spritetext.min.js"></script>
     <script src="https://unpkg.com/3d-force-graph@1.73.4/dist/3d-force-graph.min.js"></script>
     <script src="js/layout.js"></script>
     <style>
-        .grafo-header { margin-bottom: 12px; display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+        .grafo-header { margin-bottom: 12px; }
         .grafo-header h1 {
             margin: 0 0 4px 0;
             font-size: 1.6em;
             color: #1e293b;
         }
         .grafo-header p { margin: 0; color: #64748b; font-size: 0.9em; }
-        .grafo-header a {
-            color: #6366f1; text-decoration: none; font-size: 0.85em;
-            padding: 4px 10px; border: 1px solid #6366f1; border-radius: 6px;
-        }
-        .grafo-header a:hover { background: #6366f1; color: white; }
 
-        #grafo-container {
-            width: 100%;
-            height: calc(100vh - 180px);
-            min-height: 520px;
-            border: 1px solid #1e293b;
-            border-radius: 10px;
-            background:
-                linear-gradient(rgba(15, 16, 32, 0.55), rgba(15, 16, 32, 0.80)),
-                url('img/grafo-bg.png') center/cover no-repeat;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 0 80px rgba(0,0,0,0.3);
+        .grafo-legend {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin: 16px 0;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        .grafo-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8em;
+            color: #334155;
+        }
+        .grafo-legend-dot {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+        }
+
+        .grafo-wrap {
+            width: 80vw;
+            height: 70vh;
+            margin-left: calc(50% - 40vw);
+            position: relative;
             opacity: 0;
             animation: fadeIn 0.8s ease-out forwards;
+        }
+        #grafo-container {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            background: radial-gradient(ellipse at center, #1b1d2e 0%, #0f1020 100%);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 0 80px rgba(0,0,0,0.3);
             overflow: hidden;
             position: relative;
-            isolation: isolate;   /* stacking context próprio pro botão fullscreen */
+        }
+        .grafo-wrap:fullscreen,
+        .grafo-wrap:-webkit-full-screen {
+            width: 100vw;
+            height: 100vh;
+            margin-left: 0;
+        }
+        .grafo-wrap:fullscreen #grafo-container,
+        .grafo-wrap:-webkit-full-screen #grafo-container {
+            border-radius: 0;
+            border: none;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -49,40 +81,9 @@
             text-align: center;
         }
 
-        /* Botão tela cheia — no canto superior direito do header (.grafo-header é flex) */
-        #grafo-fullscreen {
-            margin-left: auto;
-            width: 36px; height: 36px;
-            background: rgba(15, 16, 32, 0.85);
-            border: 1px solid rgba(99, 102, 241, 0.7);
-            border-radius: 6px;
-            color: #e2e8f0;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.15s, border-color 0.15s, transform 0.15s;
-            padding: 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        #grafo-fullscreen:hover {
-            background: rgba(99, 102, 241, 0.3);
-            border-color: rgba(99, 102, 241, 0.9);
-            transform: scale(1.05);
-        }
-        #grafo-fullscreen svg { display: block; pointer-events: none; }
-        #grafo-container:fullscreen {
-            height: 100vh; width: 100vw;
-            border-radius: 0; border: none;
-        }
-        #grafo-container:-webkit-full-screen {
-            height: 100vh; width: 100vw;
-            border-radius: 0; border: none;
-        }
-
         /* PREVIEW flutuante */
         #grafo-preview {
-            position: absolute;
+            position: fixed;
             width: 420px;
             height: 290px;
             background: rgba(15, 16, 32, 0.95);
@@ -134,13 +135,72 @@
             color: #64748b;
             font-size: 0.85em;
         }
+
+        /* Toggle 2D ↔ 3D */
+        .grafo-switch {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 10;
+            display: flex;
+            gap: 6px;
+            background: rgba(15, 16, 32, 0.7);
+            padding: 6px;
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            border-radius: 8px;
+            backdrop-filter: blur(6px);
+        }
+        .grafo-switch a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 0.78em;
+            padding: 4px 10px;
+            border-radius: 5px;
+            transition: background 0.15s;
+        }
+        .grafo-switch a:hover,
+        .grafo-switch button:hover { background: rgba(99, 102, 241, 0.25); color: #fff; }
+        .grafo-switch a.active,
+        .grafo-switch .grafo-mode.active {
+            background: #6366f1;
+            color: #fff;
+        }
+        .grafo-switch .grafo-mode {
+            font-size: 0.78em;
+            padding: 4px 10px;
+            line-height: 1;
+        }
+        .grafo-switch button {
+            background: transparent;
+            border: none;
+            color: #cbd5e1;
+            cursor: pointer;
+            line-height: 0;
+            padding: 4px 6px;
+            border-radius: 5px;
+            transition: background 0.15s;
+            display: flex;
+            align-items: center;
+        }
+        .grafo-switch button svg {
+            width: 14px;
+            height: 14px;
+            display: block;
+        }
+        .grafo-switch .grafo-divider {
+            width: 1px;
+            background: rgba(99, 102, 241, 0.3);
+            margin: 0 2px;
+        }
     </style>
     <script>
-    // ─── Estrutura hierárquica do site (espelho do grafo.html) ────────
+    // ─── Estrutura hierárquica do site ────────────────────────────────
+    // Mesma fonte do grafo 2D — espelho fiel.
     var STRUCTURE = {
         id: 'root', label: 'Home', group: 'root',
         url: 'index.html',
         children: [
+            // ─── FUNDAMENTOS ─────────────────────────────────────────────
             {
                 id: 'fund', label: 'Fundamentos', group: 'fund',
                 url: 'pages/1-fundamentos/fundamentos.html',
@@ -215,6 +275,7 @@
                     }
                 ]
             },
+            // ─── JASAP ────────────────────────────────────────────────────
             {
                 id: 'ja', label: 'Jasap', group: 'jasap',
                 url: 'pages/2-jasap/jasap.html',
@@ -310,6 +371,7 @@
                     }
                 ]
             },
+            // ─── NEXUS ────────────────────────────────────────────────────
             {
                 id: 'nexus', label: 'Nexus', group: 'nexus',
                 url: 'pages/3-nexus/nexus.html',
@@ -341,6 +403,7 @@
                     { id: 'fxn', label: 'Faxina — Fase 1',  group: 'faxina', url: 'pages/3-nexus/4-fase-1-faxina/fase-1-faxina.html' }
                 ]
             },
+            // ─── INTERFACE ────────────────────────────────────────────────
             {
                 id: 'iface', label: 'Interface', group: 'interface',
                 url: 'pages/7-interface/interface.html',
@@ -348,6 +411,7 @@
                     { id: 'iface1', label: 'Visão Geral', group: 'interface', url: 'pages/7-interface/1-visao-geral/1-visao-geral.html' }
                 ]
             },
+            // ─── CLAUDE ───────────────────────────────────────────────────
             {
                 id: 'claude', label: 'Claude', group: 'claude',
                 url: 'pages/8-claude/claude.html',
@@ -355,13 +419,44 @@
                     { id: 'claude1', label: 'Carta Aberta', group: 'claude', url: 'pages/8-claude/1-carta-aberta/1-carta-aberta.html' }
                 ]
             },
+            // ─── REFERÊNCIA ───────────────────────────────────────────────
             { id: 'ref', label: 'Referência', group: 'ref', url: 'referencia/index.html' }
         ]
     };
 
-    // Flatten árvore → nodes + links
+    // Cores por grupo (mesmas do 2D — formato hex pra three.js)
+    var GROUP_COLORS = {
+        root:         '#fbbf24',
+        fund:         '#fb923c',
+        java:         '#14b8a6',
+        sql:          '#ec4899',
+        osi:          '#0ea5e9',
+        html:         '#ef4444',
+        hw:           '#64748b',
+        git:          '#dc2626',
+        jasap:        '#f97316',
+        nm:           '#a855f7',
+        crud:         '#3b82f6',
+        cr:           '#22d3ee',
+        cd:           '#f43f5e',
+        cc:           '#22c55e',
+        cu:           '#f59e0b',
+        func:         '#6366f1',
+        linkbox:      '#818cf8',
+        masterdetail: '#4f46e5',
+        nexus:        '#10b981',
+        componentes:  '#c084fc',
+        fase0:        '#34d399',
+        fase1:        '#059669',
+        faxina:       '#047857',
+        interface:    '#facc15',
+        claude:       '#d946ef',
+        ref:          '#cbd5e1'
+    };
+
+    // Percorre a árvore e gera nodes + edges
     var RAW_NODES = [];
-    var RAW_LINKS = [];
+    var RAW_EDGES = [];
     (function flatten(node, parentId) {
         RAW_NODES.push({
             id: node.id,
@@ -369,11 +464,11 @@
             group: node.group,
             url: node.url
         });
-        if (parentId) RAW_LINKS.push({ source: parentId, target: node.id });
+        if (parentId) RAW_EDGES.push({ source: parentId, target: node.id });
         (node.children || []).forEach(function(c) { flatten(c, node.id); });
     })(STRUCTURE, null);
 
-    // Conta descendentes (pra dimensionar)
+    // Conta descendentes pra dimensionar nó
     var DESCENDANTS = {};
     (function countDesc(node) {
         var total = 0;
@@ -384,191 +479,207 @@
         return total;
     })(STRUCTURE);
 
-    // Top-level boost
+    // Top-level (filhos diretos do root) — boost
     var TOP_LEVEL = {};
     (STRUCTURE.children || []).forEach(function(c) { TOP_LEVEL[c.id] = true; });
 
-    // ─── Render ────────────────────────────────────────────────────────
+    // Mapa pra hover holofote
+    var NEIGHBORS = {};
+    var NODE_BY_ID = {};
+    RAW_NODES.forEach(function(n) {
+        NEIGHBORS[n.id] = new Set();
+        NODE_BY_ID[n.id] = n;
+    });
+    RAW_EDGES.forEach(function(e) {
+        NEIGHBORS[e.source].add(e.target);
+        NEIGHBORS[e.target].add(e.source);
+    });
+
+    // ─── Espera container + libs ────────────────────────────────────────
     window.addEventListener('DOMContentLoaded', function() {
         var tries = 0;
         var interval = setInterval(function() {
             var container = document.getElementById('grafo-container');
-            var ready = container && typeof ForceGraph3D !== 'undefined' && typeof THREE !== 'undefined';
-            if (ready) {
+            if (container && typeof ForceGraph3D !== 'undefined' && typeof THREE !== 'undefined' && typeof SpriteText !== 'undefined') {
                 clearInterval(interval);
                 renderGrafo3D(container);
             } else if (++tries > 200) {
                 clearInterval(interval);
-                console.error('Grafo 3D: container, THREE ou ForceGraph3D não carregaram.');
+                console.error('Grafo 3D: container ou libs não carregaram.', {
+                    forceGraph: typeof ForceGraph3D,
+                    three: typeof THREE,
+                    sprite: typeof SpriteText
+                });
             }
         }, 50);
     });
 
     function renderGrafo3D(container) {
-        // Adiciona dados extras nos nodes
-        var nodes = RAW_NODES.map(function(n) {
+        function nodeSize(n) {
             var d = DESCENDANTS[n.id] || 0;
-            return Object.assign({}, n, {
-                descendants: d,
-                top: !!TOP_LEVEL[n.id]
-            });
-        });
-
-        // Cache de materiais (pra holofote no hover)
-        var nodeMaterials = {};
-
-        // Cria sprite branco (canvas circle) — billboard 2D no espaço 3D
-        function makeCircleSprite(node) {
-            var canvas = document.createElement('canvas');
-            var size = 64;
-            canvas.width = size;
-            canvas.height = size;
-            var ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, size, size);
-            // Glow externo
-            var gradient = ctx.createRadialGradient(size/2, size/2, size/4, size/2, size/2, size/2);
-            gradient.addColorStop(0, 'rgba(255,255,255,1)');
-            gradient.addColorStop(0.55, 'rgba(255,255,255,1)');
-            gradient.addColorStop(0.62, 'rgba(99,102,241,0.35)');
-            gradient.addColorStop(1, 'rgba(99,102,241,0)');
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.arc(size/2, size/2, size/2, 0, Math.PI * 2);
-            ctx.fill();
-
-            var texture = new THREE.CanvasTexture(canvas);
-            texture.minFilter = THREE.LinearFilter;
-            var material = new THREE.SpriteMaterial({
-                map: texture,
-                transparent: true,
-                depthWrite: false
-            });
-            nodeMaterials[node.id] = material;
-            var sprite = new THREE.Sprite(material);
-            var d = node.descendants || 0;
-            var topBoost = node.top ? 4 : 0;
-            var s = 5 + Math.sqrt(d) * 2.2 + topBoost;
-            sprite.scale.set(s, s, 1);
-            return sprite;
-        }
-
-        var Graph = ForceGraph3D({ rendererConfig: { alpha: true, antialias: true } })(container)
-            .graphData({ nodes: nodes, links: RAW_LINKS })
-            .backgroundColor('rgba(0,0,0,0)')      // usa o radial-gradient do CSS
-            .enableNavigationControls(true)
-            .enablePointerInteraction(true)
-            .showNavInfo(false)
-            .nodeLabel(function(n) { return n.label + ' — ' + n.url; })
-            .nodeThreeObject(makeCircleSprite)
-            .nodeThreeObjectExtend(false)
-            .linkColor(function() { return 'rgba(203, 213, 225, 0.75)'; })
-            .linkWidth(0.4)
-            .linkOpacity(0.6)
-            .cooldownTicks(120)
-            .cooldownTime(6000);
-
-        if (typeof Graph.autoPauseRedraw === 'function') Graph.autoPauseRedraw(false);
-        if (typeof Graph.resumeAnimation === 'function') Graph.resumeAnimation();
-
-        // Força física: ajusta pra ficar mais espaçado (sem amontoar)
-        Graph.d3Force('charge').strength(-180);
-        if (Graph.d3Force('link')) Graph.d3Force('link').distance(40);
-
-        var nodeIds = nodes.map(function(n) { return n.id; });
-        var connectedByNode = {};
-        nodeIds.forEach(function(id) { connectedByNode[id] = new Set([id]); });
-        RAW_LINKS.forEach(function(l) {
-            var s = typeof l.source === 'object' ? l.source.id : l.source;
-            var t = typeof l.target === 'object' ? l.target.id : l.target;
-            connectedByNode[s].add(t);
-            connectedByNode[t].add(s);
-        });
-
-        // ─── Hover holofote ────────────────────────────────────────
-        function setHighlight(node) {
-            if (!node) {
-                nodeIds.forEach(function(id) {
-                    nodeMaterials[id].opacity = 1;
-                });
-                Graph.linkColor(function() { return 'rgba(203, 213, 225, 0.75)'; })
-                     .linkWidth(0.4);
-                container.style.cursor = '';
-                return;
-            }
-
-            container.style.cursor = 'pointer';
-
-            var connected = connectedByNode[node.id];
-            nodeIds.forEach(function(id) {
-                nodeMaterials[id].opacity = connected.has(id) ? 1 : 0.12;
-            });
-
-            Graph.linkColor(function(l) {
-                var s = typeof l.source === 'object' ? l.source.id : l.source;
-                var t = typeof l.target === 'object' ? l.target.id : l.target;
-                var active = (s === node.id || t === node.id);
-                return active ? '#ffffff' : 'rgba(148, 163, 184, 0.05)';
-            }).linkWidth(function(l) {
-                var s = typeof l.source === 'object' ? l.source.id : l.source;
-                var t = typeof l.target === 'object' ? l.target.id : l.target;
-                return (s === node.id || t === node.id) ? 1.5 : 0.4;
-            });
+            var topBoost = TOP_LEVEL[n.id] ? 6 : 0;
+            // nodeVal vira raio = cbrt(val); então elevamos pra que diferenças apareçam
+            var r = 5 + Math.sqrt(d) * 4 + topBoost;
+            return r * r * r / 80;
         }
 
         var hoveredId = null;
+        var colorMode = 'colored';  // 'colored' | 'white'
+        var Graph = ForceGraph3D()(container)
+            .backgroundColor('rgba(0,0,0,0)')
+            .graphData({ nodes: RAW_NODES, links: RAW_EDGES })
+            .nodeId('id')
+            .nodeRelSize(4)
+            .nodeResolution(32)
+            .nodeVal(nodeSize)
+            .nodeColor(function(n) {
+                var base = (colorMode === 'white') ? '#ffffff' : (GROUP_COLORS[n.group] || '#94a3b8');
+                if (hoveredId === null) return base;
+                var conn = NEIGHBORS[hoveredId];
+                var active = (n.id === hoveredId) || (conn && conn.has(n.id));
+                return active ? base : 'rgba(80,90,120,0.18)';
+            })
+            .nodeOpacity(0.95)
+            .nodeThreeObjectExtend(true)
+            .nodeThreeObject(function(n) {
+                var sprite = new SpriteText(n.label);
+                sprite.material.depthWrite = false;
+                sprite.color = '#e2e8f0';
+                sprite.textHeight = TOP_LEVEL[n.id] ? 5 : (DESCENDANTS[n.id] > 0 ? 4 : 3);
+                sprite.position.y = 8 + Math.sqrt(DESCENDANTS[n.id] || 0) * 1.5;
+                return sprite;
+            })
+            .linkColor(function(l) {
+                if (hoveredId === null) return 'rgba(148,163,184,0.35)';
+                var sId = (l.source && l.source.id) || l.source;
+                var tId = (l.target && l.target.id) || l.target;
+                var active = (sId === hoveredId || tId === hoveredId);
+                return active ? '#ffffff' : 'rgba(148,163,184,0.05)';
+            })
+            .linkWidth(function(l) {
+                if (hoveredId === null) return 0.5;
+                var sId = (l.source && l.source.id) || l.source;
+                var tId = (l.target && l.target.id) || l.target;
+                return (sId === hoveredId || tId === hoveredId) ? 1.6 : 0.5;
+            })
+            .linkOpacity(0.6)
+            .enableNodeDrag(true)
+            .enableNavigationControls(true)
+            .showNavInfo(false);
 
-        // ─── Click vs Duplo-clique (3d-force-graph só dá click simples) ──
-        var lastClickTime = 0;
-        var lastClickId = null;
-        Graph.onNodeClick(function(node) {
-            var now = Date.now();
-            if (lastClickId === node.id && (now - lastClickTime) < 400) {
-                if (node.url) window.location.href = node.url;
-                lastClickTime = 0;
-                lastClickId = null;
-                return;
-            }
-            lastClickTime = now;
-            lastClickId = node.id;
+        // Repulsão um pouco maior pra ficar arejado
+        var charge = Graph.d3Force('charge');
+        if (charge) charge.strength(-120);
+
+        // Auto-rotação manual: gira a câmera ao redor do eixo Y (visualmente
+        // o "globo" gira no eixo X horizontal). Pausa durante drag e por 2s depois.
+        var camAngle = 0;
+        var camRadius = null;        // capturado após o fit inicial
+        var camRotatePaused = false;
+        var camRotateResumeTimer = null;
+        var camSpeed = 0.0025;        // radianos por frame; suba pra acelerar
+
+        // Pausa em qualquer movimento do mouse sobre o gráfico; retoma quando o
+        // mouse fica parado por 800ms ou sai do container.
+        function pauseRotation() {
+            camRotatePaused = true;
+            clearTimeout(camRotateResumeTimer);
+        }
+        function scheduleResume(delayMs) {
+            clearTimeout(camRotateResumeTimer);
+            camRotateResumeTimer = setTimeout(function() {
+                // Não retoma enquanto a prévia da página estiver aberta
+                var preview = document.getElementById('grafo-preview');
+                if (preview && preview.style.display === 'block') return;
+                var cam = Graph.cameraPosition();
+                camRadius = Math.sqrt(cam.x * cam.x + cam.z * cam.z) || camRadius;
+                camAngle = Math.atan2(cam.x, cam.z);
+                camRotatePaused = false;
+            }, delayMs);
+        }
+        container.addEventListener('mousemove', function() {
+            pauseRotation();
+            scheduleResume(800);
+        });
+        container.addEventListener('mouseleave', function() {
+            scheduleResume(0);
         });
 
-        // ─── Preview flutuante (igual ao 2D) ──────────────────────
+        (function rotateCam() {
+            requestAnimationFrame(rotateCam);
+            if (camRotatePaused || camRadius === null) return;
+            camAngle += camSpeed;
+            var cam = Graph.cameraPosition();
+            Graph.cameraPosition({
+                x: camRadius * Math.sin(camAngle),
+                z: camRadius * Math.cos(camAngle),
+                y: cam.y
+            });
+        })();
+
+        // Captura raio inicial assim que a estabilização termina e o fit roda
+        Graph.onEngineStop(function() {
+            if (camRadius !== null) return;
+            var cam = Graph.cameraPosition();
+            camRadius = Math.sqrt(cam.x * cam.x + cam.z * cam.z);
+            camAngle = Math.atan2(cam.x, cam.z);
+        });
+
+        // Resize on window
+        function resize() {
+            Graph.width(container.clientWidth);
+            Graph.height(container.clientHeight);
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // Modo de cor (Colorido / Branco)
+        document.querySelectorAll('.grafo-mode').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                colorMode = btn.dataset.mode;
+                document.querySelectorAll('.grafo-mode').forEach(function(b) {
+                    b.classList.toggle('active', b === btn);
+                });
+                Graph.nodeColor(Graph.nodeColor());
+            });
+        });
+
+        // Fullscreen toggle
+        var fsBtn = document.getElementById('grafo-fullscreen');
+        var wrap  = document.getElementById('grafo-wrap');
+        function toggleFullscreen() {
+            var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+            if (fsEl) {
+                (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+            } else {
+                (wrap.requestFullscreen || wrap.webkitRequestFullscreen).call(wrap);
+            }
+        }
+        if (fsBtn) fsBtn.addEventListener('click', toggleFullscreen);
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'f' || e.key === 'F') {
+                if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
+                toggleFullscreen();
+            }
+        });
+        document.addEventListener('fullscreenchange', resize);
+        document.addEventListener('webkitfullscreenchange', resize);
+
+        // ─── Preview flutuante (iframe) ──────────────────────────
         var previewEl     = document.getElementById('grafo-preview');
         var previewHeader = previewEl.querySelector('.grafo-preview-header');
         var previewFrame  = previewEl.querySelector('iframe');
         var previewLoader = previewEl.querySelector('.grafo-preview-loading');
         var previewDelay  = null;
-        var previewUnload = null;
-        var previewEnabled = true;
         var lastMouseX = 0, lastMouseY = 0;
-        var isDragging = false;
-
-        if (previewEl.parentNode !== container) container.appendChild(previewEl);
-        previewFrame.setAttribute('loading', 'lazy');
-
-        // Suprime preview enquanto o usuário arrasta o grafo (botão pressionado)
-        container.addEventListener('pointerdown', function() {
-            isDragging = true;
-            hidePreview();
-        }, { passive: true });
-        window.addEventListener('pointerup', function() {
-            isDragging = false;
-        }, { passive: true });
-        window.addEventListener('pointercancel', function() {
-            isDragging = false;
-        }, { passive: true });
 
         function positionPreview() {
-            var rect = container.getBoundingClientRect();
             var pad = 20;
             var w = 420, h = 290;
-            var localX = lastMouseX - rect.left;
-            var localY = lastMouseY - rect.top;
-            var x = localX + pad;
-            var y = localY + pad;
-            if (x + w > rect.width)  x = localX - pad - w;
-            if (y + h > rect.height) y = rect.height - h - pad;
-            if (x < pad) x = pad;
+            var x = lastMouseX + pad;
+            var y = lastMouseY + pad;
+            if (x + w > window.innerWidth)  x = lastMouseX - pad - w;
+            if (y + h > window.innerHeight) y = window.innerHeight - h - pad;
             if (y < pad) y = pad;
             previewEl.style.left = x + 'px';
             previewEl.style.top  = y + 'px';
@@ -584,176 +695,80 @@
             previewLoader.style.display = 'none';
         });
 
-        function hidePreview() {
-            clearTimeout(previewDelay);
-            previewEl.style.display = 'none';
-            clearTimeout(previewUnload);
-            previewUnload = setTimeout(function() {
-                previewFrame.removeAttribute('src');
-                previewLoader.style.display = 'none';
-            }, 250);
-        }
-
-        function setPreviewHeader(node) {
-            var small = document.createElement('small');
-            small.textContent = node.url;
-            previewHeader.textContent = node.label + ' ';
-            previewHeader.appendChild(small);
-        }
-
-        // Refaz onNodeHover combinando holofote + preview
+        // Hover: holofote + preview
         Graph.onNodeHover(function(node) {
-            // ── holofote ──
-            var newId = node ? node.id : null;
-            if (newId !== hoveredId) {
-                hoveredId = newId;
-                setHighlight(node);
-            }
+            hoveredId = node ? node.id : null;
+            // força refresh dos atributos visuais
+            Graph
+                .nodeColor(Graph.nodeColor())
+                .linkColor(Graph.linkColor())
+                .linkWidth(Graph.linkWidth());
 
-            // ── preview ──
-            if (!previewEnabled || isDragging || !node || !node.url) {
-                hidePreview();
+            if (!node) {
+                clearTimeout(previewDelay);
+                previewEl.style.display = 'none';
+                container.style.cursor = 'default';
+                scheduleResume(800);
                 return;
             }
-            setPreviewHeader(node);
+            container.style.cursor = 'pointer';
+            pauseRotation();
+
+            previewHeader.innerHTML = node.label + ' <small>' + node.url + '</small>';
             previewEl.style.display = 'block';
             positionPreview();
-            clearTimeout(previewUnload);
+
             clearTimeout(previewDelay);
             previewDelay = setTimeout(function() {
-                if (isDragging) return;
                 if (previewFrame.getAttribute('src') !== node.url) {
                     previewLoader.style.display = 'block';
                     previewFrame.src = node.url;
                 }
-            }, 1500);
+            }, 300);
         });
 
-        // ─── Resize handler ───────────────────────────────────────
-        function resize() {
-            Graph.width(container.clientWidth);
-            Graph.height(container.clientHeight);
-        }
-        resize();
-        window.addEventListener('resize', resize);
-
-        // ─── Botão fullscreen ─────────────────────────────────────
-        var fsBtn  = document.getElementById('grafo-fullscreen');
-        var fsIcon = document.getElementById('grafo-fullscreen-icon');
-        var ICON_EXPAND   = '<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>';
-        var ICON_COLLAPSE = '<polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/>';
-
-        function isFullscreen() {
-            return document.fullscreenElement || document.webkitFullscreenElement;
-        }
-        function toggleFullscreen() {
-            if (!isFullscreen()) {
-                (container.requestFullscreen || container.webkitRequestFullscreen).call(container);
-            } else {
-                (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+        // Duplo-clique abre a página (3d-force-graph não tem doubleClick nativo)
+        var lastClick = { id: null, time: 0 };
+        Graph.onNodeClick(function(node) {
+            var now = Date.now();
+            if (lastClick.id === node.id && now - lastClick.time < 350) {
+                if (node.url) window.location.href = node.url;
+                lastClick = { id: null, time: 0 };
+                return;
             }
-        }
-        if (fsBtn) fsBtn.addEventListener('click', toggleFullscreen);
-
-        // Atualiza ícone + redimensiona canvas
-        function onFsChange() {
-            if (fsIcon) fsIcon.innerHTML = isFullscreen() ? ICON_COLLAPSE : ICON_EXPAND;
-            setTimeout(resize, 80);
-        }
-        document.addEventListener('fullscreenchange',       onFsChange);
-        document.addEventListener('webkitfullscreenchange', onFsChange);
-
-        // Atalho de teclado: F
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'f' || e.key === 'F') {
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-                toggleFullscreen();
-            }
+            lastClick = { id: node.id, time: now };
+            // Single click: foca a câmera no nó
+            var distance = 80;
+            var distRatio = 1 + distance / Math.hypot(node.x || 1, node.y || 1, node.z || 1);
+            Graph.cameraPosition(
+                { x: (node.x || 0) * distRatio, y: (node.y || 0) * distRatio, z: (node.z || 0) * distRatio },
+                node,
+                1500
+            );
         });
-
-        // ─── Auto-rotação leve, coexistindo com OrbitControls ──
-        var controls = Graph.controls();
-
-        if (controls) {
-            controls.enabled = true;            // garante interação manual
-            controls.enableRotate = true;
-            controls.enableZoom = true;
-            controls.enablePan = true;
-            controls.autoRotate = false; // auto-orbit custom abaixo cobre os 3 eixos
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.1;
-        }
-
-        function wakeGraph() {
-            if (typeof Graph.resumeAnimation === 'function') Graph.resumeAnimation();
-        }
-        ['pointerdown', 'pointermove', 'wheel', 'touchstart', 'touchmove'].forEach(function(eventName) {
-            container.addEventListener(eventName, wakeGraph, { passive: true });
-        });
-        if (controls && controls.addEventListener) controls.addEventListener('change', wakeGraph);
-
-        Graph.onEngineStop(function() {
-            wakeGraph();
-        });
-
-        // ─── Auto-orbit nos 3 eixos (Lissajous) ───────────────────
-        // OrbitControls.autoRotate só gira em azimute (1 eixo). Aqui a câmera
-        // anda numa curva paramétrica com frequências distintas em x/y/z, dando
-        // a impressão de rotação nos 3 eixos. Pausa enquanto o usuário arrasta
-        // e retoma 2,5s depois (deixa o damping decair antes).
-        var orbitT = 0;
-        var orbitRadius = 320;
-        var orbitPaused = false;
-        var orbitResumeTimer = null;
-
-        container.addEventListener('pointerdown', function() {
-            orbitPaused = true;
-            clearTimeout(orbitResumeTimer);
-        }, { passive: true });
-        window.addEventListener('pointerup', function() {
-            clearTimeout(orbitResumeTimer);
-            orbitResumeTimer = setTimeout(function() { orbitPaused = false; }, 2500);
-        }, { passive: true });
-        window.addEventListener('pointercancel', function() {
-            clearTimeout(orbitResumeTimer);
-            orbitResumeTimer = setTimeout(function() { orbitPaused = false; }, 2500);
-        }, { passive: true });
-
-        (function tickOrbit() {
-            if (!orbitPaused) {
-                orbitT += 0.0025;
-                Graph.cameraPosition({
-                    x: orbitRadius * Math.sin(orbitT * 1.0),
-                    y: orbitRadius * Math.sin(orbitT * 0.7) * 0.55,
-                    z: orbitRadius * Math.cos(orbitT * 1.0)
-                }, undefined, 0);
-            }
-            requestAnimationFrame(tickOrbit);
-        })();
-
-        // Atualiza contador
-        var countEl = document.getElementById('grafo-count');
-        if (countEl) countEl.textContent = RAW_NODES.length;
     }
     </script>
 </head>
 <body>
 
     <div class="grafo-header">
-        <h1>Gráfico 3D do site</h1>
-        <p>Mapa em 3D (<span id="grafo-count"></span> páginas). Arraste pra rotacionar · scroll zoom · duplo-clique abre.</p>
-        <a href="grafo.html">← versão 2D</a>
-        <button id="grafo-fullscreen" title="Tela cheia (F)">
-            <svg id="grafo-fullscreen-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="15 3 21 3 21 9"/>
-                <polyline points="9 21 3 21 3 15"/>
-                <line x1="21" y1="3" x2="14" y2="10"/>
-                <line x1="3" y1="21" x2="10" y2="14"/>
-            </svg>
-        </button>
+        <h1>Gráfico do site — 3D</h1>
+        <p>Mapa em 3D de todas as páginas (<span id="grafo-count"></span> páginas). Arraste pra girar · scroll pra zoom · clique pra focar · duplo-clique abre.</p>
     </div>
 
-    <div id="grafo-container"></div>
+    <div class="grafo-wrap" id="grafo-wrap">
+        <div id="grafo-container"></div>
+        <div class="grafo-switch">
+            <button class="grafo-mode active" data-mode="colored">Colorido</button>
+            <button class="grafo-mode" data-mode="white">Branco</button>
+            <div class="grafo-divider"></div>
+            <button id="grafo-fullscreen" title="Tela cheia (F)" aria-label="Tela cheia">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>
+                </svg>
+            </button>
+        </div>
+    </div>
 
     <div id="grafo-preview">
         <div class="grafo-preview-header"></div>
@@ -763,7 +778,19 @@
         </div>
     </div>
 
-    <p class="grafo-hint">Arraste com o botão esquerdo (rotaciona) · botão direito (pan) · scroll zoom · hover acende conexões e mostra prévia · duplo-clique abre a página</p>
+    <p class="grafo-hint">Arraste pra girar a esfera · scroll pra zoom · hover acende conexões e mostra prévia · duplo-clique abre a página</p>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var wait = setInterval(function() {
+                var el = document.getElementById('grafo-count');
+                if (el) {
+                    el.textContent = RAW_NODES.length;
+                    clearInterval(wait);
+                }
+            }, 50);
+        });
+    </script>
 
 </body>
 </html>

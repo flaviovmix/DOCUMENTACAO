@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visão Geral — Algoritmos — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Visão Geral dos Algoritmos</h1>
+
+<div class="audio-player" data-src="audio/visao-geral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Um <strong>algoritmo</strong> é uma receita pra resolver um problema: uma sequência finita de passos que, dado um input, produz um output. Existe muito antes do computador — e a forma como a gente escreve algoritmos hoje é resultado de uma evolução de mais de 2 mil anos. Esta página percorre essa linha do tempo em 6 paradas, do papiro até o Clean Code.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">1. Antes do computador — algoritmo é mais velho que máquina</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A ideia de "passo a passo pra resolver um problema" não nasceu com a informática. Ela é matemática pura, e tem nomes bem antigos.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Quando</th><th>Quem</th><th>O quê</th></tr>
+                    <tr><td>~300 a.C.</td><td><strong>Euclides</strong></td><td>Algoritmo de Euclides — calcula MDC de dois números. Considerado o primeiro algoritmo formal documentado.</td></tr>
+                    <tr><td>séc. IX</td><td><strong>Al-Khwarizmi</strong></td><td>Matemático persa. O nome "algoritmo" vem da latinização do nome dele (Algoritmi). Também deu origem à palavra "álgebra".</td></tr>
+                    <tr><td>1843</td><td><strong>Ada Lovelace</strong></td><td>Escreveu o primeiro algoritmo destinado a uma máquina (a Máquina Analítica de Babbage, que nunca chegou a ser construída). É considerada a primeira programadora.</td></tr>
+                    <tr><td>1936</td><td><strong>Alan Turing</strong></td><td>Define formalmente o que é "computável" com a Máquina de Turing — modelo teórico que fundamenta a ciência da computação.</td></tr>
+                </table>
+            </div>
+
+            <p>Ou seja: quando o primeiro computador foi ligado, já tinha 2 mil anos de teoria de algoritmos esperando.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">2. A máquina nua — linguagem de máquina e Assembly</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Os primeiros computadores eletrônicos (anos 40) eram programados <strong>diretamente em binário</strong> — sequências de 0 e 1 que o processador entende como instruções.</p>
+
+            <h3>Linguagem de máquina</h3>
+            <p>Cada CPU tem um conjunto de instruções próprio. Uma instrução pra somar dois números pode ser algo como <code>10110000 01100001</code>. Programar assim é <strong>tedioso e propenso a erro</strong> — qualquer bit trocado quebra o programa.</p>
+
+            <h3>Assembly</h3>
+            <p>Veio em seguida como uma camada fina por cima do binário. Em vez de <code>10110000</code>, você escreve <code>MOV AL, 61h</code>. Cada instrução Assembly corresponde a uma instrução de máquina (relação 1:1), mas com nomes legíveis (mnemônicos).</p>
+
+            <pre><code class="language-x86asm">; soma dois números em Assembly x86
+MOV AX, 5      ; coloca 5 no registrador AX
+ADD AX, 3      ; soma 3 ao AX
+; AX agora vale 8</code></pre>
+
+            <p>Ainda é colado no hardware: você precisa saber quais registradores existem, como a CPU lê memória, etc. Não tem <code>if</code>, não tem <code>for</code>, não tem função — só <code>JUMP</code> (pular pra outro lugar do código).</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">3. As linguagens estruturadas — onde nasceu o for, while, if e função</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Anos 50 e 60. O custo de programar em Assembly era altíssimo — cada projeto reinventava a roda. Surgem as <strong>linguagens de alto nível</strong>: você escreve algo próximo da matemática e um <strong>compilador</strong> traduz pra Assembly.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Ano</th><th>Linguagem</th><th>Foco</th></tr>
+                    <tr><td>1957</td><td><strong>FORTRAN</strong></td><td>Cálculo científico. Primeira linguagem de alto nível com adoção real.</td></tr>
+                    <tr><td>1958</td><td><strong>LISP</strong></td><td>Inteligência artificial. Inventou o paradigma funcional.</td></tr>
+                    <tr><td>1958</td><td><strong>ALGOL</strong></td><td>Linguagem acadêmica. <strong>Inventou os blocos de código, o if/then/else, o for, o while e o conceito de função recursiva.</strong></td></tr>
+                    <tr><td>1959</td><td><strong>COBOL</strong></td><td>Aplicações comerciais. Ainda roda em bancos hoje.</td></tr>
+                    <tr><td>1972</td><td><strong>C</strong></td><td>Síntese: rápido como Assembly, estruturado como ALGOL. Vira a base do mundo Unix e fundação de quase tudo que veio depois.</td></tr>
+                </table>
+            </div>
+
+            <h3>A revolução do ALGOL</h3>
+            <p>Quando alguém pergunta "onde foram criados os <code>for</code>, <code>while</code>, <code>if</code>, e funções?" — a resposta é <strong>ALGOL 58/60</strong>. Antes dele, o controle de fluxo era feito com <code>GOTO</code> (pular pra um número de linha). ALGOL inventou:</p>
+            <ul>
+                <li><strong>Blocos de código</strong> com <code>BEGIN</code>/<code>END</code> (depois viraria <code>{ }</code> no C)</li>
+                <li><strong>Estruturas de controle</strong>: <code>if-then-else</code>, <code>for</code>, <code>while</code></li>
+                <li><strong>Funções e procedimentos</strong> com parâmetros e recursão</li>
+                <li><strong>Escopo léxico</strong> de variáveis</li>
+            </ul>
+
+            <h3>Programação estruturada (1968)</h3>
+            <p>Edsger Dijkstra publica "<em>Go To Considered Harmful</em>" — um manifesto contra o uso de <code>GOTO</code>. Defende que todo algoritmo pode (e deve) ser escrito apenas com sequência, seleção (if) e repetição (loops). Esse paradigma ficou conhecido como <strong>programação estruturada</strong> e dominou os anos 70/80.</p>
+
+            <h3>A parada no C</h3>
+            <p>O C (Dennis Ritchie, 1972) consolidou tudo isso numa linguagem prática e portátil. Sintaxe enxuta, performance perto do Assembly, e a possibilidade de escrever <strong>sistemas operacionais inteiros</strong> (Unix). Java, JavaScript, Python, C# — todas herdam sintaxe do C.</p>
+
+            <pre><code class="language-c">// um algoritmo estruturado em C — soma de 1 a N
+int somatorio(int n) {
+    int total = 0;
+    for (int i = 1; i &lt;= n; i++) {
+        total += i;
+    }
+    return total;
+}</code></pre>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">4. Algoritmos viram ciência — Knuth, estruturas de dados e Big O</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Em 1968, <strong>Donald Knuth</strong> começa a publicar <em>The Art of Computer Programming</em> — uma série de livros que formaliza algoritmos como disciplina científica. A pergunta deixa de ser "esse código funciona?" e passa a ser <strong>"esse código é eficiente?"</strong>.</p>
+
+            <h3>Estruturas de dados clássicas</h3>
+            <p>Diferentes formas de organizar dados na memória, cada uma boa pra um tipo de operação:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Estrutura</th><th>Pra que serve</th><th>Exemplo</th></tr>
+                    <tr><td><strong>Array / Lista</strong></td><td>Acesso por índice</td><td>Lista de produtos no carrinho</td></tr>
+                    <tr><td><strong>Pilha (Stack)</strong></td><td>Último a entrar, primeiro a sair (LIFO)</td><td>Botão "voltar" do navegador</td></tr>
+                    <tr><td><strong>Fila (Queue)</strong></td><td>Primeiro a entrar, primeiro a sair (FIFO)</td><td>Fila de impressão</td></tr>
+                    <tr><td><strong>Hash / Dicionário</strong></td><td>Busca por chave em tempo constante</td><td>Cache de sessão por user_id</td></tr>
+                    <tr><td><strong>Árvore</strong></td><td>Hierarquia + busca rápida</td><td>Sistema de arquivos, índices de banco</td></tr>
+                    <tr><td><strong>Grafo</strong></td><td>Relações entre entidades</td><td>Rede social, mapa de ruas (GPS)</td></tr>
+                </table>
+            </div>
+
+            <h3>Big O — medindo "rápido" e "lento"</h3>
+            <p>Notação que descreve <strong>como o tempo cresce conforme o input cresce</strong>, ignorando constantes. É o vocabulário universal pra dizer se um algoritmo escala.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Big O</th><th>Como cresce</th><th>Exemplo</th></tr>
+                    <tr><td><code>O(1)</code></td><td>Constante</td><td>Acesso a item de array por índice</td></tr>
+                    <tr><td><code>O(log n)</code></td><td>Logarítmico — muito bom</td><td>Busca binária, busca em árvore balanceada</td></tr>
+                    <tr><td><code>O(n)</code></td><td>Linear</td><td>Percorrer uma lista</td></tr>
+                    <tr><td><code>O(n log n)</code></td><td>Bom pra ordenação</td><td>MergeSort, QuickSort</td></tr>
+                    <tr><td><code>O(n²)</code></td><td>Quadrático — ruim em listas grandes</td><td>BubbleSort, dois loops aninhados</td></tr>
+                    <tr><td><code>O(2ⁿ)</code></td><td>Exponencial — proibitivo</td><td>Força bruta em problemas combinatórios</td></tr>
+                </table>
+            </div>
+
+            <p>Ordenar 1 milhão de itens com BubbleSort (<code>O(n²)</code>) leva minutos; com QuickSort (<code>O(n log n)</code>) leva milissegundos. Mesmo input, mesma máquina — só muda o algoritmo.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">5. Outros paradigmas — não foi só procedural → OO</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A história costuma ser contada como uma linha reta: máquina → estruturada → orientada a objetos. Mas a evolução foi <strong>vários paradigmas em paralelo</strong>, cada um resolvendo o problema do seu jeito.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Paradigma</th><th>Ideia central</th><th>Linguagens</th></tr>
+                    <tr><td><strong>Imperativo / Procedural</strong></td><td>Sequência de comandos que mudam estado</td><td>C, Pascal, FORTRAN</td></tr>
+                    <tr><td><strong>Orientado a Objetos</strong></td><td>Dados + comportamento juntos em classes</td><td>Smalltalk (1972), C++, Java</td></tr>
+                    <tr><td><strong>Funcional</strong></td><td>Funções puras, sem estado mutável</td><td>Lisp (1958), Haskell, Erlang</td></tr>
+                    <tr><td><strong>Lógico</strong></td><td>Você declara fatos e regras; a máquina deduz a resposta</td><td>Prolog (1972)</td></tr>
+                    <tr><td><strong>Declarativo</strong></td><td>Diz <em>o que</em> quer, não <em>como</em> obter</td><td>SQL (1974), HTML</td></tr>
+                </table>
+            </div>
+
+            <h3>O retorno do funcional</h3>
+            <p>Por décadas, OO dominou. Mas a partir de 2010 o estilo funcional voltou forte — Java 8 ganhou lambdas e <code>Stream</code>, JavaScript adotou <code>map</code>/<code>filter</code>/<code>reduce</code>, Kotlin e Scala misturam OO com funcional.</p>
+
+            <pre><code class="language-java">// estilo procedural
+int total = 0;
+for (Pedido p : pedidos) {
+    if (p.isPago()) {
+        total += p.getValor();
+    }
+}
+
+// estilo funcional (Java 8+)
+int total = pedidos.stream()
+    .filter(Pedido::isPago)
+    .mapToInt(Pedido::getValor)
+    .sum();</code></pre>
+
+            <p>Os dois fazem a mesma coisa, mas o segundo expressa <strong>a intenção</strong>, não o passo a passo. É a mesma onda do SQL — você diz "me dá os pagos", não "percorra a lista um por um".</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">6. OO e o caminho até o Clean Code</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Conforme os sistemas cresceram (anos 80/90), ficou claro que escrever um algoritmo que <em>funciona</em> não basta — ele precisa ser <strong>legível, testável e modificável</strong>. Surgem livros e movimentos focados em <strong>qualidade de código</strong>.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Ano</th><th>Marco</th><th>Contribuição</th></tr>
+                    <tr><td>1972</td><td><strong>Smalltalk</strong></td><td>Primeira linguagem 100% orientada a objetos. Define os conceitos de classe, objeto, mensagem, herança.</td></tr>
+                    <tr><td>1994</td><td><strong>Design Patterns (Gang of Four)</strong></td><td>23 padrões reutilizáveis pra problemas recorrentes em OO: Singleton, Factory, Observer, Strategy, etc.</td></tr>
+                    <tr><td>1999</td><td><strong>Refactoring (Martin Fowler)</strong></td><td>Catalogou 70+ refatorações com nome próprio: <em>Extract Method</em>, <em>Rename Variable</em>, <em>Replace Conditional with Polymorphism</em>.</td></tr>
+                    <tr><td>1999</td><td><strong>TDD (Kent Beck)</strong></td><td>Escrever o teste antes do código. Ciclo "red → green → refactor".</td></tr>
+                    <tr><td>2000s</td><td><strong>SOLID (Robert Martin)</strong></td><td>5 princípios pra OO escalável: SRP, OCP, LSP, ISP, DIP.</td></tr>
+                    <tr><td>2008</td><td><strong>Clean Code (Robert Martin)</strong></td><td>Síntese de tudo acima — nomes claros, funções pequenas, sem comentários redundantes, testes confiáveis.</td></tr>
+                </table>
+            </div>
+
+            <h3>O que mudou na cabeça do programador</h3>
+            <p>Antes: "se compila e roda, tá bom". Depois: <strong>código é lido 10x mais vezes do que escrito</strong> — e o leitor é você daqui a 6 meses, ou um colega novo. O algoritmo continua sendo o mesmo, mas como ele é <em>expresso</em> ganha tanta importância quanto se ele <em>funciona</em>.</p>
+
+            <pre><code class="language-java">// "funciona" mas é difícil de ler
+public boolean v(User u) {
+    return u != null && u.s == 1 && u.t &gt; 0;
+}
+
+// Clean Code — o nome conta a história
+public boolean isUserActive(User user) {
+    return user != null
+        &amp;&amp; user.getStatus() == STATUS_ACTIVE
+        &amp;&amp; user.getRemainingTokens() &gt; 0;
+}</code></pre>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Linha do tempo — resumo</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Era</th><th>Período</th><th>Marco</th></tr>
+                    <tr><td>1. Pré-computador</td><td>300 a.C. – 1936</td><td>Euclides → Al-Khwarizmi → Lovelace → Turing</td></tr>
+                    <tr><td>2. A máquina nua</td><td>1940s</td><td>Linguagem de máquina, Assembly</td></tr>
+                    <tr><td>3. Estruturadas</td><td>1957 – 1972</td><td>FORTRAN → ALGOL (for/while/if) → C</td></tr>
+                    <tr><td>4. Algoritmos como ciência</td><td>1968+</td><td>Knuth, estruturas de dados, Big O</td></tr>
+                    <tr><td>5. Outros paradigmas</td><td>1958+</td><td>Lisp (funcional), Prolog (lógico), SQL (declarativo)</td></tr>
+                    <tr><td>6. OO e qualidade</td><td>1972 – 2008</td><td>Smalltalk → GoF → Refactoring → SOLID → Clean Code</td></tr>
+                </table>
+            </div>
+            <p>Cada era resolveu um problema da anterior: máquina nua era impraticável → estruturadas. Estruturadas viraram caóticas em sistemas grandes → OO. OO virou bagunçada → Clean Code. A próxima era já está em curso (IA gerando código), e provavelmente vai cobrar a próxima conta.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

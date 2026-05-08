@@ -278,11 +278,9 @@ body {
 
 #topbar-title:hover { color: #1d4ed8; }
 
-/* BOTÕES GRÁFICO (centralizados no topbar) */
+/* BOTÕES GRÁFICO (lado direito, antes do zoom) */
 #topbar-grafo-group {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    margin-left: auto;
     display: flex;
     gap: 4px;
 }
