@@ -871,16 +871,26 @@ document.addEventListener('DOMContentLoaded', async function() {
             '<button id="hamburger" onclick="toggleDrawer()"><span></span><span></span><span></span></button>' +
             '<a id="topbar-title" href="' + BASE + 'index.html">Nexus</a>' +
             breadcrumbHTML +
-            '<a id="topbar-grafo" href="' + BASE + 'grafo.html" title="Ver grafo de páginas">' +
-                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
-                    '<circle cx="5" cy="12" r="3"/>' +
-                    '<circle cx="19" cy="5" r="3"/>' +
-                    '<circle cx="19" cy="19" r="3"/>' +
-                    '<line x1="7.5" y1="10.5" x2="16.5" y2="6.5"/>' +
-                    '<line x1="7.5" y1="13.5" x2="16.5" y2="17.5"/>' +
-                '</svg>' +
-                '<span>Gráfico</span>' +
-            '</a>' +
+            '<div id="topbar-grafo-group">' +
+                '<a id="topbar-grafo" href="' + BASE + 'grafo.html" title="Ver grafo de páginas (2D)">' +
+                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                        '<circle cx="5" cy="12" r="3"/>' +
+                        '<circle cx="19" cy="5" r="3"/>' +
+                        '<circle cx="19" cy="19" r="3"/>' +
+                        '<line x1="7.5" y1="10.5" x2="16.5" y2="6.5"/>' +
+                        '<line x1="7.5" y1="13.5" x2="16.5" y2="17.5"/>' +
+                    '</svg>' +
+                    '<span>Gráfico</span>' +
+                '</a>' +
+                '<a id="topbar-grafo-3d" href="' + BASE + 'grafo-3d.html" title="Ver grafo de páginas (3D)">' +
+                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                        '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>' +
+                        '<polyline points="3.27 6.96 12 12.01 20.73 6.96"/>' +
+                        '<line x1="12" y1="22.08" x2="12" y2="12"/>' +
+                    '</svg>' +
+                    '<span>3D</span>' +
+                '</a>' +
+            '</div>' +
             zoomHTML +
         '</div>' +
         '<div id="layout">' +

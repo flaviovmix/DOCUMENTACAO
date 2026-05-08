@@ -3,50 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gráfico — Nexus</title>
-    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <title>Gráfico 3D — Nexus</title>
+    <script src="https://unpkg.com/three@0.150.1/build/three.min.js"></script>
+    <script src="https://unpkg.com/3d-force-graph@1.73.4/dist/3d-force-graph.min.js"></script>
     <script src="js/layout.js"></script>
     <style>
-        .grafo-header { margin-bottom: 12px; }
+        .grafo-header { margin-bottom: 12px; display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
         .grafo-header h1 {
             margin: 0 0 4px 0;
             font-size: 1.6em;
             color: #1e293b;
         }
         .grafo-header p { margin: 0; color: #64748b; font-size: 0.9em; }
-
-        .grafo-legend {
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-            margin: 16px 0;
-            padding: 12px 16px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
+        .grafo-header a {
+            color: #6366f1; text-decoration: none; font-size: 0.85em;
+            padding: 4px 10px; border: 1px solid #6366f1; border-radius: 6px;
         }
-        .grafo-legend-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.8em;
-            color: #334155;
-        }
-        .grafo-legend-dot {
-            width: 12px; height: 12px;
-            border-radius: 50%;
-        }
+        .grafo-header a:hover { background: #6366f1; color: white; }
 
         #grafo-container {
             width: 100%;
-            height: calc(100vh - 280px);
+            height: calc(100vh - 180px);
             min-height: 520px;
             border: 1px solid #1e293b;
             border-radius: 10px;
-            background: radial-gradient(ellipse at center, #1b1d2e 0%, #0f1020 100%);
+            background:
+                linear-gradient(rgba(15, 16, 32, 0.55), rgba(15, 16, 32, 0.80)),
+                url('img/grafo-bg.png') center/cover no-repeat;
             box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 0 80px rgba(0,0,0,0.3);
             opacity: 0;
             animation: fadeIn 0.8s ease-out forwards;
+            overflow: hidden;
+            position: relative;
+            isolation: isolate;   /* stacking context próprio pro botão fullscreen */
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -60,9 +49,40 @@
             text-align: center;
         }
 
+        /* Botão tela cheia — no canto superior direito do header (.grafo-header é flex) */
+        #grafo-fullscreen {
+            margin-left: auto;
+            width: 36px; height: 36px;
+            background: rgba(15, 16, 32, 0.85);
+            border: 1px solid rgba(99, 102, 241, 0.7);
+            border-radius: 6px;
+            color: #e2e8f0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s, border-color 0.15s, transform 0.15s;
+            padding: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        #grafo-fullscreen:hover {
+            background: rgba(99, 102, 241, 0.3);
+            border-color: rgba(99, 102, 241, 0.9);
+            transform: scale(1.05);
+        }
+        #grafo-fullscreen svg { display: block; pointer-events: none; }
+        #grafo-container:fullscreen {
+            height: 100vh; width: 100vw;
+            border-radius: 0; border: none;
+        }
+        #grafo-container:-webkit-full-screen {
+            height: 100vh; width: 100vw;
+            border-radius: 0; border: none;
+        }
+
         /* PREVIEW flutuante */
         #grafo-preview {
-            position: fixed;
+            position: absolute;
             width: 420px;
             height: 290px;
             background: rgba(15, 16, 32, 0.95);
@@ -116,13 +136,11 @@
         }
     </style>
     <script>
-    // ─── Estrutura hierárquica do site ────────────────────────────────
-    // Cada página vira um nó. Arestas = relação pai/filho do menu.
+    // ─── Estrutura hierárquica do site (espelho do grafo.html) ────────
     var STRUCTURE = {
         id: 'root', label: 'Home', group: 'root',
         url: 'index.html',
         children: [
-            // ─── FUNDAMENTOS ─────────────────────────────────────────────
             {
                 id: 'fund', label: 'Fundamentos', group: 'fund',
                 url: 'pages/1-fundamentos/fundamentos.html',
@@ -197,7 +215,6 @@
                     }
                 ]
             },
-            // ─── JASAP ────────────────────────────────────────────────────
             {
                 id: 'ja', label: 'Jasap', group: 'jasap',
                 url: 'pages/2-jasap/jasap.html',
@@ -293,7 +310,6 @@
                     }
                 ]
             },
-            // ─── NEXUS ────────────────────────────────────────────────────
             {
                 id: 'nexus', label: 'Nexus', group: 'nexus',
                 url: 'pages/3-nexus/nexus.html',
@@ -325,7 +341,6 @@
                     { id: 'fxn', label: 'Faxina — Fase 1',  group: 'faxina', url: 'pages/3-nexus/4-fase-1-faxina/fase-1-faxina.html' }
                 ]
             },
-            // ─── INTERFACE ────────────────────────────────────────────────
             {
                 id: 'iface', label: 'Interface', group: 'interface',
                 url: 'pages/7-interface/interface.html',
@@ -333,7 +348,6 @@
                     { id: 'iface1', label: 'Visão Geral', group: 'interface', url: 'pages/7-interface/1-visao-geral/1-visao-geral.html' }
                 ]
             },
-            // ─── CLAUDE ───────────────────────────────────────────────────
             {
                 id: 'claude', label: 'Claude', group: 'claude',
                 url: 'pages/8-claude/claude.html',
@@ -341,27 +355,25 @@
                     { id: 'claude1', label: 'Carta Aberta', group: 'claude', url: 'pages/8-claude/1-carta-aberta/1-carta-aberta.html' }
                 ]
             },
-            // ─── REFERÊNCIA ───────────────────────────────────────────────
             { id: 'ref', label: 'Referência', group: 'ref', url: 'referencia/index.html' }
         ]
     };
 
-    // Percorre a árvore e gera nodes + edges
+    // Flatten árvore → nodes + links
     var RAW_NODES = [];
-    var RAW_EDGES = [];
+    var RAW_LINKS = [];
     (function flatten(node, parentId) {
         RAW_NODES.push({
             id: node.id,
             label: node.label,
             group: node.group,
-            url: node.url,
-            title: node.url
+            url: node.url
         });
-        if (parentId) RAW_EDGES.push([parentId, node.id]);
+        if (parentId) RAW_LINKS.push({ source: parentId, target: node.id });
         (node.children || []).forEach(function(c) { flatten(c, node.id); });
     })(STRUCTURE, null);
 
-    // Conta quantos descendentes cada nó tem (recursivo)
+    // Conta descendentes (pra dimensionar)
     var DESCENDANTS = {};
     (function countDesc(node) {
         var total = 0;
@@ -372,178 +384,191 @@
         return total;
     })(STRUCTURE);
 
-    // ─── Espera container + lib ────────────────────────────────────────
+    // Top-level boost
+    var TOP_LEVEL = {};
+    (STRUCTURE.children || []).forEach(function(c) { TOP_LEVEL[c.id] = true; });
+
+    // ─── Render ────────────────────────────────────────────────────────
     window.addEventListener('DOMContentLoaded', function() {
         var tries = 0;
         var interval = setInterval(function() {
             var container = document.getElementById('grafo-container');
-            if (container && typeof vis !== 'undefined') {
+            var ready = container && typeof ForceGraph3D !== 'undefined' && typeof THREE !== 'undefined';
+            if (ready) {
                 clearInterval(interval);
-                renderGrafo(container);
-            } else if (++tries > 100) {
+                renderGrafo3D(container);
+            } else if (++tries > 200) {
                 clearInterval(interval);
-                console.error('Grafo: container ou vis-network não carregaram.');
+                console.error('Grafo 3D: container, THREE ou ForceGraph3D não carregaram.');
             }
         }, 50);
     });
 
-    function renderGrafo(container) {
-        // Seções top-level do site (filhos diretos do root) — ganham boost
-        // mesmo sem sub-páginas, porque são "assuntos grandes" por mérito próprio.
-        var TOP_LEVEL = {};
-        (STRUCTURE.children || []).forEach(function(c) { TOP_LEVEL[c.id] = true; });
-
-        // Tamanho baseado em nº de descendentes + boost pra top-level
-        var nodes = new vis.DataSet(RAW_NODES.map(function(n) {
+    function renderGrafo3D(container) {
+        // Adiciona dados extras nos nodes
+        var nodes = RAW_NODES.map(function(n) {
             var d = DESCENDANTS[n.id] || 0;
-            var topBoost = TOP_LEVEL[n.id] ? 8 : 0;   // garante visibilidade
             return Object.assign({}, n, {
-                size:  10 + Math.sqrt(d) * 7 + topBoost,
-                font: { size: 11 + Math.sqrt(d) * 1.2 + (TOP_LEVEL[n.id] ? 1 : 0), color: '#e2e8f0' },
-                mass: TOP_LEVEL[n.id] ? 2 : 1,         // mais massa = menos empurrados
-                color: { background: '#ffffff', border: '#ffffff', highlight: { background: '#ffffff', border: '#ffffff' }, hover: { background: '#ffffff', border: '#ffffff' } }
+                descendants: d,
+                top: !!TOP_LEVEL[n.id]
             });
-        }));
+        });
 
-        var edges = new vis.DataSet(RAW_EDGES.map(function(e, i) {
-            return {
-                id: 'e' + i,
-                from: e[0],
-                to: e[1],
-                color: { color: 'rgba(148, 163, 184, 0.4)', highlight: '#ffffff' },
-                width: 1,
-                smooth: { type: 'dynamic', roundness: 0.5 }
-            };
-        }));
+        // Cache de materiais (pra holofote no hover)
+        var nodeMaterials = {};
 
-        var options = {
-            nodes: {
-                shape: 'dot',
-                borderWidth: 0,
-                font: {
-                    color: '#e2e8f0',
-                    face: 'Segoe UI, sans-serif',
-                    strokeWidth: 0
-                },
-                shadow: { enabled: true, size: 14, x: 0, y: 0, color: 'rgba(99, 102, 241, 0.3)' }
-            },
-            edges: {
-                arrows: { to: { enabled: false } },
-                smooth: { type: 'dynamic', roundness: 0.5 },
-                hoverWidth: 1.5,
-                selectionWidth: 2
-            },
-            groups: {
-                root:         { color: { background: '#fbbf24', border: '#f59e0b' }, font: { color: '#1e293b' } },
-                fund:         { color: { background: '#fb923c', border: '#fdba74' } },
-                java:         { color: { background: '#14b8a6', border: '#2dd4bf' } },
-                sql:          { color: { background: '#ec4899', border: '#f472b6' } },
-                osi:          { color: { background: '#0ea5e9', border: '#38bdf8' } },
-                html:         { color: { background: '#ef4444', border: '#f87171' } },
-                hw:           { color: { background: '#64748b', border: '#94a3b8' } },
-                git:          { color: { background: '#dc2626', border: '#ef4444' } },
-                jasap:        { color: { background: '#f97316', border: '#fb923c' } },
-                nm:           { color: { background: '#a855f7', border: '#c084fc' } },
-                crud:         { color: { background: '#3b82f6', border: '#60a5fa' } },
-                cr:           { color: { background: '#22d3ee', border: '#67e8f9' }, font: { color: '#0f172a' } },
-                cd:           { color: { background: '#f43f5e', border: '#fb7185' } },
-                cc:           { color: { background: '#22c55e', border: '#4ade80' }, font: { color: '#0f172a' } },
-                cu:           { color: { background: '#f59e0b', border: '#fbbf24' }, font: { color: '#0f172a' } },
-                func:         { color: { background: '#6366f1', border: '#818cf8' } },
-                linkbox:      { color: { background: '#818cf8', border: '#a5b4fc' } },
-                masterdetail: { color: { background: '#4f46e5', border: '#6366f1' } },
-                nexus:        { color: { background: '#10b981', border: '#34d399' } },
-                componentes:  { color: { background: '#c084fc', border: '#d8b4fe' } },
-                fase0:        { color: { background: '#34d399', border: '#6ee7b7' }, font: { color: '#0f172a' } },
-                fase1:        { color: { background: '#059669', border: '#10b981' } },
-                faxina:       { color: { background: '#047857', border: '#059669' } },
-                interface:    { color: { background: '#facc15', border: '#fde047' }, font: { color: '#0f172a' } },
-                claude:       { color: { background: '#d946ef', border: '#e879f9' } },
-                ref:          { color: { background: '#cbd5e1', border: '#e2e8f0' }, font: { color: '#0f172a' } }
-            },
-            physics: {
-                enabled: true,
-                barnesHut: {
-                    gravitationalConstant: -9000,
-                    centralGravity: 0.2,
-                    springLength: 130,
-                    springConstant: 0.015,
-                    damping: 0.2,
-                    avoidOverlap: 0.5
-                },
-                minVelocity: 0.01,
-                stabilization: { iterations: 300 }
-            },
-            interaction: {
-                hover: true,
-                tooltipDelay: 150,
-                navigationButtons: false,
-                keyboard: true,
-                zoomView: true,
-                dragNodes: true,
-                dragView: true
+        // Cria sprite branco (canvas circle) — billboard 2D no espaço 3D
+        function makeCircleSprite(node) {
+            var canvas = document.createElement('canvas');
+            var size = 64;
+            canvas.width = size;
+            canvas.height = size;
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, size, size);
+            // Glow externo
+            var gradient = ctx.createRadialGradient(size/2, size/2, size/4, size/2, size/2, size/2);
+            gradient.addColorStop(0, 'rgba(255,255,255,1)');
+            gradient.addColorStop(0.55, 'rgba(255,255,255,1)');
+            gradient.addColorStop(0.62, 'rgba(99,102,241,0.35)');
+            gradient.addColorStop(1, 'rgba(99,102,241,0)');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2, 0, Math.PI * 2);
+            ctx.fill();
+
+            var texture = new THREE.CanvasTexture(canvas);
+            texture.minFilter = THREE.LinearFilter;
+            var material = new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true,
+                depthWrite: false
+            });
+            nodeMaterials[node.id] = material;
+            var sprite = new THREE.Sprite(material);
+            var d = node.descendants || 0;
+            var topBoost = node.top ? 4 : 0;
+            var s = 5 + Math.sqrt(d) * 2.2 + topBoost;
+            sprite.scale.set(s, s, 1);
+            return sprite;
+        }
+
+        var Graph = ForceGraph3D({ rendererConfig: { alpha: true, antialias: true } })(container)
+            .graphData({ nodes: nodes, links: RAW_LINKS })
+            .backgroundColor('rgba(0,0,0,0)')      // usa o radial-gradient do CSS
+            .enableNavigationControls(true)
+            .enablePointerInteraction(true)
+            .showNavInfo(false)
+            .nodeLabel(function(n) { return n.label + ' — ' + n.url; })
+            .nodeThreeObject(makeCircleSprite)
+            .nodeThreeObjectExtend(false)
+            .linkColor(function() { return 'rgba(203, 213, 225, 0.75)'; })
+            .linkWidth(0.4)
+            .linkOpacity(0.6)
+            .cooldownTicks(120)
+            .cooldownTime(6000);
+
+        if (typeof Graph.autoPauseRedraw === 'function') Graph.autoPauseRedraw(false);
+        if (typeof Graph.resumeAnimation === 'function') Graph.resumeAnimation();
+
+        // Força física: ajusta pra ficar mais espaçado (sem amontoar)
+        Graph.d3Force('charge').strength(-180);
+        if (Graph.d3Force('link')) Graph.d3Force('link').distance(40);
+
+        var nodeIds = nodes.map(function(n) { return n.id; });
+        var connectedByNode = {};
+        nodeIds.forEach(function(id) { connectedByNode[id] = new Set([id]); });
+        RAW_LINKS.forEach(function(l) {
+            var s = typeof l.source === 'object' ? l.source.id : l.source;
+            var t = typeof l.target === 'object' ? l.target.id : l.target;
+            connectedByNode[s].add(t);
+            connectedByNode[t].add(s);
+        });
+
+        // ─── Hover holofote ────────────────────────────────────────
+        function setHighlight(node) {
+            if (!node) {
+                nodeIds.forEach(function(id) {
+                    nodeMaterials[id].opacity = 1;
+                });
+                Graph.linkColor(function() { return 'rgba(203, 213, 225, 0.75)'; })
+                     .linkWidth(0.4);
+                container.style.cursor = '';
+                return;
             }
-        };
 
-        var network = new vis.Network(container, { nodes: nodes, edges: edges }, options);
+            container.style.cursor = 'pointer';
 
-        // ─── Hover "holofote" ──────────────────────────────────────
-        var allNodeIds = nodes.getIds();
-        var allEdgeIds = edges.getIds();
+            var connected = connectedByNode[node.id];
+            nodeIds.forEach(function(id) {
+                nodeMaterials[id].opacity = connected.has(id) ? 1 : 0.12;
+            });
 
-        function applyHighlight(hoveredId) {
-            var connected = new Set(network.getConnectedNodes(hoveredId));
-            connected.add(hoveredId);
-
-            nodes.update(allNodeIds.map(function(id) {
-                var active = connected.has(id);
-                return { id: id, opacity: active ? 1 : 0.12 };
-            }));
-
-            edges.update(allEdgeIds.map(function(id) {
-                var ed = edges.get(id);
-                var active = (ed.from === hoveredId || ed.to === hoveredId);
-                return {
-                    id: id,
-                    color: {
-                        color: active ? '#ffffff' : 'rgba(148, 163, 184, 0.06)',
-                        highlight: '#ffffff'
-                    },
-                    width: active ? 2 : 1
-                };
-            }));
+            Graph.linkColor(function(l) {
+                var s = typeof l.source === 'object' ? l.source.id : l.source;
+                var t = typeof l.target === 'object' ? l.target.id : l.target;
+                var active = (s === node.id || t === node.id);
+                return active ? '#ffffff' : 'rgba(148, 163, 184, 0.05)';
+            }).linkWidth(function(l) {
+                var s = typeof l.source === 'object' ? l.source.id : l.source;
+                var t = typeof l.target === 'object' ? l.target.id : l.target;
+                return (s === node.id || t === node.id) ? 1.5 : 0.4;
+            });
         }
 
-        function resetHighlight() {
-            nodes.update(allNodeIds.map(function(id) { return { id: id, opacity: 1 }; }));
-            edges.update(allEdgeIds.map(function(id) {
-                return {
-                    id: id,
-                    color: { color: 'rgba(148, 163, 184, 0.4)', highlight: '#ffffff' },
-                    width: 1
-                };
-            }));
-        }
+        var hoveredId = null;
 
-        network.on('hoverNode', function(params) { applyHighlight(params.node); });
-        network.on('blurNode',  function(params) { resetHighlight(); });
+        // ─── Click vs Duplo-clique (3d-force-graph só dá click simples) ──
+        var lastClickTime = 0;
+        var lastClickId = null;
+        Graph.onNodeClick(function(node) {
+            var now = Date.now();
+            if (lastClickId === node.id && (now - lastClickTime) < 400) {
+                if (node.url) window.location.href = node.url;
+                lastClickTime = 0;
+                lastClickId = null;
+                return;
+            }
+            lastClickTime = now;
+            lastClickId = node.id;
+        });
 
-        // ─── Preview flutuante (iframe) ──────────────────────────
+        // ─── Preview flutuante (igual ao 2D) ──────────────────────
         var previewEl     = document.getElementById('grafo-preview');
         var previewHeader = previewEl.querySelector('.grafo-preview-header');
-        var previewBody   = previewEl.querySelector('.grafo-preview-body');
         var previewFrame  = previewEl.querySelector('iframe');
         var previewLoader = previewEl.querySelector('.grafo-preview-loading');
         var previewDelay  = null;
+        var previewUnload = null;
+        var previewEnabled = true;
         var lastMouseX = 0, lastMouseY = 0;
+        var isDragging = false;
+
+        if (previewEl.parentNode !== container) container.appendChild(previewEl);
+        previewFrame.setAttribute('loading', 'lazy');
+
+        // Suprime preview enquanto o usuário arrasta o grafo (botão pressionado)
+        container.addEventListener('pointerdown', function() {
+            isDragging = true;
+            hidePreview();
+        }, { passive: true });
+        window.addEventListener('pointerup', function() {
+            isDragging = false;
+        }, { passive: true });
+        window.addEventListener('pointercancel', function() {
+            isDragging = false;
+        }, { passive: true });
 
         function positionPreview() {
+            var rect = container.getBoundingClientRect();
             var pad = 20;
             var w = 420, h = 290;
-            var x = lastMouseX + pad;
-            var y = lastMouseY + pad;
-            if (x + w > window.innerWidth)  x = lastMouseX - pad - w;
-            if (y + h > window.innerHeight) y = window.innerHeight - h - pad;
+            var localX = lastMouseX - rect.left;
+            var localY = lastMouseY - rect.top;
+            var x = localX + pad;
+            var y = localY + pad;
+            if (x + w > rect.width)  x = localX - pad - w;
+            if (y + h > rect.height) y = rect.height - h - pad;
+            if (x < pad) x = pad;
             if (y < pad) y = pad;
             previewEl.style.left = x + 'px';
             previewEl.style.top  = y + 'px';
@@ -559,117 +584,173 @@
             previewLoader.style.display = 'none';
         });
 
-        network.on('hoverNode', function(params) {
-            var node = nodes.get(params.node);
-            if (!node || !node.url) return;
+        function hidePreview() {
+            clearTimeout(previewDelay);
+            previewEl.style.display = 'none';
+            clearTimeout(previewUnload);
+            previewUnload = setTimeout(function() {
+                previewFrame.removeAttribute('src');
+                previewLoader.style.display = 'none';
+            }, 250);
+        }
 
-            // Cabeçalho mostra label + grupo (aparece instantaneamente)
-            previewHeader.innerHTML = node.label + ' <small>' + node.url + '</small>';
+        function setPreviewHeader(node) {
+            var small = document.createElement('small');
+            small.textContent = node.url;
+            previewHeader.textContent = node.label + ' ';
+            previewHeader.appendChild(small);
+        }
+
+        // Refaz onNodeHover combinando holofote + preview
+        Graph.onNodeHover(function(node) {
+            // ── holofote ──
+            var newId = node ? node.id : null;
+            if (newId !== hoveredId) {
+                hoveredId = newId;
+                setHighlight(node);
+            }
+
+            // ── preview ──
+            if (!previewEnabled || isDragging || !node || !node.url) {
+                hidePreview();
+                return;
+            }
+            setPreviewHeader(node);
             previewEl.style.display = 'block';
             positionPreview();
-
-            // iframe carrega após 300ms (evita peso em hovers rápidos)
+            clearTimeout(previewUnload);
             clearTimeout(previewDelay);
             previewDelay = setTimeout(function() {
+                if (isDragging) return;
                 if (previewFrame.getAttribute('src') !== node.url) {
                     previewLoader.style.display = 'block';
                     previewFrame.src = node.url;
                 }
-            }, 300);
+            }, 1500);
         });
 
-        network.on('blurNode', function() {
-            clearTimeout(previewDelay);
-            previewEl.style.display = 'none';
+        // ─── Resize handler ───────────────────────────────────────
+        function resize() {
+            Graph.width(container.clientWidth);
+            Graph.height(container.clientHeight);
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // ─── Botão fullscreen ─────────────────────────────────────
+        var fsBtn  = document.getElementById('grafo-fullscreen');
+        var fsIcon = document.getElementById('grafo-fullscreen-icon');
+        var ICON_EXPAND   = '<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>';
+        var ICON_COLLAPSE = '<polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/>';
+
+        function isFullscreen() {
+            return document.fullscreenElement || document.webkitFullscreenElement;
+        }
+        function toggleFullscreen() {
+            if (!isFullscreen()) {
+                (container.requestFullscreen || container.webkitRequestFullscreen).call(container);
+            } else {
+                (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+            }
+        }
+        if (fsBtn) fsBtn.addEventListener('click', toggleFullscreen);
+
+        // Atualiza ícone + redimensiona canvas
+        function onFsChange() {
+            if (fsIcon) fsIcon.innerHTML = isFullscreen() ? ICON_COLLAPSE : ICON_EXPAND;
+            setTimeout(resize, 80);
+        }
+        document.addEventListener('fullscreenchange',       onFsChange);
+        document.addEventListener('webkitfullscreenchange', onFsChange);
+
+        // Atalho de teclado: F
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'f' || e.key === 'F') {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                toggleFullscreen();
+            }
         });
 
-        // ─── Duplo-clique abre a página ──────────────────────────
-        network.on('doubleClick', function(params) {
-            if (params.nodes.length === 0) return;
-            var n = nodes.get(params.nodes[0]);
-            if (n && n.url) window.location.href = n.url;
-        });
+        // ─── Auto-rotação leve, coexistindo com OrbitControls ──
+        var controls = Graph.controls();
 
-        // ─── Movimento vivo (perturbação de velocidade) ───────────
-        var jitterInterval = null;
-        var dragging = false;
-
-        var nodePhases = {};
-        RAW_NODES.forEach(function(n) {
-            nodePhases[n.id] = {
-                px: Math.random() * Math.PI * 2,
-                py: Math.random() * Math.PI * 2,
-                fx: 0.0008 + Math.random() * 0.0012,
-                fy: 0.0008 + Math.random() * 0.0012
-            };
-        });
-
-        function startJitter() {
-            if (jitterInterval) return;
-            jitterInterval = setInterval(function() {
-                if (dragging) return;
-                var bodyNodes = network.body.nodes;
-                var now = Date.now();
-                Object.keys(bodyNodes).forEach(function(id) {
-                    var n = bodyNodes[id];
-                    var ph = nodePhases[id];
-                    if (!n || typeof n.vx !== 'number' || !ph) return;
-                    n.vx += Math.sin(now * ph.fx + ph.px) * 60.0;
-                    n.vy += Math.cos(now * ph.fy + ph.py) * 60.0;
-                    n.vx += (Math.random() - 0.5) * 4.0;
-                    n.vy += (Math.random() - 0.5) * 4.0;
-                });
-            }, 50);
+        if (controls) {
+            controls.enabled = true;            // garante interação manual
+            controls.enableRotate = true;
+            controls.enableZoom = true;
+            controls.enablePan = true;
+            controls.autoRotate = false; // auto-orbit custom abaixo cobre os 3 eixos
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.1;
         }
 
-        network.once('stabilizationIterationsDone', function() {
-            network.fit({ animation: { duration: 600, easingFunction: 'easeInOutQuad' } });
-            startJitter();
+        function wakeGraph() {
+            if (typeof Graph.resumeAnimation === 'function') Graph.resumeAnimation();
+        }
+        ['pointerdown', 'pointermove', 'wheel', 'touchstart', 'touchmove'].forEach(function(eventName) {
+            container.addEventListener(eventName, wakeGraph, { passive: true });
         });
-        setTimeout(function() {
-            try { network.fit({ animation: true }); } catch (e) {}
-            startJitter();
-        }, 3000);
+        if (controls && controls.addEventListener) controls.addEventListener('change', wakeGraph);
 
-        network.on('dragStart', function() { dragging = true; });
-        network.on('dragEnd',   function() { dragging = false; });
+        Graph.onEngineStop(function() {
+            wakeGraph();
+        });
+
+        // ─── Auto-orbit nos 3 eixos (Lissajous) ───────────────────
+        // OrbitControls.autoRotate só gira em azimute (1 eixo). Aqui a câmera
+        // anda numa curva paramétrica com frequências distintas em x/y/z, dando
+        // a impressão de rotação nos 3 eixos. Pausa enquanto o usuário arrasta
+        // e retoma 2,5s depois (deixa o damping decair antes).
+        var orbitT = 0;
+        var orbitRadius = 320;
+        var orbitPaused = false;
+        var orbitResumeTimer = null;
+
+        container.addEventListener('pointerdown', function() {
+            orbitPaused = true;
+            clearTimeout(orbitResumeTimer);
+        }, { passive: true });
+        window.addEventListener('pointerup', function() {
+            clearTimeout(orbitResumeTimer);
+            orbitResumeTimer = setTimeout(function() { orbitPaused = false; }, 2500);
+        }, { passive: true });
+        window.addEventListener('pointercancel', function() {
+            clearTimeout(orbitResumeTimer);
+            orbitResumeTimer = setTimeout(function() { orbitPaused = false; }, 2500);
+        }, { passive: true });
+
+        (function tickOrbit() {
+            if (!orbitPaused) {
+                orbitT += 0.0025;
+                Graph.cameraPosition({
+                    x: orbitRadius * Math.sin(orbitT * 1.0),
+                    y: orbitRadius * Math.sin(orbitT * 0.7) * 0.55,
+                    z: orbitRadius * Math.cos(orbitT * 1.0)
+                }, undefined, 0);
+            }
+            requestAnimationFrame(tickOrbit);
+        })();
+
+        // Atualiza contador
+        var countEl = document.getElementById('grafo-count');
+        if (countEl) countEl.textContent = RAW_NODES.length;
     }
     </script>
 </head>
 <body>
 
     <div class="grafo-header">
-        <h1>Gráfico do site</h1>
-        <p>Mapa de todas as páginas da documentação (<span id="grafo-count"></span> páginas). Duplo-clique numa bolinha pra abrir.</p>
-    </div>
-
-    <div class="grafo-legend">
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#fbbf24"></span>Home</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#fb923c"></span>Fundamentos</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#14b8a6"></span>Java</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#ec4899"></span>SQL</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#0ea5e9"></span>Modelo de Rede</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#ef4444"></span>HTML/CSS/JS</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#64748b"></span>Hardware</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#dc2626"></span>Git</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#f97316"></span>Jasap</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#a855f7"></span>Novo Módulo</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#3b82f6"></span>CRUD</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#22d3ee"></span>Read</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#f43f5e"></span>Delete</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#22c55e"></span>Create</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#f59e0b"></span>Update</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#6366f1"></span>Funcionalidades</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#818cf8"></span>LinkBox</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#4f46e5"></span>Master/Detail</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#10b981"></span>Nexus</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#c084fc"></span>Componentes</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#34d399"></span>Fase 0</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#059669"></span>Fase 1</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#047857"></span>Faxina</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#facc15"></span>Interface</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#d946ef"></span>Claude</div>
-        <div class="grafo-legend-item"><span class="grafo-legend-dot" style="background:#cbd5e1"></span>Referência</div>
+        <h1>Gráfico 3D do site</h1>
+        <p>Mapa em 3D (<span id="grafo-count"></span> páginas). Arraste pra rotacionar · scroll zoom · duplo-clique abre.</p>
+        <a href="grafo.html">← versão 2D</a>
+        <button id="grafo-fullscreen" title="Tela cheia (F)">
+            <svg id="grafo-fullscreen-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 3 21 3 21 9"/>
+                <polyline points="9 21 3 21 3 15"/>
+                <line x1="21" y1="3" x2="14" y2="10"/>
+                <line x1="3" y1="21" x2="10" y2="14"/>
+            </svg>
+        </button>
     </div>
 
     <div id="grafo-container"></div>
@@ -682,20 +763,7 @@
         </div>
     </div>
 
-    <p class="grafo-hint">Arraste · scroll pra zoom · hover acende conexões e mostra prévia · duplo-clique abre a página</p>
-
-    <script>
-        // Atualiza contador de páginas no header
-        document.addEventListener('DOMContentLoaded', function() {
-            var wait = setInterval(function() {
-                var el = document.getElementById('grafo-count');
-                if (el) {
-                    el.textContent = RAW_NODES.length;
-                    clearInterval(wait);
-                }
-            }, 50);
-        });
-    </script>
+    <p class="grafo-hint">Arraste com o botão esquerdo (rotaciona) · botão direito (pan) · scroll zoom · hover acende conexões e mostra prévia · duplo-clique abre a página</p>
 
 </body>
 </html>
