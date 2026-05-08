@@ -278,11 +278,15 @@ body {
 
 #topbar-title:hover { color: #1d4ed8; }
 
-/* BOTÃO GRÁFICO (centralizado no topbar) */
-#topbar-grafo {
+/* BOTÕES GRÁFICO (centralizados no topbar) */
+#topbar-grafo-group {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+}
+#topbar-grafo, #topbar-grafo-3d {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -294,11 +298,11 @@ body {
     border-radius: 6px;
     transition: color 0.2s, background 0.2s;
 }
-#topbar-grafo:hover {
+#topbar-grafo:hover, #topbar-grafo-3d:hover {
     color: #2563eb;
     background: #e0e7ff;
 }
-#topbar-grafo svg { flex-shrink: 0; }
+#topbar-grafo svg, #topbar-grafo-3d svg { flex-shrink: 0; }
 
 /* BREADCRUMB */
 .breadcrumb-nav {
@@ -648,7 +652,7 @@ table.nowrap-col1 th:first-child { white-space: nowrap; }
         padding: 0 12px;
     }
 
-    #topbar-grafo { display: none; }
+    #topbar-grafo-group { display: none; }
 
     .breadcrumb-nav {
         order: 99;

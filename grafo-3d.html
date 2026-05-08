@@ -679,8 +679,7 @@
             controls.enableRotate = true;
             controls.enableZoom = true;
             controls.enablePan = true;
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.5;
+            controls.autoRotate = false; // auto-orbit custom abaixo cobre os 3 eixos
             controls.enableDamping = true;
             controls.dampingFactor = 0.1;
         }
@@ -696,6 +695,41 @@
         Graph.onEngineStop(function() {
             wakeGraph();
         });
+
+        // ─── Auto-orbit nos 3 eixos (Lissajous) ───────────────────
+        // OrbitControls.autoRotate só gira em azimute (1 eixo). Aqui a câmera
+        // anda numa curva paramétrica com frequências distintas em x/y/z, dando
+        // a impressão de rotação nos 3 eixos. Pausa enquanto o usuário arrasta
+        // e retoma 2,5s depois (deixa o damping decair antes).
+        var orbitT = 0;
+        var orbitRadius = 320;
+        var orbitPaused = false;
+        var orbitResumeTimer = null;
+
+        container.addEventListener('pointerdown', function() {
+            orbitPaused = true;
+            clearTimeout(orbitResumeTimer);
+        }, { passive: true });
+        window.addEventListener('pointerup', function() {
+            clearTimeout(orbitResumeTimer);
+            orbitResumeTimer = setTimeout(function() { orbitPaused = false; }, 2500);
+        }, { passive: true });
+        window.addEventListener('pointercancel', function() {
+            clearTimeout(orbitResumeTimer);
+            orbitResumeTimer = setTimeout(function() { orbitPaused = false; }, 2500);
+        }, { passive: true });
+
+        (function tickOrbit() {
+            if (!orbitPaused) {
+                orbitT += 0.0025;
+                Graph.cameraPosition({
+                    x: orbitRadius * Math.sin(orbitT * 1.0),
+                    y: orbitRadius * Math.sin(orbitT * 0.7) * 0.55,
+                    z: orbitRadius * Math.cos(orbitT * 1.0)
+                }, undefined, 0);
+            }
+            requestAnimationFrame(tickOrbit);
+        })();
 
         // Atualiza contador
         var countEl = document.getElementById('grafo-count');

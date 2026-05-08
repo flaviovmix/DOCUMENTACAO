@@ -399,8 +399,9 @@
             var topBoost = TOP_LEVEL[n.id] ? 8 : 0;   // garante visibilidade
             return Object.assign({}, n, {
                 size:  10 + Math.sqrt(d) * 7 + topBoost,
-                font: { size: 11 + Math.sqrt(d) * 1.2 + (TOP_LEVEL[n.id] ? 1 : 0) },
-                mass: TOP_LEVEL[n.id] ? 2 : 1          // mais massa = menos empurrados
+                font: { size: 11 + Math.sqrt(d) * 1.2 + (TOP_LEVEL[n.id] ? 1 : 0), color: '#e2e8f0' },
+                mass: TOP_LEVEL[n.id] ? 2 : 1,         // mais massa = menos empurrados
+                color: { background: '#ffffff', border: '#ffffff', highlight: { background: '#ffffff', border: '#ffffff' }, hover: { background: '#ffffff', border: '#ffffff' } }
             });
         }));
 
