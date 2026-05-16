@@ -422,6 +422,18 @@ var MENU = [
         basePath: '8-claude'
     },
     {
+        grupo: 'INGLES',
+        pagina: 'ingles.html',
+        items: [
+            { label: 'Cards', arquivo: 'ingles.html', tipo: 'check' },
+            { label: '1 - Starter', arquivo: '1-starter/1-starter.html', tipo: 'check' },
+            { label: '1.1 - Mapa Inicial', arquivo: '1-starter/1-mapa-inicial/1-mapa-inicial.html', tipo: 'check' },
+            { label: '1.2 - Primeiras Frases', arquivo: '1-starter/2-primeiras-frases/2-primeiras-frases.html', tipo: 'check' }
+        ],
+        pasta: '9-ingles',
+        basePath: '9-ingles'
+    },
+    {
         grupo: 'NEXUS',
         pagina: 'nexus.html',
         subgrupos: [
