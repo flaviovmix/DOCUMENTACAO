@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docker — Na prática — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Docker — Na prática</h1>
+
+<div class="audio-player" data-src="audio/docker-na-pratica.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Esse card é a primeira experiência prática com Docker: subir um WordPress local em duas linhas de comando, sem instalar PHP nem MySQL no Windows. O foco não é WordPress — é entender <strong>como o Docker conecta uma pasta do seu computador com o que roda dentro do container</strong>, e onde os dados ficam quando você desliga tudo.</p>
+
+<h2 id="cenario" data-toc-title="O cenário" data-sub="Pasta com arquivos do WordPress + nenhum servidor instalado">O cenário</h2>
+<p>A gente tem uma pasta no Windows com a instalação padrão do WordPress: <code>C:\src\PROJETOS\WORDPRESS</code>. Lá dentro tem <code>index.php</code>, <code>wp-admin/</code>, <code>wp-content/</code> — tudo o que o WordPress precisa. Mas <strong>arquivos PHP sozinhos não fazem nada</strong>. Pra virar um site no browser, precisa de duas coisas que não estão no Windows:</p>
+<ul>
+    <li>Um <strong>servidor web com PHP</strong> (Apache + módulo PHP) pra interpretar os <code>.php</code> e devolver HTML pro browser</li>
+    <li>Um <strong>banco de dados MySQL</strong> pra guardar título do site, posts, usuários, configurações</li>
+</ul>
+<p>Instalar PHP e MySQL no Windows funciona, mas suja a máquina, e cada projeto pode pedir uma versão diferente. A solução com Docker é diferente: a gente <em>aluga</em> esses dois serviços, cada um numa "caixinha" (container), só pelo tempo que precisa.</p>
+
+<h2 id="receita" data-toc-title="A receita" data-sub="docker-compose.yml = arquivo de configuração">A receita: docker-compose.yml</h2>
+<p>Em vez de digitar <code>docker run</code> com 20 parâmetros pra cada container, escreve-se um arquivo de texto YAML que descreve a configuração inteira. Coloca o arquivo na pasta do projeto e roda <code>docker compose up -d</code>. Pronto.</p>
+<pre><code class="language-yaml">services:
+  wordpress:
+    image: wordpress:latest
+    ports:
+      - "8081:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: wp
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wp
+      MYSQL_PASSWORD: wp
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:
+</code></pre>
+<p>Duas <strong>caixinhas</strong> (serviços): uma com WordPress, uma com MySQL. As próximas seções abrem cada bloco do arquivo.</p>
+
+<h2 id="servicos" data-toc-title="Os 2 serviços" data-sub="wordpress e db">Os dois serviços</h2>
+<p>Olhando o bloco <code>services:</code> de cima:</p>
+<ul>
+    <li><strong>wordpress</strong> — usa a imagem oficial <code>wordpress:latest</code> do Docker Hub. Já vem com Apache + PHP + WordPress instalado lá dentro, prontos pra rodar.</li>
+    <li><strong>db</strong> — usa a imagem oficial <code>mysql:8.0</code>. Já vem com MySQL 8 instalado e configurado.</li>
+</ul>
+<p>Os <strong>nomes</strong> que você escolheu (<code>wordpress</code>, <code>db</code>) viram <em>hostnames</em> dentro da rede do Docker. É por isso que o serviço wordpress consegue conversar com o banco usando <code>WORDPRESS_DB_HOST: db:3306</code> — ele literalmente acessa o outro container pelo nome <code>db</code>. Docker monta uma rede interna automaticamente e cada serviço enxerga os outros pelo nome.</p>
+<p>O <code>depends_on: - db</code> diz: "sobe o banco primeiro, depois o WordPress". Sem isso, o WordPress poderia subir antes do banco e quebrar na primeira tentativa de conectar.</p>
+
+<h2 id="portas" data-toc-title="ports — janela pro browser" data-sub="8081:80 = porta do host : porta do container">Ports: a única janela pro mundo</h2>
+<p>Por padrão, container é <strong>fechado</strong>. Mesmo se Apache estiver rodando lá dentro na porta 80, você não acessa do browser sem abrir uma janela.</p>
+<pre><code class="language-yaml">ports:
+  - "8081:80"
+</code></pre>
+<p>Lê-se: "redireciona a <strong>porta 8081 do meu Windows</strong> pra <strong>porta 80 dentro do container</strong>". Aí quando você abre <code>http://localhost:8081</code>, o Docker pega esse tráfego e entrega na porta 80 do Apache do container, que processa o PHP e devolve a página.</p>
+<p>Se a porta do host (8081) estiver ocupada por outro programa, o <code>up</code> falha com <code>bind: address already in use</code>. Solução: trocar pra outra porta livre.</p>
+<p>Repare que o serviço <code>db</code> <strong>não tem ports</strong>. O banco fica fechado pro mundo, só o WordPress (que está na mesma rede do Docker) consegue acessá-lo. É bom de segurança: ninguém da internet consegue chegar no MySQL.</p>
+
+<h2 id="environment" data-toc-title="environment — config sem editar arquivo" data-sub="Variáveis que a imagem oficial lê">Environment: configurando sem editar arquivo</h2>
+<p>As imagens oficiais do Docker Hub leem <strong>variáveis de ambiente</strong> pra se configurar na hora de subir. O bloco <code>environment:</code> define essas variáveis.</p>
+<pre><code class="language-yaml">environment:
+  WORDPRESS_DB_HOST: db:3306
+  WORDPRESS_DB_USER: wp
+  WORDPRESS_DB_PASSWORD: wp
+  WORDPRESS_DB_NAME: wordpress
+</code></pre>
+<p>Na primeira vez que o container do WordPress sobe, ele detecta que não existe <code>wp-config.php</code> e gera um do zero usando esses valores. Por isso depois da instalação você vai ver o arquivo <code>wp-config.php</code> aparecer dentro da pasta <code>C:\src\PROJETOS\WORDPRESS\</code> — o container escreveu lá.</p>
+<p>O mesmo vale pro MySQL: <code>MYSQL_DATABASE</code>, <code>MYSQL_USER</code>, <code>MYSQL_PASSWORD</code>, <code>MYSQL_ROOT_PASSWORD</code> dizem pra imagem do MySQL "cria esse banco, cria esse usuário com essa senha, define essa senha de root". Tudo na primeira inicialização.</p>
+
+<h2 id="bind-mount" data-toc-title="Bind mount" data-sub="./:/var/www/html — pasta do host espelhada no container">Bind mount: espelhando a pasta do Windows</h2>
+<p>Essa é a parte mais importante do card. A linha:</p>
+<pre><code class="language-yaml">volumes:
+  - ./:/var/www/html
+</code></pre>
+<p>Diz: "<strong>monta a pasta atual do host</strong> (<code>./</code>, que é onde o yml está = <code>C:\src\PROJETOS\WORDPRESS</code>) <strong>no caminho <code>/var/www/html</code> dentro do container</strong>". E <code>/var/www/html</code> é justamente onde o Apache do container procura os arquivos do site.</p>
+<p>O efeito é um <strong>espelho bidirecional</strong>:</p>
+<div class="table-wrap">
+    <table>
+        <tr><th>O que acontece</th><th>Resultado</th></tr>
+        <tr><td>Você edita <code>index.php</code> no Windows</td><td>Container vê na hora — refresh no browser já mostra a mudança</td></tr>
+        <tr><td>Container cria <code>wp-config.php</code> na instalação</td><td>Arquivo aparece em <code>C:\src\PROJETOS\WORDPRESS\</code></td></tr>
+        <tr><td>Você adiciona um plugin (sobe um <code>.zip</code> pelo admin)</td><td>Arquivos do plugin aparecem em <code>wp-content/plugins/</code> no Windows</td></tr>
+        <tr><td>Você apaga uma pasta no Windows</td><td>Some do container imediatamente</td></tr>
+    </table>
+</div>
+<p>O Docker <strong>não copia</strong> os arquivos. É um ponto de montagem, igual quando você espeta um pendrive — a pasta passa a aparecer "como se" estivesse lá dentro. Por isso é leve e instantâneo.</p>
+<p>Bind mount é perfeito pra desenvolvimento: o código vive no seu Windows (versionado no git, editado no VS Code), e o container só "empresta" a pasta pra rodar Apache + PHP em cima dela.</p>
+
+<h2 id="named-volume" data-toc-title="Named volume" data-sub="db_data — pasta gerenciada pelo Docker">Named volume: o oposto do bind mount</h2>
+<p>Olhando agora o serviço <code>db</code>:</p>
+<pre><code class="language-yaml">volumes:
+  - db_data:/var/lib/mysql
+</code></pre>
+<p>Parece igual, mas tem uma diferença crítica: <strong>não tem <code>./</code> no começo</strong>. <code>db_data</code> é um nome solto. Esse é um <strong>named volume</strong> — uma pasta interna gerenciada pelo Docker, que <em>não fica visível</em> na sua árvore do Windows.</p>
+<p>Por isso o arquivo termina com a declaração:</p>
+<pre><code class="language-yaml">volumes:
+  db_data:
+</code></pre>
+<p>Que diz pro Docker: "<em>cria e gerencia um volume chamado <code>db_data</code> pra mim</em>". Onde fica fisicamente? Numa pasta interna do Docker dentro do WSL. Você não precisa saber o caminho — quem manda nele é o Docker.</p>
+<p>Por que pro banco a gente usa esse esquema e não bind mount?</p>
+<ul>
+    <li><strong>Performance</strong> — o MySQL grava milhares de bytes por segundo, e bind mount entre Windows e container Linux é mais lento que volume nativo do Docker.</li>
+    <li><strong>Não polui o projeto</strong> — você não quer milhares de arquivos binários do MySQL aparecendo dentro da pasta do WordPress.</li>
+    <li><strong>Permissões</strong> — Linux dentro do container tem regras de permissão diferentes do Windows; volume nativo evita conflito.</li>
+</ul>
+
+<h2 id="comparacao" data-toc-title="Comparação" data-sub="Bind mount vs named volume">Bind mount vs named volume — a tabela</h2>
+<div class="table-wrap">
+    <table>
+        <tr><th></th><th>Bind mount (<code>./:/var/www/html</code>)</th><th>Named volume (<code>db_data:/var/lib/mysql</code>)</th></tr>
+        <tr><td>Onde os dados ficam</td><td>Na sua pasta do Windows</td><td>Numa área interna do Docker</td></tr>
+        <tr><td>Você consegue ver/editar?</td><td>Sim, é uma pasta normal</td><td>Não diretamente</td></tr>
+        <tr><td>Versionado no git?</td><td>Pode ser (e geralmente é)</td><td>Não</td></tr>
+        <tr><td>Performance</td><td>Mais lenta (cruza host ↔ container)</td><td>Nativa do Docker, rápida</td></tr>
+        <tr><td>Quando usar</td><td>Código fonte que você está editando</td><td>Dados de banco, cache, estado interno</td></tr>
+    </table>
+</div>
+
+<h2 id="comandos" data-toc-title="Comandos" data-sub="up, down, down -v, logs">Comandos do dia a dia</h2>
+<p>Com o yml pronto, são 4 comandos que cobrem 95% do uso:</p>
+<pre><code class="language-bash"># Sobe os 2 containers em background
+docker compose up -d
+
+# Acompanha logs de todos os serviços em tempo real
+docker compose logs -f
+
+# Para e remove os containers (preserva os volumes)
+docker compose down
+
+# Para, remove containers E APAGA os volumes — perde o banco
+docker compose down -v
+</code></pre>
+<p>Diferença crucial entre <code>down</code> e <code>down -v</code>:</p>
+<ul>
+    <li><code>docker compose down</code> — derruba os containers, mas <strong>o volume <code>db_data</code> continua intacto</strong>. Quando você der <code>up</code> de novo, o banco volta com todos os dados.</li>
+    <li><code>docker compose down -v</code> — derruba <strong>e apaga o volume</strong>. Quando você der <code>up</code> de novo, o banco volta vazio, e a tela de instalação do WordPress aparece de novo.</li>
+</ul>
+<p>O <code>-v</code> é útil quando você quer "começar do zero" pra testar a instalação do zero, mas é destrutivo — preserva apenas a pasta do código (que está no bind mount, fora do alcance do <code>-v</code>).</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O modelo mental que sobra">Resumo: o modelo mental</h2>
+<p>Depois desse exercício, o que vale guardar é:</p>
+<ul>
+    <li>Docker Compose orquestra <strong>vários containers juntos</strong> a partir de um arquivo YAML.</li>
+    <li>Cada serviço vira um hostname automático — os containers se enxergam pelo nome.</li>
+    <li><code>ports</code> abre uma <strong>janela</strong> entre o host e o container. Sem isso, o container fica fechado.</li>
+    <li><code>environment</code> configura o container pelo lado de fora, sem entrar lá dentro.</li>
+    <li><strong>Bind mount</strong> espelha uma pasta do host no container — usado pra código.</li>
+    <li><strong>Named volume</strong> é uma área gerenciada pelo Docker — usado pra dados que devem persistir mas não precisam estar visíveis no host (banco).</li>
+    <li><code>down</code> preserva volumes; <code>down -v</code> apaga.</li>
+</ul>
+<p>Com isso na cabeça, dá pra ler qualquer <code>docker-compose.yml</code> de projeto open source e entender o que cada bloco faz — independente do stack (PHP, Node, Python, Java).</p>
+
+</body>
+</html>

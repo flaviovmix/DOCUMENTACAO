@@ -8,197 +8,50 @@
 </head>
 <body>
 
-<nav class="page-toc"></nav>
-
-<h1>Docker</h1>
-
-<div class="audio-player" data-src="audio/visao-geral.m4a">
-    <audio preload="metadata"></audio>
-    <button class="audio-btn" title="Play / Pause"></button>
-    <div class="audio-progress-wrap">
-        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
-        <div class="audio-progress-fill"></div>
+    <div class="home-header">
+        <h1 class="home-title">DOCKER</h1>
+        <p class="home-sub">Containers, imagens e orquestração local</p>
     </div>
-    <span class="audio-time">0:00 / 0:00</span>
-</div>
 
-<p>Docker resolve o problema clássico do "<em>na minha máquina funciona</em>". A ideia é empacotar a aplicação junto com tudo que ela precisa pra rodar — biblioteca, configuração, sistema de arquivos — num único <strong>container</strong> que roda igual no laptop do dev, no servidor de produção e na máquina do CI. O ganho é reprodutibilidade: a versão que passou no teste é exatamente a mesma que sobe.</p>
+    <div class="home-grid">
 
-<div class="info-accordion">
-
-    <div class="info-row open">
-        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-            <span class="info-row-title">Container vs VM — isolamento sem o peso da máquina virtual</span>
-            <span class="info-row-btn">+</span>
-        </div>
-        <div class="info-row-body">
-            <p>Antes de container, a forma de isolar aplicação era máquina virtual (VirtualBox, VMware). Cada VM tinha um sistema operacional inteiro dentro — kernel, drivers, tudo. Pesado, lento pra ligar, ocupa GB.</p>
-            <p>Container compartilha o kernel do host. Cada container só tem o que a aplicação precisa: binário, biblioteca, config. Resultado:</p>
-            <div class="table-wrap">
-                <table>
-                    <tr><th></th><th>Máquina Virtual</th><th>Container</th></tr>
-                    <tr><td>Kernel</td><td>Próprio</td><td>Compartilha do host</td></tr>
-                    <tr><td>Tamanho típico</td><td>GBs</td><td>MBs (algumas vezes KBs)</td></tr>
-                    <tr><td>Tempo pra subir</td><td>Minutos</td><td>Segundos</td></tr>
-                    <tr><td>Quantos cabem num servidor</td><td>Dezenas</td><td>Centenas/milhares</td></tr>
-                    <tr><td>Isolamento</td><td>Forte (hardware virtualizado)</td><td>Médio (namespaces e cgroups do Linux)</td></tr>
-                </table>
+        <!-- 1. VISÃO GERAL -->
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
             </div>
-            <p>Pra produção moderna, container é o padrão. VM ainda aparece quando precisa rodar SO diferente do host (Windows num Linux, por exemplo).</p>
-        </div>
-    </div>
-
-    <div class="info-row">
-        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-            <span class="info-row-title">Imagem vs Container — receita e prato pronto</span>
-            <span class="info-row-btn">+</span>
-        </div>
-        <div class="info-row-body">
-            <p>Dois conceitos que confundem no início:</p>
-            <ul>
-                <li><strong>Imagem</strong> — arquivo congelado, imutável, com o sistema de arquivos completo da aplicação. É a "receita" + os "ingredientes" prontos. Tem nome e versão (<code>postgres:16</code>, <code>node:20-alpine</code>).</li>
-                <li><strong>Container</strong> — instância em execução de uma imagem. É o "prato pronto", servido. Pode estar rodando, parado, ou descartado.</li>
-            </ul>
-            <p>Da mesma imagem você sobe quantos containers quiser, todos idênticos. Mata o container, a imagem continua intacta — sobe outro.</p>
-            <p>Imagens vivem em <strong>registry</strong>: o público é o <strong>Docker Hub</strong>, mas tem AWS ECR, GitHub Container Registry, e registry privado interno em empresa.</p>
-        </div>
-    </div>
-
-    <div class="info-row">
-        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-            <span class="info-row-title">Dockerfile — a receita escrita</span>
-            <span class="info-row-btn">+</span>
-        </div>
-        <div class="info-row-body">
-            <p>O <code>Dockerfile</code> é um arquivo de texto que descreve passo a passo como montar uma imagem. Cada linha vira uma camada (layer) — Docker reutiliza camadas iguais entre imagens, economizando espaço e tempo de build.</p>
-            <pre><code class="language-dockerfile"># Imagem base
-FROM node:20-alpine
-
-# Diretório dentro do container onde os comandos vão rodar
-WORKDIR /app
-
-# Copia package.json e instala dependências (camada cacheada)
-COPY package*.json ./
-RUN npm ci --only=production
-
-# Copia o resto do código
-COPY . .
-
-# Porta que o container expõe
-EXPOSE 3000
-
-# Comando que roda quando o container sobe
-CMD ["node", "server.js"]
-</code></pre>
-            <p>Para construir e rodar:</p>
-            <pre><code class="language-bash"># Build da imagem (cria 'minha-app:1.0')
-docker build -t minha-app:1.0 .
-
-# Sobe o container, expondo porta 3000 do container na 8080 do host
-docker run -p 8080:3000 minha-app:1.0
-</code></pre>
-        </div>
-    </div>
-
-    <div class="info-row">
-        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-            <span class="info-row-title">Comandos do dia a dia</span>
-            <span class="info-row-btn">+</span>
-        </div>
-        <div class="info-row-body">
-            <p>Quando você começa a usar Docker, são uns 10 comandos que cobrem 90% do uso:</p>
-            <div class="table-wrap">
-                <table>
-                    <tr><th>Comando</th><th>O que faz</th></tr>
-                    <tr><td><code>docker ps</code></td><td>Lista containers rodando</td></tr>
-                    <tr><td><code>docker ps -a</code></td><td>Lista todos (inclusive parados)</td></tr>
-                    <tr><td><code>docker images</code></td><td>Lista imagens disponíveis localmente</td></tr>
-                    <tr><td><code>docker pull nome:tag</code></td><td>Baixa imagem do registry</td></tr>
-                    <tr><td><code>docker run [opções] imagem</code></td><td>Cria e inicia um container novo</td></tr>
-                    <tr><td><code>docker exec -it nome bash</code></td><td>Abre um shell dentro de um container rodando</td></tr>
-                    <tr><td><code>docker logs -f nome</code></td><td>Mostra os logs (acompanha em tempo real)</td></tr>
-                    <tr><td><code>docker stop nome</code></td><td>Para o container</td></tr>
-                    <tr><td><code>docker rm nome</code></td><td>Remove o container parado</td></tr>
-                    <tr><td><code>docker rmi imagem</code></td><td>Remove a imagem</td></tr>
-                </table>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>O problema do "na minha máquina funciona", container vs VM, imagem vs container, Dockerfile, comandos do dia a dia e o que é docker-compose.</p>
+                </div>
             </div>
-            <p>O <code>-d</code> (detached) faz o container rodar em background. O <code>--name</code> dá um nome amigável (em vez do ID hexa).</p>
+            <div class="card-img">
+                <img src="img/visao-geral.png" alt="Visão Geral">
+            </div>
+            <div class="card-bar">
+                <a href="1-visao-geral/visao-geral.html" class="card-tag" style="--tag-clr:#2496ed;">1 - Visão Geral</a>
+            </div>
         </div>
+
+        <!-- 2. NA PRÁTICA -->
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Subindo um WordPress local com docker-compose pra entender como o Docker conecta uma pasta do Windows com o container — bind mount vs named volume na prática.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img-video/docker-na-pratica.png" alt="Docker na prática">
+            </div>
+            <div class="card-bar">
+                <a href="2-docker-na-pratica/docker-na-pratica.html" class="card-tag" style="--tag-clr:#0db7ed;">2 - Na prática</a>
+            </div>
+        </div>
+
     </div>
-
-    <div class="info-row">
-        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-            <span class="info-row-title">docker-compose — orquestrar vários containers juntos</span>
-            <span class="info-row-btn">+</span>
-        </div>
-        <div class="info-row-body">
-            <p>Aplicação real raramente é um container só. Tem app + banco + cache + fila — cada um num container. O <strong>docker-compose</strong> descreve esse conjunto num único arquivo YAML.</p>
-            <pre><code class="language-yaml">services:
-
-  app:
-    build: .
-    ports:
-      - "8080:3000"
-    depends_on:
-      - db
-
-  db:
-    image: postgres:16
-    environment:
-      POSTGRES_USER: dev
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: minhaapp
-    volumes:
-      - db-data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:7-alpine
-
-volumes:
-  db-data:
-</code></pre>
-            <p>Comandos principais:</p>
-            <pre><code class="language-bash"># Sobe tudo em background
-docker compose up -d
-
-# Para tudo
-docker compose down
-
-# Acompanha logs de todos
-docker compose logs -f
-
-# Reconstrói as imagens
-docker compose build
-</code></pre>
-            <p>Em desenvolvimento local, <code>docker compose</code> é o comando mais usado — sobe o ambiente inteiro com 1 linha.</p>
-        </div>
-    </div>
-
-    <div class="info-row">
-        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-            <span class="info-row-title">Onde Docker brilha (e onde não)</span>
-            <span class="info-row-btn">+</span>
-        </div>
-        <div class="info-row-body">
-            <p><strong>Brilha em:</strong></p>
-            <ul>
-                <li>Ambiente de desenvolvimento reproduzível — qualquer dev sobe o stack inteiro com <code>docker compose up</code></li>
-                <li>CI/CD — o build roda em container, igual em qualquer máquina</li>
-                <li>Microsserviços — cada serviço num container, escala independente</li>
-                <li>Deploy — empacota uma vez, roda em qualquer servidor com Docker</li>
-                <li>Testar versões diferentes lado a lado (PostgreSQL 14 e 16 ao mesmo tempo)</li>
-            </ul>
-            <p><strong>Não é a ferramenta certa pra:</strong></p>
-            <ul>
-                <li>Aplicação desktop com UI gráfica (não impossível, mas atrapalhado)</li>
-                <li>Workload que precisa de acesso direto ao hardware (driver, GPU sem suporte)</li>
-                <li>Estado persistente sem cuidado — container é efêmero, dado precisa ir pra volume</li>
-            </ul>
-            <p>Pra orquestração em escala (centenas de containers em vários servidores), entra <strong>Kubernetes</strong> — que usa Docker (ou outro runtime de container) por baixo.</p>
-        </div>
-    </div>
-
-</div>
 
 </body>
 </html>
