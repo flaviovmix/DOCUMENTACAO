@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acesso &amp; Setup — Servidor — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Fase 1 — Acesso &amp; Setup Inicial</h1>
+
+<div class="audio-player" data-src="audio/acesso.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>A primeira hora com a VM. Sai do estado <em>"recebi um IP, um usuário e uma senha"</em> e chega no estado <em>"to dentro, senha trocada, sudo respondendo, firewall conhecido"</em>. Sem essa fase, nenhuma das próximas roda.</p>
+
+<p class="callout">Os exemplos usam placeholders genéricos: <code>IP_DA_VM</code>, <code>seu-usuario</code>, <code>senha-inicial</code>, <code>sua-senha-nova</code>. Substitua pelos valores reais do seu setup.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Primeira conexão SSH — comando, fingerprint e a senha invisível</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Abre um terminal no Windows (Windows Terminal, PowerShell, cmd, ou cliente gráfico tipo MobaXterm / PuTTY / Termius — todos funcionam) e roda:</p>
+            <pre><code class="language-bash">ssh seu-usuario@IP_DA_VM</code></pre>
+
+            <h3>Da primeira vez: fingerprint do servidor</h3>
+            <p>O SSH mostra uma mensagem grande com a fingerprint da máquina e pergunta se você confia:</p>
+            <pre><code class="language-text">The authenticity of host 'IP_DA_VM (IP_DA_VM)' can't be established.
+ED25519 key fingerprint is SHA256:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Are you sure you want to continue connecting (yes/no/[fingerprint])?</code></pre>
+            <p>Responde <code>yes</code> e dá Enter. A fingerprint fica guardada no seu computador no arquivo <code>~/.ssh/known_hosts</code>, e o SSH nunca mais pergunta. Se um dia a fingerprint mudar do nada, o SSH grita — porque pode ser um ataque de homem-no-meio.</p>
+
+            <h3>A pegadinha: senha invisível</h3>
+            <p>Quando o SSH pede a senha, <strong>nada aparece na tela</strong>. Sem asterisco, sem ponto, o cursor não se mexe. Dá a impressão de que o teclado não funciona — mas funciona normal. É proposital: quem está do seu lado não vê nem o tamanho da senha. Digita, Enter, vai.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Troca de senha obrigatória — o sistema força antes do shell</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Na primeira vez que você loga, o sistema <strong>não te dá o shell de cara</strong>. Marca a conta como "senha expirada" e força a troca antes de tudo:</p>
+            <pre><code class="language-text">You are required to change your password immediately (administrator enforced).
+Changing password for seu-usuario.
+Current password:        ← digite a senha-inicial de novo
+New password:            ← escolha uma senha NOVA forte
+Retype new password:     ← repita a senha nova</code></pre>
+            <p>Três digitações, todas invisíveis. Se a confirmação bater, o sistema aceita e a <strong>sessão SSH cai imediatamente</strong> — é normal. Reconecta com a senha nova:</p>
+            <pre><code class="language-bash">ssh seu-usuario@IP_DA_VM</code></pre>
+
+            <h3>Regras mínimas pra uma senha boa</h3>
+            <ul>
+                <li>Pelo menos <strong>8 caracteres</strong> (recomendado 12+)</li>
+                <li>Mistura de maiúsculas + minúsculas + números + símbolos</li>
+                <li>Sem sequências óbvias (<code>12345678</code>, <code>qwerty</code>, seu nome)</li>
+                <li>Anota num gerenciador sério: KeePass, Bitwarden, 1Password</li>
+            </ul>
+
+            <h3>Trocar a senha depois</h3>
+            <p>Em qualquer outro dia, já logado, o comando é:</p>
+            <pre><code class="language-bash">passwd</code></pre>
+            <p>Ele pede a senha atual e a nova duas vezes.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Sudo + modelo de responsabilidades — admin da VM vs admin do host</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Dentro da SUA VM você tem <strong>sudo total</strong>. Isso significa que você é root quando precisa. Pode instalar e remover pacotes, parar e iniciar serviços, abrir e fechar portas no firewall, criar e remover usuários, reconfigurar o que quiser.</p>
+            <pre><code class="language-bash">sudo apt update
+sudo systemctl restart tomcat
+sudo ufw allow 8443/tcp</code></pre>
+            <p>Quando você usa <code>sudo</code>, o sistema pede sua senha (a mesma do login).</p>
+
+            <h3>O limite: a VM não mexe no host</h3>
+            <p>Num setup típico, dois papéis administrativos coexistem:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Papel</th><th>Escopo</th><th>Pode</th><th>NÃO pode</th></tr>
+                    <tr>
+                        <td><strong>Você</strong></td>
+                        <td>Admin da VM</td>
+                        <td>Sudo livre dentro da VM</td>
+                        <td>Mexer no host que hospeda a VM</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Admin do host</strong></td>
+                        <td>Dono do hardware / hypervisor</td>
+                        <td>Acessar a VM via console em caso de emergência</td>
+                        <td>Mexer no que rola dentro da sua VM no dia-a-dia</td>
+                    </tr>
+                </table>
+            </div>
+
+            <h3>Isolamento por firewall (dos dois lados)</h3>
+            <p>O firewall do host bloqueia as portas administrativas (SSH 22, RDP 3389, SMB 445, WinRM) entre a VM e o host. O firewall da VM também bloqueia o mesmo caminho. <strong>Os dois lados travam.</strong> Se um dia a VM for invadida, o atacante fica preso dentro dela — não consegue saltar pro host nem pras outras VMs do mesmo host.</p>
+            <p>Essa camada de isolamento <strong>não deve ser removida</strong> — ela protege você e protege os outros.</p>
+
+            <h3>O que você pode e o que não pode (resumo)</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Pode (sudo livre)</th><th>NÃO pode</th></tr>
+                    <tr><td>Instalar/remover pacotes (<code>sudo apt install ...</code>)</td><td>Acessar serviços admin do host (SSH/RDP/SMB/WinRM)</td></tr>
+                    <tr><td>Reiniciar/parar/iniciar serviços (<code>sudo systemctl ...</code>)</td><td>Mudar o que está rodando fora da VM</td></tr>
+                    <tr><td>Abrir/fechar portas no firewall (<code>sudo ufw ...</code>)</td><td>Acessar arquivos no host</td></tr>
+                    <tr><td>Criar/remover usuários (<code>sudo adduser ...</code>)</td><td>(Tudo o resto: dentro da VM você é root)</td></tr>
+                    <tr><td>Instalar Tailscale, cloudflared, Docker, k3s, o que quiser</td><td></td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Rede e firewall (ufw)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A VM tem um IP fixo, um gateway (saída pra internet), DNS, e um firewall chamado <code>ufw</code>. O <code>ufw</code> é uma camada simples por cima do <code>iptables</code> — bem fácil de operar.</p>
+
+            <h3>Ver o que está aberto</h3>
+            <pre><code class="language-bash">sudo ufw status</code></pre>
+            <p>Numa VM típica logo no começo, as portas de <strong>entrada</strong> abertas são:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Porta</th><th>Serviço</th><th>Pra quê</th></tr>
+                    <tr><td>22</td><td>SSH</td><td>Você entra por aqui</td></tr>
+                    <tr><td>8080</td><td>Tomcat</td><td>App responde aqui (depois de deployar)</td></tr>
+                </table>
+            </div>
+            <p>A saída pra internet em geral é livre — você consegue baixar pacotes, clonar repositórios, baixar imagens Docker. As regras de saída são mais permissivas que as de entrada.</p>
+
+            <h3>Abrir uma porta nova</h3>
+            <pre><code class="language-bash">sudo ufw allow 8443/tcp comment 'HTTPS do meu app'
+sudo ufw status numbered</code></pre>
+            <p>O <code>comment</code> é opcional mas <strong>ajuda muito a lembrar pra que serve cada regra</strong> depois. O <code>status numbered</code> mostra cada regra com um número, útil pra remover uma regra específica.</p>
+
+            <p class="callout"><strong>Cuidado:</strong> cada porta aberta é mais uma superfície de ataque. Só abra o que vai usar de verdade.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Bônus — chave SSH (login sem senha)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Digitar senha toda vez que loga é chato e <strong>é menos seguro do que parece</strong>. O jeito profissional é usar uma chave SSH. Gera um par de chaves no seu Windows uma única vez:</p>
+            <pre><code class="language-bash">ssh-keygen -t ed25519</code></pre>
+            <p>Isso cria dois arquivos no seu perfil:</p>
+            <ul>
+                <li><code>id_ed25519</code> — chave <strong>privada</strong>, nunca compartilhe com ninguém</li>
+                <li><code>id_ed25519.pub</code> — chave <strong>pública</strong>, pode distribuir livremente</li>
+            </ul>
+
+            <h3>Copiar a chave pública pra VM</h3>
+            <p>No PowerShell do Windows:</p>
+            <pre><code class="language-bash">type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh seu-usuario@IP_DA_VM "mkdir -p ~/.ssh &amp;&amp; chmod 700 ~/.ssh &amp;&amp; cat &gt;&gt; ~/.ssh/authorized_keys &amp;&amp; chmod 600 ~/.ssh/authorized_keys"</code></pre>
+            <p>A partir daí, quando você roda <code>ssh seu-usuario@IP_DA_VM</code> do mesmo notebook, entra direto — sem perguntar senha. Mais rápido e mais seguro: uma chave de 256 bits é infinitamente mais difícil de adivinhar do que uma senha de texto.</p>
+
+            <p class="callout"><strong>Importante:</strong> a chave só funciona <strong>pro computador onde a chave privada mora</strong>. Se trocar de notebook, gera uma chave nova no novo notebook e copia a pública dele também.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Checklist do primeiro acesso</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Sequência mínima pra deixar a VM utilizável:</p>
+            <ul>
+                <li>SSH com <code>seu-usuario</code> / <code>senha-inicial</code></li>
+                <li><strong>Trocar senha do sistema</strong> (forçado pelo OS no primeiro login)</li>
+                <li>Reconectar com a senha nova</li>
+                <li>Confirmar que <code>sudo</code> responde (<code>sudo whoami</code> deve devolver <code>root</code>)</li>
+                <li>Ver as portas abertas: <code>sudo ufw status</code></li>
+                <li>(Opcional) Configurar chave SSH pra não digitar senha mais</li>
+                <li>(Opcional) Anotar a senha nova num gerenciador (KeePass / Bitwarden)</li>
+            </ul>
+            <p>Com isso pronto, a VM está em estado utilizável pra qualquer uma das próximas fases: Tomcat (deploy de app), PostgreSQL (banco), Tailscale (rede privada) ou Cloudflare Tunnel (domínio próprio com HTTPS).</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

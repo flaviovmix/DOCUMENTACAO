@@ -434,6 +434,20 @@ var MENU = [
         basePath: '9-ingles'
     },
     {
+        grupo: 'SERVIDOR',
+        pagina: 'servidor.html',
+        subgrupos: [
+            { label: 'VISAO GERAL',       href: '0-visao-geral/visao-geral.html', pasta: '0-visao-geral' },
+            { label: 'ACESSO & SETUP',    href: '1-acesso/acesso.html',         pasta: '1-acesso' },
+            { label: 'TOMCAT',            href: '2-tomcat/tomcat.html',         pasta: '2-tomcat' },
+            { label: 'POSTGRESQL',        href: '3-postgresql/postgresql.html', pasta: '3-postgresql' },
+            { label: 'TAILSCALE',         href: '4-tailscale/tailscale.html',   pasta: '4-tailscale' },
+            { label: 'CLOUDFLARE TUNNEL', href: '5-cloudflare/cloudflare.html', pasta: '5-cloudflare' }
+        ],
+        subpastas: ['0-visao-geral', '1-acesso', '2-tomcat', '3-postgresql', '4-tailscale', '5-cloudflare'],
+        pasta: '10-servidor'
+    },
+    {
         grupo: 'NEXUS',
         pagina: 'nexus.html',
         subgrupos: [

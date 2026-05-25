@@ -1,0 +1,12 @@
+# Adobe Premiere — cache de áudio
+*.pek
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# logs e temporários
+*.log
+*.tmp

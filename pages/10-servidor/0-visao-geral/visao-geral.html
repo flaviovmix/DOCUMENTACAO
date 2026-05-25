@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servidor — Visão Geral — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Visão Geral — Setup do Servidor</h1>
+
+<div class="audio-player" data-src="audio/visao-geral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Esta trilha documenta o setup de uma <strong>VM Ubuntu remota</strong> usada como ambiente Java (Tomcat + PostgreSQL), partindo do primeiro acesso até deixar a aplicação rodando com <strong>domínio próprio e HTTPS válido</strong>, sem expor portas extras na internet. São <strong>5 fases</strong> — cada uma é uma página com instruções prontas pra copiar e colar.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O cenário — o que existe antes de começar</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Alguém (um admin, ou um provedor de cloud) entrega uma <strong>VM Ubuntu 24.04 LTS</strong> com:</p>
+            <ul>
+                <li>Acesso por <strong>SSH</strong> (IP público, porta 22, usuário e senha iniciais)</li>
+                <li><strong>Java 8</strong> (Temurin OpenJDK) e <strong>Apache Tomcat 9</strong> instalados</li>
+                <li><strong>PostgreSQL 16</strong> rodando só dentro da VM (sem porta externa)</li>
+                <li><strong>Sudo total</strong> dentro da VM, isolada do host por firewall</li>
+            </ul>
+            <p>A partir daí, tudo o que cabe aqui: trocar senhas, deployar o app, configurar uma rede privada pra administrar a VM sem expor SSH na internet, e colocar o app no ar num subdomínio HTTPS sem precisar abrir nenhuma porta nova.</p>
+            <p class="callout">Os exemplos usam placeholders genéricos como <code>IP_DA_VM</code>, <code>seu-usuario</code>, <code>seu-dominio.com</code> e <code>senha-inicial</code>. Substitua pelos valores reais no seu setup.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">As 5 fases em ordem</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A trilha é linear pra leitura, mas as fases <strong>2, 3, 4 e 5 são independentes entre si</strong> — só a Fase 1 (Acesso) é pré-requisito real. Tomcat não depende de PostgreSQL, Tailscale não depende de Cloudflare, etc.</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>#</th><th>Fase</th><th>O que entrega</th></tr>
+                    <tr><td>1</td><td><strong>Acesso &amp; Setup</strong></td><td>Conexão SSH funcionando, senhas trocadas, firewall entendido</td></tr>
+                    <tr><td>2</td><td><strong>Tomcat</strong></td><td>WAR deployado, app respondendo na porta 8080</td></tr>
+                    <tr><td>3</td><td><strong>PostgreSQL</strong></td><td>Banco acessível pelo app e por ferramenta gráfica (via SSH)</td></tr>
+                    <tr><td>4</td><td><strong>Tailscale</strong></td><td>Rede privada entre notebook e VM, SSH sem porta pública</td></tr>
+                    <tr><td>5</td><td><strong>Cloudflare Tunnel</strong></td><td>App no ar em <code>https://app.seu-dominio.com</code>, SSL grátis, porta 8080 fechada</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Arquitetura final — como tudo se conecta</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>No fim das 5 fases, o ambiente tem <strong>duas portas de entrada bem definidas</strong>: usuários da internet entram pelo subdomínio HTTPS via Cloudflare, e o administrador entra pelo Tailscale. Nenhum dos dois caminhos depende de SSH ou porta de app exposta na internet.</p>
+            <pre><code class="language-text">                                  INTERNET
+                                      │
+                      ┌───────────────┴───────────────┐
+                      ▼                               ▼
+            https://app.seu-dominio.com         ssh / admin
+                      │                               │
+               Cloudflare Edge ◄────TLS               │
+               (SSL grátis, DDoS)                     │
+                      │                               │
+                      │ tunel cloudflared             │
+                      │ (saída da VM, sem             │
+                      │  porta de entrada)            │
+                      ▼                               ▼
+          ┌─────────────────────────────────────────────────┐
+          │  VM Ubuntu                                       │
+          │  • Tomcat (localhost:8080)                       │
+          │  • PostgreSQL (localhost:5432)                   │
+          │  • cloudflared (serviço)                         │
+          │  • tailscaled (serviço, 100.x.y.z na tailnet)    │
+          └─────────────────────────────────────────────────┘
+                      ▲
+                      │ Tailscale (WireGuard, criptografado)
+                      │
+          ┌─────────────────────────────────────────────────┐
+          │  Notebook do admin                               │
+          │  • Tailscale (100.x.y.z na mesma tailnet)        │
+          │  • VS Code Remote-SSH via Tailscale IP           │
+          └─────────────────────────────────────────────────┘</code></pre>
+            <p><strong>Princípios:</strong></p>
+            <ul>
+                <li>Apps públicos saem pela <strong>tunnel Cloudflare</strong> — é uma conexão de saída da VM, não precisa abrir porta nova</li>
+                <li>Acesso administrativo passa pelo <strong>Tailscale</strong> — sem expor SSH na internet</li>
+                <li>Portas 22 e 8080 públicas ficam abertas no começo, mas a meta é <strong>fechar a 8080</strong> depois do tunnel estável, e (opcionalmente) <strong>fechar a 22</strong> depois do Tailscale estável</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Fase 1 — Acesso &amp; Setup inicial</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Tudo que acontece na <strong>primeira hora</strong> com a VM. Sem isso, nada do resto roda.</p>
+            <ul>
+                <li><strong>Conectar via SSH</strong> do Windows (Windows Terminal, PuTTY, MobaXterm) com usuário e senha iniciais</li>
+                <li><strong>Troca de senha obrigatória</strong> no primeiro login — o sistema força antes de dar o shell</li>
+                <li><strong>Sudo</strong> total dentro da VM e o modelo de responsabilidades (admin da VM vs admin do host)</li>
+                <li><strong>Rede e firewall</strong> — IP, gateway, DNS, portas abertas, como abrir mais com <code>ufw</code></li>
+                <li><strong>Checklist do primeiro acesso</strong> — sequência mínima pra deixar a VM utilizável</li>
+                <li><strong>Bônus: chave SSH</strong> — login sem digitar senha</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Fase 2 — Tomcat (servidor de aplicação Java)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Como colocar o WAR no ar e manter o serviço rodando.</p>
+            <ul>
+                <li><strong>Estrutura do <code>/opt/tomcat/</code></strong> — onde ficam scripts, configs, libs, logs, webapps</li>
+                <li><strong>Deploy de WAR</strong> — copiar via <code>scp</code>, mover pro <code>webapps/</code>, hot-deploy automático em ~5 segundos</li>
+                <li><strong>Dica de produtividade</strong> — <code>setfacl</code> pra escrever no <code>webapps/</code> sem <code>sudo</code> (setup uma vez só)</li>
+                <li><strong>Tomcat Manager</strong> (opcional) — interface web pra deploy via browser ou <code>curl</code></li>
+                <li><strong>Restart</strong> e <strong>leitura de logs</strong> — <code>systemctl</code> e <code>journalctl</code></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Fase 3 — PostgreSQL</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Banco já está rodando — falta entender como conectar e como administrar de fora com segurança.</p>
+            <ul>
+                <li><strong>Conexão via <code>psql</code></strong> dentro da VM</li>
+                <li><strong>Troca de senha</strong> do usuário do banco com <code>ALTER USER</code></li>
+                <li><strong>String de conexão JDBC</strong> pro Tomcat e qual driver usar</li>
+                <li><strong>Por que o Postgres não está exposto</strong> — <code>listen_addresses = '127.0.0.1'</code> e o ganho de segurança</li>
+                <li><strong>Acesso de fora via port-forward SSH</strong> — DBeaver / pgAdmin no notebook conectam num túnel local sem abrir porta no servidor</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Fase 4 — Tailscale (rede privada notebook ↔ VM)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Tailscale é uma <strong>mesh-VPN baseada em WireGuard</strong>. Cria uma rede privada criptografada (<code>100.x.y.z</code>) entre os dispositivos logados na mesma conta. Plano free cobre até 100 devices.</p>
+            <ul>
+                <li><strong>Por que usar</strong> — sem expor SSH na internet pública, funciona de qualquer rede (casa, escritório, café), criptografia ponta-a-ponta</li>
+                <li><strong>Criar conta</strong> e instalar no notebook Windows</li>
+                <li><strong>Instalar na VM</strong> com 1 comando + ativar Tailscale SSH (autenticação Tailscale-nativa, mais segura)</li>
+                <li><strong>SSH via Tailscale</strong> usando o nome curto do host ou o IP da tailnet</li>
+                <li><strong>Fechar a porta 22 pública</strong> (opcional) — só depois de testar que Tailscale funciona, senão perde acesso</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Fase 5 — Cloudflare Tunnel + SSL</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Tira o app do <code>http://ip:8080</code> e coloca em <code>https://app.seu-dominio.com</code> com SSL válido, <strong>sem abrir nenhuma porta nova</strong>. O <code>cloudflared</code> abre uma conexão de <strong>saída</strong> da VM pra Cloudflare, e a CF roteia o tráfego do subdomínio de volta por essa conexão.</p>
+            <ul>
+                <li><strong>Cloudflare DNS</strong> — criar conta, adicionar domínio, trocar nameservers no registrar, ativar Universal SSL</li>
+                <li><strong>Cloudflare Tunnel</strong> — instalar <code>cloudflared</code>, autenticar, criar tunnel, escrever <code>config.yml</code> com as rotas</li>
+                <li><strong>Rotear DNS</strong> automaticamente — cria CNAME no Cloudflare apontando pro tunnel</li>
+                <li><strong>Instalar como serviço</strong> com <code>systemd</code> pra subir junto com a VM</li>
+                <li><strong>Fechar a porta 8080 pública</strong> — Tomcat passa a responder só pelo tunnel</li>
+                <li><strong>Múltiplos subdomínios</strong> — adicionar novos apps é editar o <code>config.yml</code> e rodar 1 comando</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Como ler esta trilha</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p><strong>Fase 1 primeiro, sempre.</strong> Sem acesso SSH funcionando e senhas trocadas, nada das outras fases roda.</p>
+            <p>Depois disso, dá pra pular pelas fases que você precisa agora:</p>
+            <ul>
+                <li>Quer só deployar um WAR e testar? <strong>Fase 1 → Fase 2</strong>. Pronto.</li>
+                <li>Quer o app conversando com banco? <strong>Fase 1 → Fase 2 → Fase 3</strong>.</li>
+                <li>Quer administrar a VM com segurança sem SSH público? <strong>Fase 1 → Fase 4</strong>.</li>
+                <li>Quer o app no ar com domínio próprio e HTTPS? <strong>Fase 1 → Fase 2 → Fase 5</strong>.</li>
+                <li>Quer tudo? Lê na ordem 1 → 2 → 3 → 4 → 5.</li>
+            </ul>
+            <p>Cada página é uma sessão de trabalho independente — abre, executa, marca como feito, segue pra próxima.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
