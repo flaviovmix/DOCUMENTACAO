@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servidor — Nexus</title>
+    <script src="../../js/layout.js"></script>
+</head>
+<body>
+
+    <div class="home-header">
+        <h1 class="home-title">SERVIDOR</h1>
+        <p class="home-sub">Anotações sobre servidor</p>
+    </div>
+
+    <div class="home-grid">
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Panorama do servidor: o que tem rodando, como as peças se conectam e por onde começar.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/visao-geral.png" alt="Visao Geral">
+            </div>
+            <div class="card-bar">
+                <a href="0-visao-geral/visao-geral.html" class="card-tag" style="--tag-clr:#0ea5e9;">VISAO GERAL</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>SSH, troca de senha, sudo, firewall e checklist do primeiro login na VM.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/card1.png" alt="Acesso & Setup">
+            </div>
+            <div class="card-bar">
+                <a href="1-acesso/acesso.html" class="card-tag" style="--tag-clr:#475569;">ACESSO &amp; SETUP</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Deploy de WAR, Tomcat Manager, restart, logs e ACL no <code>webapps/</code>.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/card2.png" alt="Tomcat">
+            </div>
+            <div class="card-bar">
+                <a href="2-tomcat/tomcat.html" class="card-tag" style="--tag-clr:#f59e0b;">TOMCAT</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Conexão via psql, troca de senha, string JDBC e port-forward SSH pra DBeaver/pgAdmin.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/card3.png" alt="PostgreSQL">
+            </div>
+            <div class="card-bar">
+                <a href="3-postgresql/postgresql.html" class="card-tag" style="--tag-clr:#2563eb;">POSTGRESQL</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Mesh VPN entre notebook e VM, SSH via tailnet e como fechar a porta 22 pública.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/card4.png" alt="Tailscale">
+            </div>
+            <div class="card-bar">
+                <a href="4-tailscale/tailscale.html" class="card-tag" style="--tag-clr:#10b981;">TAILSCALE</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Domínio no Cloudflare, Universal SSL, tunnel <code>cloudflared</code> e subdomínios.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/card5.png" alt="Cloudflare Tunnel">
+            </div>
+            <div class="card-bar">
+                <a href="5-cloudflare/cloudflare.html" class="card-tag" style="--tag-clr:#f97316;">CLOUDFLARE TUNNEL</a>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
