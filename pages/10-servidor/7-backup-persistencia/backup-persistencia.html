@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backup &amp; Persist&ecirc;ncia &mdash; Servidor &mdash; Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Backup &amp; Persist&ecirc;ncia &mdash; dados que sobrevivem ao container e &agrave; VM</h1>
+
+<div class="audio-player" data-src="audio/backup-persistencia.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Como fazer dados durarem al&eacute;m do ciclo de vida do container (volumes), al&eacute;m do ciclo de vida da pr&oacute;pria VM (backup off-site), e como restaurar tudo numa m&aacute;quina nova em uns 5 minutos. Pr&eacute;-requisito: <a href="../6-site-docker/site-docker.html">Site em Docker</a> &mdash; voc&ecirc; j&aacute; tem Docker rodando e entende <code>docker run</code>, bind mount e portas.</p>
+
+<p class="callout">Os exemplos usam placeholders gen&eacute;ricos: <code>IP_DA_VM</code>, <code>seu-usuario</code>, <code>seu-bucket</code>, <code>meu-app</code>. Substitua pelos valores reais.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O default &eacute; perder tudo</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A primeira coisa que assusta quem come&ccedil;a com Docker: dentro de um container, dados s&atilde;o <strong>vol&aacute;teis por design</strong>. Voc&ecirc; roda um Postgres, popula com tabelas, insere 5 mil registros, d&aacute; <code>docker rm</code> no container, e <strong>tudo vira p&oacute;</strong>. Os 5 gigas viraram zero.</p>
+
+            <p>N&atilde;o &eacute; bug, &eacute; prop&oacute;sito. A ideia de container &eacute; ser descart&aacute;vel &mdash; voc&ecirc; mata e cria outro em segundos, sempre limpo. &Oacute;timo pra app stateless, catastr&oacute;fico pra banco de dados.</p>
+
+            <p>A sa&iacute;da: <strong>separar o ciclo de vida do container do ciclo de vida do dado</strong>. Isso se faz com <strong>volume</strong>.</p>
+
+            <p class="callout"><strong>Analogia:</strong> container &eacute; barraca de camping, volume &eacute; o cofre que voc&ecirc; planta no ch&atilde;o. Voc&ecirc; desmonta a barraca e arma outra em cima &mdash; o que tem no cofre continua l&aacute;.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Volume nomeado vs bind mount</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Volume &eacute; uma pasta de <strong>fora</strong> do container que voc&ecirc; "monta" dentro dele. O programa l&aacute; dentro escreve normal no caminho que conhece, mas os bytes v&atilde;o parar do lado de fora &mdash; num lugar que sobrevive quando o container morre.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Tipo</th><th>Onde fica</th><th>Quando usar</th></tr>
+                    <tr><td><strong>Volume nomeado</strong></td><td>Docker gerencia, em <code>/var/lib/docker/volumes/</code></td><td><strong>Banco de dados</strong> &mdash; recomendado, mais perform&aacute;tico, mais port&aacute;vel</td></tr>
+                    <tr><td><strong>Bind mount</strong></td><td>Pasta sua, em qualquer caminho</td><td>Desenvolvimento &mdash; quando voc&ecirc; <em>quer</em> ver e editar arquivos no host</td></tr>
+                </table>
+            </div>
+
+            <h3>Volume nomeado</h3>
+            <pre><code class="language-bash">docker run -v pgdata:/var/lib/postgresql/data postgres:16-alpine</code></pre>
+            <p>Docker cria o volume <code>pgdata</code> automaticamente na primeira vez. Voc&ecirc; n&atilde;o precisa saber o caminho exato &mdash; <code>docker volume ls</code> lista, <code>docker volume inspect pgdata</code> mostra detalhes.</p>
+
+            <h3>Bind mount</h3>
+            <pre><code class="language-bash">docker run -v ~/meus-dados-pg:/var/lib/postgresql/data postgres:16-alpine</code></pre>
+            <p>Voc&ecirc; v&ecirc; os arquivos diretamente em <code>~/meus-dados-pg</code>. &Uacute;til pra HTML, configs e logs &mdash; n&atilde;o pra dados bin&aacute;rios do Postgres.</p>
+
+            <p><strong>Pro Postgres, use volume nomeado.</strong> Pra HTML (como no <a href="../6-site-docker/site-docker.html">epis&oacute;dio anterior</a>), bind mount.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Tr&ecirc;s camadas de risco &mdash; cada uma exige solu&ccedil;&atilde;o diferente</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Antes de entrar em backup, vale separar tr&ecirc;s camadas de risco. Cada uma tem solu&ccedil;&atilde;o pr&oacute;pria, e as tr&ecirc;s precisam ser cobertas pra voc&ecirc; ter "dados seguros" de verdade.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Risco</th><th>Cen&aacute;rio</th><th>Solu&ccedil;&atilde;o</th></tr>
+                    <tr><td><strong>1. Container morre</strong></td><td><code>docker rm</code> sem querer, <code>docker compose down</code> sem flag de manter volumes</td><td><strong>Volume nomeado</strong> &mdash; container vai, dado fica</td></tr>
+                    <tr><td><strong>2. Dado corrompe ou some</strong></td><td>Volume sobrevive, mas algu&eacute;m rodou <code>DROP TABLE</code></td><td><strong>Backup hist&oacute;rico</strong> com v&aacute;rias vers&otilde;es no tempo &mdash; pra poder voltar pro estado de ontem, semana passada, m&ecirc;s passado</td></tr>
+                    <tr><td><strong>3. VM inteira morre</strong></td><td>Deletada por engano, ransomware, voc&ecirc; perdeu o login, datacenter pegou fogo</td><td><strong>Backup off-site</strong> em outro lugar do mundo</td></tr>
+                </table>
+            </div>
+
+            <p>Backup local cobre 1 e 2. Backup off-site cobre 3. Os pr&oacute;ximos accordions resolvem na ordem.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Backup local automatizado &mdash; <code>pg_dump</code> + cron ou imagem pronta</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Backup de Postgres se faz com <code>pg_dump</code> &mdash; gera um arquivo SQL com estrutura e dados, restaur&aacute;vel depois com <code>pg_restore</code>. Pra rodar de dentro do container:</p>
+            <pre><code class="language-bash">docker exec nome-container pg_dump -U postgres -Fc nome-banco &gt; backup.dump</code></pre>
+            <p>O <code>-Fc</code> gera formato custom comprimido &mdash; ~5x menor que SQL puro, e restore mais r&aacute;pido.</p>
+
+            <h3>Caminho 1 &mdash; cron + script</h3>
+            <p>Script <code>~/bin/pg-backup.sh</code>:</p>
+            <pre><code class="language-bash">#!/bin/bash
+BACKUP_DIR=~/backups/postgres
+mkdir -p "$BACKUP_DIR"
+DATE=$(date +%Y-%m-%d-%H)
+docker exec pg pg_dump -U postgres -Fc meu-app &gt; "$BACKUP_DIR/meu-app-$DATE.dump"
+find "$BACKUP_DIR" -name "meu-app-*.dump" -mtime +7 -delete</code></pre>
+            <p>D&aacute; permiss&atilde;o (<code>chmod +x</code>), edita o crontab (<code>crontab -e</code>) e adiciona pra rodar de hora em hora:</p>
+            <pre><code class="language-text">0 * * * * /home/seu-usuario/bin/pg-backup.sh</code></pre>
+
+            <h3>Caminho 2 &mdash; imagem pronta (recomendado pra projeto com compose)</h3>
+            <p>A imagem <code>prodrigestivill/postgres-backup-local</code> faz tudo isso, com rota&ccedil;&atilde;o por dia + semana + m&ecirc;s. Adiciona no <code>docker-compose.yml</code>:</p>
+            <pre><code class="language-yaml">backup:
+  image: prodrigestivill/postgres-backup-local
+  environment:
+    POSTGRES_HOST: db
+    POSTGRES_DB: meu-app
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: sua-senha
+    SCHEDULE: "@hourly"
+    BACKUP_KEEP_DAYS: 7
+    BACKUP_KEEP_WEEKS: 4
+    BACKUP_KEEP_MONTHS: 6
+  volumes:
+    - ~/backups:/backups
+  depends_on:
+    - db</code></pre>
+            <p>Vira parte da infra declarada &mdash; viaja junto com o resto do projeto quando voc&ecirc; mover pra outra VM.</p>
+
+            <h3>Frequ&ecirc;ncia &mdash; de hora em hora &eacute; exagero saud&aacute;vel</h3>
+            <p>Pra app com poucas escritas/dia, dump por hora pesa kilobytes. Ter 168 vers&otilde;es dos &uacute;ltimos 7 dias custa quase nada de disco e te d&aacute; granularidade pra recuperar com perda m&aacute;xima de 1h.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Por que backup local n&atilde;o basta</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Voc&ecirc; tem 168 dumps locais bonitinhos, rotacionados, automatizados. Cen&aacute;rios em que <strong>isso n&atilde;o salva</strong>:</p>
+            <ul>
+                <li>A VM &eacute; deletada por engano no provedor (acontece)</li>
+                <li>Voc&ecirc; esquece a senha do <code>sudo</code> e perde acesso &agrave; m&aacute;quina inteira</li>
+                <li>A VM &eacute; invadida e o atacante criptografa todo o disco (ransomware)</li>
+                <li>O datacenter onde a VM mora pega fogo &mdash; sumiu junto com o disco</li>
+            </ul>
+
+            <p>Em todos esses cen&aacute;rios, os backups locais foram junto. <strong>Mesma f&iacute;sica</strong> &mdash; mesmo HD, mesmo datacenter, mesma conta. Pra cobrir isso, voc&ecirc; precisa de c&oacute;pia em <strong>outro lugar</strong>. Outra geografia, outra conta, outro provedor. &Eacute; o que se chama <strong>backup off-site</strong>.</p>
+
+            <p class="callout"><strong>Analogia:</strong> backup local &eacute; cofre no por&atilde;o da casa &mdash; protege contra raio que queimou seu HD ou exclus&atilde;o acidental. N&atilde;o protege contra inc&ecirc;ndio que queimou a casa toda. Pra isso voc&ecirc; precisa do <em>outro</em> cofre, em outro endere&ccedil;o.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Backup off-site com Backblaze B2 + rclone</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Pra mandar arquivos pra fora da VM tem muita op&ccedil;&atilde;o &mdash; AWS S3, Google Cloud, Dropbox, Backblaze B2. Pra projeto pessoal, recomendo <strong>Backblaze B2</strong>: tipo um S3 mais barato (US$ 0.005/GB/m&ecirc;s), e free tier de 10 GB.</p>
+
+            <h3>1. Cria conta e bucket no B2</h3>
+            <p>Em <a href="https://backblaze.com/b2" target="_blank" rel="noopener">backblaze.com/b2</a>, cria conta, cria um bucket chamado <code>seu-bucket</code>, gera uma <strong>Application Key</strong> com permiss&atilde;o de escrita.</p>
+
+            <h3>2. Instala rclone na VM</h3>
+            <pre><code class="language-bash">curl https://rclone.org/install.sh | sudo bash
+rclone config</code></pre>
+            <p>O <code>rclone config</code> &eacute; um wizard interativo. Escolhe Backblaze B2, cola Key ID + Application Key. Salva como remote chamado <code>b2</code>.</p>
+
+            <h3>3. Script de sync</h3>
+            <pre><code class="language-bash">#!/bin/bash
+# ~/bin/sync-backups.sh
+rclone sync ~/backups b2:seu-bucket/backups \
+  --transfers 4 --checksum --log-file=/var/log/rclone.log</code></pre>
+
+            <h3>4. Cron de hora em hora, 5 minutos depois do backup local</h3>
+            <pre><code class="language-text">5 * * * * /home/seu-usuario/bin/sync-backups.sh</code></pre>
+
+            <p>A cada hora, o estado da pasta <code>~/backups</code> &eacute; espelhado pro bucket. Arquivos novos sobem, deletados pela rota&ccedil;&atilde;o local somem do bucket tamb&eacute;m. Zero interven&ccedil;&atilde;o sua.</p>
+
+            <p class="callout"><strong>Custo:</strong> um banco de poucos MB gera dumps de poucos KB. 168 dumps/dia &times; 365 dias = alguns MB/ano. Sua conta nem chega perto do free tier de 10 GB.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O que vai no Git vs o que vai no B2</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Separa&ccedil;&atilde;o cr&iacute;tica &mdash; entender o que precisa de cada destino:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Item</th><th>Destino</th><th>Por qu&ecirc;</th></tr>
+                    <tr><td>C&oacute;digo da aplica&ccedil;&atilde;o</td><td><strong>Git</strong> (GitHub)</td><td>Texto, vers&atilde;o, re-cri&aacute;vel</td></tr>
+                    <tr><td><code>Dockerfile</code>, <code>docker-compose.yml</code></td><td><strong>Git</strong></td><td>Define COMO a aplica&ccedil;&atilde;o roda</td></tr>
+                    <tr><td>Scripts de setup, cron, rclone</td><td><strong>Git</strong></td><td>Texto, vers&atilde;o</td></tr>
+                    <tr><td>Dumps do Postgres</td><td><strong>B2</strong> (storage cloud)</td><td><strong>Cr&iacute;tico</strong> &mdash; gerado em runtime, n&atilde;o re-cri&aacute;vel</td></tr>
+                    <tr><td>Arquivos enviados por usu&aacute;rios (uploads)</td><td><strong>B2</strong></td><td>Tamb&eacute;m runtime</td></tr>
+                    <tr><td>Imagens Docker custom</td><td><strong>Nenhum</strong> &mdash; ou registry tipo GHCR</td><td>Re-buildadas do Dockerfile do Git</td></tr>
+                    <tr><td>Containers em execu&ccedil;&atilde;o</td><td><strong>Nenhum</strong></td><td>Re-criados com <code>docker compose up</code></td></tr>
+                </table>
+            </div>
+
+            <p><strong>Regra geral:</strong> tudo re-cri&aacute;vel a partir de c&oacute;digo vai no Git. Tudo gerado em runtime que n&atilde;o d&aacute; pra recriar vai no storage cloud.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Disaster recovery em ~5 minutos</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Cen&aacute;rio: VM morreu. Voc&ecirc; tem uma m&aacute;quina nova (outro VPS, outra VM, ou at&eacute; seu notebook). Procedimento exato:</p>
+
+            <pre><code class="language-bash"># 1. Instala Docker (~1 min)
+curl -fsSL https://get.docker.com | sudo bash
+sudo usermod -aG docker $USER &amp;&amp; newgrp docker
+
+# 2. Clona o repo do projeto (~10s)
+git clone git@github.com:seu-user/meu-app.git
+cd meu-app
+
+# 3. Configura rclone com a mesma conta B2 e baixa o &uacute;ltimo dump (~10s)
+rclone config   # cola Key ID + Application Key
+rclone copy b2:seu-bucket/backups/last/meu-app-latest.sql.gz .
+
+# 4. Sobe a stack (~1-2 min &mdash; pull das imagens)
+docker compose up -d
+
+# 5. Restaura o dump (segundos pra MBs)
+gunzip -c meu-app-latest.sql.gz | docker exec -i meu-app-db-1 psql -U postgres -d meu-app</code></pre>
+
+            <p>Total realista: <strong>3 a 7 minutos</strong>. N&atilde;o &eacute; literalmente "1 segundo" &mdash; pra isso voc&ecirc; precisaria de replica&ccedil;&atilde;o em tempo real e standby ligada (alta disponibilidade real), v&aacute;rias ordens de magnitude mais cara e complexa, exagero pra projeto pessoal.</p>
+
+            <p>Pra projeto pessoal ou SaaS pequeno, 5 minutos de downtime no pior caso da vida &eacute; absolutamente aceit&aacute;vel. Vale infinitamente mais investir nisso do que sonhar com zero downtime.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Testar restore mensalmente &mdash; o passo que ningu&eacute;m faz</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p><strong>Backup que voc&ecirc; nunca restaurou n&atilde;o &eacute; backup, &eacute; estat&iacute;stica.</strong> Pode estar tudo corrompido. Pode ter mudado a vers&atilde;o do Postgres e o dump n&atilde;o restaurar. Pode ter algum caractere estranho que d&aacute; erro no import. Pode ter algum bug no script de backup que silenciosamente gera dumps vazios h&aacute; 6 meses. Voc&ecirc; s&oacute; descobre <strong>no dia da emerg&ecirc;ncia</strong>.</p>
+
+            <h3>Solu&ccedil;&atilde;o &mdash; teste mensal de 5 minutos</h3>
+            <ol>
+                <li>Sobe uma VM descart&aacute;vel (free tier de qualquer provedor) ou usa seu notebook</li>
+                <li>Roda o procedimento de disaster recovery do accordion anterior</li>
+                <li>Verifica que a aplica&ccedil;&atilde;o sobe e mostra os dados esperados</li>
+                <li>Destr&oacute;i a VM</li>
+            </ol>
+
+            <p>Anota a data num lugar vis&iacute;vel ("&uacute;ltimo teste de restore: 2026-MM-DD"). Se passou mais de 30 dias, voc&ecirc; n&atilde;o tem mais backup &mdash; tem arquivos com extens&atilde;o <code>.sql.gz</code> numa pasta.</p>
+
+            <p class="callout"><strong>Mantra:</strong> backup n&atilde;o testado n&atilde;o &eacute; backup. O teste mensal &eacute; o que separa "tenho backup" de "tenho backup que funciona".</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Resumo &mdash; estrat&eacute;gia em um quadro</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Camada</th><th>O que protege</th><th>Como faz</th></tr>
+                    <tr><td><strong>Volume nomeado</strong></td><td>Container morto</td><td><code>-v pgdata:/var/lib/postgresql/data</code> no <code>docker run</code></td></tr>
+                    <tr><td><strong>Backup local rotacionado</strong></td><td>Dado corrompido / apagado por engano</td><td>Container <code>prodrigestivill</code> ou script + cron, de hora em hora</td></tr>
+                    <tr><td><strong>Sync off-site (B2)</strong></td><td>VM morta / datacenter / ransomware</td><td><code>rclone sync</code> + cron, 5 min depois do backup local</td></tr>
+                    <tr><td><strong>Teste mensal</strong></td><td>Corrup&ccedil;&atilde;o silenciosa / script quebrado</td><td>Restore completo em VM descart&aacute;vel, 1x/m&ecirc;s</td></tr>
+                </table>
+            </div>
+
+            <p>Com essas quatro pe&ccedil;as em p&eacute;, voc&ecirc; <strong>dorme tranquilo</strong>. A aplica&ccedil;&atilde;o pode rodar em qualquer lugar, em qualquer momento, e voc&ecirc; nunca perde mais do que 1h de dados, mesmo no pior cen&aacute;rio.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
