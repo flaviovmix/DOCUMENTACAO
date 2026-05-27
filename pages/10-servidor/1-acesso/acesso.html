@@ -64,6 +64,21 @@ Retype new password:     ← repita a senha nova</code></pre>
             <p>Três digitações, todas invisíveis. Se a confirmação bater, o sistema aceita e a <strong>sessão SSH cai imediatamente</strong> — é normal. Reconecta com a senha nova:</p>
             <pre><code class="language-bash">ssh seu-usuario@IP_DA_VM</code></pre>
 
+            <p class="callout"><strong>Dica:</strong> no Windows Terminal você consegue <strong>colar</strong> a senha com <code>Ctrl+Shift+V</code> ou clique direito do mouse. Nada aparece na tela enquanto cola — é normal, só dá Enter.</p>
+
+            <h3>Quando dá erro: <code>Authentication token manipulation error</code></h3>
+            <p>Se você ver isso depois de digitar as três senhas:</p>
+            <pre><code class="language-text">passwd: Authentication token manipulation error
+passwd: password unchanged
+Connection to IP_DA_VM closed.</code></pre>
+            <p>Causas mais comuns, em ordem:</p>
+            <ol>
+                <li><strong>Confundiu o campo <code>Current password</code>.</strong> Ele pede a senha <strong>atual</strong> (ainda é a inicial — <code>senha-inicial</code>). Não a nova que você acabou de inventar. Erro clássico: colar a senha nova nos três campos.</li>
+                <li><strong>A confirmação não bateu</strong> — digitou a senha nova diferente da primeira vez (typo, layout de teclado, copy/paste parcial).</li>
+                <li><strong>Senha muito fraca</strong> — Ubuntu rejeita senha curta, óbvia ou muito parecida com o seu usuário (regra do <code>pam_pwquality</code>). Quando é esse o caso, aparece uma linha tipo <code>BAD PASSWORD: ...</code> <strong>logo acima</strong> do erro principal.</li>
+            </ol>
+            <p>A sessão cai depois do erro. Reconecta com <code>ssh seu-usuario@IP_DA_VM</code> usando a <strong>senha inicial</strong> (que ainda é válida — nada foi trocado) e tenta de novo.</p>
+
             <h3>Regras mínimas pra uma senha boa</h3>
             <ul>
                 <li>Pelo menos <strong>8 caracteres</strong> (recomendado 12+)</li>
@@ -164,20 +179,45 @@ sudo ufw status numbered</code></pre>
             <span class="info-row-btn">+</span>
         </div>
         <div class="info-row-body">
-            <p>Digitar senha toda vez que loga é chato e <strong>é menos seguro do que parece</strong>. O jeito profissional é usar uma chave SSH. Gera um par de chaves no seu Windows uma única vez:</p>
+            <p>Digitar senha toda vez que loga é chato e <strong>é menos seguro do que parece</strong>. O jeito profissional é usar uma chave SSH. Gera um par de chaves <strong>no seu Windows</strong> uma única vez (no PowerShell, não na VM):</p>
             <pre><code class="language-bash">ssh-keygen -t ed25519</code></pre>
-            <p>Isso cria dois arquivos no seu perfil:</p>
+            <p>Aceita os defaults dando Enter em tudo (incluindo passphrase vazia, se quiser login sem digitar nada). Isso cria dois arquivos em <code>C:\Users\seu-nome\.ssh\</code>:</p>
             <ul>
-                <li><code>id_ed25519</code> — chave <strong>privada</strong>, nunca compartilhe com ninguém</li>
-                <li><code>id_ed25519.pub</code> — chave <strong>pública</strong>, pode distribuir livremente</li>
+                <li><code>id_ed25519</code> — chave <strong>privada</strong>, nunca compartilhe com ninguém, nunca sai do notebook</li>
+                <li><code>id_ed25519.pub</code> — chave <strong>pública</strong>, pode distribuir livremente, é o que vai pra VM</li>
             </ul>
 
-            <h3>Copiar a chave pública pra VM</h3>
-            <p>No PowerShell do Windows:</p>
-            <pre><code class="language-bash">type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh seu-usuario@IP_DA_VM "mkdir -p ~/.ssh &amp;&amp; chmod 700 ~/.ssh &amp;&amp; cat &gt;&gt; ~/.ssh/authorized_keys &amp;&amp; chmod 600 ~/.ssh/authorized_keys"</code></pre>
-            <p>A partir daí, quando você roda <code>ssh seu-usuario@IP_DA_VM</code> do mesmo notebook, entra direto — sem perguntar senha. Mais rápido e mais seguro: uma chave de 256 bits é infinitamente mais difícil de adivinhar do que uma senha de texto.</p>
+            <p class="callout"><strong>Pegadinha do Explorer do Windows:</strong> ele mostra o <code>id_ed25519.pub</code> como tipo "Microsoft Publisher Document" (por causa da extensão <code>.pub</code>). <strong>Não é</strong> — é só um arquivo de texto. Abre normal no Notepad.</p>
 
-            <p class="callout"><strong>Importante:</strong> a chave só funciona <strong>pro computador onde a chave privada mora</strong>. Se trocar de notebook, gera uma chave nova no novo notebook e copia a pública dele também.</p>
+            <h3>Caminho A — one-liner do PowerShell</h3>
+            <p>No PowerShell do Windows, esse comando lê a sua chave pública e empurra direto pra VM:</p>
+            <pre><code class="language-bash">type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh seu-usuario@IP_DA_VM "mkdir -p ~/.ssh &amp;&amp; chmod 700 ~/.ssh &amp;&amp; cat &gt;&gt; ~/.ssh/authorized_keys &amp;&amp; chmod 600 ~/.ssh/authorized_keys"</code></pre>
+            <p>Vai pedir sua senha uma última vez. Depois disso, login é direto. Funciona bem quando tudo dá certo — mas o comando é longo e quebra fácil se você colar errado.</p>
+
+            <h3>Caminho B — manual, em 4 passos dentro da VM</h3>
+            <p>Mais à prova de bobeira. Abre o <code>id_ed25519.pub</code> no Notepad, copia a linha inteira (começa com <code>ssh-ed25519 AAAA...</code> e termina com <code>usuario@MAQUINA</code>), e <strong>já logado na VM por senha</strong>, cola um comando por vez:</p>
+
+            <p><strong>1.</strong> Cria a pasta <code>~/.ssh</code> se não existir:</p>
+            <pre><code class="language-bash">mkdir -p ~/.ssh</code></pre>
+
+            <p><strong>2.</strong> Ajusta a permissão da pasta (SSH ignora pastas com permissão aberta demais):</p>
+            <pre><code class="language-bash">chmod 700 ~/.ssh</code></pre>
+
+            <p><strong>3.</strong> Acrescenta sua chave no fim do <code>authorized_keys</code>:</p>
+            <pre><code class="language-bash">echo 'ssh-ed25519 AAAA...sua-chave-publica-inteira... usuario@MAQUINA' &gt;&gt; ~/.ssh/authorized_keys</code></pre>
+            <ul>
+                <li><strong>Aspas simples</strong> (<code>'...'</code>) preservam o conteúdo literal — a chave tem <code>/</code>, <code>+</code>, <code>=</code> que o bash poderia interpretar</li>
+                <li><strong><code>&gt;&gt;</code></strong> acrescenta no fim (se usar <code>&gt;</code> com uma só, apaga o que tinha — perigoso quando você já tem outras chaves lá)</li>
+            </ul>
+
+            <p><strong>4.</strong> Ajusta a permissão do arquivo (sem isso, o SSH ignora a chave por segurança):</p>
+            <pre><code class="language-bash">chmod 600 ~/.ssh/authorized_keys</code></pre>
+
+            <p>Confere com <code>cat ~/.ssh/authorized_keys</code> — tem que mostrar sua linha inteira. Aí <code>exit</code>, e do PowerShell roda <code>ssh seu-usuario@IP_DA_VM</code> — entra direto, sem pedir senha.</p>
+
+            <p>Uma chave Ed25519 de 256 bits é infinitamente mais difícil de adivinhar do que qualquer senha de texto. Mais rápido <strong>e</strong> mais seguro.</p>
+
+            <p class="callout"><strong>Importante:</strong> a chave só funciona <strong>pro computador onde a chave privada mora</strong>. Se trocar de notebook, gera uma chave nova no novo notebook e adiciona a pública dele no mesmo <code>authorized_keys</code> da VM.</p>
         </div>
     </div>
 

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site em Docker &mdash; Servidor &mdash; Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Site em Docker &mdash; nginx + bind mount</h1>
+
+<div class="audio-player" data-src="audio/site-docker.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Como servir um site est&aacute;tico (HTML/CSS/JS) num <strong>container Docker</strong> com <code>nginx:alpine</code>, em uns 5 comandos. Cobre o caminho do <em>"por que preciso de servidor?"</em> at&eacute; <em>"como deixo com senha"</em> e <em>"como subo dois sites em paralelo"</em>.</p>
+
+<p class="callout">Os exemplos usam placeholders gen&eacute;ricos: <code>IP_DA_VM</code>, <code>seu-usuario</code>, <code>seu-site</code>. Substitua pelos valores reais.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Por que precisa de servidor web (e por que Docker)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Um navegador <strong>n&atilde;o abre arquivo pela rede</strong> &mdash; ele faz uma requisi&ccedil;&atilde;o HTTP numa porta TCP, e precisa ter algum processo na VM <strong>escutando</strong> essa porta pra responder. Sem servidor, o navegador d&aacute; <code>connection refused</code>.</p>
+
+            <h3>Op&ccedil;&otilde;es de servidor</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Caminho</th><th>Quando usar</th></tr>
+                    <tr><td><strong>Tomcat</strong> (j&aacute; rodando)</td><td>Se for app Java/WAR. Pra HTML est&aacute;tico tamb&eacute;m serve, mas &eacute; matar mosquito com bazuca.</td></tr>
+                    <tr><td><strong><code>python3 -m http.server</code></strong></td><td>Brincar e abandonar &mdash; o Python j&aacute; vem no Ubuntu, 1 comando e tem servidor. Mata quando fecha o terminal.</td></tr>
+                    <tr><td><strong>Docker + nginx</strong></td><td>Solu&ccedil;&atilde;o profissional: container reinicia sozinho, isolado do resto, f&aacute;cil de duplicar, mesmo formato que &iacute;a pra produ&ccedil;&atilde;o.</td></tr>
+                </table>
+            </div>
+
+            <p>A escolha &eacute; <strong>Docker</strong> aqui porque o objetivo &eacute; <strong>praticar Docker</strong>. Em meia hora voc&ecirc; encosta nos 80% dos conceitos do dia-a-dia: image vs container, <code>run / ps / logs / stop / rm</code>, port mapping, bind mount, ciclo "edita arquivo &rarr; v&ecirc; no browser".</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Instalando Docker (script oficial)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O Ubuntu oferece <code>apt install docker.io</code>, mas &eacute; vers&atilde;o antiga. O <strong>script oficial</strong> da Docker instala o <code>docker-ce</code> mais recente, j&aacute; com <code>docker compose</code> v2 incluso &mdash; &eacute; o que aparece em todo tutorial.</p>
+
+            <pre><code class="language-bash">curl -fsSL https://get.docker.com | sudo bash</code></pre>
+
+            <p>Demora ~1 minuto. Vem o pacote completo: <code>docker-ce</code> (engine), <code>docker-ce-cli</code> (comando), <code>containerd.io</code> (runtime), <code>docker-buildx-plugin</code> e <code>docker-compose-plugin</code>.</p>
+
+            <h3>Adicionar seu usu&aacute;rio ao grupo <code>docker</code></h3>
+            <p>Por padr&atilde;o, s&oacute; <code>root</code> roda <code>docker</code>. Pra n&atilde;o precisar de <code>sudo</code> a cada comando:</p>
+            <pre><code class="language-bash">sudo usermod -aG docker seu-usuario
+exit</code></pre>
+
+            <p>O <code>exit</code> &eacute; <strong>obrigat&oacute;rio</strong> &mdash; a mudan&ccedil;a de grupo s&oacute; vale na <strong>pr&oacute;xima sess&atilde;o SSH</strong>. Reconecta com <code>ssh seu-usuario@IP_DA_VM</code> e confirma:</p>
+            <pre><code class="language-bash">docker --version</code></pre>
+            <p>Tem que mostrar a vers&atilde;o sem pedir <code>sudo</code>. Se ainda pedir, voc&ecirc; esqueceu de sair e reconectar.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Primeiro site no ar &mdash; 5 comandos</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Sequ&ecirc;ncia m&iacute;nima do "n&atilde;o tem nada" at&eacute; "tem site rodando em <code>http://IP_DA_VM:8000/</code>":</p>
+
+            <h3>1. Cria a pasta do site</h3>
+            <pre><code class="language-bash">mkdir -p ~/seu-site</code></pre>
+
+            <h3>2. Cria o <code>index.html</code></h3>
+            <pre><code class="language-bash">nano ~/seu-site/index.html</code></pre>
+            <p>No <code>nano</code>, cola:</p>
+            <pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;&lt;meta charset="UTF-8"&gt;&lt;title&gt;Teste&lt;/title&gt;&lt;/head&gt;
+&lt;body style="font-family:sans-serif;text-align:center;padding:60px;"&gt;
+    &lt;h1&gt;Funcionou!&lt;/h1&gt;
+    &lt;p&gt;Servido por nginx num container Docker.&lt;/p&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+            <p>Salva com <code>Ctrl+O</code> &rarr; Enter &rarr; <code>Ctrl+X</code>.</p>
+
+            <h3>3. Libera a porta no firewall (uma vez s&oacute;)</h3>
+            <pre><code class="language-bash">sudo ufw allow 8000/tcp</code></pre>
+            <p>Cada porta &eacute; liberada <strong>separadamente</strong> &mdash; abrir 8000 n&atilde;o abre 8001.</p>
+
+            <h3>4. Sobe o container</h3>
+            <pre><code class="language-bash">docker run -d --name seu-site -p 8000:80 -v ~/seu-site:/usr/share/nginx/html nginx:alpine</code></pre>
+
+            <h3>5. Abre no browser</h3>
+            <p><code>http://IP_DA_VM:8000/</code> &mdash; tem que aparecer "Funcionou!".</p>
+
+            <p class="callout"><strong>Editou o HTML depois?</strong> S&oacute; recarregar o navegador. Como a pasta est&aacute; montada (<code>-v</code>), o nginx serve o arquivo novo na hora, sem rebuild nem restart.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Anatomia do <code>docker run</code></span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Cada flag do comando faz uma coisa espec&iacute;fica:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Peda&ccedil;o</th><th>Fun&ccedil;&atilde;o</th></tr>
+                    <tr><td><code>docker run</code></td><td>"Cria e inicia container"</td></tr>
+                    <tr><td><code>-d</code></td><td><strong>Detached</strong> &mdash; roda em background, libera o terminal</td></tr>
+                    <tr><td><code>--name seu-site</code></td><td>Apelido do container. Sem isso, Docker inventa nome aleat&oacute;rio engra&ccedil;ado (<code>happy_einstein</code>)</td></tr>
+                    <tr><td><code>-p 8000:80</code></td><td><strong>Port mapping</strong> &mdash; porta 8000 da VM &harr; porta 80 dentro do container. Nginx sempre escuta na 80 dentro; o <code>-p</code> "abre uma janela" pra fora.</td></tr>
+                    <tr><td><code>-v ~/seu-site:/usr/share/nginx/html</code></td><td><strong>Bind mount</strong> &mdash; sua pasta vira o diret&oacute;rio servido pelo nginx</td></tr>
+                    <tr><td><code>nginx:alpine</code></td><td><strong>Imagem</strong>. <code>nginx</code> &eacute; o nome, <code>alpine</code> &eacute; a tag (vers&atilde;o min&uacute;scula ~40 MB). Sem tag, vem <code>:latest</code> (~140 MB).</td></tr>
+                </table>
+            </div>
+
+            <h3>O que rola por dentro, em ordem</h3>
+            <ol>
+                <li>Docker procura <code>nginx:alpine</code> na m&aacute;quina. N&atilde;o tem.</li>
+                <li>Baixa do <strong>Docker Hub</strong> (<code>hub.docker.com/_/nginx</code>) &mdash; v&aacute;rias camadas em paralelo</li>
+                <li>Cria o container a partir da imagem</li>
+                <li>Liga sua pasta do host em <code>/usr/share/nginx/html</code> dentro dele</li>
+                <li>Liga a porta 8000 do host na 80 do container</li>
+                <li>Roda o processo principal da imagem (o nginx)</li>
+                <li>Imprime o ID do container (hash longo) e devolve o terminal</li>
+            </ol>
+            <p>Da pr&oacute;xima vez, pula o passo 2 &mdash; a imagem j&aacute; est&aacute; em cache local. Subir cai pra &lt; 1 segundo.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Bind mount vs COPY no Dockerfile &mdash; quando usar cada</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Soa estranho "mandar HTML pra container", mas com <code>-v</code> voc&ecirc; <strong>n&atilde;o manda nada</strong>. A pasta do host fica <em>vis&iacute;vel</em> dentro do container, e o nginx l&ecirc; dela em tempo real. Edita no host &rarr; muda na hora.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Modo</th><th>Quando</th><th>Como fica</th></tr>
+                    <tr><td><strong>Bind mount</strong> (<code>-v</code>)</td><td>Desenvolvimento, site que muda toda hora</td><td>Arquivos vivem no host. Container s&oacute; l&ecirc;.</td></tr>
+                    <tr><td><strong>COPY no Dockerfile</strong></td><td>Produ&ccedil;&atilde;o, deploy imut&aacute;vel</td><td>Arquivos viram <strong>parte da imagem</strong>. Pra mudar precisa rebuild + restart.</td></tr>
+                </table>
+            </div>
+
+            <p>Pra brincar e iterar, bind mount &eacute; exatamente o certo. Quando o site estabilizar e voc&ecirc; quiser empacotar tudo numa imagem pronta pra <code>docker push</code> &rarr; servidor de produ&ccedil;&atilde;o, a&iacute; escreve um <code>Dockerfile</code>:</p>
+            <pre><code class="language-dockerfile">FROM nginx:alpine
+COPY ./site /usr/share/nginx/html</code></pre>
+            <p>Build com <code>docker build -t meu-site .</code> e roda com <code>docker run -d -p 8000:80 meu-site</code>. Imagem auto-contida, n&atilde;o depende de pasta nenhuma do host.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Transferindo arquivos do PC pra VM &mdash; <code>scp</code> e a pegadinha do <code>.git</code></span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Site mais complexo? Edita no PC e copia pra VM com <code>scp</code> (vem com o Windows). No <strong>PowerShell do Windows</strong>:</p>
+            <pre><code class="language-bash">scp -r c:\caminho\do\projeto\* seu-usuario@IP_DA_VM:~/seu-site/</code></pre>
+            <ul>
+                <li><code>-r</code> = recursivo (copia pasta e tudo dentro)</li>
+                <li><code>*</code> = todos os arquivos da pasta</li>
+                <li><code>:~/seu-site/</code> = destino na VM</li>
+            </ul>
+
+            <p class="callout"><strong>Pegadinha:</strong> o <code>*</code> n&atilde;o respeita <code>.gitignore</code> e pega <strong>tudo</strong> &mdash; inclusive a pasta <code>.git/</code>. Isso traz dois problemas:</p>
+            <ul>
+                <li><strong>Lento</strong>: <code>.git/</code> tem milhares de arquivos pequenos, demora muito</li>
+                <li><strong>Risco de seguran&ccedil;a grave</strong>: se o nginx servir <code>.git/</code> via HTTP, qualquer um abre <code>http://IP_DA_VM:8000/.git/config</code> e baixa o reposit&oacute;rio inteiro com hist&oacute;rico. Existe ferramenta automatizada (<code>gitdumper</code>) que faz isso em segundos &mdash; bots varrem a internet procurando essa falha.</li>
+            </ul>
+
+            <p>Solu&ccedil;&atilde;o simples: listar explicitamente o que enviar, pulando <code>.git/</code>:</p>
+            <pre><code class="language-bash">scp -r c:\projeto\index.html c:\projeto\css c:\projeto\js c:\projeto\pages seu-usuario@IP_DA_VM:~/seu-site/</code></pre>
+
+            <h3>Op&ccedil;&otilde;es mais avan&ccedil;adas</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Caminho</th><th>Quando usa</th></tr>
+                    <tr><td><strong><code>scp</code></strong></td><td>Primeira vez, ad-hoc, simples</td></tr>
+                    <tr><td><strong><code>rsync</code></strong></td><td>Atualiza&ccedil;&otilde;es incrementais &mdash; s&oacute; manda o que mudou</td></tr>
+                    <tr><td><strong><code>git clone</code> + <code>git pull</code></strong></td><td>Reposit&oacute;rio versionado &mdash; voc&ecirc; <em>commita</em> no PC, <em>puxa</em> na VM</td></tr>
+                    <tr><td><strong>GitHub Actions</strong> (auto-deploy)</td><td>Push aqui &rarr; atualiza l&aacute; sozinho via SSH em ~30s</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">M&uacute;ltiplos sites em paralelo &mdash; um container por porta</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Cada container &eacute; isolado: sua pasta, sua porta, seu processo. D&aacute; pra ter quantos quiser rodando ao mesmo tempo &mdash; mesma imagem <code>nginx:alpine</code>, comportamentos diferentes:</p>
+
+            <pre><code class="language-bash"># Site 1 (com senha, se voc&ecirc; configurou auth)
+docker run -d --name doc -p 8000:80 \
+  -v ~/doc:/usr/share/nginx/html \
+  -v ~/nginx-config/default.conf:/etc/nginx/conf.d/default.conf \
+  -v ~/nginx-config/.htpasswd:/etc/nginx/conf.d/.htpasswd \
+  nginx:alpine
+
+# Site 2 (sem senha, p&uacute;blico)
+sudo ufw allow 8001/tcp
+docker run -d --name site2 -p 8001:80 \
+  -v ~/site2:/usr/share/nginx/html \
+  nginx:alpine</code></pre>
+
+            <p><code>docker ps</code> mostra os dois rodando. Mesma imagem, mas comportamentos diferentes <strong>porque os volumes s&atilde;o diferentes</strong>. Pra parar/remover um sem mexer no outro:</p>
+            <pre><code class="language-bash">docker stop site2 &amp;&amp; docker rm site2</code></pre>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Adicionando login &mdash; Basic Auth do nginx</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>3 pe&ccedil;as: arquivo <code>.htpasswd</code> (usu&aacute;rio + hash), config do nginx (<code>default.conf</code>) com <code>auth_basic</code>, e <code>docker run</code> montando os dois como volumes.</p>
+
+            <h3>1. Instala o utilit&aacute;rio <code>htpasswd</code></h3>
+            <pre><code class="language-bash">sudo apt install -y apache2-utils</code></pre>
+
+            <h3>2. Cria o arquivo de senha</h3>
+            <pre><code class="language-bash">mkdir -p ~/nginx-config
+htpasswd -c ~/nginx-config/.htpasswd seu-usuario</code></pre>
+            <p>O <code>-c</code> <strong>cria</strong> o arquivo &mdash; usa s&oacute; na primeira vez. Pra adicionar mais usu&aacute;rios depois, roda sem o <code>-c</code> (sen&atilde;o apaga o que tinha):</p>
+            <pre><code class="language-bash">htpasswd ~/nginx-config/.htpasswd outro-usuario</code></pre>
+
+            <p>Tem o flag <code>-b</code> que aceita a senha direto na linha (sem prompt interativo) &mdash; pr&aacute;tico, mas a senha fica vis&iacute;vel no hist&oacute;rico do bash:</p>
+            <pre><code class="language-bash">htpasswd -c -b ~/nginx-config/.htpasswd admin minhasenha</code></pre>
+
+            <h3>3. Cria o <code>default.conf</code> do nginx</h3>
+            <pre><code class="language-bash">cat &gt; ~/nginx-config/default.conf &lt;&lt; 'EOF'
+server {
+    listen 80;
+    server_name _;
+
+    location / {
+        auth_basic "Acesso restrito";
+        auth_basic_user_file /etc/nginx/conf.d/.htpasswd;
+        root /usr/share/nginx/html;
+        index index.html;
+        try_files $uri $uri/ =404;
+    }
+}
+EOF</code></pre>
+
+            <h3>4. Recria o container com os 2 volumes extras</h3>
+            <pre><code class="language-bash">docker stop seu-site &amp;&amp; docker rm seu-site
+docker run -d --name seu-site -p 8000:80 \
+  -v ~/seu-site:/usr/share/nginx/html \
+  -v ~/nginx-config/default.conf:/etc/nginx/conf.d/default.conf \
+  -v ~/nginx-config/.htpasswd:/etc/nginx/conf.d/.htpasswd \
+  nginx:alpine</code></pre>
+
+            <p>Abre <code>http://IP_DA_VM:8000/</code> &mdash; o navegador mostra <strong>popup pedindo usu&aacute;rio e senha</strong>.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Removendo o login &mdash; e <code>restart</code> vs <code>reload</code></span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Pra deixar p&uacute;blico de novo, edita o <code>default.conf</code> e remove as 2 linhas <code>auth_basic</code>:</p>
+            <pre><code class="language-bash">nano ~/nginx-config/default.conf</code></pre>
+            <p>Apaga essas duas:</p>
+            <pre><code class="language-nginx">        auth_basic "Acesso restrito";
+        auth_basic_user_file /etc/nginx/conf.d/.htpasswd;</code></pre>
+            <p>No nano, <code>Ctrl+K</code> apaga a linha inteira. Depois <code>Ctrl+O</code> &rarr; Enter &rarr; <code>Ctrl+X</code>.</p>
+
+            <h3>Aplicando a mudan&ccedil;a &mdash; <code>restart</code> ou <code>reload</code>?</h3>
+            <p>O nginx s&oacute; l&ecirc; o <code>default.conf</code> na hora que sobe. <strong>Sem reiniciar, continua usando a config antiga em mem&oacute;ria.</strong></p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Comando</th><th>Como funciona</th><th>Quando usa</th></tr>
+                    <tr><td><code>docker restart seu-site</code></td><td>Para e sobe o container inteiro (~1-2s downtime)</td><td>Brincar, dev &mdash; mais f&aacute;cil de lembrar</td></tr>
+                    <tr><td><code>docker exec seu-site nginx -s reload</code></td><td>S&oacute; recarrega config dentro do container (zero downtime)</td><td>Produ&ccedil;&atilde;o &mdash; n&atilde;o derruba conex&otilde;es em andamento</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Riscos de seguran&ccedil;a &mdash; o que cuidar</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Cada vez que voc&ecirc; abre uma porta no firewall, expande a superf&iacute;cie de ataque. Vale conhecer o que est&aacute; em jogo:</p>
+
+            <h3>🔴 Urgente &mdash; <code>.git/</code> exposto via HTTP</h3>
+            <p>Se copiar a pasta <code>.git/</code> junto com os arquivos do site (cl&aacute;ssico do <code>scp -r *</code>), qualquer pessoa abre <code>http://IP_DA_VM:8000/.git/config</code> e baixa o reposit&oacute;rio inteiro com hist&oacute;rico. Bots varrem a internet procurando isso.</p>
+            <p>Fix: <code>rm -rf ~/seu-site/.git</code>, ou n&atilde;o copiar no <code>scp</code>.</p>
+
+            <h3>🟠 M&eacute;dio &mdash; Porta p&uacute;blica sem autentica&ccedil;&atilde;o</h3>
+            <p>Qualquer um que tope no IP v&ecirc; o site inteiro. Se ele tem conte&uacute;do sens&iacute;vel (credenciais, paths internos, screenshots de UI privada), vaza.</p>
+            <p>Fix: Basic Auth (acima), ou colocar atr&aacute;s de <strong>Tailscale</strong> (n&atilde;o exposta na internet), ou <strong>Cloudflare Tunnel</strong> (Fase 5).</p>
+
+            <h3>🟠 M&eacute;dio &mdash; SSH na porta 22 p&uacute;blica</h3>
+            <p>Bots fazem brute-force 24/7. Conferindo:</p>
+            <pre><code class="language-bash">sudo journalctl -u ssh --since "1 hour ago" | grep -i fail</code></pre>
+            <p>Senha forte + chave SSH protegem, mas continua barulhento.</p>
+            <p>Fix: <code>fail2ban</code> (bane IP que erra 3x), ou Tailscale + fechar a 22.</p>
+
+            <h3>🟢 Higiene &mdash; <code>sudo</code> ainda pede senha</h3>
+            <p>Sua senha forte virou ponto &uacute;nico de falha &mdash; se vazar, vira root. Pra cen&aacute;rio s&eacute;rio: 2FA no <code>sudo</code>.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Pr&oacute;ximos passos pra praticar</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Sem mudar de dom&iacute;nio (continua sendo "servir site"), d&aacute; pra subir o sarrafo gradualmente:</p>
+            <ol>
+                <li><strong>Trocar <code>nginx:alpine</code> por <code>httpd:alpine</code></strong> (Apache) &mdash; mesma ideia, servidor diferente. Aprende que imagem &eacute; s&oacute; "ambiente pronto".</li>
+                <li><strong>Escrever seu pr&oacute;prio <code>Dockerfile</code></strong> com <code>FROM nginx:alpine</code> + <code>COPY ./site /usr/share/nginx/html</code>, dar <code>docker build -t meu-site .</code> e rodar &mdash; agora a imagem &eacute; sua.</li>
+                <li><strong>Subir 2 containers ao mesmo tempo</strong> em portas diferentes &mdash; consolida que cada container &eacute; isolado.</li>
+                <li><strong><code>docker compose</code></strong> com um <code>docker-compose.yml</code> &mdash; declara servi&ccedil;os num arquivo em vez de comando longo. &Eacute; o que se usa em projeto real.</li>
+            </ol>
+            <p>Quando travar no passo 4, j&aacute; d&aacute; pra encarar coisa s&eacute;ria tipo subir um Postgres + app Java junto com a Fase 2 (Tomcat) e Fase 3 (PostgreSQL).</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
