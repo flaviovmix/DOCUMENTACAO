@@ -1367,7 +1367,28 @@ function initAudioPlayers(container) {
         var fill  = player.querySelector('.audio-progress-fill');
         var time  = player.querySelector('.audio-time');
 
-        audio.src = player.dataset.src;
+        var tracks = null;
+        if (player.dataset.tracks) {
+            try { tracks = JSON.parse(player.dataset.tracks); }
+            catch (e) { tracks = null; }
+        }
+
+        var tabsWrap = null;
+        if (tracks && tracks.length) {
+            tabsWrap = document.createElement('div');
+            tabsWrap.className = 'audio-tracks';
+            tracks.forEach(function(t, i) {
+                var tab = document.createElement('button');
+                tab.className = 'audio-track-tab' + (i === 0 ? ' active' : '');
+                tab.textContent = t.label;
+                tab.dataset.src = t.src;
+                tabsWrap.appendChild(tab);
+            });
+            player.insertBefore(tabsWrap, player.firstChild);
+            audio.src = tracks[0].src;
+        } else {
+            audio.src = player.dataset.src;
+        }
 
         function fmt(s) {
             var m = Math.floor(s / 60);
@@ -1484,10 +1505,25 @@ function initAudioPlayers(container) {
         var btnDl = document.createElement('a');
         btnDl.className = 'audio-skip audio-download';
         btnDl.title = 'Download';
-        btnDl.href = player.dataset.src;
+        btnDl.href = audio.src;
         btnDl.download = '';
         btnDl.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>';
         volWrap.after(btnDl);
+
+        // troca de track (multi-src)
+        if (tabsWrap) {
+            tabsWrap.addEventListener('click', function(e) {
+                var tab = e.target.closest('.audio-track-tab');
+                if (!tab || tab.classList.contains('active')) return;
+                var wasPlaying = !audio.paused;
+                tabsWrap.querySelectorAll('.audio-track-tab').forEach(function(t) { t.classList.remove('active'); });
+                tab.classList.add('active');
+                audio.src = tab.dataset.src;
+                btnDl.href = tab.dataset.src;
+                btn.innerHTML = iconPlay;
+                if (wasPlaying) audio.play().then(function() { btn.innerHTML = iconPause; }).catch(function(){});
+            });
+        }
 
         // sentinel: div invisível para detectar quando o player grudou no topo
         var sentinel = document.createElement('div');

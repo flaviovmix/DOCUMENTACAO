@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Busca Linear — Estruturas de Controle — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+    <style>
+        .vetor-animacao {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+        .vetor-toolbar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .vetor-toolbar label {
+            font-size: 13px;
+            color: #4b5563;
+        }
+        .vetor-input {
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font: inherit;
+            font-size: 14px;
+            width: 110px;
+            text-transform: uppercase;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        }
+        .vetor-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, .25);
+        }
+        .vetor-btn {
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .vetor-btn:hover { background: #1d4ed8; }
+        .vetor-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+        .vetor-btn.secondary { background: #6b7280; }
+        .vetor-btn.secondary:hover { background: #4b5563; }
+
+        /* ─── Code Debugger ─── */
+        .vetor-debug {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #1f2937;
+            padding: 12px 0;
+            margin-bottom: 16px;
+        }
+        .dbg-line {
+            padding: 1px 16px 1px 34px;
+            position: relative;
+            white-space: pre;
+            transition: background .2s ease, color .25s ease;
+            min-height: 1.7em;
+        }
+        .dbg-line.active { background: #fef3c7; }
+        .dbg-line.active::before {
+            content: '▶';
+            position: absolute;
+            left: 12px;
+            color: #d97706;
+            font-size: 10px;
+            top: 6px;
+        }
+        .dbg-line.done { color: #9ca3af; }
+        .dbg-line.done .kw,
+        .dbg-line.done .cls,
+        .dbg-line.done .num,
+        .dbg-line.done .str,
+        .dbg-line.done .mth,
+        .dbg-line.done .cmt { color: #c7c9cd; }
+        .dbg-line .kw  { color: #7c3aed; font-weight: 600; }
+        .dbg-line .cls { color: #0891b2; }
+        .dbg-line .mth { color: #b45309; }
+        .dbg-line .num { color: #1d4ed8; }
+        .dbg-line .str { color: #15803d; }
+        .dbg-line .cmt { color: #6b7280; font-style: italic; }
+        .dbg-divider {
+            padding: 6px 16px 6px 34px;
+            color: #6b7280;
+            font-size: 11px;
+            font-style: italic;
+            border-top: 1px dashed #d1d5db;
+            border-bottom: 1px dashed #d1d5db;
+            margin: 6px 0;
+            background: #fafafa;
+        }
+        .dbg-divider strong { color: #d97706; font-weight: 700; }
+
+        /* ─── Slots ─── */
+        .vetor-slots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+        }
+        .vetor-slot {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .vetor-index {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        .vetor-value {
+            width: 62px;
+            height: 58px;
+            background: #f3f4f6;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: #9ca3af;
+            transition: transform .25s ease, background .25s ease, border-color .25s ease, color .25s ease, box-shadow .25s ease;
+        }
+        .vetor-slot.assigned .vetor-value {
+            background: #eef2ff;
+            border-color: #6366f1;
+            color: #3730a3;
+        }
+        .vetor-slot.active .vetor-value {
+            transform: scale(1.15);
+            border-color: #fbbf24;
+            background: #fef3c7;
+            color: #92400e;
+            box-shadow: 0 0 12px rgba(251, 191, 36, .55);
+        }
+        .vetor-slot.reading .vetor-value {
+            transform: scale(1.10);
+            border-color: #60a5fa;
+            background: #dbeafe;
+            color: #1e3a8a;
+        }
+        .vetor-slot.checking .vetor-value {
+            transform: scale(1.16);
+            border-color: #fbbf24;
+            background: #fef3c7;
+            color: #92400e;
+            box-shadow: 0 0 14px rgba(251, 191, 36, .55);
+        }
+        .vetor-slot.no-match .vetor-value {
+            border-color: #f87171;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .vetor-slot.match .vetor-value {
+            transform: scale(1.20);
+            border-color: #10b981;
+            background: #d1fae5;
+            color: #065f46;
+            box-shadow: 0 0 16px rgba(16, 185, 129, .55);
+        }
+
+        /* ─── Compare bar ─── */
+        .vetor-compare {
+            background: #1f2937;
+            color: #e5e7eb;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            min-height: 22px;
+            opacity: 0;
+            transition: opacity .2s ease;
+        }
+        .vetor-compare.visible { opacity: 1; }
+        .vetor-compare .ok { color: #34d399; font-weight: 700; }
+        .vetor-compare .no { color: #f87171; }
+        .vetor-compare .var-name { color: #fbbf24; }
+        .vetor-compare .var-val { color: #93c5fd; }
+
+        /* ─── Output ─── */
+        .vetor-output {
+            background: #111827;
+            color: #d1d5db;
+            border-radius: 6px;
+            padding: 12px 16px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            min-height: 60px;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+        .vetor-output-title {
+            color: #9ca3af;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+        .vetor-output-line {
+            color: #d1d5db;
+            opacity: 0;
+            animation: vetorOutFade .35s forwards;
+        }
+        .vetor-output-line.user { color: #93c5fd; }
+        .vetor-output-line.prompt { color: #fbbf24; }
+        .vetor-output-line.found { color: #34d399; font-weight: 600; }
+        .vetor-output-line.notfound { color: #f87171; font-weight: 600; }
+        @keyframes vetorOutFade {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Busca Linear</h1>
+
+<div class="audio-player" data-tracks='[{"label":"Aula","src":"audio/busca-linear-aula.m4a"},{"label":"Conceitual","src":"audio/busca-linear-conceitual.m4a"}]'>
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>A <strong>busca linear</strong> (ou busca sequencial) é o algoritmo mais simples de procura: percorre o array do início ao fim comparando cada posição com o valor buscado. Achou? Para. Chegou no fim sem achar? Não existe. O exemplo abaixo, retirado da <strong>aula 02 de Estruturas de Dados em Java</strong> (Leandro Guarino), procura uma sigla de estado dentro de um array de 10 siglas.</p>
+
+<p>📌 A <strong>parte 1</strong> (criação do array + preenchimento + iteração pra imprimir todos) já foi coberta na página <a href="../array/array.html">Array</a>. Aqui partimos com o array <strong>já preenchido</strong> — o foco é a parte 2: <strong>leitura do input</strong> e o algoritmo de <strong>busca linear</strong> com <code>break</code>.</p>
+
+<div class="vetor-animacao">
+    <div class="vetor-toolbar">
+        <label for="vetorSigla">Sigla buscada:</label>
+        <input class="vetor-input" id="vetorSigla" type="text" maxlength="2" value="PB" placeholder="PB">
+        <button class="vetor-btn" id="vetorPlay">▶ Seguir</button>
+        <button class="vetor-btn" id="vetorPrev" style="background:#6366f1;" disabled>◄ Anterior</button>
+        <button class="vetor-btn" id="vetorNext" style="background:#10b981;">→ Próximo</button>
+        <button class="vetor-btn secondary" id="vetorReset">↻ Reiniciar</button>
+    </div>
+
+    <div class="vetor-debug" id="vetorDebug">
+<div class="dbg-line" data-step="L19">        <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="str">"Qual sigla de estado vc quer buscar?"</span>);</div>
+<div class="dbg-line" data-step="L20">        <span class="cls">String</span> siglaBusca = leitor.<span class="mth">nextLine</span>();</div>
+<div class="dbg-line"> </div>
+<div class="dbg-line" data-step="L22">        <span class="cmt">//busca linear</span></div>
+<div class="dbg-line" data-step="L23">        <span class="kw">boolean</span> encontrou = <span class="kw">false</span>;</div>
+<div class="dbg-line" data-step="L24">        <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; estados.length; i++) {</div>
+<div class="dbg-line" data-step="L25">            <span class="cls">String</span> elemento = estados[i];</div>
+<div class="dbg-line" data-step="L26">            <span class="kw">if</span> (elemento.<span class="mth">equalsIgnoreCase</span>(siglaBusca)) {</div>
+<div class="dbg-line" data-step="L27">                encontrou = <span class="kw">true</span>;</div>
+<div class="dbg-line" data-step="L28">                <span class="kw">break</span>;</div>
+<div class="dbg-line">            }</div>
+<div class="dbg-line">        }</div>
+<div class="dbg-line"> </div>
+<div class="dbg-line" data-step="L32">        <span class="kw">if</span> (encontrou == <span class="kw">true</span>) {</div>
+<div class="dbg-line" data-step="L33">            <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="str">"Encontrou"</span>);</div>
+<div class="dbg-line" data-step="L34">        } <span class="kw">else</span> {</div>
+<div class="dbg-line" data-step="L35">            <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="str">"Não encontrou"</span>);</div>
+<div class="dbg-line">        }</div>
+<div class="dbg-line">    }</div>
+<div class="dbg-line">}</div>
+    </div>
+
+    <div class="vetor-slots" id="vetorSlots">
+        <div class="vetor-slot assigned" data-i="0"><div class="vetor-index">[0]</div><div class="vetor-value">AC</div></div>
+        <div class="vetor-slot assigned" data-i="1"><div class="vetor-index">[1]</div><div class="vetor-value">BA</div></div>
+        <div class="vetor-slot assigned" data-i="2"><div class="vetor-index">[2]</div><div class="vetor-value">CE</div></div>
+        <div class="vetor-slot assigned" data-i="3"><div class="vetor-index">[3]</div><div class="vetor-value">DF</div></div>
+        <div class="vetor-slot assigned" data-i="4"><div class="vetor-index">[4]</div><div class="vetor-value">AM</div></div>
+        <div class="vetor-slot assigned" data-i="5"><div class="vetor-index">[5]</div><div class="vetor-value">AP</div></div>
+        <div class="vetor-slot assigned" data-i="6"><div class="vetor-index">[6]</div><div class="vetor-value">PB</div></div>
+        <div class="vetor-slot assigned" data-i="7"><div class="vetor-index">[7]</div><div class="vetor-value">RN</div></div>
+        <div class="vetor-slot assigned" data-i="8"><div class="vetor-index">[8]</div><div class="vetor-value">MS</div></div>
+        <div class="vetor-slot assigned" data-i="9"><div class="vetor-index">[9]</div><div class="vetor-value">SP</div></div>
+    </div>
+
+    <div class="vetor-compare" id="vetorCompare"></div>
+
+    <div class="vetor-output">
+        <div class="vetor-output-title">System.out:</div>
+        <div class="vetor-output-content" id="vetorOutput"></div>
+    </div>
+</div>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Como funciona — passa pelo array do início ao fim</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A busca linear é o algoritmo mais ingênuo possível: pega o primeiro item, compara com o que você procura, e se não for, vai pro próximo. Repete até <strong>achar</strong> ou até <strong>chegar no fim</strong>.</p>
+            <p>Vantagem: funciona em qualquer array, ordenado ou não. Desvantagem: no pior caso (item no fim ou inexistente) precisa olhar todos os <code>N</code> elementos — diz-se que é <strong>O(n)</strong>. Em arrays grandes e <em>ordenados</em>, existem buscas mais espertas (binária, hash) que veremos depois.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title"><code>break</code> — quando achou, para de procurar</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O <code>break</code> dentro do <code>for</code> faz o loop encerrar imediatamente — não terminada de checar o resto. Sem ele, o programa continuaria olhando os 10 itens mesmo depois de encontrar o valor.</p>
+<pre><code class="language-java">for (int i = 0; i &lt; estados.length; i++) {
+    String elemento = estados[i];
+    if (elemento.equalsIgnoreCase(siglaBusca)) {
+        encontrou = true;
+        break;  // sai do for agora
+    }
+}</code></pre>
+            <p>É a otimização mais básica de busca: <strong>parar assim que achou</strong>. Faz diferença grande quando o array é gigante e o valor está perto do começo.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title"><code>equalsIgnoreCase</code> — por que não usar <code>==</code></span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Em Java, <code>==</code> entre <strong>objetos</strong> (e <code>String</code> é objeto) compara se são <strong>a mesma referência na memória</strong> — não se o conteúdo é igual. Por isso a regra é:</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Comparação</th><th>O que faz</th><th>Quando usar</th></tr>
+                    <tr><td><code>a == b</code></td><td>Compara referências (endereço)</td><td><strong>Nunca</strong> com Strings (resultado imprevisível)</td></tr>
+                    <tr><td><code>a.equals(b)</code></td><td>Compara conteúdo (case-sensitive)</td><td>Quando "AC" e "ac" são diferentes pra você</td></tr>
+                    <tr><td><code>a.equalsIgnoreCase(b)</code></td><td>Compara conteúdo, ignora maiúscula/minúscula</td><td>Quando "AC", "ac" e "Ac" devem bater</td></tr>
+                </table>
+            </div>
+
+            <p>No exemplo, <code>equalsIgnoreCase</code> permite o usuário digitar <code>pb</code>, <code>Pb</code> ou <code>PB</code> — todos batem com <code>"PB"</code> no array.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">A flag <code>encontrou</code> — carregando o resultado pra fora do loop</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Note que a variável <code>encontrou</code> é declarada <strong>antes</strong> do loop, e usada <strong>depois</strong> dele:</p>
+<pre><code class="language-java">boolean encontrou = false;        // antes
+for (...) {
+    if (...) {
+        encontrou = true;          // dentro
+        break;
+    }
+}
+if (encontrou == true) { ... }    // depois</code></pre>
+            <p>Esse padrão — <strong>flag boolean fora do loop</strong> — é recorrente em buscas e validações. O loop modifica a flag se algum critério bater, e o código após o loop reage ao resultado. Sem isso, não teria como "saber" o que aconteceu lá dentro.</p>
+            <p>Detalhe estilístico: em Java, <code>if (encontrou == true)</code> é equivalente a <code>if (encontrou)</code>. A versão curta é a preferida — booleanos são autoexplicativos no <code>if</code>.</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// Event delegation no document — sobrevive ao rewrite de innerHTML do layout.js.
+(function () {
+    const estados = ['AC', 'BA', 'CE', 'DF', 'AM', 'AP', 'PB', 'RN', 'MS', 'SP'];
+
+    let generator = null;
+    let currentStep = 0;
+    let autoplaying = false;
+    let pauseRequested = false;
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+
+    const $ = () => ({
+        debug: document.getElementById('vetorDebug'),
+        slots: document.querySelectorAll('.vetor-slot'),
+        playBtn: document.getElementById('vetorPlay'),
+        prevBtn: document.getElementById('vetorPrev'),
+        nextBtn: document.getElementById('vetorNext'),
+        resetBtn: document.getElementById('vetorReset'),
+        sigla: document.getElementById('vetorSigla'),
+        compare: document.getElementById('vetorCompare'),
+        out: document.getElementById('vetorOutput')
+    });
+
+    function setActive(r, lineId) {
+        r.debug.querySelectorAll('.dbg-line.active').forEach(el => {
+            el.classList.remove('active');
+            el.classList.add('done');
+        });
+        if (lineId) {
+            const el = r.debug.querySelector(`[data-step="${lineId}"]`);
+            if (el) {
+                el.classList.remove('done');
+                el.classList.add('active');
+            }
+        }
+    }
+
+    function reset() {
+        const r = $();
+        if (!r.slots.length) return;
+        // Slots permanecem preenchidos (parte 1 já feita na página Array)
+        r.slots.forEach((s, i) => {
+            s.classList.remove('active', 'reading', 'checking', 'no-match', 'match');
+            s.classList.add('assigned');
+            s.querySelector('.vetor-value').textContent = estados[i];
+        });
+        r.out.innerHTML = '';
+        r.compare.classList.remove('visible');
+        r.compare.innerHTML = '';
+        r.debug.querySelectorAll('.dbg-line').forEach(el => {
+            el.classList.remove('active', 'done');
+        });
+    }
+
+    function addOutput(r, text, kind) {
+        const line = document.createElement('div');
+        line.className = 'vetor-output-line' + (kind ? ' ' + kind : '');
+        line.textContent = text;
+        r.out.appendChild(line);
+        r.out.scrollTop = r.out.scrollHeight;
+    }
+
+    function setCompare(r, html) {
+        r.compare.innerHTML = html;
+        r.compare.classList.add('visible');
+    }
+
+    // ── Gerador: cada `yield` é um passo (= uma linha do debugger). ──
+    // O valor passado pro yield é a pausa sugerida (ms) entre passos em modo "Seguir".
+    async function* makeSteps(r, target) {
+        // L19: prompt
+        setActive(r, 'L19');
+        addOutput(r, 'Qual sigla de estado vc quer buscar?', 'prompt');
+        yield 700;
+
+        // L20: input
+        setActive(r, 'L20');
+        addOutput(r, '> ' + target, 'user');
+        yield 600;
+
+        // L22: comentário
+        setActive(r, 'L22');
+        yield 300;
+
+        // L23: encontrou = false
+        setActive(r, 'L23');
+        setCompare(r, '<span class="var-name">encontrou</span> = <span class="no">false</span>');
+        yield 600;
+
+        // ── Loop de busca ──
+        let encontrou = false;
+        for (let i = 0; i < 10; i++) {
+            // L24: header do for (check da condição + i++)
+            setActive(r, 'L24');
+            yield 250;
+
+            // L25: String elemento = estados[i]
+            setActive(r, 'L25');
+            const slot = r.slots[i];
+            slot.classList.add('checking');
+            setCompare(r, '<span class="var-name">elemento</span> = <span class="var-val">"' + estados[i] + '"</span>');
+            yield 450;
+
+            // L26: if (elemento.equalsIgnoreCase(...))
+            setActive(r, 'L26');
+            const isMatch = estados[i].toUpperCase() === target;
+            setCompare(r,
+                '<span class="var-val">"' + estados[i] + '"</span>.equalsIgnoreCase(<span class="var-val">"' + target + '"</span>) → ' +
+                (isMatch ? '<span class="ok">true ✓</span>' : '<span class="no">false</span>')
+            );
+            if (!isMatch) {
+                slot.classList.remove('checking');
+                slot.classList.add('no-match');
+            }
+            yield 550;
+
+            if (isMatch) {
+                // L27: encontrou = true
+                setActive(r, 'L27');
+                setCompare(r, '<span class="var-name">encontrou</span> = <span class="ok">true</span>');
+                yield 450;
+
+                // L28: break
+                setActive(r, 'L28');
+                slot.classList.remove('checking');
+                slot.classList.add('match');
+                encontrou = true;
+                yield 500;
+                break;
+            }
+        }
+
+        // L32: if (encontrou == true)
+        setActive(r, 'L32');
+        setCompare(r,
+            '<span class="kw" style="color:#a78bfa;">if</span> (<span class="var-name">encontrou</span> == <span class="kw" style="color:#a78bfa;">true</span>) → ' +
+            (encontrou ? '<span class="ok">true</span>' : '<span class="no">false</span>')
+        );
+        yield 700;
+
+        if (encontrou) {
+            // L33: System.out.println("Encontrou")
+            setActive(r, 'L33');
+            addOutput(r, 'Encontrou', 'found');
+            yield 500;
+        } else {
+            // L34: } else {
+            setActive(r, 'L34');
+            yield 350;
+            // L35: System.out.println("Não encontrou")
+            setActive(r, 'L35');
+            addOutput(r, 'Não encontrou', 'notfound');
+            yield 500;
+        }
+
+        setActive(r, null);
+    }
+
+    // Rebuilda o estado do zero e fast-forward até o passo N (sem awaits).
+    // Sempre cria um gerador fresco (mesmo com n=0), pra Seguir/Próximo poderem avançar a partir dele.
+    async function rebuildToStep(n) {
+        reset();
+        const r = $();
+        const target = (r.sigla.value || 'PB').toUpperCase().trim();
+        const g = makeSteps(r, target);
+        for (let i = 0; i < n; i++) {
+            const res = await g.next();
+            if (res.done) {
+                generator = null;
+                return;
+            }
+        }
+        generator = g;
+    }
+
+    async function stepOnce() {
+        if (!generator) {
+            // Sem gerador ativo — reconstrói até o passo atual (caso o último tenha terminado)
+            await rebuildToStep(currentStep);
+            if (!generator) return { done: true, ms: 0 };
+        }
+        const res = await generator.next();
+        if (res.done) {
+            generator = null;
+            return { done: true, ms: 0 };
+        }
+        currentStep++;
+        return { done: false, ms: (typeof res.value === 'number') ? res.value : 400 };
+    }
+
+    function updateButtons() {
+        const r = $();
+        if (!r.playBtn) return;
+        if (autoplaying) {
+            r.playBtn.disabled = false;
+            r.playBtn.innerHTML = '⏸ Pausar';
+            r.playBtn.style.background = '#f59e0b';
+            if (r.prevBtn) r.prevBtn.disabled = true;
+            if (r.nextBtn) r.nextBtn.disabled = true;
+            if (r.resetBtn) r.resetBtn.disabled = true;
+        } else {
+            r.playBtn.disabled = false;
+            r.playBtn.innerHTML = '▶ Seguir';
+            r.playBtn.style.background = '';
+            if (r.prevBtn) r.prevBtn.disabled = (currentStep === 0);
+            if (r.nextBtn) r.nextBtn.disabled = false;
+            if (r.resetBtn) r.resetBtn.disabled = false;
+        }
+    }
+
+    async function onSeguir() {
+        if (autoplaying) {
+            pauseRequested = true;
+            return;
+        }
+        autoplaying = true;
+        pauseRequested = false;
+        updateButtons();
+        while (!pauseRequested) {
+            const res = await stepOnce();
+            if (res.done) break;
+            // Espera com check periódico de pause (a cada 50ms)
+            const t0 = Date.now();
+            while (Date.now() - t0 < res.ms && !pauseRequested) {
+                await wait(50);
+            }
+        }
+        autoplaying = false;
+        pauseRequested = false;
+        updateButtons();
+    }
+
+    async function onProximo() {
+        if (autoplaying) return;
+        await stepOnce();
+        updateButtons();
+    }
+
+    async function onAnterior() {
+        if (autoplaying || currentStep === 0) return;
+        currentStep--;
+        await rebuildToStep(currentStep);
+        updateButtons();
+    }
+
+    function onReset() {
+        if (autoplaying) return;
+        currentStep = 0;
+        generator = null;
+        reset();
+        updateButtons();
+    }
+
+    document.addEventListener('click', e => {
+        const t = e.target.closest('button');
+        if (!t) return;
+        if (t.id === 'vetorPlay') onSeguir();
+        else if (t.id === 'vetorPrev') onAnterior();
+        else if (t.id === 'vetorNext') onProximo();
+        else if (t.id === 'vetorReset') onReset();
+    });
+
+    // Mudar sigla reseta o estado (target congelado no gerador)
+    document.addEventListener('input', e => {
+        if (e.target && e.target.id === 'vetorSigla' && !autoplaying) {
+            currentStep = 0;
+            generator = null;
+            reset();
+            updateButtons();
+        }
+    });
+})();
+</script>
+
+</body>
+</html>

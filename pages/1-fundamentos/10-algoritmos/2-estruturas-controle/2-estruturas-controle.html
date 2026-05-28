@@ -13,16 +13,80 @@
         <p class="home-sub">if/else, switch, for, while, do-while</p>
     </div>
 
-    <div class="info-accordion">
-        <div class="info-row">
-            <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
-                <span class="info-row-title">Em construção</span>
-                <span class="info-row-btn">+</span>
+    <div class="home-grid">
+
+        <!-- ARRAY -->
+        <div class="card" data-href="array/array.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
             </div>
-            <div class="info-row-body">
-                <p>Conteúdo desta seção ainda será escrito.</p>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Coleção de valores indexada por posição. Tamanho fixo, acesso por índice, base de quase toda outra estrutura.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/array.png" alt="Array">
+            </div>
+            <div class="card-bar">
+                <a href="array/array.html" class="card-tag" style="--tag-clr:#2563eb;">Array</a>
             </div>
         </div>
+
+        <!-- BUSCA LINEAR -->
+        <div class="card" data-href="busca-linear/busca-linear.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Percorre o array do início ao fim comparando cada posição com o valor buscado. Para no primeiro acerto (<code>break</code>).</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/busca-linear.png" alt="Busca Linear">
+            </div>
+            <div class="card-bar">
+                <a href="busca-linear/busca-linear.html" class="card-tag" style="--tag-clr:#10b981;">Busca Linear</a>
+            </div>
+        </div>
+
+        <!-- LISTA LIGADA -->
+        <div class="card" data-href="lista-ligada/lista-ligada.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Cadeia de nós ligados por ponteiro <code>proximo</code>. Cresce sob demanda — sem tamanho fixo. Adicionar no fim é O(1), buscar por índice é O(n).</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/lista-ligada.png" alt="Lista Ligada">
+            </div>
+            <div class="card-bar">
+                <a href="lista-ligada/lista-ligada.html" class="card-tag" style="--tag-clr:#6366f1;">Lista Ligada</a>
+            </div>
+        </div>
+
+        <!-- REMOVER (LISTA LIGADA) -->
+        <div class="card" data-href="lista-ligada-remover/lista-ligada-remover.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Remoção de nó em lista ligada com 4 casos: único, primeiro, último, meio. Religa os ponteiros e ajusta primeiro/último.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/lista-ligada-remover.png" alt="Remover (Lista Ligada)">
+            </div>
+            <div class="card-bar">
+                <a href="lista-ligada-remover/lista-ligada-remover.html" class="card-tag" style="--tag-clr:#dc2626;">Remover</a>
+            </div>
+        </div>
+
     </div>
 
 </body>
