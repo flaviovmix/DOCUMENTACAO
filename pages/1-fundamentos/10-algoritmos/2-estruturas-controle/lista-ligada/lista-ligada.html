@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista Ligada — Estruturas de Controle — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+    <style>
+        .vetor-animacao {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+        .vetor-toolbar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .vetor-btn {
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .vetor-btn:hover { filter: brightness(.92); }
+        .vetor-btn:disabled { background: #9ca3af !important; cursor: not-allowed; filter: none; }
+        .vetor-btn.secondary { background: #6b7280; }
+
+        /* ─── Code Debugger ─── */
+        .vetor-debug {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+        .dbg-code { padding: 10px 0; }
+        .dbg-code.hidden { display: none; }
+        .dbg-code-title {
+            padding: 6px 16px;
+            background: #1f2937;
+            color: #fbbf24;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+        .dbg-code-title span { color: #d1d5db; text-transform: none; font-weight: normal; }
+        .dbg-line {
+            padding: 1px 16px 1px 34px;
+            position: relative;
+            white-space: pre;
+            transition: background .2s ease, color .25s ease;
+            min-height: 1.7em;
+        }
+        .dbg-line.active { background: #fef3c7; }
+        .dbg-line.active::before {
+            content: '▶';
+            position: absolute;
+            left: 12px;
+            color: #d97706;
+            font-size: 10px;
+            top: 6px;
+        }
+        .dbg-line.done { color: #9ca3af; }
+        .dbg-line.done .kw,
+        .dbg-line.done .cls,
+        .dbg-line.done .num,
+        .dbg-line.done .str,
+        .dbg-line.done .mth,
+        .dbg-line.done .cmt { color: #c7c9cd; }
+        .dbg-line .kw  { color: #7c3aed; font-weight: 600; }
+        .dbg-line .cls { color: #0891b2; }
+        .dbg-line .mth { color: #b45309; }
+        .dbg-line .num { color: #1d4ed8; }
+        .dbg-line .str { color: #15803d; }
+        .dbg-line .cmt { color: #6b7280; font-style: italic; }
+
+        /* ─── Pointers Panel ─── */
+        .ll-pointers {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        .ll-pointer {
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 6px 14px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            transition: background .25s ease, border-color .25s ease;
+        }
+        .ll-pointer.updated {
+            background: #fef3c7;
+            border-color: #fbbf24;
+        }
+        .ll-pointer-label {
+            color: #6b7280;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-right: 8px;
+            font-weight: 600;
+        }
+        .ll-pointer-value {
+            font-weight: 700;
+            color: #3730a3;
+        }
+        .ll-pointer-value.null {
+            color: #9ca3af;
+            font-style: italic;
+            font-weight: normal;
+        }
+
+        /* ─── Linked List Area ─── */
+        .ll-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 110px;
+            padding: 26px 8px 14px;
+            margin-bottom: 14px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow-x: auto;
+            position: relative;
+            gap: 4px;
+        }
+        .ll-empty {
+            color: #9ca3af;
+            font-style: italic;
+            font-size: 14px;
+        }
+        .ll-node {
+            display: flex;
+            align-items: stretch;
+            background: #eef2ff;
+            border: 2px solid #6366f1;
+            border-radius: 6px;
+            overflow: hidden;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            position: relative;
+            transition: background .3s ease, border-color .3s ease, transform .3s ease, box-shadow .3s ease;
+            flex-shrink: 0;
+        }
+        .ll-node.floating {
+            background: #fef3c7;
+            border-color: #fbbf24;
+            border-style: dashed;
+            transform: translateY(-8px);
+        }
+        .ll-node.atual::before {
+            content: 'atual ↓';
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 3px;
+            border: 1px solid #fbbf24;
+            white-space: nowrap;
+            font-weight: 700;
+            letter-spacing: .03em;
+        }
+        .ll-node.match {
+            background: #d1fae5;
+            border-color: #10b981;
+            box-shadow: 0 0 14px rgba(16, 185, 129, .5);
+        }
+        .ll-node-val {
+            padding: 10px 14px;
+            color: #3730a3;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .ll-node.floating .ll-node-val { color: #92400e; }
+        .ll-node.match .ll-node-val { color: #065f46; }
+        .ll-node-next {
+            padding: 10px 8px;
+            background: rgba(99, 102, 241, 0.12);
+            color: #4338ca;
+            border-left: 1px solid rgba(99, 102, 241, 0.25);
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+        }
+        .ll-node.floating .ll-node-next {
+            background: rgba(251, 191, 36, 0.18);
+            color: #92400e;
+            border-left-color: rgba(251, 191, 36, 0.3);
+        }
+        .ll-node.match .ll-node-next {
+            background: rgba(16, 185, 129, 0.15);
+            color: #047857;
+            border-left-color: rgba(16, 185, 129, 0.3);
+        }
+        .ll-link { font-size: 11px; }
+        .ll-null { font-size: 11px; color: #9ca3af; font-style: italic; }
+        .ll-node.floating .ll-null,
+        .ll-node.match .ll-null { color: inherit; opacity: .7; }
+        .ll-arrow {
+            color: #6366f1;
+            font-size: 22px;
+            margin: 0 2px;
+            font-weight: 700;
+        }
+
+        /* ─── Compare bar ─── */
+        .vetor-compare {
+            background: #1f2937;
+            color: #e5e7eb;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            min-height: 22px;
+            opacity: 0;
+            transition: opacity .2s ease;
+        }
+        .vetor-compare.visible { opacity: 1; }
+        .vetor-compare .ok { color: #34d399; font-weight: 700; }
+        .vetor-compare .no { color: #f87171; }
+        .vetor-compare .var-name { color: #fbbf24; }
+        .vetor-compare .var-val { color: #93c5fd; }
+
+        /* ─── Output ─── */
+        .vetor-output {
+            background: #111827;
+            color: #d1d5db;
+            border-radius: 6px;
+            padding: 12px 16px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            min-height: 60px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .vetor-output-title {
+            color: #9ca3af;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+        .vetor-output-line {
+            color: #34d399;
+            opacity: 0;
+            animation: vetorOutFade .35s forwards;
+        }
+        @keyframes vetorOutFade {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Lista Ligada</h1>
+
+<div class="audio-player" data-tracks='[{"label":"Aula","src":"audio/lista-ligada-aula.m4a"},{"label":"Conceitual","src":"audio/lista-ligada-conceitual.m4a"}]'>
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Uma <strong>lista ligada</strong> (linked list) é uma coleção de <strong>nós</strong> conectados por ponteiros. Cada nó guarda um valor + um ponteiro <code>proximo</code> apontando pro próximo nó da cadeia. Diferente do array (que reserva 10 slots contíguos na memória de uma vez), a lista ligada <strong>cresce sob demanda</strong>: cada nó novo é alocado individualmente e enganchado no fim da cadeia. O exemplo abaixo vem da <strong>aula 03 de Estruturas de Dados em Java</strong> (Leandro Guarino) e implementa as operações <code>adicionar()</code> e <code>get(i)</code> do zero.</p>
+
+<h2>1. Construindo a lista — <code>adicionar()</code></h2>
+
+<p>O primeiro widget foca na <strong>escrita</strong>: cria a lista vazia e chama <code>adicionar()</code> 4 vezes. A cada chamada o debugger entra no método e mostra o <code>if (primeiro == null &amp;&amp; último == null)</code> — só a primeira inserção entra no branch que cria o head; as outras enganchain no fim via <code>ultimo.setProximo(novoElemento)</code>.</p>
+
+<div class="vetor-animacao">
+    <div class="vetor-toolbar">
+        <button class="vetor-btn" id="addPlay">▶ Seguir</button>
+        <button class="vetor-btn" id="addPrev" style="background:#6366f1;" disabled>◄ Anterior</button>
+        <button class="vetor-btn" id="addNext" style="background:#10b981;">→ Próximo</button>
+        <button class="vetor-btn secondary" id="addReset">↻ Reiniciar</button>
+    </div>
+
+    <div class="vetor-debug" id="addDebug">
+        <div class="dbg-code" data-code="programa">
+            <div class="dbg-code-title">Programa.java</div>
+<div class="dbg-line" data-step="P3">        <span class="cls">ListaLigada</span> lista = <span class="kw">new</span> <span class="cls">ListaLigada</span>();</div>
+<div class="dbg-line" data-step="P4">        lista.<span class="mth">adicionar</span>(<span class="str">"AC"</span>);</div>
+<div class="dbg-line" data-step="P5">        lista.<span class="mth">adicionar</span>(<span class="str">"BA"</span>);</div>
+<div class="dbg-line" data-step="P6">        lista.<span class="mth">adicionar</span>(<span class="str">"CE"</span>);</div>
+<div class="dbg-line" data-step="P7">        lista.<span class="mth">adicionar</span>(<span class="str">"DF"</span>);</div>
+        </div>
+
+        <div class="dbg-code hidden" data-code="adicionar">
+            <div class="dbg-code-title">ListaLigada.adicionar<span>(novoValor = "<span id="addArgAdd">?</span>")</span></div>
+<div class="dbg-line" data-step="A1">    <span class="kw">public</span> <span class="kw">void</span> <span class="mth">adicionar</span>(<span class="cls">String</span> novoValor) {</div>
+<div class="dbg-line" data-step="A2">        <span class="cls">Elemento</span> novoElemento = <span class="kw">new</span> <span class="cls">Elemento</span>(novoValor);</div>
+<div class="dbg-line" data-step="A3">        <span class="kw">if</span> (<span class="kw">this</span>.primeiro == <span class="kw">null</span> &amp;&amp; <span class="kw">this</span>.ultimo == <span class="kw">null</span>) {</div>
+<div class="dbg-line" data-step="A4">            <span class="kw">this</span>.primeiro = novoElemento;</div>
+<div class="dbg-line" data-step="A5">            <span class="kw">this</span>.ultimo = novoElemento;</div>
+<div class="dbg-line" data-step="A6">        } <span class="kw">else</span> {</div>
+<div class="dbg-line" data-step="A7">            <span class="kw">this</span>.ultimo.<span class="mth">setProximo</span>(novoElemento);</div>
+<div class="dbg-line" data-step="A8">            <span class="kw">this</span>.ultimo = novoElemento;</div>
+<div class="dbg-line" data-step="A9">        }</div>
+<div class="dbg-line" data-step="A10">        <span class="kw">this</span>.tamanho++;</div>
+<div class="dbg-line" data-step="A11">    }</div>
+        </div>
+    </div>
+
+    <div class="ll-pointers">
+        <div class="ll-pointer" id="addPPrimeiro">
+            <span class="ll-pointer-label">primeiro</span>
+            <span class="ll-pointer-value null">null</span>
+        </div>
+        <div class="ll-pointer" id="addPUltimo">
+            <span class="ll-pointer-label">último</span>
+            <span class="ll-pointer-value null">null</span>
+        </div>
+        <div class="ll-pointer" id="addPTamanho">
+            <span class="ll-pointer-label">tamanho</span>
+            <span class="ll-pointer-value">0</span>
+        </div>
+    </div>
+
+    <div class="ll-area" id="addArea">
+        <span class="ll-empty">(lista vazia)</span>
+    </div>
+
+    <div class="vetor-compare" id="addCompare"></div>
+
+    <div class="vetor-output">
+        <div class="vetor-output-title">System.out:</div>
+        <div class="vetor-output-content" id="addOutput"></div>
+    </div>
+</div>
+
+<h2>2. Lendo a lista — <code>getPrimeiro</code>, <code>getUltimo</code>, <code>get(i)</code></h2>
+
+<p>O segundo widget assume a lista <strong>já construída</strong> (os 4 nós que o widget anterior produziu). Aqui o foco são as <strong>leituras</strong>: <code>getTamanho</code> e <code>getPrimeiro</code> são instantâneos (O(1), só lêem o ponteiro guardado), mas <code>get(i)</code> precisa caminhar do início — note o <code>atual ↓</code> avançando posição por posição. <code>get(2)</code> dá 2 hops; <code>get(3)</code> dá 3. Cada <code>println</code> de método encadeado vira 2 passos no compare bar: <code>get()</code> devolve o Elemento, e <code>.getValor()</code> chama nele pra ler a String.</p>
+
+<div class="vetor-animacao">
+    <div class="vetor-toolbar">
+        <button class="vetor-btn" id="getPlay">▶ Seguir</button>
+        <button class="vetor-btn" id="getPrev" style="background:#6366f1;" disabled>◄ Anterior</button>
+        <button class="vetor-btn" id="getNext" style="background:#10b981;">→ Próximo</button>
+        <button class="vetor-btn secondary" id="getReset">↻ Reiniciar</button>
+    </div>
+
+    <div class="vetor-debug" id="getDebug">
+        <div class="dbg-code" data-code="programa">
+            <div class="dbg-code-title">Programa.java</div>
+<div class="dbg-line" data-step="P8">        <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="str">"Tamanho: "</span> + lista.<span class="mth">getTamanho</span>());</div>
+<div class="dbg-line" data-step="P9">        <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="str">"Primeiro: "</span> + lista.<span class="mth">getPrimeiro</span>().<span class="mth">getValor</span>());</div>
+<div class="dbg-line" data-step="P10">        <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="str">"Último: "</span> + lista.<span class="mth">getUltimo</span>().<span class="mth">getValor</span>());</div>
+<div class="dbg-line" data-step="P11">        <span class="cls">System</span>.out.<span class="mth">println</span>(lista.<span class="mth">get</span>(<span class="num">0</span>).<span class="mth">getValor</span>());</div>
+<div class="dbg-line" data-step="P12">        <span class="cls">System</span>.out.<span class="mth">println</span>(lista.<span class="mth">get</span>(<span class="num">1</span>).<span class="mth">getValor</span>());</div>
+<div class="dbg-line" data-step="P13">        <span class="cls">System</span>.out.<span class="mth">println</span>(lista.<span class="mth">get</span>(<span class="num">2</span>).<span class="mth">getValor</span>());</div>
+<div class="dbg-line" data-step="P14">        <span class="cls">System</span>.out.<span class="mth">println</span>(lista.<span class="mth">get</span>(<span class="num">3</span>).<span class="mth">getValor</span>());</div>
+        </div>
+
+        <div class="dbg-code hidden" data-code="get">
+            <div class="dbg-code-title">ListaLigada.get<span>(posicao = <span id="getArgGet">?</span>)</span></div>
+<div class="dbg-line" data-step="G1">    <span class="kw">public</span> <span class="cls">Elemento</span> <span class="mth">get</span>(<span class="kw">int</span> posicao) {</div>
+<div class="dbg-line" data-step="G2">        <span class="cls">Elemento</span> atual = <span class="kw">this</span>.primeiro;</div>
+<div class="dbg-line" data-step="G3">        <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; posicao; i++) {</div>
+<div class="dbg-line" data-step="G4">            <span class="kw">if</span> (atual.<span class="mth">getProximo</span>() != <span class="kw">null</span>) {</div>
+<div class="dbg-line" data-step="G5">                atual = atual.<span class="mth">getProximo</span>();</div>
+<div class="dbg-line" data-step="G6">            }</div>
+<div class="dbg-line" data-step="G7">        }</div>
+<div class="dbg-line" data-step="G8">        <span class="kw">return</span> atual;</div>
+<div class="dbg-line" data-step="G9">    }</div>
+        </div>
+    </div>
+
+    <div class="ll-pointers">
+        <div class="ll-pointer" id="getPPrimeiro">
+            <span class="ll-pointer-label">primeiro</span>
+            <span class="ll-pointer-value">AC</span>
+        </div>
+        <div class="ll-pointer" id="getPUltimo">
+            <span class="ll-pointer-label">último</span>
+            <span class="ll-pointer-value">DF</span>
+        </div>
+        <div class="ll-pointer" id="getPTamanho">
+            <span class="ll-pointer-label">tamanho</span>
+            <span class="ll-pointer-value">4</span>
+        </div>
+    </div>
+
+    <div class="ll-area" id="getArea">
+        <div class="ll-node"><div class="ll-node-val">AC</div><div class="ll-node-next"><span class="ll-link">●</span></div></div>
+        <div class="ll-arrow">→</div>
+        <div class="ll-node"><div class="ll-node-val">BA</div><div class="ll-node-next"><span class="ll-link">●</span></div></div>
+        <div class="ll-arrow">→</div>
+        <div class="ll-node"><div class="ll-node-val">CE</div><div class="ll-node-next"><span class="ll-link">●</span></div></div>
+        <div class="ll-arrow">→</div>
+        <div class="ll-node"><div class="ll-node-val">DF</div><div class="ll-node-next"><span class="ll-null">null</span></div></div>
+    </div>
+
+    <div class="vetor-compare" id="getCompare"></div>
+
+    <div class="vetor-output">
+        <div class="vetor-output-title">System.out:</div>
+        <div class="vetor-output-content" id="getOutput"></div>
+    </div>
+</div>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Como funciona — nó com valor + ponteiro</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A lista ligada é construída a partir de uma classe simples — o <strong>Elemento</strong> — que guarda dois campos:</p>
+<pre><code class="language-java">public class Elemento {
+    private String valor;
+    private Elemento proximo;  // referência para o próximo nó
+
+    // construtor + getters/setters
+}</code></pre>
+            <p>A classe <code>ListaLigada</code> não guarda os nós num array nem em uma estrutura tipo "lista do Java" — ela só mantém <strong>3 ponteiros</strong>:</p>
+            <ul>
+                <li><code>primeiro</code> — referência pro primeiro nó da cadeia</li>
+                <li><code>ultimo</code> — referência pro último (otimização pra adicionar em O(1))</li>
+                <li><code>tamanho</code> — contador (otimização pra evitar percorrer a lista pra saber o tamanho)</li>
+            </ul>
+            <p>O resto é uma <strong>cadeia de referências</strong>: o nó "AC" aponta pra "BA", que aponta pra "CE", que aponta pra "DF", que aponta pra <code>null</code> (fim).</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title"><code>adicionar()</code> — engancha no fim em O(1)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Adicionar no <strong>fim</strong> é a operação mais barata da lista ligada — gasta tempo constante (O(1)), porque o ponteiro <code>ultimo</code> já aponta pra onde precisamos enganchar:</p>
+<pre><code class="language-java">public void adicionar(String novoValor) {
+    Elemento novoElemento = new Elemento(novoValor);
+    if (this.primeiro == null &amp;&amp; this.ultimo == null) {
+        // lista vazia — primeiro e último apontam pro novo nó
+        this.primeiro = novoElemento;
+        this.ultimo = novoElemento;
+    } else {
+        // engancha no fim: último.proximo = novo; depois último = novo
+        this.ultimo.setProximo(novoElemento);
+        this.ultimo = novoElemento;
+    }
+    this.tamanho++;
+}</code></pre>
+            <p>Sem o ponteiro <code>ultimo</code>, teríamos que percorrer a lista do <code>primeiro</code> até achar o fim — gastando O(n) cada vez. Mantendo esse ponteiro atualizado, é só "linkar e mover" em 2 operações.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title"><code>get(i)</code> — caminha do início, gasta O(n)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Pegar o elemento da posição <code>i</code> é o <strong>preço</strong> da lista ligada: como os nós não estão em memória contígua (cada um foi alocado separadamente, em endereços quaisquer), <strong>não dá pra pular direto pra posição N</strong>. Precisa começar do <code>primeiro</code> e seguir os ponteiros <code>proximo</code> até chegar lá.</p>
+<pre><code class="language-java">public Elemento get(int posicao) {
+    Elemento atual = this.primeiro;
+    for (int i = 0; i &lt; posicao; i++) {
+        if (atual.getProximo() != null) {
+            atual = atual.getProximo();
+        }
+    }
+    return atual;
+}</code></pre>
+            <p>O <code>atual</code> é um ponteiro "andarilho" que começa no primeiro e dá <code>posicao</code> passos. Pra <code>get(0)</code> não dá passo (retorna o primeiro direto). Pra <code>get(3)</code> dá 3 passos. Em arrays, <code>v[3]</code> é cálculo direto de endereço — em lista ligada, são 3 hops de memória.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Lista ligada vs array — quando usar cada</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Cada estrutura otimiza pra um conjunto diferente de operações:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Operação</th><th>Array</th><th>Lista Ligada</th></tr>
+                    <tr><td>Acesso por índice <code>v[i]</code></td><td>O(1) — endereço calculado direto</td><td>O(n) — precisa caminhar</td></tr>
+                    <tr><td>Adicionar no fim</td><td>O(1) se há espaço; senão O(n) pra redimensionar</td><td>O(1) — atualiza ponteiro <code>ultimo</code></td></tr>
+                    <tr><td>Adicionar no meio (posição <code>i</code>)</td><td>O(n) — desloca todos os seguintes</td><td>O(n) pra achar a posição, O(1) pra inserir</td></tr>
+                    <tr><td>Remover do início</td><td>O(n) — desloca todos</td><td>O(1) — só muda <code>primeiro</code></td></tr>
+                    <tr><td>Tamanho fixo declarado</td><td>Sim — <code>new int[10]</code></td><td>Não — cresce sob demanda</td></tr>
+                    <tr><td>Uso de memória</td><td>Compacto (1 inteiro = 4 bytes)</td><td>Cada nó tem overhead do ponteiro (~16 bytes extra por nó em Java)</td></tr>
+                </table>
+            </div>
+            <p>Regra geral: <strong>array é melhor pra leitura aleatória</strong> (acesso por índice frequente, tamanho conhecido), <strong>lista ligada é melhor pra inserções/remoções nas extremidades</strong>. Em Java, <code>ArrayList</code> (array dinâmico) e <code>LinkedList</code> (lista duplamente ligada) são as versões "de fábrica" dessas duas estruturas.</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// Event delegation no document — sobrevive ao rewrite de innerHTML do layout.js.
+(function () {
+    const valores = ['AC', 'BA', 'CE', 'DF'];
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+
+    function setupWidget(prefix, makeStepsFn, preset) {
+        let generator = null;
+        let currentStep = 0;
+        let autoplaying = false;
+        let pauseRequested = false;
+
+        const $ = () => ({
+            debug: document.getElementById(prefix + 'Debug'),
+            playBtn: document.getElementById(prefix + 'Play'),
+            prevBtn: document.getElementById(prefix + 'Prev'),
+            nextBtn: document.getElementById(prefix + 'Next'),
+            resetBtn: document.getElementById(prefix + 'Reset'),
+            compare: document.getElementById(prefix + 'Compare'),
+            out: document.getElementById(prefix + 'Output'),
+            area: document.getElementById(prefix + 'Area'),
+            pPrimeiro: document.getElementById(prefix + 'PPrimeiro'),
+            pUltimo: document.getElementById(prefix + 'PUltimo'),
+            pTamanho: document.getElementById(prefix + 'PTamanho'),
+            argAdd: document.getElementById(prefix + 'ArgAdd'),
+            argGet: document.getElementById(prefix + 'ArgGet')
+        });
+
+        function setActive(r, lineId) {
+            r.debug.querySelectorAll('.dbg-line.active').forEach(el => {
+                el.classList.remove('active');
+                el.classList.add('done');
+            });
+            if (lineId) {
+                const el = r.debug.querySelector(`[data-step="${lineId}"]`);
+                if (el) {
+                    el.classList.remove('done');
+                    el.classList.add('active');
+                }
+            }
+        }
+
+        function showCode(r, name, arg) {
+            r.debug.querySelectorAll('.dbg-code').forEach(el => {
+                el.classList.toggle('hidden', el.dataset.code !== name);
+            });
+            const visible = r.debug.querySelector(`.dbg-code[data-code="${name}"]`);
+            if (visible) {
+                visible.querySelectorAll('.dbg-line').forEach(el => {
+                    el.classList.remove('active', 'done');
+                });
+            }
+            if (name === 'adicionar' && arg !== undefined && r.argAdd) r.argAdd.textContent = arg;
+            if (name === 'get' && arg !== undefined && r.argGet) r.argGet.textContent = arg;
+        }
+
+        function setCompare(r, html) {
+            r.compare.innerHTML = html;
+            r.compare.classList.add('visible');
+        }
+
+        function clearCompare(r) {
+            r.compare.classList.remove('visible');
+            r.compare.innerHTML = '';
+        }
+
+        function addOutput(r, text) {
+            const line = document.createElement('div');
+            line.className = 'vetor-output-line';
+            line.textContent = text;
+            r.out.appendChild(line);
+            r.out.scrollTop = r.out.scrollHeight;
+        }
+
+        function setPointer(r, which, value) {
+            const map = { primeiro: r.pPrimeiro, ultimo: r.pUltimo, tamanho: r.pTamanho };
+            const el = map[which];
+            if (!el) return;
+            const valEl = el.querySelector('.ll-pointer-value');
+            valEl.textContent = value;
+            if (value === 'null' || value === null) {
+                valEl.classList.add('null');
+            } else {
+                valEl.classList.remove('null');
+            }
+            el.classList.add('updated');
+            setTimeout(() => el.classList.remove('updated'), 500);
+        }
+
+        function createFloatingNode(r, valor) {
+            const empty = r.area.querySelector('.ll-empty');
+            if (empty) empty.remove();
+            const node = document.createElement('div');
+            node.className = 'll-node floating';
+            node.innerHTML = '<div class="ll-node-val">' + valor + '</div><div class="ll-node-next"><span class="ll-null">null</span></div>';
+            r.area.appendChild(node);
+        }
+
+        function settleNodeAsFirst(r) {
+            const node = r.area.querySelector('.ll-node.floating');
+            if (node) node.classList.remove('floating');
+        }
+
+        function settleNodeAtEnd(r) {
+            const nodes = r.area.querySelectorAll('.ll-node');
+            if (nodes.length < 2) return;
+            const prevLast = nodes[nodes.length - 2];
+            const newNode = nodes[nodes.length - 1];
+            prevLast.querySelector('.ll-node-next').innerHTML = '<span class="ll-link">●</span>';
+            const arrow = document.createElement('div');
+            arrow.className = 'll-arrow';
+            arrow.textContent = '→';
+            r.area.insertBefore(arrow, newNode);
+            newNode.classList.remove('floating');
+        }
+
+        function highlightNode(r, index) {
+            const nodes = r.area.querySelectorAll('.ll-node');
+            if (nodes[index]) nodes[index].classList.add('atual');
+        }
+
+        function clearHighlights(r) {
+            r.area.querySelectorAll('.ll-node').forEach(n => {
+                n.classList.remove('atual', 'match');
+            });
+        }
+
+        function markMatch(r, index) {
+            const nodes = r.area.querySelectorAll('.ll-node');
+            if (nodes[index]) {
+                nodes[index].classList.remove('atual');
+                nodes[index].classList.add('match');
+            }
+        }
+
+        function applyPreset(r) {
+            if (preset === 'full') {
+                r.area.innerHTML = '';
+                for (let i = 0; i < valores.length; i++) {
+                    const node = document.createElement('div');
+                    node.className = 'll-node';
+                    const isLast = (i === valores.length - 1);
+                    node.innerHTML = '<div class="ll-node-val">' + valores[i] + '</div>' +
+                                     '<div class="ll-node-next">' +
+                                     (isLast ? '<span class="ll-null">null</span>' : '<span class="ll-link">●</span>') +
+                                     '</div>';
+                    r.area.appendChild(node);
+                    if (!isLast) {
+                        const arrow = document.createElement('div');
+                        arrow.className = 'll-arrow';
+                        arrow.textContent = '→';
+                        r.area.appendChild(arrow);
+                    }
+                }
+                setPointer(r, 'primeiro', 'AC');
+                setPointer(r, 'ultimo', 'DF');
+                setPointer(r, 'tamanho', '4');
+            } else {
+                r.area.innerHTML = '<span class="ll-empty">(lista vazia)</span>';
+                setPointer(r, 'primeiro', 'null');
+                setPointer(r, 'ultimo', 'null');
+                setPointer(r, 'tamanho', '0');
+            }
+        }
+
+        function reset() {
+            const r = $();
+            if (!r.area) return;
+            applyPreset(r);
+            r.out.innerHTML = '';
+            clearCompare(r);
+            r.debug.querySelectorAll('.dbg-line').forEach(el => {
+                el.classList.remove('active', 'done');
+            });
+            r.debug.querySelectorAll('.dbg-code').forEach(el => {
+                el.classList.toggle('hidden', el.dataset.code !== 'programa');
+            });
+            if (r.argAdd) r.argAdd.textContent = '?';
+            if (r.argGet) r.argGet.textContent = '?';
+        }
+
+        const api = () => ({
+            r: $(), valores,
+            setActive, showCode, setCompare, clearCompare, addOutput, setPointer,
+            createFloatingNode, settleNodeAsFirst, settleNodeAtEnd,
+            highlightNode, clearHighlights, markMatch
+        });
+
+        async function rebuildToStep(n) {
+            reset();
+            const g = makeStepsFn(api());
+            for (let i = 0; i < n; i++) {
+                const res = await g.next();
+                if (res.done) {
+                    generator = null;
+                    return;
+                }
+            }
+            generator = g;
+        }
+
+        async function stepOnce() {
+            if (!generator) {
+                await rebuildToStep(currentStep);
+                if (!generator) return { done: true, ms: 0 };
+            }
+            const res = await generator.next();
+            if (res.done) {
+                generator = null;
+                return { done: true, ms: 0 };
+            }
+            currentStep++;
+            return { done: false, ms: (typeof res.value === 'number') ? res.value : 400 };
+        }
+
+        function updateButtons() {
+            const r = $();
+            if (!r.playBtn) return;
+            if (autoplaying) {
+                r.playBtn.disabled = false;
+                r.playBtn.innerHTML = '⏸ Pausar';
+                r.playBtn.style.background = '#f59e0b';
+                if (r.prevBtn) r.prevBtn.disabled = true;
+                if (r.nextBtn) r.nextBtn.disabled = true;
+                if (r.resetBtn) r.resetBtn.disabled = true;
+            } else {
+                r.playBtn.disabled = false;
+                r.playBtn.innerHTML = '▶ Seguir';
+                r.playBtn.style.background = '';
+                if (r.prevBtn) r.prevBtn.disabled = (currentStep === 0);
+                if (r.nextBtn) r.nextBtn.disabled = false;
+                if (r.resetBtn) r.resetBtn.disabled = false;
+            }
+        }
+
+        async function onSeguir() {
+            if (autoplaying) {
+                pauseRequested = true;
+                return;
+            }
+            autoplaying = true;
+            pauseRequested = false;
+            updateButtons();
+            while (!pauseRequested) {
+                const res = await stepOnce();
+                if (res.done) break;
+                const t0 = Date.now();
+                while (Date.now() - t0 < res.ms && !pauseRequested) {
+                    await wait(50);
+                }
+            }
+            autoplaying = false;
+            pauseRequested = false;
+            updateButtons();
+        }
+
+        async function onProximo() {
+            if (autoplaying) return;
+            await stepOnce();
+            updateButtons();
+        }
+
+        async function onAnterior() {
+            if (autoplaying || currentStep === 0) return;
+            currentStep--;
+            await rebuildToStep(currentStep);
+            updateButtons();
+        }
+
+        function onReset() {
+            if (autoplaying) return;
+            currentStep = 0;
+            generator = null;
+            reset();
+            updateButtons();
+        }
+
+        document.addEventListener('click', e => {
+            const t = e.target.closest('button');
+            if (!t) return;
+            if (t.id === prefix + 'Play') onSeguir();
+            else if (t.id === prefix + 'Prev') onAnterior();
+            else if (t.id === prefix + 'Next') onProximo();
+            else if (t.id === prefix + 'Reset') onReset();
+        });
+    }
+
+    // ─── Gerador do widget ADICIONAR ───
+    async function* makeAddSteps(api) {
+        const { r, valores, setActive, showCode, setCompare, clearCompare, setPointer,
+                createFloatingNode, settleNodeAsFirst, settleNodeAtEnd } = api;
+
+        showCode(r, 'programa');
+        setActive(r, 'P3');
+        yield 500;
+
+        for (let n = 0; n < valores.length; n++) {
+            const valor = valores[n];
+            const programaLine = 'P' + (4 + n);
+            const isFirst = (n === 0);
+
+            showCode(r, 'programa');
+            setActive(r, programaLine);
+            yield 400;
+
+            showCode(r, 'adicionar', valor);
+
+            setActive(r, 'A1');
+            yield 250;
+
+            setActive(r, 'A2');
+            createFloatingNode(r, valor);
+            setCompare(r, '<span class="var-name">novoElemento</span> = <span class="kw" style="color:#a78bfa">new</span> Elemento(<span class="var-val">"' + valor + '"</span>)');
+            yield 600;
+
+            setActive(r, 'A3');
+            setCompare(r,
+                '<span class="var-name">primeiro</span> == <span class="kw" style="color:#a78bfa">null</span> &amp;&amp; <span class="var-name">último</span> == <span class="kw" style="color:#a78bfa">null</span> → ' +
+                (isFirst ? '<span class="ok">true</span>' : '<span class="no">false</span>')
+            );
+            yield 600;
+
+            if (isFirst) {
+                setActive(r, 'A4');
+                settleNodeAsFirst(r);
+                setPointer(r, 'primeiro', valor);
+                clearCompare(r);
+                yield 500;
+
+                setActive(r, 'A5');
+                setPointer(r, 'ultimo', valor);
+                yield 500;
+            } else {
+                setActive(r, 'A6');
+                yield 250;
+
+                setActive(r, 'A7');
+                settleNodeAtEnd(r);
+                setCompare(r, '<span class="var-name">ultimo</span>.<span class="var-val">proximo</span> = <span class="var-name">novoElemento</span>');
+                yield 600;
+
+                setActive(r, 'A8');
+                setPointer(r, 'ultimo', valor);
+                clearCompare(r);
+                yield 500;
+            }
+
+            setActive(r, 'A10');
+            setPointer(r, 'tamanho', String(n + 1));
+            yield 500;
+
+            setActive(r, 'A11');
+            yield 250;
+        }
+
+        setActive(r, null);
+    }
+
+    // ─── Gerador do widget LEITURAS ───
+    async function* makeGetSteps(api) {
+        const { r, valores, setActive, showCode, setCompare, clearCompare, addOutput,
+                highlightNode, clearHighlights, markMatch } = api;
+
+        // P8: println Tamanho
+        showCode(r, 'programa');
+        setActive(r, 'P8');
+        setCompare(r, '<span class="var-name">lista.getTamanho()</span> → <span class="var-val">4</span>');
+        addOutput(r, 'Tamanho: 4');
+        yield 700;
+        clearCompare(r);
+
+        // P9: getPrimeiro + getValor
+        setActive(r, 'P9');
+        highlightNode(r, 0);
+        setCompare(r, '<span class="var-name">lista.getPrimeiro()</span> → <span class="cls" style="color:#0891b2">Elemento</span>[valor=<span class="var-val">"AC"</span>]');
+        yield 700;
+
+        setCompare(r, '<span class="cls" style="color:#0891b2">Elemento</span>.<span class="mth" style="color:#fbbf24">getValor</span>() → <span class="var-val">"AC"</span>');
+        addOutput(r, 'Primeiro: AC');
+        yield 600;
+        clearHighlights(r);
+        clearCompare(r);
+
+        // P10: getUltimo + getValor
+        setActive(r, 'P10');
+        highlightNode(r, 3);
+        setCompare(r, '<span class="var-name">lista.getUltimo()</span> → <span class="cls" style="color:#0891b2">Elemento</span>[valor=<span class="var-val">"DF"</span>]');
+        yield 700;
+
+        setCompare(r, '<span class="cls" style="color:#0891b2">Elemento</span>.<span class="mth" style="color:#fbbf24">getValor</span>() → <span class="var-val">"DF"</span>');
+        addOutput(r, 'Último: DF');
+        yield 600;
+        clearHighlights(r);
+        clearCompare(r);
+
+        // P11-P14: get(0..3)
+        for (let pos = 0; pos < 4; pos++) {
+            const programaLine = 'P' + (11 + pos);
+
+            showCode(r, 'programa');
+            setActive(r, programaLine);
+            yield 400;
+
+            showCode(r, 'get', pos);
+
+            setActive(r, 'G1');
+            yield 250;
+
+            setActive(r, 'G2');
+            highlightNode(r, 0);
+            setCompare(r, '<span class="var-name">atual</span> = <span class="var-name">primeiro</span> → <span class="var-val">"' + valores[0] + '"</span>');
+            yield 550;
+
+            setActive(r, 'G3');
+            setCompare(r,
+                '<span class="kw" style="color:#a78bfa">for</span> (i = <span class="var-val">0</span>; i &lt; <span class="var-val">' + pos + '</span>) → ' +
+                (pos === 0 ? '<span class="no">false (não entra)</span>' : '<span class="ok">true</span>')
+            );
+            yield 500;
+
+            for (let j = 0; j < pos; j++) {
+                setActive(r, 'G4');
+                setCompare(r, '<span class="var-name">atual</span>.proximo != <span class="kw" style="color:#a78bfa">null</span> → <span class="ok">true</span>');
+                yield 400;
+
+                setActive(r, 'G5');
+                clearHighlights(r);
+                highlightNode(r, j + 1);
+                setCompare(r, '<span class="var-name">atual</span> = <span class="var-name">atual</span>.proximo → <span class="var-val">"' + valores[j + 1] + '"</span>');
+                yield 550;
+
+                setActive(r, 'G3');
+                setCompare(r,
+                    '<span class="kw" style="color:#a78bfa">for</span> (i = <span class="var-val">' + (j + 1) + '</span>; i &lt; <span class="var-val">' + pos + '</span>) → ' +
+                    ((j + 1) < pos ? '<span class="ok">true</span>' : '<span class="no">false (sai do loop)</span>')
+                );
+                yield 350;
+            }
+
+            setActive(r, 'G8');
+            clearHighlights(r);
+            markMatch(r, pos);
+            setCompare(r, '<span class="kw" style="color:#a78bfa">return</span> <span class="var-name">atual</span> → <span class="cls" style="color:#0891b2">Elemento</span>[valor=<span class="var-val">"' + valores[pos] + '"</span>]');
+            yield 600;
+
+            showCode(r, 'programa');
+            setActive(r, programaLine);
+            setCompare(r, '<span class="var-name">lista.get(' + pos + ')</span> → <span class="cls" style="color:#0891b2">Elemento</span>[valor=<span class="var-val">"' + valores[pos] + '"</span>]');
+            yield 700;
+
+            setCompare(r, '<span class="cls" style="color:#0891b2">Elemento</span>.<span class="mth" style="color:#fbbf24">getValor</span>() → <span class="var-val">"' + valores[pos] + '"</span>');
+            addOutput(r, valores[pos]);
+            yield 600;
+            clearHighlights(r);
+            clearCompare(r);
+        }
+
+        setActive(r, null);
+    }
+
+    setupWidget('add', makeAddSteps, 'empty');
+    setupWidget('get', makeGetSteps, 'full');
+})();
+</script>
+
+</body>
+</html>

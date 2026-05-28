@@ -15,6 +15,45 @@
     transition: background 0.3s, padding 0.3s, margin 0.3s, border-radius 0.3s, box-shadow 0.3s, border-color 0.3s;
 }
 
+.audio-player[data-tracks] {
+    flex-wrap: wrap;
+}
+
+.audio-tracks {
+    flex-basis: 100%;
+    display: flex;
+    gap: 18px;
+    margin-bottom: 2px;
+}
+
+.audio-track-tab {
+    background: none;
+    border: none;
+    padding: 2px 0;
+    font-size: 0.82em;
+    font-weight: 400;
+    color: #6b7280;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.audio-track-tab:hover {
+    color: #111;
+}
+
+.audio-track-tab.active {
+    color: #111;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    cursor: default;
+}
+
+body.dark .audio-track-tab { color: #a6adc8; }
+body.dark .audio-track-tab:hover { color: #cdd6f4; }
+body.dark .audio-track-tab.active { color: #cdd6f4; }
+
 .audio-btn {
     background: #2563eb;
     border: none;

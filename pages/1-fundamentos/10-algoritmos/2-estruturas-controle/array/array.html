@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Array — Estruturas de Controle — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+    <style>
+        .vetor-animacao {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+        .vetor-toolbar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .vetor-btn {
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .vetor-btn:hover { background: #1d4ed8; }
+        .vetor-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+        .vetor-btn.secondary { background: #6b7280; }
+        .vetor-btn.secondary:hover { background: #4b5563; }
+
+        /* ─── Code Debugger ─── */
+        .vetor-debug {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #1f2937;
+            padding: 12px 0;
+            margin-bottom: 16px;
+        }
+        .dbg-line {
+            padding: 1px 16px 1px 34px;
+            position: relative;
+            white-space: pre;
+            transition: background .2s ease, color .25s ease;
+            min-height: 1.7em;
+        }
+        .dbg-line.active {
+            background: #fef3c7;
+        }
+        .dbg-line.active::before {
+            content: '▶';
+            position: absolute;
+            left: 12px;
+            color: #d97706;
+            font-size: 10px;
+            top: 6px;
+        }
+        .dbg-line.done {
+            color: #9ca3af;
+        }
+        .dbg-line.done .kw,
+        .dbg-line.done .cls,
+        .dbg-line.done .num,
+        .dbg-line.done .str,
+        .dbg-line.done .mth {
+            color: #c7c9cd;
+        }
+        .dbg-line .kw  { color: #7c3aed; font-weight: 600; }
+        .dbg-line .cls { color: #0891b2; }
+        .dbg-line .mth { color: #b45309; }
+        .dbg-line .num { color: #1d4ed8; }
+        .dbg-line .str { color: #15803d; }
+
+        /* ─── Slots ─── */
+        .vetor-slots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+        }
+        .vetor-slot {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .vetor-index {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        .vetor-value {
+            width: 58px;
+            height: 58px;
+            background: #f3f4f6;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 20px;
+            font-weight: 700;
+            color: #9ca3af;
+            transition: transform .3s ease, background .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease;
+        }
+        .vetor-slot.assigned .vetor-value {
+            background: #dbeafe;
+            border-color: #2563eb;
+            color: #1e40af;
+        }
+        .vetor-slot.active .vetor-value {
+            transform: scale(1.18);
+            border-color: #fbbf24;
+            background: #fef3c7;
+            color: #92400e;
+            box-shadow: 0 0 14px rgba(251, 191, 36, .55);
+        }
+        .vetor-slot.reading .vetor-value {
+            transform: scale(1.12);
+            border-color: #10b981;
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        /* ─── Output ─── */
+        .vetor-output {
+            background: #111827;
+            color: #d1d5db;
+            border-radius: 6px;
+            padding: 12px 16px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            min-height: 60px;
+        }
+        .vetor-output-title {
+            color: #9ca3af;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+        .vetor-output-line {
+            color: #34d399;
+            opacity: 0;
+            animation: vetorOutFade .35s forwards;
+        }
+        .vetor-output-line.zero { color: #6b7280; }
+        .vetor-output-line.text { color: #fbbf24; }
+        @keyframes vetorOutFade {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Array (Vetor)</h1>
+
+<div class="audio-player" data-tracks='[{"label":"Aula","src":"audio/array-aula.m4a"},{"label":"Conceitual","src":"audio/array-conceitual.m4a"}]'>
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Um <strong>array</strong> (ou <strong>vetor</strong>) é uma coleção de valores do mesmo tipo, guardados em sequência e acessíveis por um número de posição chamado <strong>índice</strong>. Pense numa estante com 10 prateleiras numeradas de 0 a 9: cada prateleira guarda um valor, e você acessa qualquer uma pelo número dela.</p>
+
+<div class="vetor-animacao">
+    <div class="vetor-toolbar">
+        <button class="vetor-btn" id="vetorPlay">▶ Seguir</button>
+        <button class="vetor-btn" id="vetorPrev" style="background:#6366f1;" disabled>◄ Anterior</button>
+        <button class="vetor-btn" id="vetorNext" style="background:#10b981;">→ Próximo</button>
+        <button class="vetor-btn secondary" id="vetorReset">↻ Reiniciar</button>
+    </div>
+
+    <div class="vetor-debug" id="vetorDebug">
+<div class="dbg-line" data-step="L1"><span class="kw">public</span> <span class="kw">class</span> <span class="cls">Main</span> {</div>
+<div class="dbg-line" data-step="L2">    <span class="kw">public</span> <span class="kw">static</span> <span class="kw">void</span> <span class="mth">main</span>(<span class="cls">String</span>[] args) {</div>
+<div class="dbg-line" data-step="L3">        <span class="kw">int</span>[] vetorzao = <span class="kw">new</span> <span class="kw">int</span>[<span class="num">10</span>];</div>
+<div class="dbg-line" data-step="L4">        vetorzao[<span class="num">0</span>] = <span class="num">3</span>;</div>
+<div class="dbg-line" data-step="L5">        vetorzao[<span class="num">1</span>] = <span class="num">4</span>;</div>
+<div class="dbg-line" data-step="L6">        vetorzao[<span class="num">3</span>] = <span class="num">13</span>;</div>
+<div class="dbg-line" data-step="L7">        vetorzao[<span class="num">2</span>] = <span class="num">8</span>;</div>
+<div class="dbg-line" data-step="L8">        vetorzao[<span class="num">5</span>] = <span class="num">51</span>;</div>
+<div class="dbg-line" data-step="L9">        vetorzao[<span class="num">4</span>] = <span class="num">22</span>;</div>
+<div class="dbg-line" data-step="L10">        vetorzao[<span class="num">6</span>] = <span class="num">33</span>;</div>
+<div class="dbg-line" data-step="L11">        <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="str">"Primindo..."</span>);</div>
+<div class="dbg-line"> </div>
+<div class="dbg-line" data-step="L13">        <span class="kw">for</span> (<span class="kw">int</span> i = <span class="num">0</span>; i &lt; vetorzao.length; i++) {</div>
+<div class="dbg-line" data-step="L14">            <span class="cls">System</span>.out.<span class="mth">println</span>(vetorzao[i]);</div>
+<div class="dbg-line">        }</div>
+<div class="dbg-line"> </div>
+<div class="dbg-line" data-step="L17">        <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="str">"Até a próxima aula"</span>);</div>
+<div class="dbg-line">    }</div>
+<div class="dbg-line">}</div>
+    </div>
+
+    <div class="vetor-slots" id="vetorSlots">
+        <div class="vetor-slot" data-i="0"><div class="vetor-index">[0]</div><div class="vetor-value">0</div></div>
+        <div class="vetor-slot" data-i="1"><div class="vetor-index">[1]</div><div class="vetor-value">0</div></div>
+        <div class="vetor-slot" data-i="2"><div class="vetor-index">[2]</div><div class="vetor-value">0</div></div>
+        <div class="vetor-slot" data-i="3"><div class="vetor-index">[3]</div><div class="vetor-value">0</div></div>
+        <div class="vetor-slot" data-i="4"><div class="vetor-index">[4]</div><div class="vetor-value">0</div></div>
+        <div class="vetor-slot" data-i="5"><div class="vetor-index">[5]</div><div class="vetor-value">0</div></div>
+        <div class="vetor-slot" data-i="6"><div class="vetor-index">[6]</div><div class="vetor-value">0</div></div>
+        <div class="vetor-slot" data-i="7"><div class="vetor-index">[7]</div><div class="vetor-value">0</div></div>
+        <div class="vetor-slot" data-i="8"><div class="vetor-index">[8]</div><div class="vetor-value">0</div></div>
+        <div class="vetor-slot" data-i="9"><div class="vetor-index">[9]</div><div class="vetor-value">0</div></div>
+    </div>
+
+    <div class="vetor-output">
+        <div class="vetor-output-title">System.out:</div>
+        <div class="vetor-output-content" id="vetorOutput"></div>
+    </div>
+</div>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Tamanho fixo — declarado na criação</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Quando você escreve <code>new int[10]</code>, o Java reserva <strong>exatamente 10 posições</strong> contíguas na memória. Esse tamanho <strong>não muda</strong> durante a vida do array — não dá pra "acrescentar uma prateleira" depois.</p>
+<pre><code class="language-java">int[] v = new int[10];
+v[10] = 99;  // ArrayIndexOutOfBoundsException — só existe [0]..[9]</code></pre>
+            <p>Se você precisa de uma coleção que cresce conforme adiciona itens, use <code>ArrayList</code> (próxima trilha). Array nu é o tijolo mais básico — rápido e simples, mas inflexível.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Índice começa em 0 — a pegadinha clássica</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A primeira posição é <code>[0]</code>, não <code>[1]</code>. Num array de tamanho 10, os índices válidos vão de <strong>0 até 9</strong>.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Índice</th><th>Significado</th></tr>
+                    <tr><td><code>v[0]</code></td><td>Primeira posição</td></tr>
+                    <tr><td><code>v[1]</code></td><td>Segunda posição</td></tr>
+                    <tr><td><code>v[3]</code></td><td><strong>Quarta</strong> posição (não a terceira!)</td></tr>
+                    <tr><td><code>v[9]</code></td><td>Última posição (em um array de tamanho 10)</td></tr>
+                    <tr><td><code>v[10]</code></td><td>❌ Erro — fora dos limites</td></tr>
+                </table>
+            </div>
+
+            <p>E a ordem das atribuições <strong>não importa</strong>: o código preenche <code>[3]</code> antes de <code>[2]</code>, e o array fica certinho do mesmo jeito. Cada posição é endereçável de forma independente.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Valor default — posição vazia não é nula, é zero</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Quando o Java cria um array de <code>int</code>, <strong>todas as posições já nascem com 0</strong>. Você não precisa preencher nada antes de usar.</p>
+
+            <p>É por isso que a animação acima imprime <code>0 0 0</code> nas três últimas posições: a gente atribuiu valor só nos índices 0 a 6, então 7, 8 e 9 continuam com o default.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Tipo</th><th>Valor default</th></tr>
+                    <tr><td><code>int</code>, <code>long</code>, <code>short</code>, <code>byte</code></td><td><code>0</code></td></tr>
+                    <tr><td><code>double</code>, <code>float</code></td><td><code>0.0</code></td></tr>
+                    <tr><td><code>boolean</code></td><td><code>false</code></td></tr>
+                    <tr><td><code>char</code></td><td><code>' '</code> (caractere nulo)</td></tr>
+                    <tr><td>Objeto (<code>String</code>, classes etc.)</td><td><code>null</code></td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Iterando com for — o padrão clássico</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Pra percorrer todas as posições, o padrão é o <code>for</code> com contador:</p>
+<pre><code class="language-java">for (int i = 0; i &lt; vetorzao.length; i++) {
+    System.out.println(vetorzao[i]);
+}</code></pre>
+
+            <p>3 partes:</p>
+            <ul>
+                <li><code>int i = 0</code> — começa do índice 0 (primeira posição)</li>
+                <li><code>i &lt; vetorzao.length</code> — vai até o último índice válido. <code>.length</code> é uma <strong>propriedade</strong> do array (sem parênteses, não é método)</li>
+                <li><code>i++</code> — avança 1 posição por iteração</li>
+            </ul>
+
+            <p>⚠️ Atenção: a condição é <code>i &lt; length</code>, <strong>não</strong> <code>i &lt;= length</code>. Se o tamanho é 10, o último índice válido é 9 — usar <code>&lt;=</code> faria estourar pra <code>v[10]</code>.</p>
+
+            <h3>Versão moderna: for-each</h3>
+            <p>Quando você só precisa do valor (e não do índice), dá pra escrever mais limpo:</p>
+<pre><code class="language-java">for (int v : vetorzao) {
+    System.out.println(v);
+}</code></pre>
+            <p>Lê assim: "pra cada <code>v</code> dentro de <code>vetorzao</code>...". Atalho introduzido no Java 5.</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// Event delegation no document — sobrevive ao rewrite de innerHTML do layout.js.
+(function () {
+    let generator = null;
+    let currentStep = 0;
+    let autoplaying = false;
+    let pauseRequested = false;
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+
+    const $ = () => ({
+        debug: document.getElementById('vetorDebug'),
+        slots: document.querySelectorAll('.vetor-slot'),
+        playBtn: document.getElementById('vetorPlay'),
+        prevBtn: document.getElementById('vetorPrev'),
+        nextBtn: document.getElementById('vetorNext'),
+        resetBtn: document.getElementById('vetorReset'),
+        out: document.getElementById('vetorOutput')
+    });
+
+    function setActive(r, lineId) {
+        r.debug.querySelectorAll('.dbg-line.active').forEach(el => {
+            el.classList.remove('active');
+            el.classList.add('done');
+        });
+        if (lineId) {
+            const el = r.debug.querySelector(`[data-step="${lineId}"]`);
+            if (el) {
+                el.classList.remove('done');
+                el.classList.add('active');
+            }
+        }
+    }
+
+    function reset() {
+        const r = $();
+        if (!r.slots.length) return;
+        r.slots.forEach(s => {
+            s.classList.remove('assigned', 'active', 'reading');
+            s.querySelector('.vetor-value').textContent = '0';
+        });
+        r.out.innerHTML = '';
+        r.debug.querySelectorAll('.dbg-line').forEach(el => {
+            el.classList.remove('active', 'done');
+        });
+    }
+
+    function addOutput(r, text, kind) {
+        const line = document.createElement('div');
+        line.className = 'vetor-output-line' + (kind ? ' ' + kind : '');
+        line.textContent = text;
+        r.out.appendChild(line);
+    }
+
+    // 7 atribuições do Main.java — em ordem fora de sequência (0,1,3,2,5,4,6)
+    const passos = [
+        { line: 'L4',  i: 0, val: 3 },
+        { line: 'L5',  i: 1, val: 4 },
+        { line: 'L6',  i: 3, val: 13 },
+        { line: 'L7',  i: 2, val: 8 },
+        { line: 'L8',  i: 5, val: 51 },
+        { line: 'L9',  i: 4, val: 22 },
+        { line: 'L10', i: 6, val: 33 }
+    ];
+
+    async function* makeSteps(r) {
+        // L1, L2 — assinatura da classe e do main
+        setActive(r, 'L1');
+        yield 280;
+        setActive(r, 'L2');
+        yield 280;
+
+        // L3 — alloc do array (10 posições, todas com 0 default)
+        setActive(r, 'L3');
+        yield 700;
+
+        // 7 atribuições
+        for (const p of passos) {
+            setActive(r, p.line);
+            const slot = r.slots[p.i];
+            slot.classList.add('active');
+            yield 380;
+            slot.querySelector('.vetor-value').textContent = p.val;
+            slot.classList.remove('active');
+            slot.classList.add('assigned');
+            yield 380;
+        }
+
+        // L11 — println "Primindo..."
+        setActive(r, 'L11');
+        addOutput(r, 'Primindo...', 'text');
+        yield 700;
+
+        // L13 — for header (check inicial da condição)
+        setActive(r, 'L13');
+        yield 500;
+
+        // 10 iterações do for: alterna L13 (volta + i++) → L14 (corpo)
+        for (let i = 0; i < r.slots.length; i++) {
+            setActive(r, 'L13');
+            yield 200;
+            setActive(r, 'L14');
+            const slot = r.slots[i];
+            slot.classList.add('reading');
+            const val = slot.querySelector('.vetor-value').textContent;
+            const zero = (val === '0' && !slot.classList.contains('assigned'));
+            addOutput(r, val, zero ? 'zero' : '');
+            yield 400;
+            slot.classList.remove('reading');
+        }
+
+        // Última checagem do for (i=10, condição falsa) — sai do loop
+        setActive(r, 'L13');
+        yield 280;
+
+        // L17 — println "Até a próxima aula"
+        setActive(r, 'L17');
+        addOutput(r, 'Até a próxima aula', 'text');
+        yield 600;
+
+        setActive(r, null);
+    }
+
+    async function rebuildToStep(n) {
+        reset();
+        const r = $();
+        const g = makeSteps(r);
+        for (let i = 0; i < n; i++) {
+            const res = await g.next();
+            if (res.done) {
+                generator = null;
+                return;
+            }
+        }
+        generator = g;
+    }
+
+    async function stepOnce() {
+        if (!generator) {
+            await rebuildToStep(currentStep);
+            if (!generator) return { done: true, ms: 0 };
+        }
+        const res = await generator.next();
+        if (res.done) {
+            generator = null;
+            return { done: true, ms: 0 };
+        }
+        currentStep++;
+        return { done: false, ms: (typeof res.value === 'number') ? res.value : 400 };
+    }
+
+    function updateButtons() {
+        const r = $();
+        if (!r.playBtn) return;
+        if (autoplaying) {
+            r.playBtn.disabled = false;
+            r.playBtn.innerHTML = '⏸ Pausar';
+            r.playBtn.style.background = '#f59e0b';
+            if (r.prevBtn) r.prevBtn.disabled = true;
+            if (r.nextBtn) r.nextBtn.disabled = true;
+            if (r.resetBtn) r.resetBtn.disabled = true;
+        } else {
+            r.playBtn.disabled = false;
+            r.playBtn.innerHTML = '▶ Seguir';
+            r.playBtn.style.background = '';
+            if (r.prevBtn) r.prevBtn.disabled = (currentStep === 0);
+            if (r.nextBtn) r.nextBtn.disabled = false;
+            if (r.resetBtn) r.resetBtn.disabled = false;
+        }
+    }
+
+    async function onSeguir() {
+        if (autoplaying) {
+            pauseRequested = true;
+            return;
+        }
+        autoplaying = true;
+        pauseRequested = false;
+        updateButtons();
+        while (!pauseRequested) {
+            const res = await stepOnce();
+            if (res.done) break;
+            const t0 = Date.now();
+            while (Date.now() - t0 < res.ms && !pauseRequested) {
+                await wait(50);
+            }
+        }
+        autoplaying = false;
+        pauseRequested = false;
+        updateButtons();
+    }
+
+    async function onProximo() {
+        if (autoplaying) return;
+        await stepOnce();
+        updateButtons();
+    }
+
+    async function onAnterior() {
+        if (autoplaying || currentStep === 0) return;
+        currentStep--;
+        await rebuildToStep(currentStep);
+        updateButtons();
+    }
+
+    function onReset() {
+        if (autoplaying) return;
+        currentStep = 0;
+        generator = null;
+        reset();
+        updateButtons();
+    }
+
+    document.addEventListener('click', e => {
+        const t = e.target.closest('button');
+        if (!t) return;
+        if (t.id === 'vetorPlay') onSeguir();
+        else if (t.id === 'vetorPrev') onAnterior();
+        else if (t.id === 'vetorNext') onProximo();
+        else if (t.id === 'vetorReset') onReset();
+    });
+})();
+</script>
+
+</body>
+</html>
