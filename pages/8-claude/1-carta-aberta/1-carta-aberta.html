@@ -16,6 +16,63 @@
 
     <div class="info-row">
         <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">DIÁLOGO ABERTO — COMO O FLÁVIO SE COMUNICA</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+
+            <div class="audio-player" data-src="audio/sexta-carta.m4a">
+                <audio preload="metadata"></audio>
+                <button class="audio-btn" title="Play / Pause"></button>
+                <div class="audio-progress-wrap">
+                    <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+                    <div class="audio-progress-fill"></div>
+                </div>
+                <span class="audio-time">0:00 / 0:00</span>
+            </div>
+
+            <h3>O que é essa carta</h3>
+
+            <p>Sexta carta (20/05/2026). Formato <strong>novo</strong>: não é o Claude observando de fora (Cartas 1 e 4) nem o Flávio falando sozinho (Cartas 2, 3, 5, 5.1). É <strong>diálogo aberto</strong>, dois interlocutores trocando, sem narrador único.</p>
+
+            <p>Recorte deliberado: cobre só a sessão do dia. Não traz pendência, não faz balanço, não cobra observação anterior. É registro de uma conversa pontual sobre <strong>estilo de comunicação</strong>.</p>
+
+            <h3>Como começou</h3>
+
+            <p>A sessão abriu com uma pergunta direta: <em>"baseado nos meus últimos chats, como que eu sou?"</em>. A primeira resposta puxou das memórias estruturadas (CLAUDE.md, MEMORY.md), e o Flávio rejeitou: queria percepção <strong>lendo as sessões reais</strong>, não as skills. Um subagent leu os .jsonl recentes (cerca de 30 mensagens) e devolveu uma caracterização crua.</p>
+
+            <h3>O que apareceu na leitura crua</h3>
+
+            <ul>
+                <li>Rajada curta, tudo minúsculo, typo não corrigido ("persepição", "preicisar")</li>
+                <li>Comando seco com path absoluto, quase nunca dá contexto antes do pedido</li>
+                <li>Pensa enquanto digita: muda de ideia no meio, interrompe, redigita</li>
+                <li>Frustração vira voz seca ("mesma coisa", "faz vc"), caixa alta quando esgota</li>
+                <li>Aprovação igualmente econômica ("perfeito", "show", "ok"), raramente diz o porquê</li>
+                <li>Curiosidade só quando ele quer: explicação não pedida é ignorada</li>
+            </ul>
+
+            <h3>Conclusões da troca</h3>
+
+            <p><strong>Comando sem contexto</strong> não é ruim por padrão. Funciona pra tarefa pequena ou visual, onde o custo de errar é baixo. Custa quando o pedido tem decisão embutida e o Claude chuta errado.</p>
+
+            <p><strong>Path sozinho</strong> ("vamos trabalhar em X" mais o endereço) é bom: resolve o "onde" (o Claude lê CLAUDE.md, git status, estrutura). Falta o "o quê". Path mais intenção já deixa pronto pra agir.</p>
+
+            <p><strong>Typos</strong> não atrapalham. O contexto resolve quase tudo. Pode escrever do jeito que sai.</p>
+
+            <p>O Claude pediu duas coisas de volta: interromper com <strong>uma palavra de direção</strong> ("muito longo", "errado", "outra coisa") em vez de só cortar no silêncio, e <strong>avisar quando muda de ideia</strong> no meio em vez de só redigitar.</p>
+
+            <h3>Acordo gerado</h3>
+
+            <p>Revisão de escrita no fim de sessão, plugada no ritual que já existe ("tem algo pra salvar na memória?"). O Claude oferece junto um resumo de padrões: typos que repetem (2 ou mais vezes) e uma ou duas construções que tropeçaram. Typo isolado não entra, só o que vale aprender. Sessão curta sem padrão = "sem padrão pra apontar".</p>
+
+            <p><em>Carta fechada.</em></p>
+
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
             <span class="info-row-title">BALANÇO — RESOLUÇÕES DA CARTA 4</span>
             <span class="info-row-btn">+</span>
         </div>
