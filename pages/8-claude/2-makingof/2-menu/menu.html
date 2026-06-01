@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu que Vira "Mais" — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Menu que Vira "Mais"</h1>
+
+<div class="audio-player" data-src="audio/menu.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Making-of de como as duas barras de navegação do Nexus (a do topo, com os módulos, e a subnav de cada módulo) passaram a esconder os itens que não cabem dentro de um botão "Mais" quando a janela encolhe, em vez de embolar por cima do logo e dos botões.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="A barra que embolava">O que a gente queria</h2>
+<p>O Nexus tem duas barras horizontais. A de cima, no topo, com os módulos: Projetos, Páginas, Financeiro, Tarefas, Orçamentos, Recursos, Saúde. E a de baixo (a subnav), que muda conforme o módulo. No Financeiro, por exemplo: Dashboard, Lançamentos, Contas, Bancos, Categorias, Recorrências, Importar OFX.</p>
+<p>Quando a janela encolhia, os itens não cabiam e começavam a se sobrepor. No topo, "Projetos" passava por cima do logo "Nexus", virando um "ProjNexus" ilegível. Do outro lado, o último item batia no botão de "Novo" e nos ícones da direita.</p>
+<p>O que queríamos: manter a barra sempre numa linha só. Quando um item não coubesse, ele some da barra e vai pra dentro de um botão "Mais", que abre uma listinha com o que sobrou. Como o número de itens muda de usuário pra usuário (cada um tem módulos diferentes liberados), não dava pra chumbar "esconde a partir do quinto". Tinha que ser dinâmico, medido na hora.</p>
+
+<h2 id="conceitos" data-toc-title="Conceitos" data-sub="Overflow, ResizeObserver, flexbox">Os conceitos</h2>
+<h3>1. Menu de overflow (o "Mais")</h3>
+<p>Overflow é "o que transbordou", o que não coube. Você tem uma largura X e uma fila de itens. Vai somando a largura dos itens da esquerda pra direita até passar de X. Os que passaram, você esconde, e mostra um botão "Mais" que guarda eles. Como uma prateleira estreita: os livros que cabem ficam, e os que sobram vão pra uma gaveta etiquetada "Mais".</p>
+<h3>2. Como o código sabe que a largura mudou</h3>
+<p>O navegador tem o <strong>ResizeObserver</strong>. Você aponta ele pra um elemento e ele te avisa toda vez que aquele elemento muda de tamanho. Sem isso, você teria que ficar perguntando "mudou? mudou?" o tempo todo. Com ele, o navegador te cutuca só quando mudou de verdade, e aí você refaz a conta de quem cabe.</p>
+<h3>3. De onde vem a largura disponível (a armadilha do flexbox)</h3>
+<p>Flexbox é o jeito moderno de alinhar coisas em linha no CSS. Cada elemento numa linha flex tem uma "base", o ponto de partida do tamanho. Dois jeitos de definir: <code>auto</code> (a base é o tamanho do conteúdo de dentro) ou <code>zero</code> (a base é zero, e o tamanho vem só do espaço livre que sobra). Parece detalhe, mas é o vilão da Parte 4.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="Modelo, recompute, layout">Como montamos</h2>
+<p><strong>Modelo de dados.</strong> Em vez de botões soltos no HTML, uma lista: cada item é um objeto com id, texto, link e se está ativo. Só entram os módulos que aquele usuário tem. Essa lista é a fonte da verdade, é ela que se mede e se corta.</p>
+<p><strong>A função "recompute".</strong> Ela recalcula assim:</p>
+<ul>
+    <li>Se a largura disponível for muito pequena (celular), nem calcula: esconde todos e deixa só o "Mais".</li>
+    <li>Senão, precisa da largura de cada item. Mede <strong>uma vez</strong>, com todos visíveis, e guarda num cache. Os textos não mudam ("Projetos" tem sempre a mesma largura), então não adianta remedir a cada respiro. A medição usa uma marca invisível em cada item (atributo <code>data-mid</code>) e pergunta ao navegador a largura real.</li>
+    <li>Com as larguras na mão, pega o espaço disponível (a largura da barra) e soma da esquerda pra direita. Se tudo cabe, mostra tudo. Se não, reserva um pedaço pro botão "Mais" e conta quantos cabem no que sobrou. Esse número (quantos cabem) é o único estado que ela guarda. Quem está depois do corte ganha um <code>display: none</code> e aparece no dropdown do "Mais".</li>
+</ul>
+<p><strong>A peça de layout que é o coração de tudo</strong> mora no arquivo do layout, não no menu. A barra precisa ocupar exatamente o vão entre o logo (esquerda) e os botões (direita), e a largura dela tem que vir <em>desse vão</em>, não do conteúdo. Por isso a base flex é zero. É literalmente uma linha de CSS:</p>
+<pre><code class="language-css">.nav-bar {
+    flex: 1 1 0;   /* base ZERO: largura vem do espaço livre, não do conteúdo */
+}</code></pre>
+<p>E o mesmo padrão se repetiu na subnav, a barra de baixo, que é um componente reaproveitado em vários módulos: medir, cortar, jogar o resto no "Mais".</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="Tudo tentativa e erro">Decisões e becos</h2>
+<p><strong>Beco 1: o menu flutuante.</strong> No começo o menu era posicionado de forma absoluta e centralizado, com largura fixa de 1100px. Funcionava em tela larga, mas ao apertar ele flutuava por cima do logo e dos botões (o tal "ProjNexus"). A solução foi tirar do modo flutuante e botar no fluxo normal, ocupando o vão. Isso abriu o próximo problema.</p>
+<p><strong>Beco 2: o tracinho perdido.</strong> Ao mexer no layout, sumiu sem querer um pedaço de código que reposicionava o tracinho laranja da aba ativa. Ele ficou preso na esquerda enquanto os itens estavam centralizados. O conserto: recolocar o ResizeObserver pra, toda vez que a barra muda, recalcular não só quem cabe, mas também a posição do tracinho.</p>
+<p><strong>Beco 3 (o principal): o loop do flexbox.</strong> O menu "só mostrava o botão Mais quando sumia todo mundo": ou aparecia tudo, ou aparecia só o "Mais", nunca o meio termo. A largura da barra estava com base <code>auto</code> (vinha do conteúdo). O loop: o código esconde um item pra caber, isso libera espaço, a barra encolhe junto, na próxima medida ela acha que cabe tudo de novo, mostra tudo, transborda, e recomeça. Um cachorro correndo atrás do rabo. A correção foi trocar a base de <code>auto</code> pra <code>zero</code>: a largura passa a vir do espaço livre entre logo e botões, e <strong>não</strong> muda quando você esconde itens dentro dela. Uma linha de CSS resolveu um bug que parecia lógica.</p>
+<p><strong>Beco 4: o badge cortado.</strong> No celular, o "24" de notificações pendurado no sininho aparecia decepado. Quando você liga rolagem horizontal numa barra, o CSS é obrigado a cortar o que vaza pra cima e pra baixo também. Conserto: uma folga vertical (padding) pro badge caber na área que rola.</p>
+<p><strong>Beco 5: cabeçalho em três linhas.</strong> No celular o cabeçalho empilhava logo, menu e botões cada um numa linha. Usamos a detecção de "tela pequena" pra forçar o menu a colapsar direto no "Mais" e manter o cabeçalho numa linha só.</p>
+<p><strong>Ajuste fino:</strong> quando o "Mais" ficava sozinho na esquerda, o menuzinho dele colava na borda da tela. Bastou ancorar a abertura pro lado certo conforme a posição do "Mais".</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>Monta uma lista de itens, mede a largura de cada um uma vez, e numa função "recompute" soma da esquerda pra direita pra decidir quantos cabem, escondendo o resto num botão "Mais". O ResizeObserver dispara essa conta toda vez que o espaço muda. A peça que fazia tudo funcionar foi uma linha de CSS: a base do flex tem que ser zero, pra a largura vir do espaço livre e não do conteúdo, senão vira um loop que nunca colapsa. Serve pra qualquer barra horizontal que precisa caber numa largura que muda: menu, abas, filtros, botões de ação.</p>
+
+</body>
+</html>

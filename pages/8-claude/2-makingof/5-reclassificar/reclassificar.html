@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voltar pra Reclassificar uma Transação — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Voltar pra Reclassificar uma Transação</h1>
+
+<div class="audio-player" data-src="audio/reclassificar.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Making-of de como ajeitamos a navegação do modal de classificar transações do financeiro do Nexus: o botão "Anterior" que vivia apagado e não deixava voltar pra corrigir um item, e o que fazer com os botões no fim da fila.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="O Anterior morto">O que a gente queria</h2>
+<p>No financeiro tem uma tela de importar extrato do banco. Você sobe um arquivo OFX, e cada transação que entra precisa de uma categoria: mercado, salário, conta de luz. Pra facilitar, um botão "Sem categoria" abre um modal e te leva, uma por uma, só pelas transações que ainda não têm categoria. Você escolhe, clica próximo, e vai limpando a fila. Embaixo do modal: dois botões, Anterior e Próximo.</p>
+<p>Usando isso, o Flávio bateu em dois incômodos:</p>
+<ul>
+    <li>O "Anterior" vivia apagado, sempre. Se classificava uma transação e logo mudava de ideia, não tinha como voltar pra corrigir. A única direção era pra frente.</li>
+    <li>Na última transação da fila, os dois botões ficavam apagados ao mesmo tempo, e a tela parecia travada, mesmo a transação ainda estando sem categoria.</li>
+</ul>
+<p>O objetivo: poder voltar pra reeditar uma transação que já recebeu categoria, e deixar o fim da fila coerente em vez de parecer quebrado.</p>
+
+<h2 id="conceitos" data-toc-title="Conceitos" data-sub="Lista que esvazia">Os conceitos</h2>
+<h3>1. Navegar uma lista que esvazia</h3>
+<p>A fila do modo "sem categoria" é uma lista filtrada: só contém as transações ainda sem categoria. O detalhe que muda tudo: no momento que você classifica a transação atual, ela ganha categoria e <strong>some</strong> dessa lista filtrada. A lista encolhe debaixo dos seus pés enquanto você trabalha.</p>
+<p>Isso criava o efeito chato. O modal decidia "tem anterior?" olhando a posição da transação atual <em>dentro</em> dessa lista filtrada. Mas como a fila só tem as não-classificadas e você está sempre na primeira que falta, sua posição é quase sempre a posição zero. Posição zero quer dizer "não tem nada antes de mim". Por isso o Anterior nascia apagado: não era bug de conta, era a <strong>lista errada</strong> sendo consultada.</p>
+<p>A virada de chave foi separar duas listas na cabeça:</p>
+<ul>
+    <li>A <strong>lista filtrada</strong>: só as sem categoria, aquela que esvazia. Ótima pra responder "o que ainda falta fazer".</li>
+    <li>A <strong>ordem do arquivo</strong>: todas as transações do extrato, na ordem que vieram do banco. Essa não muda nunca, classificada ou não. Uma lista que não esquece.</li>
+</ul>
+<p>A sacada: pra ir pra <strong>frente</strong>, a lista filtrada serve (quero a próxima que falta). Mas pra <strong>voltar</strong>, preciso da ordem do arquivo (quero a transação de antes mesmo que já tenha categoria, pra reabrir e corrigir). Cada direção quer uma lista diferente.</p>
+<h3>2. Estado derivado</h3>
+<p>É como o Svelte trabalha. Em vez de calcular "tem anterior" na mão toda vez que algo muda, você declara que esse valor <strong>deriva</strong> dos outros. Mudou a transação atual ou a lista, ele se recalcula sozinho. Quando a regra é uma continha simples, é uma forma curta; quando é uma logiquinha com "se" e laço, tem a versão com corpo, a mesma ideia com espaço pro passo a passo.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="O que desfizemos e o que valeu">Como montamos</h2>
+<p><strong>A tentativa que desfizemos (e ensina).</strong> No fim da fila os dois botões ficavam apagados. Minha primeira ideia foi trocar os dois por um botão único "Fechar". O Flávio testou e cortou na hora: não faz sentido. Se a transação ainda está sem categoria, um "Fechar" ali convida a sair sem fazer o trabalho. Revertemos. A regra certa já existia no código: quando a última transação da fila é classificada, o modal sozinho troca os dois botões por um "Concluir" verde. O fim honesto é: botões apagados enquanto falta classificar, e o "Concluir" só quando o trabalho acabou de verdade.</p>
+<p><strong>O conserto do Anterior.</strong> Reescrevemos o cálculo do "tem anterior" pra, no modo sem categoria, parar de olhar a lista filtrada. Agora ele acha a posição da transação atual na ordem do arquivo e pergunta uma coisa só: existe alguma transação do extrato antes dessa? Se existe, o Anterior acende.</p>
+<p>E a ação do clique acompanhou: o "ir pro anterior" caminha pra trás na ordem do arquivo, a partir de onde você está, e para na primeira transação que achar, tendo categoria ou não. Reabre ela no modal, você troca a categoria e segue.</p>
+<p><strong>O detalhe que fecha o ciclo.</strong> Quando você volta pra uma transação já classificada, ela não está mais na lista filtrada (tem categoria). O cálculo do "tem próximo" já estava preparado: se você não está dentro da lista filtrada mas ainda sobra coisa pra fazer, o Próximo continua aceso e te joga de volta pra frente, pra próxima que falta. Dá pra ir e voltar à vontade sem ficar preso.</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="A assimetria de propósito">Decisões e becos</h2>
+<p><strong>O "Fechar", rápido.</strong> Implementei, o Flávio usou, e o errado apareceu no uso, não no código: um botão que convida a abandonar a tarefa no meio é uma armadilha, mesmo parecendo ajuda. Revertemos e deixamos o fim da fila do jeito mais honesto.</p>
+<p><strong>Por que o Anterior nascia morto.</strong> Não era erro de cálculo, era a lista errada. A lista filtrada é ótima pra dizer "o que ainda falta" e péssima pra dizer "onde eu estava", porque ela apaga o passado: assim que você classifica, a transação some dela. Pra ter passado, você precisa de uma lista que não esquece, e essa é a ordem do arquivo.</p>
+<p><strong>A assimetria de propósito.</strong> Ir pra frente e voltar usam listas diferentes. Frente usa a filtrada (só o que falta); trás usa a ordem do arquivo (tudo, pra poder corrigir). Parece estranho usar duas réguas pra mesma navegação, mas cada direção quer uma coisa diferente, e foi justamente forçar a mesma régua nas duas que quebrava o Anterior.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>O modo "sem categoria" navega uma lista que esvazia conforme você trabalha. Pra ir pra frente, a lista filtrada serve. Pra voltar e corrigir, ela atrapalha (esquece o que você já fez), então a gente volta pela ordem do arquivo, que guarda tudo. E o "Fechar" do fim virou deixar os botões coerentes, porque nenhuma tela deve te convidar a sair no meio do trabalho. A lição: toda vez que uma lista muda enquanto o usuário navega nela, pergunte "essa lista lembra do passado?". Se ela apaga o que já foi feito, você vai precisar de uma segunda referência estável pra conseguir voltar.</p>
+
+</body>
+</html>
