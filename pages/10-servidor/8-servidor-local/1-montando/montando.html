@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servidor Local — Montando — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Montando o Ambiente Local</h1>
+
+<div class="audio-player" data-src="audio/montando.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Três caminhos pra ter um Linux rodando aqui na máquina, com perfis diferentes: <strong>dual boot Windows + Linux nativo</strong> entrega o ambiente mais real (mais bagagem, mais trabalho), <strong>VirtualBox</strong> entrega sandbox isolado pra testar sem medo, e <strong>WSL</strong> entrega o Linux integrado ao próprio Windows — leve e direto pra rodar Docker.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Os três caminhos lado a lado</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="table-wrap">
+                <table>
+                    <tr><th></th><th>Dual boot nativo</th><th>VirtualBox</th><th>WSL 2</th></tr>
+                    <tr><td>Complexidade</td><td>Alta — particionar disco, escolher bootloader, drivers</td><td>Baixa — instalar VirtualBox, baixar ISO, next-next-finish</td><td>Muito baixa — <code>wsl --install</code> e pronto</td></tr>
+                    <tr><td>Aprendizado de Linux como sistema</td><td>Muito maior — bootloader, partições, drivers reais</td><td>Médio — instalação completa, GRUB, sessão gráfica</td><td>Raso — abstrai quase tudo, sem instalação tradicional</td></tr>
+                    <tr><td>Performance</td><td>Nativa</td><td>Overhead da virtualização (CPU/disco/rede)</td><td>Quase nativa — VM ultra-leve gerenciada pela Microsoft</td></tr>
+                    <tr><td>Integração com Windows</td><td>Nenhuma — sistemas separados</td><td>Pouca — VM isolada numa janela</td><td>Alta — arquivos cruzam, terminal compartilhado, VS Code direto</td></tr>
+                    <tr><td>Docker</td><td>Roda Docker engine direto no Linux</td><td>Roda Docker dentro da VM</td><td>Docker Desktop usa WSL 2 por baixo — integração nativa</td></tr>
+                    <tr><td>Risco</td><td>Erro no particionamento pode quebrar o Windows</td><td>Zero — VM é arquivo descartável</td><td>Zero — instala e desinstala como qualquer app</td></tr>
+                    <tr><td>Reset</td><td>Reinstalar Linux (horas)</td><td>Deletar VM e criar de novo (minutos)</td><td><code>wsl --unregister</code> + reinstalar (segundos)</td></tr>
+                    <tr><td>Quando usar</td><td>Pra Linux virar SO de uso diário</td><td>Pra aprender Linux como sistema, errar à vontade</td><td>Pra rodar Docker rápido e ter Linux integrado ao Windows</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Windows + Linux nativos (dual boot)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O Linux vira <strong>um sistema operacional do nível do Windows</strong> — escolhe qual bootar no início, e dentro dele tudo é nativo. Sem overhead, sem camada de virtualização, sem "atalho de teclado conflita com o host".</p>
+            <p>A bagagem vem da própria instalação:</p>
+            <ul>
+                <li>Particionar o disco sem destruir o Windows</li>
+                <li>Entender GRUB (o bootloader) vs Windows Boot Manager</li>
+                <li>Lidar com drivers (Wi-Fi, GPU) que às vezes não funcionam de cara</li>
+                <li>Configurar Secure Boot, UEFI, ordem de boot na BIOS</li>
+                <li>Manter o relógio do sistema consistente entre os dois SOs</li>
+            </ul>
+            <p>É o caminho mais demorado e o que tem maior chance de "trava de tarde inteira", mas no fim deixa o Linux como ferramenta de verdade — não como "aquele negócio dentro de uma janela".</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">VirtualBox</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O Linux roda <strong>dentro de uma janela do Windows</strong>, como qualquer outro programa. Instala o VirtualBox, baixa a ISO do Ubuntu, cria uma VM nova, e em 15 minutos o sistema está de pé.</p>
+            <p>A vantagem é a <strong>liberdade pra errar</strong>:</p>
+            <ul>
+                <li>Apaga o sistema inteiro? Deleta a VM e cria outra.</li>
+                <li>Quer testar 3 versões de Ubuntu lado a lado? Cria 3 VMs.</li>
+                <li>Snapshot antes de instalar algo arriscado, rollback se quebrar.</li>
+                <li>Zero risco pro Windows do host.</li>
+            </ul>
+            <p>O custo é performance e proximidade — VM tem overhead, atalhos de teclado podem conflitar, GPU não passa direto. Mas pra <strong>treinar o setup do servidor</strong>, é mais que suficiente: comandos, containers, redes — tudo igual.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">WSL — Windows Subsystem for Linux</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A <strong>WSL</strong> é o jeito oficial da Microsoft de rodar Linux dentro do Windows. A versão atual (WSL 2) usa uma VM ultra-leve com kernel Linux real, gerenciada pela Microsoft — você nunca vê a VM, não configura RAM, não escolhe disco virtual.</p>
+            <p>Instala com um comando (<code>wsl --install</code>), abre o terminal do Windows, digita <code>wsl</code>, e cai num shell Linux como se fosse <strong>mais uma aba do terminal</strong>.</p>
+            <p>A integração com o Windows é o ponto forte:</p>
+            <ul>
+                <li>Arquivos do Linux aparecem no Explorer (<code>\\wsl$\</code>)</li>
+                <li>Arquivos do Windows aparecem dentro do Linux em <code>/mnt/c/</code></li>
+                <li>Comando do Windows roda de dentro do Linux e vice-versa</li>
+                <li>VS Code abre pasta do WSL com debugger e syntax nativos</li>
+                <li><strong>Docker Desktop usa WSL 2 por baixo</strong> — quem já roda Docker no Windows já está usando WSL sem saber</li>
+            </ul>
+            <p>Pra rodar containers e treinar o setup do servidor com Docker, isso significa overhead quase zero e tudo integrado.</p>
+            <p>A desvantagem é que WSL não é "Linux puro do jeito do servidor". Algumas diferenças:</p>
+            <ul>
+                <li><code>systemd</code> só funciona em versões recentes e com config extra</li>
+                <li>Acesso a hardware físico (USB, GPU) é limitado</li>
+                <li>A separação Windows ↔ Linux fica borrada — não tem a sensação de "estar num sistema totalmente outro"</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Qual escolher pra começar</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Os três respondem perguntas diferentes:</p>
+            <ul>
+                <li><strong>VirtualBox</strong> — pra quem quer aprender Linux como sistema (instalar, particionar, ver o GRUB, lidar com a sessão gráfica) num ambiente isolado e sandbox. É o caminho mais didático.</li>
+                <li><strong>WSL 2</strong> — pra quem quer foco em Docker. Docker Desktop já usa WSL por baixo, então containers rodam integrados e rápidos. Menos didático que VirtualBox, mas o mais direto pra esse exercício.</li>
+                <li><strong>Dual boot</strong> — pra quando o objetivo virar "usar Linux como SO de uso diário", não só sandbox.</li>
+            </ul>
+            <p>A escolha recomendada pra esse curso é <strong>VirtualBox primeiro</strong> — combina aprendizado, sandbox isolado e seguro pra errar. WSL 2 fica como alternativa mais leve se o foco for puramente "rodar Docker rápido".</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

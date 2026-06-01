@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Globo de Conexões no Login — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Globo de Conexões no Login</h1>
+
+<div class="audio-player" data-src="audio/login.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Making-of do planeta animado que gira no fundo da tela de login do Nexus: uma bola de pontos laranja com continentes e arcos de luz viajando entre cidades. Tudo em <strong>canvas 2D puro</strong>, sem nenhuma biblioteca 3D. Arquivo real: <code>frontend/src/routes/login/+page.svelte</code>.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="O planeta no fundo">O que a gente queria</h2>
+<p>Um globo terrestre girando devagar atrás do formulário de login, no mesmo clima quente (laranja/fogo) do cenário que já existia ali (montanhas e floresta). Não um mapa exato: um enfeite de fundo, com cara de planeta de rede, pontinhos formando os continentes e linhas de conexão acendendo entre eles.</p>
+
+<h2 id="conceitos" data-toc-title="Conceitos" data-sub="A matemática da bola">Os conceitos</h2>
+<p>Cinco ideias sustentam o efeito.</p>
+
+<h3>1. Pontos numa esfera por latitude e longitude</h3>
+<p>Cada ponto do globo nasce de dois ângulos: latitude (o quanto sobe ou desce) e longitude (o quanto gira em volta). Com seno e cosseno desses dois ângulos vira um vetor 3D <code>{x, y, z}</code> em cima de uma bola de raio 1. É o mesmo jeito que se aponta um lugar no globo terrestre.</p>
+
+<h3>2. Projeção ortográfica: 3D virando 2D</h3>
+<p>A tela é plana, o ponto é 3D. A projeção ortográfica é a mais simples possível: joga fora o <code>z</code> e usa direto o <code>x</code> e o <code>y</code> como posição na tela. É a sombra reta do ponto na parede. O <code>z</code> não some de vez: ele decide se o ponto está na frente da bola (<code>z &gt; 0</code>, aparece) ou atrás (some), e regula o brilho pra dar sensação de volume.</p>
+
+<h3>3. Rotação no tempo</h3>
+<p>O planeta gira porque a cada quadro da animação um ângulo cresce junto com o relógio. Esse ângulo roda os pontos em torno do eixo vertical antes de projetar. Mais um leve tombo fixo no eixo (o <em>tilt</em>) só pra dar pose de planeta inclinado.</p>
+
+<h3>4. Continentes por ponto-dentro-do-polígono</h3>
+<p>Os continentes são contornos grosseiros desenhados à mão em <code>[lon, lat]</code> (baixa resolução de propósito, é fundo de tela, não atlas). Pra saber quais pontos da grade são terra, usa-se <strong>ray casting</strong>: dispara um raio a partir do ponto e conta quantas vezes ele cruza a borda do polígono. Número ímpar de cruzamentos = está dentro.</p>
+
+<h3>5. Arcos por interpolação esférica (slerp)</h3>
+<p>As linhas de conexão entre cidades não cortam reto pelo meio da bola: elas acompanham a superfície. Isso é o <strong>slerp</strong> (spherical linear interpolation): caminhar pela casca da esfera, pelo trajeto mais curto em cima da bola, entre dois pontos. Um pequeno "bojo" no meio infla o arco pra fora, e um pulso de luz percorre ele.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="O código por partes">Como montamos</h2>
+
+<p>Primeiro, gerar os pontos de terra. Varre uma grade de latitude/longitude, testa cada ponto com <code>inLand()</code> e, se for terra, converte pra vetor 3D na esfera:</p>
+<pre><code class="language-javascript">const land = [];
+for (let lat = -56; lat &lt;= 80; lat += 2) {
+    for (let lon = -180; lon &lt; 180; lon += 2) {
+        if (!inLand(lon, lat)) continue;
+        const la = (lat * Math.PI) / 180;
+        const lo = (lon * Math.PI) / 180;
+        land.push({
+            x: Math.cos(la) * Math.sin(lo),
+            y: Math.sin(la),
+            z: Math.cos(la) * Math.cos(lo)
+        });
+    }
+}</code></pre>
+
+<p>O teste de terra é o ray casting, que conta cruzamentos da borda de cada contorno:</p>
+<pre><code class="language-javascript">const inLand = (lon, lat) =&gt; {
+    for (const poly of LAND) {
+        let inside = false;
+        for (let i = 0, j = poly.length - 1; i &lt; poly.length; j = i++) {
+            const xi = poly[i][0], yi = poly[i][1];
+            const xj = poly[j][0], yj = poly[j][1];
+            if (yi &gt; lat !== yj &gt; lat &&
+                lon &lt; ((xj - xi) * (lat - yi)) / (yj - yi) + xi)
+                inside = !inside;
+        }
+        if (inside) return true;
+    }
+    return false;
+};</code></pre>
+
+<p>A rotação + tilt acontecem no <code>project()</code>. Repare que a projeção em si é ortográfica: no fim, quem desenha usa <code>p.x</code> e <code>p.y</code> como posição, e <code>p.z</code> só diz frente ou trás:</p>
+<pre><code class="language-javascript">const project = (p, c, s) =&gt; {
+    const x1 = p.x * c + p.z * s;       // rotação em Y (planeta girando)
+    const z1 = -p.x * s + p.z * c;
+    const y2 = p.y * tc - z1 * ts;      // tilt em X (planeta tombado)
+    const z2 = p.y * ts + z1 * tc;
+    return { x: x1, y: y2, z: z2 };
+};</code></pre>
+
+<p>O slerp anda pela superfície entre dois pontos:</p>
+<pre><code class="language-javascript">const slerp = (a, b, t) =&gt; {
+    let dot = a.x * b.x + a.y * b.y + a.z * b.z;
+    dot = Math.max(-1, Math.min(1, dot));
+    const om = Math.acos(dot);
+    if (om &lt; 1e-4) return a;
+    const sn = Math.sin(om);
+    const w1 = Math.sin((1 - t) * om) / sn;
+    const w2 = Math.sin(t * om) / sn;
+    return { x: a.x*w1 + b.x*w2, y: a.y*w1 + b.y*w2, z: a.z*w1 + b.z*w2 };
+};</code></pre>
+
+<p>Tudo isso roda dentro de um loop de animação (<code>requestAnimationFrame</code>): a cada quadro o ângulo cresce com o tempo, limpa o canvas, desenha a grade curva (meridianos e paralelos), os continentes pontilhados, os arcos com o pulso de luz e os nós das cidades. Dois detalhes de polimento: o <em>device pixel ratio</em> evita borrão em tela retina, e um PRNG de semente fixa faz o layout nascer igual a cada reload, sem ficar pulando.</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="O que deu errado no caminho">Decisões e becos</h2>
+<p><strong>Cenário trocado por engano.</strong> No vai e vem das tentativas o cenário de fundo chegou a ser trocado sem querer, e teve que voltar pro clima de fogo (montanhas e floresta) que já estava ali.</p>
+<p><strong>Reposicionamento.</strong> O planeta não fica centralizado: ele é grande e fica empurrado pra fora pela direita, mostrando só uma fatia. E entra no markup <em>depois</em> das estrelas e <em>antes</em> das montanhas, pra elas cobrirem a base da bola, dando o efeito de planeta nascendo no horizonte.</p>
+<p><strong>A borda que precisou ser removida.</strong> O maior beco: no começo o planeta tinha um disco escuro de fundo e um halo em volta. Contra o céu laranja, isso criava uma <strong>borda visível</strong>, um círculo nítido demarcando a bola. A solução não foi suavizar a borda: foi <strong>remover</strong> o disco e o halo. Sem eles, o planeta se revela só pela grade curva e pelos continentes pontilhados, sem nenhuma silhueta delimitando.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>Um globo de fundo feito em canvas 2D: pontos numa esfera por lat/lon, projeção ortográfica jogando o 3D na tela, rotação crescendo com o tempo, continentes decididos por ponto-dentro-do-polígono e arcos desenhados por slerp na superfície. A lição de design do beco final: às vezes o conserto certo é tirar a peça que incomoda, não tentar disfarçá-la.</p>
+
+</body>
+</html>

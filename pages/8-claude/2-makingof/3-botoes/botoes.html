@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Botões num Componente Só — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Botões num Componente Só</h1>
+
+<div class="audio-player" data-src="audio/botoes.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Making-of de como pegamos os botões de ação do Nexus (aqueles "Editar" e "Excluir" que aparecem em cada linha de cada tabela), que estavam de um jeito diferente em cada tela, e padronizamos todos num único componente reutilizável: o <code>RowActions</code>.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Cada tela de um jeito">O que a gente queria</h2>
+<p>Quase toda tela do Nexus tem uma lista ou tabela: clientes, orçamentos, categorias do financeiro, inventário, colaboradores, tags. E em cada linha, botão pra editar e pra excluir. Esses botões foram feitos em momentos diferentes, e cada um saiu de um jeito: numa tela, as palavras "Editar" e "Excluir" escritas; noutra, dois ícones (lápis e lixeira). A cor do principal mudava (aqui vermelho, ali azul), e até a posição variava. O Flávio olhou e foi direto: "quero que todos fiquem igual".</p>
+<p>O objetivo, então, era concreto: ter <strong>um jeito só</strong> de mostrar ação de linha no app inteiro. Mexeu em um lugar, mudou em todos.</p>
+
+<h2 id="conceitos" data-toc-title="Conceitos" data-sub="Molde, callbacks, abertura">Os conceitos</h2>
+<h3>1. Componente reutilizável (não se repita)</h3>
+<p>Em vez de cada tela desenhar seu próprio botão de editar e de excluir, você desenha <strong>uma</strong> peça caprichada e usa ela em todo lugar. Como uma peça de lego: fabrica o molde uma vez e encaixa a mesma peça em vinte montagens. Quer mudar a cor da lixeira? Muda no molde, e os vinte lugares mudam juntos. Esse molde a gente chamou de <code>RowActions</code>, "ações de linha".</p>
+<h3>2. Callbacks opcionais</h3>
+<p>Pra o molde se adaptar sem virar um monstro de mil opções, ele usa callbacks opcionais. Callback é só um nome pra "o que fazer quando clicar". O componente recebe um "o que fazer ao editar", um "ao excluir", um "ao compartilhar", e só desenha o botão se você passou aquela ação. Linha que só deleta? Passa só o excluir, aparece só a lixeira. Linha que edita e deleta? Passa os dois. O mesmo molde serve sem <code>if</code> espalhado.</p>
+<h3>3. Uma abertura pros casos fora da curva</h3>
+<p>No financeiro, a linha de lançamento tem um botão a mais: marcar se já foi pago. Isso não é editar nem excluir, é uma ação própria daquela tela. Se o molde fosse engessado só com editar e excluir, esse caso ficaria de fora. A solução foi deixar uma <strong>abertura</strong> no molde, um espaço onde a tela encaixa um botão extra dela, reusando o mesmo alinhamento e espaçamento. No Svelte isso se chama <em>snippet</em>, mas pense num furo na peça onde dá pra plugar mais uma coisa. A gente chamou esse furo de "leading", porque vem na frente dos ícones padrão.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="O molde e a troca">Como montamos</h2>
+<p><strong>O molde.</strong> O <code>RowActions</code> recebe as ações (editar, excluir, compartilhar e o furo "leading") e desenha os ícones na ordem certa, com o estilo certo: cinza parado, lixeira fica vermelha no hover. Tem um detalhe esperto embutido: todo clique nele primeiro "trava" o evento pra não disparar o clique da linha inteira. Em várias tabelas, clicar na linha abre o detalhe; se você clica na lixeira, quer excluir, não abrir o detalhe. Esse trava-clique mora dentro do molde, então toda tela ganha isso de graça.</p>
+<pre><code class="language-svelte">&lt;RowActions
+    onEdit={() =&gt; abrirEdicao(item)}
+    onDelete={() =&gt; excluir(item)}
+/&gt;</code></pre>
+<p><strong>A troca.</strong> Em cada tabela, o bloco de "Editar" e "Excluir" escritos virou só o <code>RowActions</code>, passando as duas ações daquela tela: clientes, orçamentos, catálogo, as telas do financeiro, inventário, colaboradores, saúde, as tags. Onde já tinha ícone mas de um jeito próprio, trocou pelo molde também.</p>
+<p><strong>O furo em ação.</strong> No lançamento financeiro, o "leading" recebeu o botão de marcar pago, e o excluir veio do molde. Os dois lado a lado, mesmo espaçamento, mesma carinha.</p>
+<p><strong>A faxina.</strong> Cada troca deixava CSS órfão (o estilo antigo daqueles botões sem ninguém usando). A gente limpou esses estilos órfãos e rodou o verificador do projeto: zero erro novo.</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="Até onde normalizar">Decisões e becos</h2>
+<p><strong>Beco principal: até onde normalizar.</strong> No começo converti as tabelas óbvias e quis deixar de fora alguns casos por bom senso visual (os menus de três pontinhos, os botões dentro de um seletor de imagem). Meu argumento: ícone solto nesses lugares podia ficar pior de usar. Mas o pedido era "em todos os lugares", sem exceção. Voltamos e cobrimos o resto, com uma regra mais clara: normalizar não quer dizer "tudo idêntico", quer dizer "<strong>consistente por papel</strong>".</p>
+<p>Na prática virou três regras:</p>
+<ul>
+    <li>Ação que se repete em cada linha de uma lista vira ícone (o lápis e a lixeira).</li>
+    <li>Item de menu (daqueles que abrem numa listinha vertical) ganha ícone <strong>mais</strong> texto do lado, porque ícone sozinho num menu ninguém entende.</li>
+    <li>Botão de ação principal (tipo "Novo Lançamento") fica como botão vermelho cheio.</li>
+</ul>
+<p>Cada papel tem sua forma, e dentro do papel todo mundo igual.</p>
+<p><strong>Aprendizado do furo "leading".</strong> Sem ele, o botão de marcar pago não tinha onde morar junto com a lixeira sem quebrar o alinhamento. Deixar uma abertura no molde, em vez de enchê-lo de opções, foi o que manteve a peça simples e ainda flexível.</p>
+<p><strong>O CSS órfão.</strong> Cada conversão deixava estilo morto pra trás. Rodar o verificador depois de cada rodada foi o que segurou a casa limpa.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>Um molde único, o <code>RowActions</code>, com as ações vindo de callbacks opcionais e um furo "leading" pra casos especiais. Trocado em todas as tabelas e listas do app, seguindo a regra de "consistente por papel": ícone na linha, ícone mais texto no menu, botão cheio na ação principal. A lição: quando você vê a mesma coisa desenhada de cinco jeitos diferentes, isso é um molde pedindo pra existir. Faz a peça uma vez, com uma aberturinha pros casos fora da curva, e troca em todo lugar.</p>
+
+</body>
+</html>

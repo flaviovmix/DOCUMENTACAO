@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servidor Local — Visão Geral — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Servidor Local — Praticando o Setup do Nexus</h1>
+
+<div class="audio-player" data-src="audio/visao-geral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Réplica local do servidor que está sendo montado pro Nexus — mesmo stack (Caddy + Docker + Postgres + backend Spring + frontend estático), rodando aqui na máquina pra praticar antes de tocar a VM. A ideia é repetir cada fase do <a href="../../0-visao-geral/visao-geral.html">setup remoto</a> num ambiente descartável, errar à vontade e só depois aplicar lá.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Por que montar local</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Toda mudança no servidor remoto custa caro: SSH lento, medo de quebrar produção, rollback chato. Local é o oposto — derrubar e subir um container leva segundos, dá pra apagar tudo e recomeçar sem pensar.</p>
+            <p>O objetivo aqui é <strong>treinar o fluxo</strong>: subir o Caddy, expor o backend, persistir o Postgres em volume, fazer backup, testar restauração. Quando o gesto virar reflexo, a VM remota deixa de ser assustadora.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Stack espelhada</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Mesmas peças do setup remoto, só que tudo na minha máquina:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Componente</th><th>Remoto</th><th>Local</th></tr>
+                    <tr><td>Host</td><td>VM Ubuntu 24.04</td><td>Docker Desktop / WSL2</td></tr>
+                    <tr><td>Proxy reverso</td><td>Caddy</td><td>Caddy (container)</td></tr>
+                    <tr><td>Backend</td><td>Spring Boot</td><td>Spring Boot (container)</td></tr>
+                    <tr><td>Banco</td><td>PostgreSQL 16</td><td>PostgreSQL 16 (container + volume)</td></tr>
+                    <tr><td>Frontend</td><td>SvelteKit estático servido pelo Caddy</td><td>SvelteKit estático servido pelo Caddy</td></tr>
+                    <tr><td>Domínio</td><td><code>nexus.seu-dominio.com</code></td><td><code>nexus.localhost</code></td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Roteiro de prática</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A preencher conforme cada fase for replicada:</p>
+            <ul>
+                <li>Subir Caddy local servindo HTML estático</li>
+                <li>Subir Postgres com volume persistente</li>
+                <li>Empacotar o backend do Nexus em imagem Docker</li>
+                <li>Rodar o build estático do frontend e servir via Caddy</li>
+                <li>Backup do volume do Postgres + restauração num container novo</li>
+                <li>Quebrar de propósito e recuperar (deletar volume, derrubar rede, etc.)</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

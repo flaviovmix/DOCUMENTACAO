@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anatomia do Projeto Svelte — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Anatomia do Projeto Svelte</h1>
+
+<div class="audio-player" data-src="audio/anatomia.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Making-of de como nasceu o primeiro projeto do Stack Web: um "Olá Mundo" feito em SvelteKit, que ao mesmo tempo é a semente do app que vai crescer. Diferente dos outros, este episódio não segue o fluxo de uma feature: ele passeia <strong>arquivo por arquivo</strong> pelo projeto recém-criado, explicando o que cada um faz e por que existe.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Olá Mundo que vai durar">O que a gente queria</h2>
+<p>O Stack Web é um lab de estudo: aprender a stack do Nexus do zero, longe do código de verdade, sem medo de quebrar. O primeiro passo é o famoso "Olá Mundo": botar a palavra na tela e ver funcionando.</p>
+<p>Mas com uma decisão logo de cara: esse "Olá Mundo" não ia ser um projetinho de brincadeira pra jogar fora. É um teste de ambiente, sim, mas é o <strong>mesmo</strong> projeto que vai crescer, exercício após exercício, até virar um app de verdade. Por isso montamos direto na base que vai durar. E a base não foi no chute: o Flávio quer mais pra frente refazer pedaços do Nexus iguais, pra entender como ele funciona. O Nexus é SvelteKit, com TypeScript e as mesmas ferramentas de formatar e checar. Então o Olá Mundo também.</p>
+
+<h2 id="conceitos" data-toc-title="Conceitos" data-sub="Quatro ideias">Os conceitos</h2>
+<h3>1. Svelte vs SvelteKit</h3>
+<p>Svelte sozinho é a ferramenta de fazer a tela: você escreve um componente, ele vira o que aparece no navegador. Mas só isso não monta um site inteiro: faltam as rotas (qual endereço mostra qual página), o jeito de empacotar pra publicar, a organização das pastas. SvelteKit é o framework em volta que traz tudo pronto. Svelte é o motor; SvelteKit é o carro montado em volta do motor (rodas, volante, banco). O Nexus usa o carro inteiro, então a gente também.</p>
+<h3>2. Scaffold (o andaime)</h3>
+<p>A gente não digitou esses arquivos um por um. Rodou um gerador, o comando <code>sv create</code>, e ele cuspiu o projeto inteiro pronto pra preencher. Como o andaime de uma obra: a estrutura já vem montada e você entra pra fazer o acabamento. Por isso o projeto já nasce com vinte e poucos arquivos sem a gente ter escrito quase nada.</p>
+<h3>3. TypeScript</h3>
+<p>É o JavaScript de sempre, só que com etiquetas que dizem que tipo cada valor é: isso é um número, isso é um texto. O ganho: o editor avisa o erro antes de você rodar, em vez de descobrir quebrando na tela. O Nexus usa, então a gente ligou aqui também.</p>
+<h3>4. Convenção no lugar de configuração</h3>
+<p>No SvelteKit, certos arquivos têm nome especial e papel fixo. <code>+page.svelte</code> é sempre uma página. <code>+layout.svelte</code> é sempre a moldura. Você não configura isso em lugar nenhum: é só dar o nome certo, na pasta certa, que o framework entende. Isso explica vários nomes estranhos a seguir.</p>
+
+<h2 id="como-montamos" data-toc-title="Arquivo por arquivo" data-sub="Quatro grupos">Como montamos, arquivo por arquivo</h2>
+
+<h3>Grupo 1: o coração, onde você mexe no dia a dia</h3>
+<p>Tudo dentro da pasta <code>src</code> (de <em>source</em>, código fonte), e dentro dela <code>routes</code> (rotas).</p>
+<ul>
+    <li><code>+page.svelte</code>: a página inicial, o que aparece no endereço raiz. Agora é uma linha só, um título "Olá Mundo". Foi a única coisa que escrevemos à mão no projeto inteiro.</li>
+    <li><code>+layout.svelte</code>: a moldura que envolve todas as páginas (a pintura troca, a moldura fica). Coloca o favicon e tem o comando que diz "renderize aqui a página atual", recebendo <code>children</code> (os filhos da moldura são as páginas). Esse jeito de receber <code>children</code> via props é do Svelte 5, a mesma versão do Nexus.</li>
+    <li>pasta <code>lib</code> (de <em>library</em>): código pra reusar em várias páginas. Tem um atalho: em vez do caminho inteiro, você escreve <code>$lib</code> e o SvelteKit acha. Por enquanto só um <code>index</code> vazio e o favicon.</li>
+</ul>
+
+<h3>Grupo 2: a casca de HTML</h3>
+<ul>
+    <li><code>app.html</code>: o único HTML do projeto, o esqueleto que o navegador recebe. Tem dois buracos marcados (um na cabeça, um no corpo) que o SvelteKit preenche com a sua página. Um molde com dois furos; você quase nunca mexe.</li>
+    <li><code>app.d.ts</code>: arquivo só de TypeScript pra declarar tipos do app inteiro. Agora está todo comentado (vazio de verdade), uma gaveta pra quando o app crescer.</li>
+</ul>
+
+<h3>Grupo 3: as engrenagens de configuração</h3>
+<p>Ficam na raiz e quase ninguém mexe depois de prontas.</p>
+<ul>
+    <li><code>package.json</code>: a carteira de identidade do projeto. Nome, a lista de dependências (Svelte, SvelteKit, TypeScript, Vite, prettier, eslint) e a lista de scripts (os atalhos de comando). Quando você roda <code>npm run dev</code>, é esse arquivo que diz o que "dev" significa. Tem também <code>build</code> e <code>check</code>.</li>
+    <li><code>svelte.config.js</code>: configuração do SvelteKit. Liga o modo <em>runes</em> (o jeito novo do Svelte 5 de lidar com dados que mudam na tela) e escolhe o <em>adapter</em> (a peça que decide pra onde o projeto vai ao publicar: servidor, site estático). Aqui está no automático. É o mesmo arquivo do Nexus, linha por linha.</li>
+    <li><code>vite.config.ts</code>: curtinho. Vite é o servidor de desenvolvimento e empacotador, que faz a tela atualizar na hora que você salva. O config só liga o plugin do SvelteKit dentro do Vite.</li>
+    <li><code>tsconfig.json</code>: as regras do TypeScript, no modo <code>strict</code> (rígido): pega no seu pé e reclama de coisa que em outros projetos passaria batido. Pra aprender, é bom.</li>
+    <li><code>.npmrc</code>: um arquivinho escondido, uma linha só, que obriga o projeto a rodar na versão certa de Node. Trava de segurança.</li>
+</ul>
+
+<h3>Grupo 4: a faxina e o acabamento</h3>
+<ul>
+    <li><code>.prettierrc</code> (+ <code>.prettierignore</code>): o prettier é o formatador automático. As regras de estilo (tab em vez de espaço, aspas simples, 100 caracteres por linha). Você salva e ele arruma a indentação sozinho.</li>
+    <li><code>eslint.config.js</code>: o eslint é o linter. O prettier cuida da aparência; o eslint cuida de erro de lógica e mau hábito.</li>
+    <li><code>.gitignore</code>: diz ao controle de versão quais pastas ignorar (a pasta gigante de dependências, a pasta de trabalho do SvelteKit).</li>
+    <li><code>static/robots.txt</code>: tudo em <code>static</code> é servido como está, sem processar. Esse só avisa os buscadores que podem indexar o site.</li>
+    <li>Três coadjuvantes: o <code>README</code> com instruções de como rodar, a pasta <code>.vscode</code> que sugere uma extensão boa, e o <code>package-lock</code>, a lista travada das versões exatas de cada dependência.</li>
+</ul>
+<p>E duas pastas que aparecem só depois que você roda e não são suas: <code>node_modules</code> (dependências baixadas) e <code>.svelte-kit</code> (pasta de trabalho que o SvelteKit gera e regenera sozinho). Nessas você nunca mexe.</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="Quatro do caminho">Decisões e becos</h2>
+<p><strong>Svelte puro vs SvelteKit.</strong> Na primeira tentativa montei com Svelte puro (mais simples, vem com um <code>App.svelte</code> e você cuida das rotas). Funcionou. Mas o objetivo era refazer pedaços do Nexus iguais, e o Nexus é SvelteKit. Apaguei e refiz. Svelte puro te dá o motor e você monta o resto; SvelteKit já te dá o carro, com rotas por pasta funcionando.</p>
+<p><strong>Não ser descartável.</strong> No plano original cada exercício viraria uma pasta numerada e separada ("01 Olá Mundo", "02 Contador"). O Flávio cortou: o Olá Mundo é o mesmo projeto que vai evoluir pro app completo. Apagamos a pasta numerada e montamos direto na raiz, sem aninhar. Aninhar não agregava nada num projeto único.</p>
+<p><strong>Um bug bobo mas instrutivo.</strong> Na primeira vez que rodei o gerador, passei o caminho da pasta com barras invertidas (jeito do Windows). O gerador não gostou e juntou tudo num nome só, criando uma pasta com nome torto, tudo grudado. Solução: em vez de mandar o caminho inteiro de fora, entrei na pasta certa primeiro e mandei criar ali dentro. Lição: gerador de projeto e caminho do Windows nem sempre se dão bem.</p>
+<p><strong>Quanta coisa o Olá Mundo precisava.</strong> O Flávio perguntou, com razão, se um primeiro passo simples precisava de TypeScript, prettier e eslint, ou se era exagero. Separamos o estrutural do enfeite: eslint e prettier dava pra cortar e adicionar depois. Mas a decisão foi manter os três, porque vamos precisar deles quando o projeto crescer e porque são exatamente as ferramentas do Nexus. Melhor começar com o ambiente igual ao real do que remendar depois.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>Um projeto SvelteKit recém-nascido tem pouquíssima coisa que é sua de verdade (basicamente a página e a moldura dentro de <code>src</code>) e um monte de arquivo de configuração que você ajusta uma vez e esquece. O gerador faz o trabalho pesado, você entra só pra preencher. E o mais importante deste primeiro passo: o Olá Mundo não é um rascunho jogável, já está de pé na mesma base do Nexus. Quando os próximos exercícios chegarem, é nesse mesmo projeto que vão nascer.</p>
+
+</body>
+</html>
