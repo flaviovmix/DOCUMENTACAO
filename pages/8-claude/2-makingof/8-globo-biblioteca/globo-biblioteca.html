@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Globo com Biblioteca — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Globo com Biblioteca</h1>
+
+<div class="audio-player" data-src="audio/globo-biblioteca.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Continuação direta do making-of <a href="../1-login/login.html">Globo de Conexões no Login</a>, onde o globo foi feito na mão em <strong>canvas 2D puro</strong>. Aqui a gente refaz o mesmo globo com uma <strong>biblioteca pronta</strong> (<code>globe.gl</code>, que roda sobre <code>three.js</code>) e responde três perguntas: como a biblioteca funciona por baixo, fazer na mão vs usar biblioteca, e qual é mais leve pro navegador. Arquivo real: <code>frontend/src/routes/login/+page.svelte</code>.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Refazer com biblioteca">O que a gente queria</h2>
+<p>O globo na mão já funcionava e ficava bonito. A pergunta foi: e se em vez de escrever toda a matemática da esfera na unha, a gente usar uma biblioteca feita pra isso? Pegar o mesmo efeito (o planeta girando atrás do formulário) e refazer com biblioteca, pra ver se fica mais elegante e se compensa. Adianto a estética: com biblioteca ficou mais limpo, os arcos mais suaves, e a gente ganha de graça poder pegar o globo com o mouse e girar. A biblioteca é a <code>globe.gl</code>, uma camada de conveniência em cima da <code>three.js</code>.</p>
+
+<h2 id="conceitos" data-toc-title="Conceitos" data-sub="CPU vs GPU, e o que a lib monta">Os conceitos</h2>
+
+<h3>1. Onde o desenho acontece: CPU ou GPU</h3>
+<p>No globo na mão, quem desenhava era a <strong>CPU</strong>, o cérebro geral. Pensa num desenhista sozinho: a cada quadro ele pega cada pontinho, calcula onde cai na tela depois de girar, e pinta. Um por um, alguns milhares de pontos, 60 vezes por segundo. Dá conta, mas é no braço.</p>
+<p>O <strong>WebGL</strong>, que a <code>three.js</code> usa por baixo, joga esse trabalho pra placa de vídeo, a <strong>GPU</strong>. A GPU não é um desenhista sozinho, é um batalhão de ajudantes: cada um cuida de um ponto ao mesmo tempo que os outros. Desenhar mil ou cem mil pontos custa quase o mesmo, porque o trabalho é paralelo. Esse é o coração da diferença: canvas 2D é um desenhista no braço; WebGL é um batalhão desenhando junto.</p>
+
+<h3>2. O que a biblioteca monta pra você</h3>
+<p>A <code>three.js</code> trabalha com três peças: uma <strong>cena</strong> (o mundo 3D com os objetos), uma <strong>câmera</strong> (de onde você olha) e um <strong>renderizador</strong> (quem pinta a cena na tela usando a GPU). No globo na mão, a gente era o renderizador, na unha.</p>
+<p>A <code>globe.gl</code> monta essas três peças prontas pra um globo. Você não fala com a câmera nem escreve a matemática da esfera: declara o que quer numa sequência de comandos encadeados (esconde a bola sólida, mostra a grade de lat/long, põe os continentes como pontos, põe esses arcos entre essas cidades). Cada coisa que no episódio anterior foi escrita à mão vira uma linha: os contornos desenhados a dedo + ray casting viram <em>passa o mapa do mundo e cobre de pontos</em>; os meridianos desenhados um a um viram <em>liga a grade</em>; o slerp dos arcos vira <em>dá as duas cidades e ela faz a curva</em>, já com a luzinha correndo por cima.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="Declarar o globo">Como montamos</h2>
+<p>A montagem foi declarar o globo em poucas linhas: cria, esconde a esfera sólida pra ficar transparente igual ao da mão, liga as linhas de latitude e longitude, passa o mapa do mundo pros continentes virarem pontos, e passa a lista de cidades e ligações pros arcos. Cor laranja em tudo pra combinar com o fundo de fogo do login.</p>
+<pre><code class="language-javascript">globe = new Globe(planetEl, { animateIn: false })
+    .backgroundColor('rgba(0,0,0,0)')
+    .showGlobe(false)        // esconde a bola sólida -&gt; transparente
+    .showGraticules(true)    // grade de latitude/longitude
+    .hexPolygonsData(countries.features)  // continentes como pontos
+    .hexPolygonUseDots(true)
+    .arcsData(arcs)          // arcos entre cidades, com pulso animado
+    .arcDashGap(3)
+    .arcDashInitialGap(() =&gt; Math.random() * 3.4);</code></pre>
+<p>A interação, que no globo na mão a gente nem tinha, vem dos <strong>controles de órbita</strong> da <code>three.js</code>: com eles ligados, você pega o globo com o mouse e gira, e a rolagem aproxima e afasta (com um limite pra ninguém sumir nem estourar o globo).</p>
+<p>Um detalhe de montagem do mundo SvelteKit, que foi o primeiro tropeço: a página de login é montada primeiro no servidor. A biblioteca de globo só funciona no navegador (ela precisa da tela e da placa de vídeo, que no servidor não existem). Importar do jeito normal quebrava com erro 500. O conserto foi carregar a biblioteca só depois que a página chega no navegador, com import dinâmico dentro do <code>onMount</code>:</p>
+<pre><code class="language-javascript">// só roda no cliente: importa a lib depois da página montar
+const [{ default: Globe }, topojson] = await Promise.all([
+    import('globe.gl'),
+    import('topojson-client')
+]);</code></pre>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="Na mão vs biblioteca">Decisões e becos</h2>
+<p><strong>A biblioteca errada.</strong> Antes da <code>globe.gl</code> a gente tentou uma bem pequenininha (COBE). Ela só sabe desenhar a bola sólida e sombreada, tipo uma laranja com luz de um lado. Ficou um globo escuro parecendo um eclipse, sem as linhas transparentes e sem os arcos. Trocamos pela <code>globe.gl</code>, que deixa esconder a bola e ficar só com a grade e os pontos.</p>
+<p><strong>O pião cambaleando.</strong> A gente queria o globo inclinado e girando. Liguei a inclinação e mandei girar sozinho com o controle de órbita. Ficou torto: em vez de girar parado no próprio eixo, o globo cambaleava, o polo desenhando um círculo. O motivo: o girar-sozinho do controle gira a <em>câmera</em> em volta, não o globo. É uma colher empurrando o pião por fora, em vez do pião girando no próprio bico. O conserto foi parar de girar a câmera e girar o próprio globo no eixo dele (<code>rotation.y</code>), com a inclinação aplicada por fora numa ordem de rotação <code>'ZYX'</code>. Aí o polo ficou parado e ele girou limpo.</p>
+<p><strong>Os arcos.</strong> Começaram com dois pulsos juntos no mesmo arco (poluído); afastei o tracejado pra sair um por vez, tipo cometa. E todos começavam no mesmo instante; dei um ponto de partida aleatório pra cada um, e eles se espalharam no tempo.</p>
+<p><strong>Cidades caindo no mar.</strong> Como o mapa vira pontos numa resolução baixa, cidades de litoral ou ilha caíam num lugar que parecia oceano, e o arco nascia do nada no meio do mar. Correção: pontinho marcando cada cidade pra ancorar a ponta, e cidades bem no interior dos continentes.</p>
+<p><strong>Na mão ou biblioteca, e qual é mais leve.</strong> A biblioteca ganha de longe na hora de <em>desenhar</em>: como quem pinta é o batalhão da GPU, ela aguenta muito mais ponto sem engasgar, fica mais suave, libera a CPU pro resto da página, e você escreve muito menos código. Mas tem um custo que não aparece na tela: o <strong>peso pra carregar</strong>. A <code>three.js</code> mais a <code>globe.gl</code> são centenas de kilobytes pra baixar antes de mostrar o globo. O globo na mão não baixa nada (é código nosso, pequeno) e aparece na hora. Numa tela de login, que tem que abrir rápido, isso conta.</p>
+<p>A resposta honesta não é "biblioteca é sempre melhor". Efeito simples, poucos elementos, página que precisa carregar voando sem depender de nada: fazer na mão ganha (igual serrar uma prateleira simples na marcenaria sai mais enxuto que comprar um móvel inteiro). Qualidade 3D, muitos elementos, interação pronta e menos código pra manter: a biblioteca compensa, mesmo pesando mais (comprar o kit pronto quando o móvel é complicado). No nosso caso ficamos com a biblioteca pela elegância e pela interação, e amenizamos o peso carregando ela só depois que a página aparece.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>Refizemos o globo do login, antes na mão, agora com a <code>globe.gl</code> sobre a <code>three.js</code>. A grande mudança por baixo é que o desenho sai da CPU (o desenhista sozinho) e vai pra GPU (o batalhão que pinta em paralelo). Com isso a gente escreve quase nada, ganha arcos e interação prontos, e fica mais suave. O custo é o peso da biblioteca pra baixar. A lição vale pra qualquer escolha de biblioteca: pesar o trabalho e a qualidade que ela poupa contra o que ela custa pra carregar e a liberdade que você abre mão. Enfeite simples, a mão basta; algo rico e interativo, a biblioteca paga o que pesa.</p>
+
+</body>
+</html>

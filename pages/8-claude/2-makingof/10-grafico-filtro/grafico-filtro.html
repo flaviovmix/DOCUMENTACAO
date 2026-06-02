@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráfico que Segue o Filtro — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Gráfico que Segue o Filtro</h1>
+
+<div class="audio-player" data-src="audio/grafico-filtro.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>No dashboard do Financeiro do Nexus tem um gráfico de linha (entrada, saída, saldo) e um seletor de mês no topo. O gráfico <strong>ignorava o seletor</strong>: mostrava sempre os últimos 12 meses até hoje. A gente ligou os dois e, de quebra, refez o seletor e generalizou o endpoint do backend. Arquivos reais: <code>FinanceMesSeletor.svelte</code>, <code>FinanceHistoricoChart.svelte</code> e <code>FinanceDashboardService/Controller.java</code>.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="O gráfico ligado ao filtro">O que a gente queria</h2>
+<p>Você trocava o mês lá em cima, os cards mudavam, mas o gráfico ficava parado. Queríamos duas coisas. Em <strong>"Últimos 12 meses"</strong>, o gráfico mostra os 12 meses até hoje, com o mês atual na ponta direita. Num <strong>mês específico</strong>, ele passa a mostrar 5 meses centrados naquele mês: dois antes, o escolhido no meio, dois depois. Assim dá pra ver o entorno do mês (se foi pico ou vale), em vez de um ponto solto.</p>
+
+<h2 id="conceitos" data-toc-title="Conceitos" data-sub="Janela, intervalo, reatividade">Os conceitos</h2>
+
+<h3>1. Janela de dados: ancorada no presente vs centrada</h3>
+<p>Pensa numa fileira longa de meses. O gráfico nunca mostra a fileira inteira, mostra um pedaço: uma <strong>janela</strong>. A pergunta é onde ela para. <strong>Ancorada no presente</strong>: a borda direita é sempre hoje e ela se estica pra trás (o "últimos 12 meses"). <strong>Centrada</strong>: você escolhe um mês e a janela fica em volta dele, com o mês no meio. Mesmo gráfico, mesma fileira; muda só onde a janela está parada.</p>
+
+<h3>2. Endpoint por intervalo, não "os últimos N"</h3>
+<p>Antes o servidor só sabia responder "me dá os últimos N meses até hoje". Isso atende a janela ancorada, mas não a centrada. Generalizamos: o servidor passou a aceitar um <strong>intervalo</strong>, um mês de início e um de fim. Quem pergunta decide as duas pontas. A ancorada vira "de 12 meses atrás até hoje"; a centrada vira "de 2 antes até 2 depois". O servidor só preenche o intervalo que pediram.</p>
+
+<h3>3. Reatividade: um estado, dois componentes</h3>
+<p>O mês selecionado mora num lugar só. O seletor <strong>escreve</strong> nele (<code>$bindable</code>), o gráfico <strong>lê</strong> dele (a prop <code>mes</code>). Quando o valor muda, o gráfico recalcula a janela sozinho e busca os dados de novo. Ninguém avisa o gráfico na mão; ele reage porque depende daquele valor.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="Seletor, backend, gráfico">Como montamos</h2>
+<p><strong>O seletor.</strong> Estava com um item "Todos" mais catorze meses (incluindo um futuro), uma lista enorme. Agora: o primeiro item é <code>Últimos 12 meses</code> (valor vazio), depois só os 6 meses mais recentes, e no fim um <strong>"Exibir todos"</strong> que não é filtro, só expande a lista pra 13 meses. Um interruptor (<code>showAll</code>) alterna entre 6 e 13.</p>
+
+<p><strong>O backend.</strong> O método que ancorava em hoje virou um <strong>atalho</strong>: ele calcula as pontas e chama uma versão nova que recebe um intervalo <code>de</code>/<code>ate</code> (teto de 24 meses). Um chama o outro, sem duplicar a agregação. O controlador aceitou os dois parâmetros novos; sem eles, cai no modo antigo:</p>
+<pre><code class="language-java">@GetMapping("/historico")
+public List&lt;FinanceHistoricoMesItem&gt; historico(
+    @RequestParam(required = false) String de,
+    @RequestParam(required = false) String ate,
+    @RequestParam(required = false, defaultValue = "6") int meses,
+    @AuthenticationPrincipal User user
+) {
+    if (de != null &amp;&amp; !de.isBlank() &amp;&amp; ate != null &amp;&amp; !ate.isBlank()) {
+        return dashboardService.getHistorico(user, YearMonth.parse(de), YearMonth.parse(ate));
+    }
+    return dashboardService.getHistorico(user, meses);
+}</code></pre>
+
+<p><strong>O gráfico.</strong> Ganhou a prop <code>mes</code>. De um <code>$derived</code> sai a janela: <code>null</code> → modo legado (rolante, usado pela outra tela); <code>''</code> → 12 meses até hoje; <code>'YYYY-MM'</code> → 2 antes até 2 depois. O efeito pede os dados já com as duas pontas, e o título muda junto.</p>
+<pre><code class="language-typescript">const range = $derived.by(() => {
+    if (mes === null) return null;
+    if (mes === '') { const a = nowYm(); return { de: ymAdd(a, -11), ate: a }; }
+    return { de: ymAdd(mes, -2), ate: ymAdd(mes, 2) };
+});</code></pre>
+
+<p>E a ligação: na página do Financeiro, o mês que o seletor escreve é o mesmo que entregamos pro gráfico. Trocou no seletor, o gráfico segue.</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="O fallback silencioso e mais 3">Decisões e becos</h2>
+<p><strong>O fallback silencioso.</strong> Com tudo pronto, o gráfico mostrava 6 meses, não 12. A pista estava no número: 6 era o valor padrão do modo antigo. O backend não tinha sido reiniciado. O frontend já mandava <code>de</code> e <code>ate</code>, mas o servidor velho não conhecia esses parâmetros, ignorou (Spring ignora query params extras) e caiu no default <code>meses=6</code>. Não quebrou, não deu erro, só respondeu com o comportamento velho. Reiniciar resolveu. Lição: resultado "quase certo" depois de mexer no servidor, desconfie que o código novo nem subiu.</p>
+<p><strong>"Exibir todos" é só expandir.</strong> No começo eu tinha posto um item "Todos" (período inteiro) no fim da lista. O Flávio cortou: o "Exibir todos" serve só pra escolher qualquer mês disponível, não é um filtro. O agregado virou o primeiro item, "Últimos 12 meses".</p>
+<p><strong>Por que 5 meses no centrado.</strong> A ideia é ver o entorno: 2 antes e 2 depois bastam pra sacar se o mês foi pico ou vale, sem encher a tela.</p>
+<p><strong>Manter os 12 fixos com vazios.</strong> Com histórico curto, "Últimos 12 meses" mostra meses zerados. Dava pra cortar os vazios do começo, mas 12 é 12: o vazio onde não houve lançamento é informação honesta, não defeito. E a prop <code>mes</code> opcional preserva a outra tela (o dashboard inicial usa o gráfico do jeito velho, sem nem saber da mudança).</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>O gráfico do Financeiro agora segue o seletor. Em "Últimos 12 meses" mostra a janela ancorada no presente (12 até hoje); num mês específico, a janela centrada (5 meses com o escolhido no meio). Pra isso o backend deixou de só saber "os últimos N" e passou a aceitar um intervalo <code>de</code>/<code>ate</code>, com o método antigo virando atalho do novo. A coisa pra levar: pensar em gráfico temporal como uma janela que desliza sobre uma fileira de meses. Onde ela para é só uma conta de duas pontas, e um servidor que aceita intervalo serve qualquer um desses casos.</p>
+
+</body>
+</html>

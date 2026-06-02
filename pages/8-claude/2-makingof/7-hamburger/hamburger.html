@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hamburger e a Corrida — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Hamburger e a Corrida</h1>
+
+<div class="audio-player" data-src="audio/hamburger.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Continuação direta do making-of <strong>"Menu que Vira Mais"</strong>. Lá a gente montou a barra do topo e a subnav que escondem o que não cabe dentro de um botão "Mais". Aqui só as novidades que vieram depois: o "Mais" virou um ícone de hamburger, o nome da seção ativa passou a aparecer do lado do ícone no celular, e a gente caçou um bug de corrida que quebrava o menu ao sair do tamanho de celular.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Três pontas soltas">O que a gente queria</h2>
+<p>O padrão do "Mais" já funcionava. Mas sobraram três pontas soltas:</p>
+<ul>
+    <li><strong>Trocar o texto pelo ícone.</strong> O botão era a palavra "Mais" com uma setinha. A gente quis o hamburger (três risquinhos empilhados), o desenho universal de "tem mais coisa escondida aqui". Mais limpo, ocupa menos espaço.</li>
+    <li><strong>Saber onde você está no celular.</strong> Na tela estreita, tudo colapsa pro hamburger de uma vez. Só que um hamburger pelado não te diz nada. A gente quis mostrar o nome da seção ativa do lado do ícone, tipo "Financeiro ☰" (nome à esquerda, ícone à direita).</li>
+    <li><strong>Um bug escondido.</strong> Quando você saía do tamanho de celular e voltava pra tela grande, o menu quebrava: os itens voltavam todos e embolavam por cima do logo de novo, como se a conta de "quem cabe" tivesse desligado. Esse é o miolo.</li>
+</ul>
+
+<h2 id="conceitos" data-toc-title="Conceitos" data-sub="Corrida e cache envenenado">Os conceitos</h2>
+<h3>1. Condição de corrida (race condition)</h3>
+<p>É o que acontece quando duas coisas mexem no mesmo lugar ao mesmo tempo, sem combinar, e o resultado depende de quem chega primeiro. Lembra que o menu mede a largura de cada item <strong>uma vez</strong> e guarda num cache? Pra medir, os itens precisam estar visíveis naquele instante: o código bota todos visíveis, espera o navegador desenhar, e aí mede.</p>
+<p>O problema é que existem <strong>dois vigias</strong> avisando que algo mudou. Um é o <strong>ResizeObserver</strong>, que avisa quando a barra muda de largura. O outro é o <strong>matchMedia</strong>, que avisa quando você cruza a fronteira do "modo celular" (a tela passando de ~768px). Ao arrastar a janela de estreito pra largo, os dois disparam quase juntos.</p>
+<p>Pensa em duas pessoas mandadas medir a mesma sala ao mesmo tempo, sem combinar. Uma começa a medir. No meio, a outra apaga a luz pra preparar a sala do jeito dela (o modo celular, que esconde todos os itens). A primeira termina de medir no escuro e anota: <strong>largura zero</strong>.</p>
+<h3>2. Cache envenenado</h3>
+<p>Aqui está o veneno: o código guardava essa medição zerada no cache. E cache é "mede uma vez e confia pra sempre". Dali em diante ele acreditava que todo item tem largura zero. Item de largura zero <em>sempre cabe</em>. Logo, mostrava todos, sempre, sumia o "Mais", e os itens transbordavam. E como o cache não era refeito, ficava quebrado até recarregar a página. Uma medição inválida, só por ter sido guardada, contaminava todas as decisões seguintes.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="Ícone, nome e três defesas">Como montamos</h2>
+<p><strong>O ícone.</strong> Trocamos o texto "Mais" e a setinha por um ícone de hamburger da mesma fonte de ícones que o projeto já usa. Detalhe de acessibilidade: a palavra "Mais" continua lá, só escondida visualmente (classe <code>sr-only</code>), pra quem usa leitor de tela ainda ouvir o nome do botão.</p>
+<p><strong>O nome da seção ativa.</strong> A lista de itens já marca qual está ativo. Quando o menu está colapsado, a gente pega o nome do item ativo e mostra do lado do ícone, texto à esquerda e hamburger à direita. Fora do colapso, só o ícone.</p>
+<p><strong>O conserto da corrida — três defesas que conversam entre si:</strong></p>
+<ul>
+    <li><strong>Defesa 1, a trava.</strong> Antes de medir, o código levanta uma plaquinha de "estou medindo". Se o outro vigia chega e pede outra medição no meio, vê a plaquinha e desiste, deixa a que já está rolando terminar. Uma medição por vez.</li>
+    <li><strong>Defesa 2, conferir a luz antes de anotar.</strong> Depois de medir, olha as larguras. Se qualquer uma veio zero, ele sabe que mediu no escuro: joga fora a medição, não guarda no cache, e agenda uma nova pro próximo quadro, quando a tela já assentou.</li>
+    <li><strong>Defesa 3, desistir certo.</strong> Se no meio da medição a tela virou celular de verdade, ele não insiste: colapsa direto pro hamburger e sai.</li>
+</ul>
+<p>E a gente repetiu essas proteções na <strong>subnav</strong>, a barra de baixo, que usa o mesmo padrão de medir e cortar.</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="A suspeita errada">Decisões e becos</h2>
+<p><strong>A suspeita errada: o flexbox.</strong> A primeira aposta foi o vilão do episódio passado (a base do flex). Mas não era: a largura da barra estava certa. O problema era a medição dos <em>itens</em> vindo zero. Vale separar: antes o vilão era <strong>de onde</strong> vinha a largura da barra; aqui era <strong>quando</strong> a gente media os itens. Mesmo menu, bug de natureza diferente.</p>
+<p><strong>Por que só quebrava saindo do celular?</strong> Porque é só nesse trajeto que o matchMedia dispara junto do ResizeObserver. Indo de tela grande pra estreita, ou mexendo dentro do desktop, os dois não brigavam. Por isso o bug parecia aleatório: dependia da direção do arrasto.</p>
+<p><strong>Reagendar, não só desistir.</strong> Ao jogar fora a medição ruim, não bastava parar ali: o menu ficaria com todos os itens abertos e nunca mais remedia (os vigias já tinham disparado). Por isso a Defesa 2 <em>agenda</em> uma nova medição pro quadro seguinte. Desistir sem reagendar trocaria um jeito de quebrar por outro.</p>
+<p><strong>O nome da seção no celular.</strong> A gente cogitou deixar só o hamburger, minimalista. Mas no teste ficou claro que sem o nome você se perde, não sabe se está no Financeiro ou nas Tarefas. O textinho do lado paga o pouco espaço que ocupa.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>O "Mais" virou um ícone de hamburger, com o nome da seção ativa do lado quando tudo colapsa no celular. E o conserto principal foi uma condição de corrida: dois vigias (o de tamanho e o de modo celular) mediam ao mesmo tempo, e quando um escondia os itens no meio da medição do outro, a largura vinha zero e envenenava o cache. A defesa foi tripla: trava de uma medição por vez, descartar qualquer medição com largura zero, e reagendar. A lição serve pra qualquer lugar: cache só presta se o que você guarda é confiável. Mediu em condição ruim? Não guarde. E quando dois eventos podem mexer no mesmo estado, assuma que vão se atropelar e proteja a parte crítica de ser interrompida no meio.</p>
+
+</body>
+</html>
