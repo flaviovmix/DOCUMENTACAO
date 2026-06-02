@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skills Viram Comandos · Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Skills Viram Comandos</h1>
+
+<div class="audio-player" data-src="audio/skills-viram-comandos.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>O Flávio começou a entender como o próprio <strong>Claude Code</strong> é organizado por dentro, pra poder escolher na mão qual conjunto de regras o Claude carrega, em vez de depender de ele adivinhar pelo contexto. A tarefa do dia foi pegar três skills de podcast (XT, fundamentos e Pedro) que o Claude escolhia sozinho e transformá-las em <strong>comandos</strong> que o Flávio dispara. O foco não é o podcast em si, é <strong>onde mora cada instrução do Claude Code e quem a liga</strong>.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Escolher na mão, não depender de adivinhação">O que a gente queria</h2>
+<p>O incômodo era concreto: quando o Flávio pedia "cria um podcast disso", o Claude tinha que <strong>adivinhar</strong> qual dos três conjuntos de regras usar. Às vezes acertava, às vezes não. O Flávio queria o contrário: dizer na cara qual usar e ainda entregar o arquivo de origem na mão, sem depender do Claude lembrar da conversa. Por baixo disso tinha um objetivo maior, que é o que vale o episódio: entender os <strong>quatro lugares</strong> onde a configuração do Claude Code mora, pra saber onde pôr cada coisa daqui pra frente.</p>
+
+<h2 id="conceitos" data-toc-title="Conceitos" data-sub="Os 4 lugares: quem liga, você ou o Claude">Os conceitos</h2>
+<p>São quatro pastas onde você guarda instrução pro Claude Code, e a diferença entre elas é <strong>uma só pergunta: quem liga aquilo, você ou o Claude.</strong></p>
+
+<h3>1. Comando — o interruptor que você aperta</h3>
+<p>Um comando é uma instrução que só roda quando <strong>você</strong> digita o nome dela com uma barra na frente (tipo <code>/podcast-xt</code>). E você pode entregar um arquivo junto, como quem diz "use ISTO como base". Nunca dispara sozinho. Mora em <code>.claude/commands/</code>.</p>
+
+<h3>2. Skill — o sensor de presença que liga sozinho</h3>
+<p>A skill tem uma descrição do tipo "use isto quando o assunto for tal coisa". O <strong>Claude</strong> lê essa descrição e decide sozinho carregar a skill quando acha que combina com o pedido. Ótimo pra conhecimento que deve aparecer na hora certa sem você lembrar. Foi justo aqui que nascia o atrito do podcast: o sensor às vezes ligava a luz errada. Mora em <code>.claude/skills/</code>.</p>
+
+<h3>3. Componente — o manual na gaveta</h3>
+<p>Ninguém liga sozinho e você não "dispara" um manual. Ele fica lá, e quando você precisa do detalhe de uma peça, abre e lê. São documentos detalhados sobre peças do projeto, material de consulta. Mora em <code>.claude/components/</code>.</p>
+
+<h3>4. Memória — os bilhetes na geladeira</h3>
+<p>Ficam sempre à vista. A memória é carregada <strong>toda vez</strong> que uma conversa começa, e guarda o que vale sempre: quem o Flávio é, como ele gosta de trabalhar, o estado dos projetos. Não é um procedimento que roda, é um pano de fundo sempre ligado. Mora em <code>.claude/memory/</code>.</p>
+
+<p><strong>O mapa pra levar:</strong> comando você aperta, skill o Claude liga sozinho, componente é manual de consulta, memória é o bilhete que fica sempre lá. Sabendo disso, você sabe onde pôr cada instrução nova e como pedir as coisas sem depender de sorte.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="Mover de pasta, ajustar o topo, apagar a skill">Como montamos</h2>
+<p>Por dentro, <strong>comando e skill são o mesmo tipo de arquivo</strong>: texto (markdown) com um cabeçalho no topo e o conteúdo embaixo. A diferença é a pasta e um detalhe do cabeçalho.</p>
+<p><strong>1. Mudar de pasta.</strong> Copiamos o arquivo de cada skill inteiro pra pasta dos comandos. Mesmo conteúdo, lugar novo. Só por estar em <code>commands/</code> em vez de <code>skills/</code>, ele já deixa de ligar sozinho e passa a esperar o Flávio chamar.</p>
+<p><strong>2. Ajustar o topo.</strong> Toda skill tem no cabeçalho um <code>name:</code> que serve pro Claude reconhecer e ligar sozinho. Num comando isso não faz falta, então tiramos. E trocamos a primeira linha (antes "esta skill faz X") por uma que diz "comando ativado, o Flávio passou o arquivo de origem como <code>$ARGUMENTS</code>, use como base". Esse <strong>argumento</strong> é o que deixa entregar o material na mão.</p>
+<p><strong>3. Apagar a skill velha.</strong> Como o conteúdo foi <strong>movido</strong>, e não copiado pra ficar em dois lugares, apagamos a pasta da skill. Não sobra conteúdo duplicado, sobra um lugar só com a verdade. Fizemos isso pras três: XT, fundamentos e Pedro.</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="O simples ganhou do espertinho">Decisões, becos e o toque de quem tem mais experiência</h2>
+<p><strong>A decisão principal inverteu uma sugestão minha (do Claude).</strong> Quando o Flávio falou em virar comando, eu sugeri o caminho que parecia mais seguro: um comando curtinho, só um atalho, que por dentro ainda chamasse a skill grande pra pegar as regras. Meu motivo era medo de duplicar (uma das skills tinha 44 mil caracteres).</p>
+<p><strong>O Flávio corrigiu o rumo:</strong> não vai duplicar, porque a ideia é <strong>mover</strong> tudo pro comando e apagar a skill. Se o conteúdo sai de um lugar e vai pro outro, não existem duas versões, existe uma só. Ele estava certo. Meu medo só faria sentido se as duas coisas ficassem vivas ao mesmo tempo. A solução mais simples (mover e apagar) era melhor que a mais "espertinha" (um atalho que chama outro arquivo).</p>
+<p><strong>O beco das referências.</strong> Quando você tira uma peça do lugar, tudo que apontava pra ela fica apontando pro vazio. Uma busca pelo nome das skills achou <strong>109 resultados</strong>. Mas a maioria não era problema: eram <code>.txt</code> de episódios antigos que só <em>mencionavam</em> o nome, como histórico. O que precisava de conserto era o grupo menor que <strong>apontava</strong> pra skill como caminho a seguir: o arquivo de configuração do projeto, o próprio comando de making-of, memórias que ensinavam o Claude a escolher entre skills, e até as skills de montar página. Em cada um, trocamos a menção antiga pelo comando novo.</p>
+<p><strong>Detalhe engraçado:</strong> uma das memórias ainda chamava a skill pelo nome de <strong>dois rebatismos atrás</strong> (era uma skill só, virou duas, agora virava comando, e a memória parou no primeiro nome). Referência velha acumula poeira se ninguém passa o pano.</p>
+<p>Dessa vez não teve um colega mais experiente revisando por cima. A correção de rumo veio do próprio Flávio, na decisão de mover em vez de criar atalho. Que é a mesma lição de sempre: antes de fazer o complicado, perguntar se o simples não resolve.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>O Claude Code guarda instrução em quatro lugares, e a diferença é só quem liga: <strong>comando</strong> você aperta, <strong>skill</strong> o Claude liga sozinho pela descrição, <strong>componente</strong> é manual de consulta, <strong>memória</strong> é bilhete na geladeira sempre à vista. A gente moveu três conjuntos de regras de podcast do mundo do "Claude decide" pro mundo do "Flávio escolhe", porque ali a escolha explícita valia mais que a adivinhação, e o <code>$ARGUMENTS</code> é o que deixa passar o arquivo de origem na mão. A pergunta que guia tudo: isso deveria ligar sozinho, ou ser uma escolha minha? Escolha sua, é comando; conhecimento que entra na hora certa, é skill. E ao tirar algo do lugar, lembrar que o conteúdo se move fácil, mas as referências ficam pra trás se você não passar o pano.</p>
+
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precificando um Orçamento · Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Precificando um Orçamento</h1>
+
+<div class="audio-player" data-src="audio/precificando-orcamento.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>O Flávio montou um orçamento de verdade pra um cliente: <strong>dois estúdios de transmissão web idênticos</strong> (uma sala de controle e um set de gravação cada), com os equipamentos mais o serviço de montar tudo. O foco do episódio não é o estúdio, é <strong>como se monta um orçamento que fecha a conta</strong>. A primeira versão saiu errada, e quem consertou foi o toque de alguém com mais experiência.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Um orçamento que fecha a conta">O que a gente queria</h2>
+<p>O pedido tinha três partes: levantar o preço de cada equipamento (com descrição e link), dizer quanto cobrar pra montar os estúdios, e gerar tudo num PDF pra mandar. E precisava de <strong>duas versões</strong>: uma pro cliente (limpa, com o preço fechado) e uma interna (com a conta toda aberta, pra revisar). Parece simples (pesquisa preço, soma, manda), mas foi exatamente aí que a primeira versão tropeçou.</p>
+
+<h2 id="conceitos" data-toc-title="Conceitos" data-sub="Bottom-up, comissão vs revenda, imposto, iceberg">Os conceitos</h2>
+
+<h3>1. Orçar de baixo pra cima</h3>
+<p>O preço de um serviço não é um número redondo que você chuta. É a soma de tudo que ele custa, mais o seu ganho. Igual uma <strong>receita de cozinha</strong>: antes de dizer o preço do prato, você lista cada ingrediente com o quanto custa, soma, e só depois põe o lucro em cima. No orçamento: você soma os custos de execução (viagem, hospedagem, comida, transporte, mão de obra, material, reserva), soma a sua consultoria, e isso é a <strong>base</strong>. Em cima da base vem o imposto, e em cima dele a margem. A fórmula é base × imposto × margem.</p>
+
+<h3>2. Dono da loja vs corretor</h3>
+<p>Dois jeitos de ganhar no equipamento. <strong>Revender</strong>: você compra os equipamentos, emite a nota de venda e cobra mais caro. Vira o dono da loja, precisa de dinheiro pra comprar tudo antes e paga o imposto pesado da mercadoria. <strong>Comissão</strong>: você não compra nada; o fornecedor emite a nota direto pro cliente e te paga uma porcentagem por trazer o negócio. Vira o corretor: sem capital parado e só pagando imposto sobre a comissão, que é bem menor.</p>
+
+<h3>3. Quem paga qual imposto</h3>
+<p>No modelo de comissão, o imposto sobre o equipamento é do <strong>fornecedor</strong>, já embutido no preço que o cliente paga. O Flávio só paga imposto sobre o que entra no bolso dele (a comissão e o serviço). E o erro fácil: esquecer de <strong>descontar o imposto da parte que é sua</strong>. A comissão que aparece na conta é um valor bruto; o imposto dela ainda vai sair.</p>
+
+<h3>4. O iceberg dos custos escondidos</h3>
+<p>Na superfície, o que é fácil lembrar: o equipamento, a mão de obra de montar. Embaixo da água, o que quase ninguém conta na primeira vez: a nota fiscal e o imposto, as idas e voltas de avião, a hospedagem, a comida, o transporte na cidade, o seu próprio tempo como consultor. Esquece o que está embaixo e o preço parece bom, mas não sobra nada pra você.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="Planilha, serviço, comissão, dois documentos">Como montamos</h2>
+<p><strong>A planilha de equipamentos.</strong> Preço de mercado de cada item dos dois estúdios (câmeras PTZ, iluminação, mesa de áudio, servidores, matriz, rede, microfones), com descrição, preço por unidade e link, separado em sala de controle e set. Os dois estúdios deram <strong>R$ 393.950</strong>.</p>
+
+<p><strong>O serviço, de baixo pra cima.</strong> Premissa: uma viagem só do Rio pra Curitiba pros dois estúdios, uns 4 dias, equipe de 3 pessoas. Passagem, hospedagem (5 noites), comida, transporte na cidade, diária do operador e dos auxiliares, material e reserva deram <strong>R$ 18.645</strong> de custo. Mais a consultoria (R$ 20.000) virou a base. Imposto (20%) e margem (25%) em cima, e o serviço fechou em <strong>R$ 58.000</strong>.</p>
+
+<p><strong>A comissão do equipamento.</strong> Em vez de revender, o Flávio mira numa porcentagem paga pelo fornecedor. Deixamos três cenários pra ele negociar (20% como alvo pra começar pedindo, 15% no meio, 10% de piso) e descontamos o imposto da comissão pra enxergar o líquido.</p>
+
+<p><strong>Os dois documentos.</strong> A proposta do cliente mostra só os equipamentos por função (sem preço item a item) e o investimento fechado em duas linhas. A composição interna mostra tudo: cada custo, a comissão nos três cenários, imposto, margem e o ganho final. Os dois viram PDF a partir de um HTML (tema do episódio "PDF que Nasce de um HTML").</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e o toque do chefe" data-sub="Onde a 1ª versão tropeçou">Decisões, becos e o toque de quem tem mais experiência</h2>
+<p><strong>A primeira versão estava bonita por cima e errada por baixo.</strong> O equipamento tinha sido inflado com 20% de margem por cima do preço de mercado, e o serviço era um chute redondo de R$ 60.000, sem nenhum custo real por dentro.</p>
+<p><strong>O toque do chefe</strong> (mais experiente) foram quatro pontos cegos. Um: no equipamento, ganhar via <strong>comissão</strong> (10 a 20%), não revenda. Dois, o principal: aquele serviço de 60k não tinha nada dentro. Cadê a nota fiscal e o imposto, as idas e voltas, a hospedagem? A frase foi direta: "desse jeito não vai sobrar nada pra ti". Tinha que ser montado de baixo pra cima. Três: faltavam os <strong>cabos</strong> (SDI, HDMI, XLR), que num estúdio inteiro são custo, não detalhe. Quatro: o <strong>imposto sobre a comissão</strong> não estava descontado.</p>
+<p><strong>Refizemos do zero.</strong> No caminho ainda teve uma troca: a mesa de áudio digital cara (Yamaha DM3) saiu e entrou uma analógica barata (MG16XU), enquanto o servidor de vídeo subiu de preço. Uma coisa compensou a outra.</p>
+<p><strong>O beco que confunde:</strong> a conta certa ficou com um total <strong>menor</strong> que a versão errada. Parece ruim, mas não é. Na versão errada o equipamento estava inflado, e o inflado viraria imposto, não bolso do Flávio. Na versão certa o cliente vê o preço real e o ganho vem por fora (comissão). Preço menor não quer dizer ganho menor.</p>
+<p><strong>E se o cliente comprar por fora?</strong> Aí o Flávio perde a comissão, que é a maior fatia do ganho dele, e sobra só o serviço. A defesa é não entregar a lista de fornecedores de graça e tentar ser sempre ele a fechar com o fornecedor.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>Um orçamento de serviço não é um chute redondo. O serviço se monta de baixo pra cima, somando todo custo real, mais o seu cachê, mais imposto, mais margem. No equipamento, ser o corretor (comissão) costuma ganhar do dono da loja (revenda), porque pesa menos no imposto e não precisa de capital parado. A coisa pra levar é o iceberg: o preço bonito da primeira versão escondia os custos embaixo da água, e quem pegou isso foi alguém com mais estrada. Mostrar a conta aberta pra alguém mais experiente revisar não é fraqueza, é o que evita fechar um negócio que parecia bom e não deixava nada pra você. Vale pra qualquer orçamento de serviço, não só estúdio.</p>
+
+</body>
+</html>

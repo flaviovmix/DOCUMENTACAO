@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF que Nasce de um HTML — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>PDF que Nasce de um HTML</h1>
+
+<div class="audio-player" data-src="audio/pdf-html.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>O orçamento do Nexus gera um PDF pra mandar pro cliente. Ele era <strong>desenhado célula a célula em Java</strong> (biblioteca OpenPDF) e nunca ficava igual ao modelo de proposta que a gente já tinha em HTML. A gente virou a chave: o backend agora <strong>renderiza um HTML em PDF</strong>. Arquivos reais: <code>OrcamentoPdfService.java</code> e <code>resources/orcamento/proposta.html</code>.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Parar de desenhar, passar a renderizar">O que a gente queria</h2>
+<p>O PDF era a cara da proposta, então precisava ficar bonito. Mas ele nascia <strong>desenhado no código</strong>: "escreve o título aqui, com essa fonte; abre uma tabela; pinta essa célula; alinha à direita", tudo na mão, peça por peça. E a gente já tinha um modelo lindo em HTML e CSS (cabeçalho azul, tabela listrada, barra de total). Por mais que ajustasse cor e tamanho no Java, o desenho nunca batia com o modelo. A virada foi óbvia: o modelo já é um HTML, então deixa o servidor <strong>renderizar o próprio HTML</strong> em vez de imitá-lo desenhando.</p>
+
+<h2 id="conceitos" data-toc-title="Conceitos" data-sub="Desenhar vs renderizar, no servidor, com lacunas">Os conceitos</h2>
+
+<h3>1. Desenhar um documento vs renderizar</h3>
+<p>São dois mundos. <strong>Desenhar</strong> (OpenPDF) é montar a página com régua e mão firme: você marca cada coordenada, posiciona cada caixa, escolhe cada cor. Funciona, mas é trabalhoso e difícil de deixar igual a um modelo. <strong>Renderizar</strong> é escrever o conteúdo e o estilo num HTML/CSS e entregar pra um motor que faz a diagramação. É a diferença entre desenhar o jornal à mão e dar o texto pro diagramador. Quando você já tem o modelo em HTML, renderizar é o caminho curto: o modelo praticamente já é a resposta.</p>
+
+<h3>2. Renderizar HTML no servidor: dois jeitos</h3>
+<p>Um jeito é um <strong>navegador sem tela</strong> (o motor do Chrome/Edge) "imprimindo pra PDF": renderização perfeita, mas exige um navegador instalado no servidor, o que vira dor de cabeça quando o Nexus for pro ar num container Docker no Linux. O outro é uma <strong>biblioteca Java pura</strong>, a <code>openhtmltopdf</code>, que lê o HTML e gera o PDF sozinha, sem navegador. Escolhemos a biblioteca pura: ela sobrevive ao Docker sem depender de nada instalado. Tem um preço (ela só entende CSS antigo, ver becos).</p>
+
+<h3>3. Template com lacunas</h3>
+<p>O HTML do orçamento é quase todo fixo. Só uns pedaços mudam: a lista de serviços, o total, o que não foi incluído. Esses pedaços ficam como <strong>lacunas marcadas</strong> no HTML (<code>{{INVEST_ROWS}}</code>, <code>{{NAO_INCLUIDO}}</code>), e na hora de gerar o código troca cada lacuna pelo conteúdo montado a partir dos dados. É um molde com espaços em branco, igual carta modelo onde só o nome muda.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="Lib, template, gerar, lacunas">Como montamos</h2>
+<p><strong>A biblioteca.</strong> Adicionamos a <code>openhtmltopdf-pdfbox</code> no <code>pom.xml</code> e o código velho da OpenPDF (que desenhava tudo) saiu de cena.</p>
+
+<p><strong>O template.</strong> O modelo da proposta virou um arquivo HTML dentro do projeto (<code>resources/orcamento/proposta.html</code>), lido na hora de gerar.</p>
+
+<p><strong>O código que gera.</strong> Ficou em três passos: lê o template, troca as lacunas, manda renderizar. Compare com o código antigo, cheio de métodos pra desenhar cada tabela e célula:</p>
+<pre><code class="language-java">public byte[] generate(Orcamento o) {
+    String html = loadTemplate()
+        .replace("{{INVEST_ROWS}}", buildInvestRows(o))
+        .replace("{{NAO_INCLUIDO}}", buildNaoIncluido(o));
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    PdfRendererBuilder builder = new PdfRendererBuilder();
+    builder.useFastMode();
+    builder.withHtmlContent(html, null);
+    builder.toStream(baos);
+    builder.run();
+    return baos.toByteArray();
+}</code></pre>
+
+<p><strong>As lacunas.</strong> O código percorre os serviços e monta uma linha por item contratado (descrição, quantidade, valor) e a barra de total. Os serviços <strong>desmarcados</strong> (existem, mas não foram contratados) saem da tabela e vão pro quadro "não incluído", mostrando pro cliente o que dá pra fazer mas não entrou. Detalhe de capricho: o cifrão fica colado à esquerda e o número à direita, estilo nota. Como a lib não tem flexbox, isso é feito com uma mini-tabela dentro da célula:</p>
+<pre><code class="language-java">private static String money(BigDecimal v) {
+    String n = BR_MONEY.format(v == null ? BigDecimal.ZERO : v);
+    return "&lt;table class=\"money\"&gt;&lt;tr&gt;"
+         + "&lt;td class=\"rs\"&gt;R$&lt;/td&gt;"
+         + "&lt;td class=\"amt\"&gt;" + n + "&lt;/td&gt;"
+         + "&lt;/tr&gt;&lt;/table&gt;";
+}</code></pre>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="Flexbox, símbolos, restart, CSS">Decisões e becos</h2>
+<p><strong>O preço da lib pura: sem flexbox.</strong> A openhtmltopdf entende um manual de layout antigo do CSS. Os jeitos modernos de alinhar coisas lado a lado (flexbox) ela não conhece, igual uma gráfica que só lê um manual de anos atrás. Todo trecho do modelo que usava flexbox (o cabeçalho, a caixa de dados, os dois quadros incluído/não-incluído) foi reescrito com <strong>tabela</strong>. Visualmente igual; por baixo, tabela.</p>
+<p><strong>Os símbolos sumiram.</strong> O modelo tinha um ✓ e um ✕ nos títulos dos quadros. A fonte padrão que a lib usa pra gerar o PDF não tem esses caracteres no acervo, então sairiam quebrados. Tiramos. Lição: ao gerar PDF, o que aparece depende da fonte ter aquele caractere.</p>
+<p><strong>O beco mais chato: reiniciar.</strong> Toda vez que a gente mexia no HTML ou no código, nada mudava. Por quê? O template não é lido do disco a cada geração; ele entra junto com o programa quando o servidor sobe, e o Nexus em desenvolvimento não recarrega sozinho. Enquanto não reiniciava o backend, ele gerava com a versão velha. Reiniciamos um monte de vezes. Lição: mexeu no servidor e nada mudou? Antes de caçar bug, confira se ele subiu com a versão nova.</p>
+<p><strong>Uma briga de CSS.</strong> A quantidade devia ficar alinhada na coluna, mas o número e o título "Qtd" do cabeçalho não batiam. Uma regra geral dizia "todo cabeçalho de tabela alinha à esquerda" e vencia a regra da coluna. Quando duas regras de CSS brigam, vence a mais <strong>específica</strong>. Subimos a especificidade (<code>table.data .col-qt</code>) e os dois passaram a alinhar juntos.</p>
+<p><strong>Por que a lib e não o navegador.</strong> O navegador daria resultado idêntico ao modelo, mas o objetivo não é só funcionar hoje na máquina do dev, é funcionar quando o Nexus for pro ar num container. Um resultado um pouquinho menos perfeito que roda em qualquer lugar vale mais que um perfeito que depende de navegador instalado no servidor.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>O PDF do orçamento parou de ser desenhado peça por peça em Java e passou a ser um HTML renderizado pela openhtmltopdf. O template espelha o modelo da proposta, com lacunas que o código preenche com os dados do orçamento. O código de gerar encolheu pra três passos: ler, trocar, renderizar. A coisa pra levar: quando você já tem um modelo em HTML, renderizar é quase sempre melhor que redesenhar no código. Só lembre dos dois preços: a lib pura só entende CSS antigo (alinhamento moderno vira tabela), e o template entra junto com o programa (mexeu, reinicia o servidor).</p>
+
+</body>
+</html>

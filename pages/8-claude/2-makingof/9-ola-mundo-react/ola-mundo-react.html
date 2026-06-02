@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Olá Mundo em React — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Olá Mundo em React</h1>
+
+<div class="audio-player" data-src="audio/ola-mundo-react.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>O par do episódio <strong>Anatomia do Projeto Svelte</strong>: o mesmo "Olá Mundo" do Stack Web, antes feito em SvelteKit, agora em React. A tela é idêntica (só um título). O valor está na <strong>comparação</strong>: o que é conceito universal de frontend e o que é só jeito de cada ferramenta. Projeto real: <code>PROJETOS/ESTUDO/STACK WEB/REACT/</code>.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="O par React do Olá Mundo">O que a gente queria</h2>
+<p>O Stack Web é o lab onde o Flávio aprende a stack do Nexus do zero. O Nexus é Svelte, então Svelte é o foco. Mas o plano tem uma parte de comparação: a mesma coisa feita nos dois, lado a lado, pra separar a ideia universal da sintaxe de cada ferramenta. No episódio anterior montamos o "Olá Mundo" em SvelteKit. Aqui a tarefa é refazer ele idêntico na tela, só que em React: um <code>&lt;h1&gt;Olá Mundo&lt;/h1&gt;</code> e nada mais. React entra pra comparar e aprender, não pra produzir o Nexus.</p>
+
+<h2 id="conceitos" data-toc-title="Conceitos" data-sub="Biblioteca vs framework">Os conceitos</h2>
+<p>Quatro ideias separam os dois mundos.</p>
+
+<h3>1. Biblioteca vs framework</h3>
+<p>SvelteKit é um <strong>framework</strong>: o carro montado, já vem com rotas, estrutura de pastas e build decididos. React é uma <strong>biblioteca</strong>: cuida só de desenhar a tela. Não decide rota, nem pasta, nem deploy. É uma peça de Lego solta, ótima no que faz, mas você escolhe o que encaixar em volta. Por isso React quase nunca vem sozinho.</p>
+
+<h3>2. Vite, a peça em volta do React</h3>
+<p>A peça que juntamos ao React se chama <strong>Vite</strong>: é o gerador que cospe o projeto pronto (o papel do <code>sv create</code> no Svelte) e o servidor de dev que atualiza a tela ao salvar. O detalhe que fecha o círculo: o Vite é o <strong>mesmo motor</strong> que estava por baixo do SvelteKit no episódio anterior. Mesmo motor embaixo; o que muda é a camada por cima.</p>
+
+<h3>3. JSX e componente como função</h3>
+<p>No React o HTML mora dentro do JavaScript (isso é o <strong>JSX</strong>). Um componente é simplesmente uma função que devolve um pedaço de tela. A função <code>App</code> devolve o título e pronto, virou componente. No Svelte o HTML e o código moram em arquivos separados; no React moram juntos, dentro da função.</p>
+
+<h3>4. Como a página chega na tela</h3>
+<p>A maior diferença. No SvelteKit você não liga nada na mão: cria o arquivo <code>+page.svelte</code> com o nome certo e o framework acha por <strong>convenção</strong>. No React é o contrário, você liga <strong>explicitamente</strong>: o <code>main.tsx</code> pega o componente raiz e manda renderizar dentro de uma div com id <code>root</code> no HTML. É como plugar um aparelho na tomada: o React é o aparelho, o <code>root</code> é a tomada, o <code>main</code> é o fio que você conecta na mão.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="Gerar, faxinar, ligar">Como montamos</h2>
+<p>Primeiro, gerar. Rodei o gerador do Vite com o modelo <code>react-ts</code>, dentro da pasta <code>REACT/</code>, ao lado da <code>SVELTE/</code>. Mesmo ambiente do irmão: TypeScript ligado e eslint junto. Depois <code>npm install</code>.</p>
+<pre><code class="language-bash">npm create vite@latest REACT -- --template react-ts
+npm install</code></pre>
+
+<p>Aí veio o passo que o Svelte não teve: a faxina. O gerador do Vite não entrega um Olá Mundo limpo, entrega uma página de demonstração cheia (contador com <code>useState</code>, logos girando, textos, links, CSS e SVGs). A gente reduziu o <code>App.tsx</code> a três linhas, igual ao <code>+page.svelte</code> que era só o título:</p>
+<pre><code class="language-tsx">function App() {
+  return &lt;h1&gt;Olá Mundo&lt;/h1&gt;
+}
+
+export default App</code></pre>
+
+<p>Tirei do <code>main.tsx</code> a linha que carregava o CSS da demo e apaguei o que sobrou sem uso (os dois <code>.css</code>, os SVGs dos logos, os ícones). Sobraram dois arquivos: o <code>App</code> (a tela) e o <code>main</code> (o fio que liga a tela no HTML):</p>
+<pre><code class="language-tsx">import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import App from './App.tsx'
+
+createRoot(document.getElementById('root')!).render(
+  &lt;StrictMode&gt;
+    &lt;App /&gt;
+  &lt;/StrictMode&gt;,
+)</code></pre>
+
+<p>O <code>index.html</code> é curtinho: tem a div <code>root</code> vazia (o buraco) e o <code>&lt;script&gt;</code> que chama o <code>main</code>. O fluxo final é uma fila de quatro peças: o navegador abre o <code>index</code>, o <code>index</code> chama o <code>main</code>, o <code>main</code> manda o <code>App</code> renderizar dentro do <code>root</code>, e o <code>App</code> devolve o "Olá Mundo".</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="Vite, faxina e a lição">Decisões e becos</h2>
+<p><strong>Por que Vite e não Next.</strong> No mundo React tem várias ferramentas pra montar o projeto (o Next é a mais famosa). Escolhemos o Vite por ser o mais simples pra um Olá Mundo e por ser o mesmo motor que já roda por baixo do Svelte. Não é tecnologia estranha: é a peça que o Flávio já viu, agora aparecendo na frente.</p>
+<p><strong>A faxina do boilerplate.</strong> No Svelte o gerador entregou um projeto quase vazio, só faltava o título. No React foi o oposto: apagar até sobrar o título. É uma diferença de cultura entre as ferramentas, e vale ter visto, porque todo projeto React novo cai nessa página de demonstração e precisa de limpeza.</p>
+<p><strong>A lição conceitual.</strong> A tela ficou idêntica, mas o caminho até ela é diferente. No Svelte a página aparece porque o arquivo tem o nome certo na pasta certa. No React aparece porque conectamos, na mão, a árvore num ponto do HTML. Nenhum é melhor: Svelte aposta em convenção (te dá mais pronto, pede menos decisão); React aposta em ser peça solta (te dá menos pronto, te deixa escolher).</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>O mesmo Olá Mundo, agora em React. React é uma biblioteca que só desenha a tela; pra virar projeto juntamos o Vite, que é o mesmo motor do Svelte aparecendo na frente. O componente é uma função que devolve JSX, e a tela só aparece porque ligamos a árvore React no buraco <code>root</code> do HTML, na mão. A coisa pra levar: muito do que parecia "do Svelte" é do frontend inteiro (componente, TypeScript, montar a tela). O que muda de verdade é quem decide por você. Svelte decide mais; React deixa você decidir.</p>
+
+</body>
+</html>
