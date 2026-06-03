@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interface — Card de Imagem — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Interface — Card de Imagem</h1>
+
+<p>Making-of do componente <code>card</code>: os retângulos clicáveis com imagem das páginas-índice. Por dentro: camadas sobrepostas, o card inteiro clicável via <code>data-href</code>, a gaveta de info que desliza, e uma variável de cor que pinta tudo. No fim, a variação <code>card-video</code>.</p>
+
+<div class="audio-player" data-src="audio/card-de-imagem.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">1. O que a gente queria</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>As páginas-índice da doc precisavam de navegação <strong>visual</strong>: em vez de uma lista de links secos, cartões com imagem, nome, cor e resumo.</p>
+            <ul>
+                <li><strong>Card inteiro clicável</strong>, não só um link pequeno.</li>
+                <li>Um jeito de ver o <strong>resumo sem sair da página</strong> (o menu de 3 bolinhas que abre um painel).</li>
+                <li>Sensação de cartão físico: imagem se mexendo no hover, cor mudando.</li>
+                <li><strong>Reaproveitável</strong>: o mesmo componente pra dezenas de cards, mudando só imagem, nome, cor e link.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">2. Os conceitos</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p><strong>O card é feito de camadas sobrepostas.</strong> Várias peças empilhadas no mesmo retângulo: imagem no fundo, nome sobre a imagem, barra inferior com o botão, menu no canto, e a gaveta de info escondida na lateral. Cada peça usa <code>position: absolute</code> e um <code>z-index</code> que define quem aparece na frente.</p>
+            <p>Detalhe: a imagem é de propósito maior que o card (<code>width: 130%</code>). No hover ela desliza pra cima (efeito de pan), e o card cresce um pouco (<code>scale(1.06)</code>).</p>
+
+            <p><strong>O card inteiro clicável.</strong> O endereço fica no atributo <code>data-href</code> da div. O <code>layout.js</code> põe um clique no card todo. Exceção: se o clique caiu no menu ou num link, ele não navega (essas peças têm função própria).</p>
+
+            <p><strong>A gaveta de info que desliza.</strong> O resumo mora numa gaveta encostada na lateral. O botão de 3 bolinhas marca o card com a classe <code>aberto</code>, e o CSS faz a gaveta deslizar. Quando aberta, a imagem atrás <strong>embaça sem se mexer</strong>, e o nome some. Quem embaça é o CSS reagindo ao estado, não o JavaScript.</p>
+
+            <p><strong>Uma variável controla a cor.</strong> A custom property <code>--tag-clr</code>, escrita uma vez na div, pinta a borda do botão, o texto e o preenchimento do hover. Pra mudar a cor do card, troca um valor só.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">3. Como montamos</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O markup é uma div <code>.card</code> com <code>data-href</code> e, dentro, as peças (menu, gaveta, imagem, barra com o link colorido). Quando a página abre, o <code>layout.js</code> varre todos os cards e faz duas ligações:</p>
+            <ol>
+                <li><strong>O menu:</strong> clicar alterna a classe <code>aberto</code> no card e no botão (abre/fecha a gaveta). O clique é "segurado" (<code>stopPropagation</code>) pra não disparar a navegação.</li>
+                <li><strong>O card inteiro:</strong> se tem <code>data-href</code>, o clique navega, exceto quando o alvo é o menu ou um link.</li>
+            </ol>
+            <p>O resto é CSS reagindo a estado: o hover faz o card crescer, a imagem deslizar, o menu aparecer e a cor virar preenchida; a classe <code>aberto</code> desliza a gaveta e embaça a imagem. Nada disso precisa de mais JavaScript.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">4. A variação de vídeo e os becos</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O <code>card-video</code> é quase igual. A diferença: no lugar da imagem entra um <code>&lt;video&gt;</code>, e aparecem duas peças a mais.</p>
+            <ul>
+                <li><strong>Autoplay no primeiro hover:</strong> o vídeo fica parado no primeiro quadro e só toca quando o mouse chega (<code>{ once: true }</code>). Tocar todos de uma vez gastaria CPU/bateria à toa.</li>
+                <li><strong>Botão de pausa:</strong> aparece no canto, só no hover.</li>
+            </ul>
+            <p>Os becos e decisões reais:</p>
+            <ul>
+                <li><strong>Blur sem zoom ao abrir a gaveta:</strong> a versão antiga combinava o embaçar com um <code>scale()</code> na imagem. O zoom competia com o deslizar da gaveta (dois movimentos na mesma área). Tiramos o zoom.</li>
+                <li><strong>O clique que vaza:</strong> os botões (menu e pausa) precisam de <code>stopPropagation</code>. Sem isso, quem tentava pausar o vídeo ou abrir o resumo era levado pra outra página. Beco clássico: parecia ok, até alguém clicar no botão.</li>
+                <li><strong><code>#t=0.1</code> no vídeo:</strong> força desenhar o primeiro quadro. Sem isso, o card mostrava um retângulo preto até carregar.</li>
+                <li><strong><code>.play().catch()</code> vazio:</strong> o navegador às vezes bloqueia autoplay. O código já espera essa falha e ignora, pra não sujar o console.</li>
+                <li><strong>Mobile:</strong> sem hover, o menu e o botão de pausa (que só aparecem no hover) ficam invisíveis, e o vídeo não toca. Hoje o card é otimizado pra desktop. Limitação conhecida.</li>
+                <li><strong>História:</strong> nasceu como <code>home-card</code> (só existia na home). Quando passou a ser usado em várias páginas, foi renomeado pra <code>card</code> (2026-04-27).</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Resumo</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <ul>
+                <li>O card é camadas sobrepostas: imagem, nome, barra, menu, gaveta, cada uma num <code>z-index</code>.</li>
+                <li>Clicável inteiro pelo <code>data-href</code>, menos no menu e no link.</li>
+                <li>A gaveta de info desliza da lateral; a imagem atrás só embaça.</li>
+                <li>Uma variável <code>--tag-clr</code> pinta borda, texto e hover do botão.</li>
+                <li>A variação de vídeo troca a imagem por um vídeo que toca no primeiro hover.</li>
+            </ul>
+            <p>A esperteza está no CSS reagindo a estado (hover, classe <code>aberto</code>); o JavaScript faz só o mínimo: liga o clique e marca o estado. É a mesma receita do resto da doc.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

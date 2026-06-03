@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salvando para Sempre — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Salvando para Sempre</h1>
+
+<div class="audio-player" data-src="audio/salvando-para-sempre.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>No módulo de orçamento do Nexus, editar um orçamento e clicar em Salvar deixava o botão preso em <strong>"Salvando..."</strong> pra sempre: o modal não fechava e <strong>nenhum erro</strong> aparecia na tela. A causa estava longe de onde o problema dava as caras. Arquivos reais: <code>OrcamentoService.java</code> (backend), <code>OrcamentoDetailModal.svelte</code> e <code>api.ts</code> (frontend).</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Só salvar um orçamento editado">O que a gente queria</h2>
+<p>Era pra ser banal: abrir um orçamento que já existe, mudar alguma coisa, clicar em Salvar. Só que, ao clicar, o botão virava "Salvando..." e ficava ali, congelado. O modal não fechava, a tela não mudava, e o pior, <strong>nenhuma mensagem de erro</strong>. Esse é o tipo de bug mais chato: um erro na tela ao menos te diz por onde começar; aqui não havia pista. O episódio conta como saímos do "nada acontece" até a causa, que estava num lugar bem diferente de onde o problema aparecia.</p>
+
+<h2 id="conceitos" data-toc-title="Conceitos" data-sub="Quando o id nasce, etiqueta na lista, erro longe da causa">Os conceitos</h2>
+
+<h3>1. Quando o banco dá o id de uma coisa nova</h3>
+<p>Pensa numa fila de senha. Quando você cria uma informação nova no programa (um item de orçamento), ela nasce <strong>sem número</strong>. O id (1, 2, 3...) não é o programa que inventa: é o <strong>banco de dados</strong> que dá, e só no momento em que a linha é de fato gravada. É igual ao número da senha que você só recebe ao passar no caixa. A ferramenta que faz a ponte entre objeto e tabela (o Hibernate) junta as gravações e manda pro banco num momento que ela escolhe (o <em>flush</em>). Então existe uma janela: o item já foi criado na memória, mas ainda não foi gravado, e por isso o id dele ainda é <code>null</code>.</p>
+
+<h3>2. Lista com etiqueta única no front</h3>
+<p>Pra desenhar uma lista, o Svelte pede uma <strong>etiqueta única</strong> por item (o <code>(it.id)</code> do <code>{#each}</code>), pra saber quem é quem quando a lista muda. É como dar um crachá de nome pra cada pessoa numa fila. Regra de ferro: dois crachás iguais e ninguém sabe quem é quem. Se duas etiquetas são iguais, o Svelte não desenha "mais ou menos", ele <strong>para tudo</strong> e acusa erro (<code>each_key_duplicate</code>). Aqui a etiqueta era o id do item.</p>
+
+<h3>3. O erro aparece longe de onde nasce</h3>
+<p>O conceito mais útil do episódio. Um problema pode dar as caras num lugar que não tem nada a ver com onde começou. O sintoma estava na <strong>tela</strong> (botão travado, que é front), então o reflexo é mexer no front. Mas a causa estava no <strong>servidor</strong>. Tratar o sintoma no lugar errado é como o médico que ataca a dor de cabeça quando o problema é o óculo errado: horas no lugar errado.</p>
+
+<h2 id="como-cacamos" data-toc-title="Como caçamos" data-sub="Banco limpo, servidor sem erro, console do navegador">Como a gente caçou</h2>
+<p><strong>Desconfiamos do banco.</strong> Primeira teoria: um travamento. Talvez uma gravação anterior estivesse pendurada, segurando a linha do orçamento, e o novo Salvar esperava ela soltar pra sempre. Faz sentido. Mas teoria não se confirma com palpite, e sim com evidência: fomos direto no Postgres perguntar se havia consulta presa ou linha travada. <strong>Nenhuma.</strong> Banco limpo, teoria descartada.</p>
+<p><strong>Olhamos o servidor.</strong> Backend no ar e respondendo. O log mostrava que, ao salvar, ele rodou as gravações certinho, <strong>sem nenhuma exceção</strong>. Do ponto de vista do servidor, salvar funcionou. Era o que mais confundia: "salvar" soa como coisa de servidor, e o servidor jurava ter feito o trabalho dele.</p>
+<p><strong>A virada: o console do navegador.</strong> Atrás do F12, em vermelho, a frase que resolveu tudo: <em>"chave duplicada, valor null, nos índices 0 e 1"</em>. Em português claro: a lista de itens tinha pelo menos dois itens com a mesma etiqueta, e essa etiqueta era <code>null</code>. As peças se encaixaram com os conceitos 1 e 2.</p>
+<pre><code class="language-text">Uncaught Svelte error: each_key_duplicate
+Keyed each block has duplicate key `null` at indexes 0 and 1
+    in OrcamentoDetailModal.svelte</code></pre>
+<p><strong>Por que os ids vinham null.</strong> Ao salvar uma edição, o servidor faz algo simples e meio bruto: em vez de descobrir o que mudou item por item, ele <strong>joga fora a lista inteira</strong> e recria do zero. Itens recém-criados, todos sem id. E logo em seguida montava a resposta pra mandar de volta pra tela, só que <strong>antes de gravar no banco</strong>. Resultado: resposta com todos os itens de id null. A tela recebia, tentava desenhar, via duas etiquetas null e abortava o desenho no meio. <strong>O desenho abortado é o que congelava o botão</strong>: o "Salvando..." está amarrado a uma chavinha que voltaria ao normal quando a resposta chega, mas a tela quebrou bem na hora de redesenhar, antes de mostrar o botão de volta.</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="Uma linha, o toque de fora, fragilidades anotadas">Decisões e becos</h2>
+<p><strong>A correção foi de uma linha.</strong> No servidor, antes de montar a resposta, trocamos um "salva quando der" por um "salva agora": de <code>save</code> (que adia a gravação) pra <code>saveAndFlush</code> (que força o banco a gravar naquele instante). Gravou agora? O banco já deu os números, e os itens da resposta saem com id de verdade. Etiquetas diferentes, a tela desenha, o modal fecha.</p>
+<pre><code class="language-java">replaceItems(o, req.items());     // joga fora a lista e recria (itens sem id)
+orcamentos.saveAndFlush(o);       // FIX: grava agora, ids viram reais (antes era .save)
+return OrcamentoResponse.from(o); // antes, isto rodava com itens id=null</code></pre>
+<p><strong>O toque de fora.</strong> Repara que a correção foi no <strong>backend</strong>, e o sintoma estava no <strong>front</strong>. O instinto, vendo um botão travado, é consertar a tela ("põe um prazo na chamada, troca a etiqueta da lista"). Isso até evitaria a tela travar, mas trataria só o sintoma: a causa de verdade (o servidor mandando id null) continuaria viva e o orçamento voltaria errado. Quem já viu mais bug pergunta primeiro <em>"de onde isso nasce?"</em> antes de mexer em <em>"onde isso aparece"</em>.</p>
+<p><strong>Por que dois nulls e não um.</strong> Se fosse um item só, a etiqueta null nem daria conflito (uma sozinha não colide com ninguém). O bug só apareceu porque o orçamento tinha vários itens, todos sem id ao mesmo tempo. Bug que só aparece com dois ou mais é traiçoeiro: num teste com um item só, parece tudo bem.</p>
+<p><strong>Fragilidades anotadas (não consertadas agora).</strong> A chamada de salvar no front não tem prazo máximo: se um dia o servidor de fato travar, dá o mesmo "pra sempre" por outro motivo. E usar o id como etiqueta da lista é frágil justamente pra item recém-criado. As duas valem um endurecimento depois, mas a correção de raiz foi a do servidor.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>O "Salvando..." travava pra sempre não porque o servidor demorava, mas porque a tela quebrava ao desenhar a lista de itens. A lista usava o id como etiqueta única, e o servidor devolvia os itens com id null, porque montava a resposta antes de gravar (e id de coisa nova só nasce na gravação). Dois nulls viravam duas etiquetas iguais, e isso aborta o desenho. A correção foi forçar a gravação antes de montar a resposta (<code>saveAndFlush</code> no lugar de <code>save</code>). A coisa pra levar: o erro aparece longe de onde nasce. O atalho não foi adivinhar, foi seguir a evidência (banco limpo, servidor sem erro, console do navegador apontando a frase exata).</p>
+
+</body>
+</html>

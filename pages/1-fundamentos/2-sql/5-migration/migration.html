@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migration — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Migration — schema versionado como código</h1>
+
+<div class="audio-player" data-src="audio/migration.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Seu código tem Git: dá pra ver cada mudança, quem fez, em que ordem, e voltar atrás. O banco de dados, por padrão, <strong>não tem nada disso</strong>. Você abre o cliente, roda um <code>ALTER TABLE</code> na mão, e seis meses depois ninguém sabe mais o que foi feito nem em que ordem. <strong>Migration</strong> é o que dá ao schema do banco o mesmo histórico que o código já tem.</p>
+
+<h2 id="o-que-e" data-toc-title="O que é" data-sub="Mudança de schema como arquivo">O que é uma migration</h2>
+<p>Migration é uma mudança no schema (criar tabela, adicionar coluna, criar índice) escrita como <strong>um arquivo de script versionado, guardado junto com o código</strong> no Git.</p>
+<p>Em vez de mexer no banco pela interface gráfica, cada alteração vira um arquivo numerado. O banco passa a ter um histórico igual ao do código: uma sequência de passos, em ordem, que qualquer máquina consegue repetir.</p>
+<p>O problema que isso resolve: schema <strong>evolui</strong> com o tempo, e você precisa que toda máquina (seu dev, o de outro dev, o servidor de produção) chegue exatamente no mesmo estado, na mesma ordem, sem ninguém esquecer um passo.</p>
+
+<h2 id="flyway" data-toc-title="Flyway" data-sub="A ferramenta que aplica">Flyway — quem aplica as migrations</h2>
+<p>O <strong>Flyway</strong> é a ferramenta que roda essas migrations automaticamente. No mundo Java/Spring é o padrão mais comum (o concorrente direto é o Liquibase). A regra dele é só uma convenção de nome de arquivo:</p>
+<pre><code class="language-bash">V{numero}__{descricao}.sql</code></pre>
+<p>Lendo <code>V4__add_note_flags.sql</code> da esquerda pra direita: o <code>V</code> é de <em>versioned</em>, o <code>4</code> é a ordem, e o <code>__</code> (dois underscores) separa do nome legível. Quando a aplicação sobe, o Flyway:</p>
+<ol>
+    <li>Olha a pasta de migrations e ordena os arquivos pelo número.</li>
+    <li>Confere uma tabela de controle dele, a <code>flyway_schema_history</code>, pra ver o que já rodou.</li>
+    <li>Aplica só os arquivos novos, em ordem, e grava cada um na tabela junto com um <strong>checksum</strong> do conteúdo.</li>
+</ol>
+<p>O checksum é o detalhe importante: é uma impressão digital do arquivo. Se o conteúdo de uma migration já aplicada mudar, o checksum não bate mais, e o Flyway <strong>para com erro</strong> dizendo que o histórico foi adulterado.</p>
+
+<h2 id="append-only" data-toc-title="Append-only" data-sub="Nunca editar o que já rodou">A regra de ouro: append-only</h2>
+<p>Por causa do checksum, vale uma regra que não se quebra:</p>
+<blockquote><p><strong>Migration já aplicada nunca se edita.</strong> Precisou corrigir? Cria uma migration <em>nova</em>.</p></blockquote>
+<p>É a mesma lógica de um commit que já foi pro repositório compartilhado: você não reescreve a história, você faz um commit por cima. Se o <code>V37</code> criou uma coluna com o tipo errado, você não volta lá pra arrumar; você cria um <code>V39</code> que conserta.</p>
+<div class="table-wrap">
+    <table>
+        <tr><th>Situação</th><th>Errado</th><th>Certo</th></tr>
+        <tr><td>Coluna com tipo errado numa migration já aplicada</td><td>Editar o arquivo antigo</td><td>Nova migration com <code>ALTER ... TYPE ...</code></td></tr>
+        <tr><td>Renomear uma tabela</td><td>Mexer no <code>CREATE TABLE</code> original</td><td>Nova migration com <code>ALTER TABLE ... RENAME</code></td></tr>
+        <tr><td>Migration ainda não commitada, só local</td><td colspan="2">Aí pode editar à vontade — ela ainda não rodou em nenhuma outra máquina</td></tr>
+    </table>
+</div>
+
+<h2 id="exemplo" data-toc-title="Exemplo" data-sub="Uma migration de verdade">Como é uma migration por dentro</h2>
+<p>Não tem mistério: é SQL puro, com um comentário explicando o porquê. Exemplo de uma migration que adiciona duas colunas booleanas numa tabela existente:</p>
+<pre><code class="language-sql">-- V4: flags de organizacao na nota.
+-- archived: nota escondida da lista principal sem deletar.
+-- pinned:   nota fixada (ordenacao posterior usa esse campo).
+-- Ambos default FALSE: notas existentes ficam nao-arquivadas, nao-fixadas.
+
+ALTER TABLE notes
+    ADD COLUMN archived BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN pinned   BOOLEAN NOT NULL DEFAULT FALSE;</code></pre>
+<p>O <code>DEFAULT FALSE</code> aqui não é detalhe: a tabela já tem linhas. Adicionar uma coluna <code>NOT NULL</code> sem default quebraria, porque as linhas antigas não teriam valor. O default resolve as linhas que já existem. Pensar nos dados que já estão lá é metade do trabalho de escrever migration.</p>
+
+<h2 id="quem-manda" data-toc-title="Quem manda no schema" data-sub="Flyway, não o ORM">Quem é dono do schema: Flyway, não o ORM</h2>
+<p>Frameworks como o Hibernate (o ORM do Java) conseguem criar e alterar tabelas sozinhos a partir das classes. Isso é cômodo em protótipo, mas perigoso em projeto real: você perde o controle e o histórico. A prática madura é <strong>desligar essa autonomia</strong> e deixar o schema 100% nas mãos do Flyway.</p>
+<p>No Spring isso é uma linha de configuração, <code>ddl-auto: validate</code>:</p>
+<pre><code class="language-bash">jpa.hibernate.ddl-auto: validate   # Hibernate so CONFERE, nao cria nem altera</code></pre>
+<p>Com <code>validate</code>, quando a aplicação sobe o Hibernate apenas <strong>confere</strong> se as classes Java batem com as tabelas que o Flyway criou. Se não baterem, ele reclama. A ordem na subida é: Flyway aplica as migrations pendentes primeiro, depois o Hibernate valida. Quem cria tabela é só o Flyway.</p>
+
+<h2 id="nexus" data-toc-title="No Nexus" data-sub="V1 até V51, o changelog do produto">No Nexus, na prática</h2>
+<p>O Nexus (projeto Spring Boot + PostgreSQL) usa Flyway exatamente assim. A configuração liga o Flyway, aponta a pasta dos scripts e diz que o banco começa do zero (sem baseline pré-existente):</p>
+<pre><code class="language-bash">flyway:
+  enabled: true
+  locations: classpath:db/migration   # onde ficam os V*.sql
+  baseline-on-migrate: false          # banco nasce do V1, sem baseline anterior</code></pre>
+<p>A pasta <code>db/migration/</code> tem a história inteira do produto, de <code>V1</code> até <code>V51</code> e além. Dá pra ler a evolução do Nexus só passando o olho nos nomes dos arquivos, em ordem:</p>
+<div class="table-wrap">
+    <table>
+        <tr><th>Migration</th><th>O que entrou</th></tr>
+        <tr><td><code>V1__init.sql</code></td><td>Baseline: só uma tabela-marca, nada de negócio ainda</td></tr>
+        <tr><td><code>V2__create_users.sql</code></td><td>Usuários</td></tr>
+        <tr><td><code>V3__create_notes.sql</code></td><td>Notas</td></tr>
+        <tr><td><code>V4__add_note_flags.sql</code></td><td>Flags de arquivado/fixado nas notas</td></tr>
+        <tr><td>...</td><td>...</td></tr>
+        <tr><td><code>V13__rename_notes_to_pages.sql</code></td><td>Renomeação grande (notas viraram páginas)</td></tr>
+        <tr><td><code>V35__create_finance_config.sql</code></td><td>Início do módulo de finanças</td></tr>
+        <tr><td><code>V41__create_project_pages.sql</code></td><td>Projetos como hub</td></tr>
+    </table>
+</div>
+<p>Cada feature do roadmap deixa rastro como uma faixa de migrations. O módulo de finanças, por exemplo, é a faixa <code>V35</code> a <code>V40</code>. A pasta funciona como um <strong>changelog do banco</strong> que ninguém precisou escrever à mão: ela é o registro real do que aconteceu.</p>
+<p>E o append-only aparece de verdade lá: existe um <code>V39__fix_recorrencia_dia_do_mes_type.sql</code>. Ele existe porque uma migration anterior criou uma coluna com o tipo errado. Não voltaram no arquivo antigo pra corrigir; criaram um passo novo, o "fix", e seguiram em frente.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O que levar">Resumo</h2>
+<ul>
+    <li><strong>Migration</strong> = mudança de schema escrita como arquivo versionado, no Git junto com o código.</li>
+    <li><strong>Flyway</strong> aplica os arquivos <code>V{N}__nome.sql</code> em ordem, uma vez cada, e registra na <code>flyway_schema_history</code> com checksum.</li>
+    <li><strong>Append-only</strong>: migration aplicada nunca se edita; correção é sempre uma migration nova.</li>
+    <li>O <strong>ORM não manda no schema</strong> (<code>ddl-auto: validate</code>): quem cria tabela é o Flyway, o Hibernate só confere.</li>
+    <li>No <strong>Nexus</strong>, a pasta <code>db/migration/</code> (V1→V51+) é o histórico real do produto.</li>
+</ul>
+
+</body>
+</html>

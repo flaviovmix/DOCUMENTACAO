@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Índices — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Índices — o atalho que o banco usa pra achar dados</h1>
+
+<div class="audio-player" data-src="audio/indices.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Imagine um livro de 800 páginas sem índice no fim. Pra achar onde fala de "fotossíntese", você teria que folhear página por página, do começo ao fim. Com o índice atrás, você vai direto: "fotossíntese, página 412". O <strong>índice de um banco de dados</strong> é exatamente isso. Sem ele, o banco lê a tabela inteira, linha por linha, toda vez que você procura algo. Com ele, vai direto na linha certa.</p>
+
+<h2 id="problema" data-toc-title="O problema" data-sub="Sem índice: ler tudo">O problema: ler a tabela inteira</h2>
+<p>Quando você roda uma consulta com filtro, tipo:</p>
+<pre><code class="language-sql">SELECT * FROM users WHERE email = 'ana@email.com';</code></pre>
+<p>sem índice, o banco faz o que se chama de <strong>sequential scan</strong> (varredura sequencial): ele pega a primeira linha, confere o email, pega a segunda, confere, e assim por diante até o fim da tabela. Ele não tem como saber onde a Ana está sem olhar todas.</p>
+<p>Com 10 linhas, isso é instantâneo. Com 10 milhões, é uma consulta que trava a tela. O problema não aparece no começo do projeto; ele aparece quando a tabela cresce. Por isso índice é um assunto que parece teórico até o dia em que a aplicação fica lenta e ninguém sabe por quê.</p>
+
+<h2 id="o-que-e" data-toc-title="O que é" data-sub="Uma estrutura separada e ordenada">O que é um índice, de fato</h2>
+<p>Um índice é uma <strong>estrutura de dados separada</strong> que o banco mantém ao lado da tabela. Ela guarda os valores de uma coluna <strong>já ordenados</strong>, cada um apontando pra localização da linha correspondente na tabela.</p>
+<p>Voltando ao livro: a tabela é o miolo (o conteúdo na ordem em que foi escrito); o índice é a lista alfabética no fim, com "termo → página". O banco consulta a lista ordenada (que é rápida de buscar porque está em ordem), descobre o "endereço" da linha, e pula direto pra ela.</p>
+<p>O tipo de índice padrão do PostgreSQL é o <strong>B-tree</strong> (árvore balanceada). Você não precisa entender a estrutura por dentro agora; só precisa saber que ela mantém os valores ordenados de um jeito que torna a busca, a comparação por maior/menor, e a ordenação muito rápidas. 99% dos índices que você vai criar são B-tree, e é o tipo que o banco usa quando você não diz nada.</p>
+
+<h2 id="como-criar" data-toc-title="Como criar" data-sub="CREATE INDEX">Como se cria um índice</h2>
+<p>É um comando só:</p>
+<pre><code class="language-sql">CREATE INDEX idx_users_email ON users (email);</code></pre>
+<p>Lendo: cria um índice chamado <code>idx_users_email</code>, na tabela <code>users</code>, sobre a coluna <code>email</code>. O nome é livre, mas a convenção comum é <code>idx_</code> + tabela + coluna, pra ficar óbvio do que se trata. Depois disso, aquela consulta da Ana lá de cima passa a usar o índice automaticamente; você não muda o <code>SELECT</code>, o banco decide sozinho usar o atalho.</p>
+<p>Uma coisa importante: <strong>chave primária já vem indexada de graça</strong>. Quando você declara uma coluna como <code>PRIMARY KEY</code>, o PostgreSQL cria o índice dela sozinho. O trabalho de criar índice na mão é pras <em>outras</em> colunas que você filtra muito.</p>
+
+<h2 id="quando-ajuda" data-toc-title="Quando ajuda" data-sub="WHERE, JOIN, ORDER BY">Onde o índice ajuda de verdade</h2>
+<p>Índice acelera três situações principais:</p>
+<ul>
+    <li><strong>Filtro (<code>WHERE</code>)</strong> — qualquer coluna que aparece muito depois de <code>WHERE</code> é candidata. Email, CPF, status, data.</li>
+    <li><strong>Junção (<code>JOIN</code>)</strong> — quando você liga duas tabelas por uma coluna (a chave estrangeira), indexar essa coluna deixa o <code>JOIN</code> rápido. Essa é a mais esquecida: a chave estrangeira <strong>não</strong> ganha índice automático no PostgreSQL, você precisa criar.</li>
+    <li><strong>Ordenação (<code>ORDER BY</code>)</strong> — como o índice já guarda os valores ordenados, o banco pode usá-lo pra entregar o resultado na ordem certa sem ter que ordenar tudo na hora.</li>
+</ul>
+<p>Tem também o <strong>índice composto</strong>, que cobre mais de uma coluna ao mesmo tempo:</p>
+<pre><code class="language-sql">CREATE INDEX idx_tasks_user_due ON tasks (user_id, due_date);</code></pre>
+<p>Esse serve pra consultas que filtram por usuário <em>e</em> data juntos ("minhas tarefas com vencimento em junho"). A <strong>ordem das colunas importa</strong>: um índice em <code>(user_id, due_date)</code> ajuda quem filtra por <code>user_id</code> sozinho ou pelos dois juntos, mas não ajuda quem filtra só por <code>due_date</code>. Pensa numa lista telefônica ordenada por sobrenome e depois nome: ótima pra achar "Silva, Ana", inútil pra achar todo mundo que se chama "Ana".</p>
+
+<h2 id="preco" data-toc-title="O preço" data-sub="Escrita mais lenta, mais disco">O preço: índice não é de graça</h2>
+<p>Se índice só trouxesse vantagem, o banco indexaria tudo sozinho. Mas tem um custo, e é por isso que você escolhe onde colocar:</p>
+<div class="table-wrap">
+    <table>
+        <tr><th>Custo</th><th>Por quê</th></tr>
+        <tr><td><strong>Escrita mais lenta</strong></td><td>Todo <code>INSERT</code>, <code>UPDATE</code> e <code>DELETE</code> tem que atualizar a tabela <em>e</em> cada índice dela. Mais índices = escrita mais cara.</td></tr>
+        <tr><td><strong>Espaço em disco</strong></td><td>O índice é uma cópia ordenada dos dados daquela coluna. Ocupa espaço próprio, que cresce junto com a tabela.</td></tr>
+        <tr><td><strong>Manutenção</strong></td><td>O banco precisa manter a estrutura organizada conforme os dados mudam.</td></tr>
+    </table>
+</div>
+<p>A consequência prática: <strong>não saia indexando tudo</strong>. Índice é pra coluna que você <em>lê e filtra muito</em>. Tabela que recebe muita escrita e pouca leitura quer poucos índices. O equilíbrio é o ofício.</p>
+
+<h2 id="quando-nao" data-toc-title="Quando NÃO usar" data-sub="Casos que não compensam">Quando índice não compensa</h2>
+<ul>
+    <li><strong>Tabela pequena</strong> — se ela cabe em poucas linhas, ler tudo já é instantâneo; o índice só atrapalha a escrita.</li>
+    <li><strong>Coluna que você quase nunca filtra</strong> — índice que ninguém usa é só custo, sem benefício.</li>
+    <li><strong>Coluna com pouca variedade</strong> — um campo booleano (sim/não) onde 95% das linhas são "sim" não se beneficia de índice comum, porque filtrar por "sim" ainda devolve quase a tabela inteira.</li>
+</ul>
+
+<h2 id="tipos" data-toc-title="Tipos no Postgres" data-sub="B-tree, GIN e companhia">Tipos de índice no PostgreSQL</h2>
+<p>O B-tree resolve a grande maioria. Mas o PostgreSQL tem outros tipos pra casos específicos. O que mais aparece além do B-tree é o <strong>GIN</strong>, usado pra <strong>busca dentro de texto</strong> (full-text), arrays e JSON. Quando você quer "achar toda nota que contém a palavra fotossíntese em qualquer lugar do conteúdo", o B-tree não serve (ele indexa o valor inteiro, não palavras soltas); o GIN serve.</p>
+<p>Outros detalhes úteis, ainda usando B-tree por baixo:</p>
+<ul>
+    <li><strong>Índice único (<code>UNIQUE</code>)</strong> — além de acelerar, ele <em>garante</em> que não existam dois valores iguais. É assim que o banco impede dois usuários com o mesmo email.</li>
+    <li><strong>Índice por expressão</strong> — você pode indexar o resultado de uma função, não só a coluna crua. Ex: indexar <code>lower(name)</code> pra que a busca funcione sem se importar com maiúscula/minúscula.</li>
+    <li><strong>Índice parcial</strong> — indexa só as linhas que interessam (ex: só os pedidos com status "aberto"), economizando espaço.</li>
+</ul>
+
+<h2 id="explain" data-toc-title="Como ver se funciona" data-sub="EXPLAIN">Como saber se o índice está sendo usado</h2>
+<p>Você não precisa adivinhar. O comando <code>EXPLAIN</code> mostra o plano que o banco vai seguir pra rodar a consulta:</p>
+<pre><code class="language-sql">EXPLAIN SELECT * FROM users WHERE email = 'ana@email.com';</code></pre>
+<p>No resultado, você procura duas palavras:</p>
+<ul>
+    <li><strong>Seq Scan</strong> — varredura sequencial, leu a tabela inteira. Se a tabela é grande, é sinal de que falta índice.</li>
+    <li><strong>Index Scan</strong> — usou o índice, foi direto. É o que você quer ver.</li>
+</ul>
+<p>Detalhe que confunde no início: às vezes o banco <em>escolhe</em> não usar o índice mesmo existindo, porque em tabela pequena ler tudo é mais rápido que consultar o índice e depois pular pra tabela. Isso é o banco sendo esperto, não um bug.</p>
+
+<h2 id="nexus" data-toc-title="No Nexus" data-sub="Índices reais do projeto">No Nexus, na prática</h2>
+<p>O Nexus (Spring Boot + PostgreSQL) cria índices junto das tabelas, dentro das próprias migrations. Alguns exemplos reais de lá mostram cada caso que vimos:</p>
+<pre><code class="language-sql">-- Simples: acelera login por email (e garante email unico via UNIQUE em outra parte)
+CREATE INDEX idx_users_email ON users (email);
+
+-- Composto + ordenacao: lista de notas do usuario, mais recentes primeiro
+CREATE INDEX idx_notes_user_updated ON notes (user_id, updated_at DESC);
+
+-- Unico + expressao: impede dois projetos com o mesmo nome (ignorando maiuscula)
+CREATE UNIQUE INDEX uk_projects_user_lower_name ON projects (user_id, lower(name));
+
+-- GIN: busca full-text dentro do titulo e conteudo das notas
+CREATE INDEX idx_notes_search ON notes USING GIN ( ... to_tsvector('portuguese', ...) ... );</code></pre>
+<p>Repare o padrão: quase todo índice começa com <code>user_id</code>. É porque no Nexus tudo é filtrado por usuário (cada um vê só os seus dados), então <code>user_id</code> é a coluna mais filtrada do banco. Os índices seguem o jeito que a aplicação consulta. Essa é a lição prática: você não indexa por capricho, você indexa as colunas que as suas consultas realmente usam.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O que levar">Resumo</h2>
+<ul>
+    <li><strong>Índice</strong> = estrutura separada e ordenada que aponta pra linha certa, igual o índice no fim de um livro.</li>
+    <li>Sem índice, o banco faz <strong>sequential scan</strong> (lê tudo); com índice, vai direto.</li>
+    <li>Cria com <code>CREATE INDEX nome ON tabela (coluna)</code>; o tipo padrão é <strong>B-tree</strong>.</li>
+    <li>Ajuda em <strong>WHERE, JOIN e ORDER BY</strong>. Chave estrangeira não ganha índice automático, crie na mão.</li>
+    <li>Tem <strong>preço</strong>: escrita mais lenta e mais disco. Não indexe tudo; indexe o que você filtra muito.</li>
+    <li><strong>GIN</strong> pra busca dentro de texto; <code>UNIQUE</code> também garante unicidade.</li>
+    <li><code>EXPLAIN</code> mostra se a consulta usou <strong>Index Scan</strong> ou <strong>Seq Scan</strong>.</li>
+</ul>
+
+</body>
+</html>

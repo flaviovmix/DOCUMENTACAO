@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quando o PDF não é Navegador — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Quando o PDF não é Navegador</h1>
+
+<div class="audio-player" data-src="audio/pdf-nao-e-navegador.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Continuação de <strong>PDF que Nasce de um HTML</strong>. Com o PDF do orçamento já saindo de um HTML renderizado pela <code>openhtmltopdf</code>, fomos colocar um rodapé: uma caixa de aviso de pagamento e a <strong>assinatura</strong> (uma imagem), colados no fim da folha. Parecia trivial, virou uma novela. A raiz: o motor que gera o PDF <strong>não se comporta como um navegador</strong>. Arquivos reais: <code>resources/orcamento/proposta.html</code> e <code>OrcamentoPdfService.java</code>.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Caixa de aviso + assinatura no rodapé">O que a gente queria</h2>
+<p>Depois que o PDF passou a nascer de um HTML, fomos mexer no fim da página. A ideia era boba: uma caixa <strong>Atenção</strong> com a condição de pagamento e, embaixo, a <strong>assinatura</strong> (imagem manuscrita + nome sob uma linha), os dois colados no fim da folha, como numa proposta de verdade. Coisa de cinco minutos que virou várias tentativas. E a novela toda tem uma raiz só: o motor que gera esse PDF (a <code>openhtmltopdf</code>, biblioteca Java pura) <strong>não é um navegador</strong>. Ele parece, você escreve HTML e CSS, mas segue outras regras.</p>
+
+<h2 id="conceitos" data-toc-title="Conceitos" data-sub="Mídia paginada, fluir vs fixar, o motor não é navegador">Os conceitos</h2>
+
+<h3>1. Mídia paginada vs a fita do navegador</h3>
+<p>No navegador, a página é uma <strong>fita contínua</strong> que rola sem fim, e não existe "a folha". No PDF é o oposto: o conteúdo é cortado em <strong>folhas de tamanho fixo</strong> (A4), uma embaixo da outra. "Colar algo no rodapé da página" quase não faz sentido no navegador (a página nem tem fim), mas no PDF é o centro do problema, porque agora existe um fim de folha de verdade e o que não cabe desce pra próxima.</p>
+
+<h3>2. Um elemento que flui vs um fixo</h3>
+<p>Um elemento que <strong>flui</strong> entra na ordem natural, depois do que veio antes; se o conteúdo de cima for grande, ele desce junto e pode cair na folha seguinte. Um elemento <strong>fixo</strong> é pregado numa posição da folha, e o conteúdo passa por baixo dele. O trade-off é o nó do episódio: o que flui nunca sobrepõe, mas não gruda no rodapé (pode pular de folha); o fixo gruda, mas em mídia paginada vira rodapé de <strong>toda</strong> folha e <strong>sobrepõe</strong> o que encostar. Não dá os dois só com um truque de CSS.</p>
+
+<h3>3. O motor ignora coisas e inventa outras</h3>
+<p>Tem truque que você usa no navegador e que esse motor não obedece. O que mais doeu: <strong>margem negativa</strong> (puxar um elemento pra cima) é simplesmente ignorada. E o contrário também: jeitos de escrever que criam espaço escondido. Você não acha isso num manual, descobre testando. E o jeito de descobrir, que destravou tudo, é <strong>pintar as caixas</strong>: pôr uma cor de fundo em cada pedaço pra enxergar onde o espaço está sobrando.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="Rodapé, assinatura em base64, lista que some">Como montamos</h2>
+<p><strong>O rodapé.</strong> Um bloco <code>page-footer</code> com duas partes: em cima a caixa amarela de "Atenção" com o texto de pagamento; embaixo a assinatura (imagem + nome sob uma linha).</p>
+
+<p><strong>A assinatura embutida.</strong> A assinatura é um PNG, mas o motor renderiza o HTML <strong>sem um endereço base</strong> (<code>withHtmlContent(html, null)</code>), então não acha arquivos soltos no disco. A saída foi embutir a imagem dentro do próprio HTML: o código lê o PNG e cospe ele codificado em texto (<strong>base64</strong>) direto na tag <code>&lt;img&gt;</code>. A imagem viaja dentro do HTML. Por isso o PDF engordou de ~5KB pra ~25KB.</p>
+<pre><code class="language-java">private String buildAssinatura() {
+    try (InputStream in = getClass().getResourceAsStream("/orcamento/assinatura.png")) {
+        if (in == null) return "";
+        String b64 = Base64.getEncoder().encodeToString(in.readAllBytes());
+        return "&lt;img src=\"data:image/png;base64," + b64 + "\" alt=\"Assinatura\" /&gt;";
+    } catch (java.io.IOException e) {
+        return "";
+    }
+}</code></pre>
+
+<p><strong>A lista "não incluído".</strong> Passou a se organizar em colunas que escalam (até 3 itens = 1 coluna, 4 a 6 = 2, 7+ = 3) e a seção inteira <strong>some quando não tem item</strong> (em vez de deixar um quadro vazio). A seção toda é montada pelo código, que devolve vazio quando não há nada.</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="A novela: 5 tentativas e o que destravou">Decisões e becos</h2>
+<p><strong>Tentativa 1, fixo.</strong> Pregamos o rodapé no fim da folha. Colou. Mas num orçamento cheio, a caixa Atenção passou por cima do fim da lista. Regra na cara: <strong>fixo sobrepõe</strong>.</p>
+<p><strong>Tentativa 2, deixar fluir.</strong> Tirei o fixo. Não sobrepôs mais, mas o rodapé <strong>pulou pra segunda folha</strong>. E pior: a assinatura partiu no meio (imagem numa folha, nome na outra). Conserto desse pedaço: marcar o bloco pra <strong>não partir</strong> (<code>page-break-inside: avoid</code>).</p>
+<p><strong>Tentativa 3, voltar pro fixo.</strong> Aí apareceu a mídia paginada. Fixo não gruda uma vez: vira rodapé de toda folha. Como o conteúdo ocupava duas folhas, o rodapé <strong>apareceu repetido nas duas</strong>. Pior que antes.</p>
+<p><strong>Tentativa 4, reservar espaço.</strong> Reservar um vão embaixo do conteúdo, do tamanho do rodapé. No navegador funciona. Aqui o motor <strong>cortava</strong> esse espaço em vez de empurrar o conteúdo pra cima.</p>
+<p><strong>Tentativa 5, margem negativa.</strong> Pra aproximar a assinatura da caixa, tentei margem negativa. <strong>Não mexeu um pixel</strong>: o motor ignora margem negativa. Mudei de -10 pra -28 e deu o mesmo resultado, o que já entregava que ele nem lia aquilo.</p>
+<p><strong>O que destravou: pintar as caixas.</strong> Em vez de um sexto truque, pus cor de fundo no rodapé e na assinatura. Ficou claro: o bloco da assinatura estava <strong>alto</strong>, com a assinatura empurrada pro fundo dele. A causa era o <code>inline-table</code> que eu tinha usado pra centralizar a imagem, que cria uma caixa de linha mais alta que o conteúdo. Troquei por <strong>tabela em bloco</strong> (<code>display: table; margin: 0 auto</code>) e a assinatura subiu, colada na caixa. O bug nunca foi a margem.</p>
+<p><strong>A saída de verdade: compactar.</strong> Como nenhum truque de posicionamento resolve "uma página só com rodapé colado" em mídia paginada, a saída foi a menos esperta: <strong>compactar o conteúdo</strong> (tabela mais apertada, espaçamentos menores) até sobrar folga. Com folga, o rodapé fixo gruda no fim sem ninguém encostar nele.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>A gente quis colar uma caixa de aviso e uma assinatura no rodapé de um PDF e levou uma novela porque o motor é <strong>mídia paginada, não navegador</strong>. Fixo gruda mas repete em toda folha e sobrepõe; fluindo nunca sobrepõe mas pula de folha e parte blocos; margem negativa e espaço reservado, que valem no navegador, são ignorados. A assinatura tinha um espaço fantasma (caixa de linha alta de um <code>inline-table</code>), resolvido com tabela em bloco. E caber tudo numa folha com o rodapé colado foi questão de compactar. A coisa pra levar: quando travar num PDF de biblioteca pura, lembre que não está no navegador, e <strong>pinte as caixas</strong> pra achar o espaço que some.</p>
+
+</body>
+</html>
