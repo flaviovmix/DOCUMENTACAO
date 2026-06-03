@@ -219,6 +219,57 @@
             </div>
         </div>
 
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Editar um orçamento e clicar em Salvar deixava o botão preso em "Salvando..." pra sempre, sem erro nenhum. A causa estava no backend, longe da tela onde travava: ao salvar, ele montava a resposta antes de gravar, e os itens voltavam com id null. No front, a lista usava o id como etiqueta única, e dois null abortavam o desenho. O conserto foi uma linha (saveAndFlush) e a lição é seguir a evidência, não o palpite.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/salvando-para-sempre.png" alt="Salvando para Sempre">
+            </div>
+            <div class="card-bar">
+                <a href="14-salvando-para-sempre/salvando-para-sempre.html" class="card-tag" style="--tag-clr:#0ea5e9;">SALVANDO PARA SEMPRE</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Colar uma caixa de aviso e a assinatura no rodapé do PDF do orçamento virou uma novela de cinco tentativas. O motivo: o motor que gera o PDF não é um navegador. É mídia paginada, fixo repete em toda folha e sobrepõe, margem negativa é ignorada, e um inline-table escondia um espaço alto. A saída foi compactar o conteúdo e pintar as caixas pra achar o bug.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/pdf-nao-e-navegador.png" alt="Quando o PDF não é Navegador">
+            </div>
+            <div class="card-bar">
+                <a href="15-pdf-nao-e-navegador/pdf-nao-e-navegador.html" class="card-tag" style="--tag-clr:#e11d48;">QUANDO O PDF NÃO É NAVEGADOR</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Clicar fora de um modal no Nexus fechava ele, e isso atrapalhava nos modais cheios de conteúdo. A gente desligou o fechar-ao-clicar-fora em todos. O conceito por trás é a propagação de eventos (o clique que borbulha até o fundo escuro), e a parte difícil não foi o código: foi separar os modais (não fecham) dos menus (devem fechar) entre os 40 lugares que a busca achou.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="img/clique-fora.png" alt="Clique Fora Não Fecha">
+            </div>
+            <div class="card-bar">
+                <a href="16-clique-fora/clique-fora.html" class="card-tag" style="--tag-clr:#9333ea;">CLIQUE FORA NÃO FECHA</a>
+            </div>
+        </div>
+
     </div>
 
 </body>

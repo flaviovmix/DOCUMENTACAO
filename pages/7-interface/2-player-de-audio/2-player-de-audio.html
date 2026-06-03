@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interface — Player de Áudio — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Interface — Player de Áudio</h1>
+
+<p>Making-of do <code>audio-player</code>: o player que toca estes próprios podcasts. A página escreve só 5 elementos e o <code>layout.js</code> monta o resto em runtime. Por dentro: o elemento <code>&lt;audio&gt;</code> nativo como motor, o truque da barra de progresso, e o esquema de grudar no topo.</p>
+
+<div class="audio-player" data-src="audio/player-de-audio.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">1. O que a gente queria</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Quase toda página da doc tem um áudio (estes podcasts). Precisávamos de um player com os controles normais (play, ±10s, barra arrastável, tempo, velocidade, volume, download) e mais dois requisitos práticos:</p>
+            <ul>
+                <li><strong>Grudar no topo</strong> conforme a página rola, pra ficar sempre alcançável enquanto se lê.</li>
+                <li><strong>Vários áudios por página</strong> (1 por seção), cada um grudando sozinho sem atrapalhar os outros.</li>
+            </ul>
+            <p>E o requisito de manutenção, o mais importante: <strong>não repetir esse monte de botão em dezenas de páginas</strong>. Isso seria um pesadelo de manter.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">2. Os conceitos</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p><strong>O elemento <code>&lt;audio&gt;</code> nativo é o motor.</strong> O navegador já sabe tocar áudio. Usamos a tag <code>&lt;audio&gt;</code> <em>sem</em> o atributo <code>controls</code>, então ela fica invisível. Ela sabe tocar, sabe a duração e a posição; a gente constrói o painel por fora e liga cada botão nela.</p>
+            <p>O motor avisa quando algo muda. Dois avisos importam:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Evento</th><th>Quando dispara</th><th>O que a gente faz</th></tr>
+                    <tr><td><code>loadedmetadata</code></td><td>navegador descobre a duração</td><td>escreve <code>0:00 / 5:40</code></td></tr>
+                    <tr><td><code>timeupdate</code></td><td>~4x por segundo tocando</td><td>atualiza barra, slider e tempo</td></tr>
+                </table>
+            </div>
+            <p>A barra azul que anda <strong>não</strong> controla o áudio. É o contrário: o áudio toca e avisa a posição, e a barra se move pra refletir. A barra é o espelho; o áudio é quem manda.</p>
+
+            <p><strong>Escrever pouco, deixar o código montar o resto.</strong> No HTML são só 5 elementos. Quando a página abre, a função <code>initAudioPlayers</code> (no <code>layout.js</code>) varre a página e injeta o que falta: ±10s, velocidade, volume, download. Pra mudar o player em todas as páginas, mexe num lugar só.</p>
+
+            <p><strong>O truque da barra de progresso.</strong> São duas peças sobrepostas: embaixo, a barra azul visual (só enfeite, não recebe clique); por cima, um controle deslizante de verdade (<code>input type="range"</code>) invisível (<code>opacity: 0</code>), um pouco maior pra facilitar o toque. Você arrasta o "vidro" transparente; o código manda o áudio pular; o áudio avisa e a barra azul se ajusta.</p>
+
+            <p><strong>Grudar no topo, e saber que grudou.</strong> O CSS <code>position: sticky; top: 52px</code> faz o player encostar na barra de cima. Pra saber <em>quando</em> ele grudou, não dá pra vigiar o próprio player (grudado, ele "trava" e confunde a conta). A gente põe um vigia invisível de 1px logo acima: quando o vigia some pela borda de cima da tela, o player grudou. O <code>IntersectionObserver</code> avisa esse momento.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">3. Como montamos</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Seguindo o fluxo de quando a página abre, dentro de <code>initAudioPlayers</code>:</p>
+            <ol>
+                <li><strong>Liga a fonte:</strong> lê o caminho do <code>data-src</code> e coloca no <code>&lt;audio&gt;</code>. Como o <code>preload="metadata"</code>, baixa só a duração, não o áudio inteiro (importa em páginas com muitos players).</li>
+                <li><strong>Conecta os avisos:</strong> <code>loadedmetadata</code> escreve a duração; <code>timeupdate</code> atualiza barra, slider e tempo juntos.</li>
+                <li><strong>Injeta ±10s:</strong> botão de voltar antes do play, avançar depois.</li>
+                <li><strong>Liga play/pause:</strong> alterna e troca o ícone. E o arraste da barra: manda o áudio pular pra posição.</li>
+                <li><strong>Injeta velocidade, volume e download:</strong> menu de 0.5x a 4x, botão mudo + slider, e o link de baixar.</li>
+                <li><strong>Multi-faixa (opcional):</strong> se a div tem <code>data-tracks</code>, cria abas no topo; trocar de aba troca a fonte sem recarregar.</li>
+                <li><strong>Grudar:</strong> cria o vigia de 1px acima e um espaçador abaixo (só pro celular), e liga o <code>IntersectionObserver</code> no vigia.</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">4. Decisões, becos e o que aprendemos</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <ul>
+                <li><strong>Celular vira <code>fixed</code>:</strong> o <code>sticky</code> tem bug conhecido no Safari do iPhone dentro de layout flex (o player rola junto). No celular ele vira <code>fixed</code>. Como <code>fixed</code> sai do fluxo, um espaçador invisível ocupa o buraco pra o conteúdo não pular.</li>
+                <li><strong>Vigia separado:</strong> a ideia óbvia (vigiar o próprio player) falha, porque grudado ele "trava" antes de sair da tela e o observador acha que ele ainda está visível. O vigia de 1px acima não gruda, então some normal.</li>
+                <li><strong>Menu de velocidade próprio:</strong> o <code>&lt;select&gt;</code> nativo não estiliza no Safari. Refeito como menuzinho próprio, ao custo de fechar na mão no clique fora.</li>
+                <li><strong>O clique que "vaza":</strong> o botão de velocidade precisa segurar o clique (<code>stopPropagation</code>). Senão o mesmo clique que abre o menu cai no handler de "clicou fora" e fecha na hora.</li>
+                <li><strong>Passo fino na barra (<code>step="0.1"</code>):</strong> com passo de 1%, num áudio de 10 min cada passo pulava 6s (audível). Passo fino dá arraste suave.</li>
+                <li><strong>Bug recorrente do <code>data-src</code>:</strong> tem que ser caminho simples (<code>audio/nome.m4a</code>). Repetir o nome da pasta faz o áudio não tocar, e não dá erro visível, só descobre no play.</li>
+                <li><strong>Download é <code>&lt;a&gt;</code>, não <code>&lt;button&gt;</code>:</strong> o atributo <code>download</code> só funciona em link nativo.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Resumo</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <ul>
+                <li>O motor é o <code>&lt;audio&gt;</code> nativo, usado sem o player padrão. Ele toca; a interface só reflete.</li>
+                <li>A página escreve 5 elementos; o <code>layout.js</code> injeta o resto. Mudança em 1 lugar vale pra todas as páginas.</li>
+                <li>A barra de progresso é um controle invisível por cima de uma barra colorida.</li>
+                <li>O player gruda com <code>sticky</code>; um vigia de 1px + <code>IntersectionObserver</code> detectam o momento. No celular vira <code>fixed</code> (bug do Safari).</li>
+            </ul>
+            <p>O padrão "escreve pouco no HTML, o JS monta o resto" é o mesmo de outros componentes da doc (accordion, carrossel, TOC). Quem entendeu o player já entende a receita dos outros.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

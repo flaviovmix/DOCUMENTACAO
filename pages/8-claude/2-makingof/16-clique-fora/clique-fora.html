@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clique Fora Não Fecha — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Clique Fora Não Fecha</h1>
+
+<div class="audio-player" data-src="audio/clique-fora.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>No Nexus, abrir um modal e clicar sem querer no fundo escuro fechava tudo. Chato num modal cheio de conteúdo, tipo o detalhe de um orçamento. A gente fez <strong>todos os modais do projeto</strong> pararem de fechar no clique de fora: agora só fecham no <strong>×</strong>, nos botões de ação ou no <strong>Esc</strong>. O conceito por trás é a <strong>propagação de eventos</strong> (o "bubbling"). Arquivos reais: os componentes em <code>frontend/src/lib/components/</code> e as telas em <code>frontend/src/routes/</code>.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Modais que não fecham no clique de fora">O que a gente queria</h2>
+<p>O problema era pequeno e chato. Quando você abre um modal, aquela janela por cima da tela com um fundo escuro atrás, e clica sem querer no fundo, o modal fecha. Às vezes é o que você quer. Mas o Nexus tem modais cheios de coisa: o detalhe de um orçamento é uma tela inteira (lista de itens, total, observações, botões de PDF, editar, status). Um clique que escapa pra fora joga tudo fora, e você tem que abrir e esperar carregar de novo. O pedido foi simples: que os modais <strong>não fechem mais</strong> no clique de fora, só de propósito (×, botões ou Esc). E não era um modal, eram <strong>todos</strong>.</p>
+
+<h2 id="conceito" data-toc-title="O conceito" data-sub="Propagação de eventos (bubbling)">O conceito: propagação de eventos</h2>
+<p>Quando você clica em algo, o navegador não avisa só o elemento clicado. O clique vira uma <strong>bolha que sobe</strong>: começa no elemento mais de dentro, onde o dedo caiu, e vai subindo pelos pais, um por um, até o topo da página. Cada pai no caminho fica sabendo do clique. Esse "subir" é o <strong>bubbling</strong>.</p>
+<p>Junta com o jeito que um modal é montado: duas peças, uma dentro da outra. Por fora, o <strong>fundo</strong> escuro que cobre a tela (o pai). Por dentro, a <strong>caixa</strong> de conteúdo (o filho). O padrão clássico de "fechar ao clicar fora", que já vinha pronto, põe no fundo um aviso: <em>"se me clicarem, feche"</em>. Mas pela bolha que sobe, um clique dentro da caixa borbulharia até o fundo e fecharia errado. Pra evitar, a caixa tem uma segunda regra: <em>"todo clique que cai em mim, eu paro aqui"</em>. Esse parar é o <code>stopPropagation</code>, que fura a bolha antes dela chegar no fundo.</p>
+<p>Resultado do desenho pronto: clique no conteúdo, a caixa para a bolha, nada acontece; clique no fundo, a bolha nasce ali e o aviso do fundo fecha. O fundo virou uma <strong>porta de saída</strong>. E era essa porta que a gente queria pregar fechada.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="40 lugares, a mesma troca em 32">Como montamos</h2>
+<p><strong>Achar todos.</strong> Em vez de ir de memória, varremos o projeto procurando o padrão do fundo com o aviso de fechar. Apareceram <strong>40 lugares</strong>.</p>
+<p><strong>A troca.</strong> Pros modais de verdade, o conserto foi uma linha só, repetida igual em todos: o fundo deixou de mandar fechar e passou só a barrar a bolha. O mesmo <code>stopPropagation</code> que a caixa de dentro já usava, agora também no fundo.</p>
+<pre><code class="language-svelte">&lt;!-- antes --&gt;
+&lt;div class="overlay" onclick={() =&gt; taskDetailModal.close()}&gt;
+
+&lt;!-- depois --&gt;
+&lt;div class="overlay" onclick={(e) =&gt; e.stopPropagation()}&gt;</code></pre>
+<p>O fundo deixou de ser porta de saída: clicar nele não leva a lugar nenhum. O ×, os botões e o Esc continuam fechando, porque são handlers próprios deles.</p>
+<p><strong>Por que <code>stopPropagation</code> e não apagar o aviso do fundo?</strong> Três motivos: (1) é uma linha por arquivo, fácil de revisar; (2) deixar o aviso mantém em paz as marcações de acessibilidade que o framework pede quando um elemento tem clique; (3) fica consistente com a caixa de dentro, que já usava o mesmo jeito. Num modal (o de detalhe do orçamento) ficou uma variante equivalente: o fundo chama uma função vazia com só um comentário (<code>onOverlayClick</code>), e ele ainda fecha no Esc por um listener de teclado. <strong>32 arquivos</strong>, a mesma troca, e uma busca no fim pra confirmar que nenhum modal ficou com a porta aberta.</p>
+
+<h2 id="decisao-becos" data-toc-title="A decisão" data-sub="40 não eram 40: modal vs menu">A decisão (o coração do trabalho)</h2>
+<p>A parte difícil não tinha código. Era saber onde <strong>não</strong> mexer. Dos 40 lugares, se a gente trocasse tudo no automático, teria estragado <strong>8</strong>. Porque nem todo fundo escuro com "fechar ao clicar fora" é um modal. Tem outra família que usa o mesmo padrão e que <strong>deve</strong> fechar ao clicar fora: os menus.</p>
+<p>A diferença: um modal é uma <strong>janela</strong> que você abre pra trabalhar (senta, lê, preenche, decide); faz sentido só fechar de propósito. Um <strong>menu</strong> suspenso, o sino de notificação, o menu de três pontos, o seletor de ícone, você abre de relance, e o jeito natural de fechar é clicar em qualquer outro lugar. Tirar o "fechar ao clicar fora" deles ficaria péssimo: o menu plantado, teimoso. Pra esses, clicar fora pra fechar não é bug, é o certo.</p>
+<p>Então 8 ficaram exatamente como estavam: o menu do usuário, o sino de notificação, os menus de contexto de três pontos, o seletor de ícone, o seletor de tag, e um dropdown que vive dentro do próprio modal de orçamento. Dois ficaram em cima do muro (ícone e tag) e resolvemos pelo formato: não são janelas centradas, são caixinhas coladas num botão, igual a um cardápio. Ficaram com os menus.</p>
+<p><strong>A lição:</strong> o pedido chegou como "faz isso em todos os modais", e o trabalho de verdade foi não tomar o "todos" ao pé da letra. 40 resultados na busca não eram 40 modais. 8 eram outra coisa, com a necessidade oposta. Separar o joio do trigo antes de sair trocando.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>Clicar fora dos modais do Nexus fechava eles, e isso atrapalhava nos modais cheios de conteúdo. Por baixo, era a <strong>propagação de eventos</strong>: o clique borbulha de baixo pra cima até o fundo escuro, que tinha um aviso de fechar. A gente desligou esse aviso em <strong>32 modais</strong>, trocando por <code>stopPropagation</code>, que fura a bolha no fundo e faz o clique de fora não levar a nada. Passaram a fechar só no ×, nos botões ou no Esc. A coisa pra levar não é o <code>stopPropagation</code>, é a decisão antes dele: o mesmo padrão servia a duas necessidades opostas (modais não fecham no clique de fora, menus fecham), e 8 dos 40 ficaram de fora de propósito. Quando o pedido diz "em todos", vale perguntar se "todos" são mesmo a mesma coisa.</p>
+
+</body>
+</html>

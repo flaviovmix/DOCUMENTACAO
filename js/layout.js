@@ -72,7 +72,9 @@ var MENU = [
             { label: '1 - Visão Geral',     arquivo: '1-visao-geral/1-visao-geral.html',         tipo: 'check' },
             { label: '2 - Backup',          arquivo: '2-backup/backup.html',                     tipo: 'check' },
             { label: '3 - CRUD',            arquivo: '3-crud/crud.html',                         tipo: 'check' },
-            { label: '4 - Relacionamentos', arquivo: '4-relacionamentos/4-relacionamentos.html', tipo: 'check' }
+            { label: '4 - Relacionamentos', arquivo: '4-relacionamentos/4-relacionamentos.html', tipo: 'check' },
+            { label: '5 - Migration',       arquivo: '5-migration/migration.html',               tipo: 'check' },
+            { label: '6 - Índices',         arquivo: '6-indices/indices.html',                   tipo: 'check' }
         ],
         pasta: '2-sql',
         basePath: '1-fundamentos/2-sql'
@@ -407,7 +409,9 @@ var MENU = [
         grupo: 'INTERFACE',
         pagina: 'interface.html',
         items: [
-            { label: '1 - Visão Geral', arquivo: '1-visao-geral/1-visao-geral.html', tipo: 'check' }
+            { label: '1 - Visão Geral', arquivo: '1-visao-geral/1-visao-geral.html', tipo: 'check' },
+            { label: '2 - Player de Áudio', arquivo: '2-player-de-audio/2-player-de-audio.html', tipo: 'check' },
+            { label: '3 - Card de Imagem', arquivo: '3-card-de-imagem/3-card-de-imagem.html', tipo: 'novo' }
         ],
         pasta: '7-interface',
         basePath: '7-interface'
