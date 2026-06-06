@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A página na unha — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>A página na unha</h1>
+
+<div class="audio-player" data-src="audio/na-unha.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>O primeiro passo da Fase 1, antes de qualquer framework: montar uma página que <strong>reage ao clique</strong> usando só HTML e JavaScript puro, mexendo no DOM com as próprias mãos. O objetivo não é o resultado (um contador e uma lista) — é <strong>sentir na pele</strong> o trabalho de manter a tela e os dados em sincronia. Essa dor é o que vai dar sentido ao Svelte lá na frente.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O que vamos fazer — e por quê</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Uma página com duas coisas que <em>mudam sozinhas na tela</em> quando você interage:</p>
+            <ul>
+                <li>um <strong>contador</strong>: um número e um botão "+1" que soma 1 a cada clique;</li>
+                <li>uma <strong>lista</strong> de itens, cada um com um botão "remover".</li>
+            </ul>
+            <p>Sem framework, quem faz isso acontecer na tela é <strong>você</strong>, escrevendo JavaScript que mexe no DOM na mão. Guarde uma pergunta pro fim: <em>quantas coisas eu preciso lembrar de fazer toda vez que algo muda?</em></p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O HTML mínimo — só o esqueleto</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O HTML aqui é só a estrutura: um número, um botão e uma lista vazia. Repare nas <strong>etiquetas <code>id</code></strong> — elas servem pro JavaScript achar cada elemento depois.</p>
+<pre><code class="language-html">&lt;body&gt;
+    &lt;h1&gt;Olá Web na unha&lt;/h1&gt;
+
+    &lt;p&gt;Contador: &lt;span id="numero"&gt;0&lt;/span&gt;&lt;/p&gt;
+    &lt;button id="botao"&gt;+1&lt;/button&gt;
+
+    &lt;h2&gt;Lista&lt;/h2&gt;
+    &lt;ul id="lista"&gt;&lt;/ul&gt;
+
+    &lt;script&gt;
+        // o JavaScript entra aqui
+    &lt;/script&gt;
+&lt;/body&gt;</code></pre>
+            <p>O <code>&lt;span id="numero"&gt;0&lt;/span&gt;</code> é onde o número aparece (começa em 0). O <code>&lt;ul id="lista"&gt;</code> nasce <strong>vazio</strong> — quem vai preencher é o JavaScript. Por enquanto o botão não faz nada: o cérebro dele é o próximo passo.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O contador em JavaScript — o DOM na mão</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Esse é o coração da fase. Vamos por partes.</p>
+<pre><code class="language-javascript">let contador = 0;
+
+const numero = document.getElementById("numero");
+const botao = document.getElementById("botao");
+
+botao.addEventListener("click", function () {
+    contador = contador + 1;       // 1) muda o estado
+    numero.textContent = contador; // 2) ATUALIZA a tela na mão
+});</code></pre>
+
+            <h3>Variáveis: caixinhas com nome</h3>
+            <p>Uma variável é uma caixa com nome que guarda um valor. <code>let</code> cria uma caixa que <strong>pode mudar</strong> (o contador vai virar 1, 2, 3…). <code>const</code> cria uma caixa que <strong>não troca</strong> de conteúdo (a referência ao elemento da tela é sempre a mesma). Regra prática: use <code>const</code> por padrão, <code>let</code> só quando o valor vai mudar.</p>
+
+            <h3>O DOM e o <code>document</code></h3>
+            <p>Quando o navegador lê seu HTML, ele monta uma <strong>árvore</strong> de elementos na memória — isso é o <strong>DOM</strong>. O <code>document</code> é o galho-raiz: representa a página inteira, e por ele o JavaScript alcança qualquer pedaço da tela.</p>
+
+            <h3><code>getElementById</code>: achar um elemento</h3>
+            <p><code>document.getElementById("numero")</code> diz: "ó document, me acha o elemento com <code>id="numero"</code>". Ele devolve uma <strong>referência</strong> àquele <code>&lt;span&gt;</code>, que guardamos na caixinha <code>numero</code> pra usar depois.</p>
+
+            <h3><code>textContent</code>: mudar o que aparece</h3>
+            <p><code>textContent</code> é o texto dentro de um elemento. <strong>Escrever</strong> nele (com <code>=</code>) troca o que aparece na tela. <code>numero.textContent = contador</code> = "pegue o número atual da memória e pinte na tela".</p>
+
+            <h3><code>addEventListener</code>: reagir ao clique</h3>
+            <p><code>addEventListener("click", ...)</code> quer dizer: "<strong>quando</strong> este botão for clicado, <strong>rode</strong> este bloco". O <code>function () { ... }</code> é uma <strong>função</strong> — um pacote de instruções guardado pra rodar depois (a cada clique). Dentro dela são <strong>duas</strong> ações: soma 1 no estado, e <strong>depois</strong> pinta na tela. Esqueça a segunda linha e o número muda na memória mas a tela congela.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">A lista em JavaScript — construindo e limpando</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Aqui a dor cresce: a cada mudança você <strong>apaga a lista inteira e redesenha do zero</strong>.</p>
+<pre><code class="language-javascript">let itens = ["Maçã", "Banana", "Laranja"];
+const lista = document.getElementById("lista");
+
+function desenharLista() {
+    lista.innerHTML = ""; // apaga a lista inteira...
+    for (let i = 0; i &lt; itens.length; i++) {
+        const li = document.createElement("li");
+        li.textContent = itens[i] + " ";
+
+        const remover = document.createElement("button");
+        remover.textContent = "remover";
+        remover.addEventListener("click", function () {
+            itens.splice(i, 1); // tira o item do array
+            desenharLista();    // ...e redesenha tudo de novo, na mão
+        });
+
+        li.appendChild(remover);
+        lista.appendChild(li);
+    }
+}
+
+desenharLista(); // desenha a primeira vez</code></pre>
+
+            <h3>Array: uma lista de valores</h3>
+            <p>Um <strong>array</strong> é uma lista ordenada de valores numa caixa só. Cada posição tem um <strong>índice</strong> que começa em <strong>0</strong>: <code>itens[0]</code> é "Maçã". <code>itens.length</code> é quantos tem (3). <code>itens.splice(i, 1)</code> = "a partir da posição <code>i</code>, remova <code>1</code> item" — como tirar uma carta do meio do baralho.</p>
+
+            <h3><code>for</code>: repetir pra cada item</h3>
+            <p>O <code>for</code> repete um bloco. Lê-se: comece com <code>i = 0</code>; enquanto <code>i</code> for menor que o tamanho da lista; depois de cada volta, <code>i++</code> (soma 1). Resultado: o bloco roda uma vez pra cada item.</p>
+
+            <h3><code>createElement</code> e <code>appendChild</code>: montar a árvore</h3>
+            <p><code>createElement("li")</code> <strong>fabrica</strong> um elemento novo na memória. <code>appendChild</code> <strong>pendura</strong> um elemento dentro de outro (o botão dentro do <code>&lt;li&gt;</code>, o <code>&lt;li&gt;</code> dentro da <code>&lt;ul&gt;</code>). E <code>innerHTML = ""</code> <strong>esvazia</strong> um elemento. É por isso que a <code>desenharLista()</code> existe: a cada mudança ela apaga tudo e remonta <code>&lt;li&gt;</code> por <code>&lt;li&gt;</code>. Você é o pedreiro.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">A dor — você é o motor da tela</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Resumindo o que doeu: a tela <strong>nunca se atualiza sozinha</strong>. Cada mudança no estado exige que você, na mão, mande pintar de novo.</p>
+            <ul>
+                <li>No contador: mudar a variável <strong>e</strong> escrever no <code>textContent</code> — duas linhas.</li>
+                <li>Na lista: mexer no array <strong>e</strong> chamar <code>desenharLista()</code> — e a <code>desenharLista</code> redesenha a lista <em>inteira</em> toda vez.</li>
+            </ul>
+            <p>Com só somar e remover já dá trabalho. Imagine adicionar ordenar, editar, filtrar — o "motor" cresce, e cada lugar onde você esquecer de atualizar a tela vira um bug silencioso. Multiplique por uma aplicação inteira: é a vida sem framework.</p>
+            <p>Essa é a dor que a próxima parte (<strong>o alívio: Svelte</strong>) vai resolver. Lá você vai declarar o estado e o framework cuida da tela — e aquela "segunda linha" obrigatória simplesmente some.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Código completo — index.html</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Tudo junto, pronto pra copiar e abrir no navegador:</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang="pt-BR"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Olá Web na unha&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Olá Web na unha&lt;/h1&gt;
+
+    &lt;p&gt;Contador: &lt;span id="numero"&gt;0&lt;/span&gt;&lt;/p&gt;
+    &lt;button id="botao"&gt;+1&lt;/button&gt;
+
+    &lt;h2&gt;Lista&lt;/h2&gt;
+    &lt;ul id="lista"&gt;&lt;/ul&gt;
+
+    &lt;script&gt;
+        let contador = 0;
+
+        const numero = document.getElementById("numero");
+        const botao = document.getElementById("botao");
+
+        botao.addEventListener("click", function () {
+            contador = contador + 1;
+            numero.textContent = contador;
+        });
+
+        let itens = ["Maçã", "Banana", "Laranja"];
+        const lista = document.getElementById("lista");
+
+        function desenharLista() {
+            lista.innerHTML = "";
+            for (let i = 0; i &lt; itens.length; i++) {
+                const li = document.createElement("li");
+                li.textContent = itens[i] + " ";
+
+                const remover = document.createElement("button");
+                remover.textContent = "remover";
+                remover.addEventListener("click", function () {
+                    itens.splice(i, 1);
+                    desenharLista();
+                });
+
+                li.appendChild(remover);
+                lista.appendChild(li);
+            }
+        }
+
+        desenharLista();
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

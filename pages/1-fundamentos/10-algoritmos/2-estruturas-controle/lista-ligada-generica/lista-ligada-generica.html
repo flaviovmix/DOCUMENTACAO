@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista Ligada Genérica — Estruturas de Controle — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+    <style>
+        .gen-demo {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+
+        /* ─── Tabs ─── */
+        .gen-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .gen-tab {
+            border: 2px solid #d1d5db;
+            background: #fff;
+            color: #374151;
+            padding: 8px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            transition: all .2s ease;
+        }
+        .gen-tab:hover { border-color: #9ca3af; }
+        .gen-tab.active {
+            color: #fff;
+            border-color: transparent;
+        }
+        .gen-tab.active[data-type="String"]  { background: #2563eb; }
+        .gen-tab.active[data-type="Integer"] { background: #10b981; }
+        .gen-tab.active[data-type="Cliente"] { background: #d97706; }
+
+        /* ─── Molde (source) ─── */
+        .gen-molde {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+        .gen-molde-title {
+            padding: 6px 16px;
+            background: #1f2937;
+            color: #fbbf24;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+        .gen-molde-body { padding: 10px 16px; white-space: pre; overflow-x: auto; }
+        .gen-molde .kw  { color: #7c3aed; font-weight: 600; }
+        .gen-molde .cls { color: #0891b2; }
+        .gen-molde .mth { color: #b45309; }
+        .gen-molde .cmt { color: #6b7280; font-style: italic; }
+        .gen-tipo {
+            display: inline-block;
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fbbf24;
+            border-radius: 4px;
+            padding: 0 6px;
+            font-weight: 700;
+            transition: background .3s ease, color .3s ease, border-color .3s ease;
+        }
+        .gen-tipo.t-String  { background: #dbeafe; color: #1e40af; border-color: #60a5fa; }
+        .gen-tipo.t-Integer { background: #d1fae5; color: #065f46; border-color: #34d399; }
+        .gen-tipo.t-Cliente { background: #fef3c7; color: #92400e; border-color: #fbbf24; }
+
+        /* ─── Declaração ─── */
+        .gen-decl {
+            background: #111827;
+            color: #e5e7eb;
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            white-space: pre;
+        }
+        .gen-decl .kw  { color: #c4b5fd; font-weight: 600; }
+        .gen-decl .cls { color: #67e8f9; }
+        .gen-decl .mth { color: #fbbf24; }
+        .gen-decl .str { color: #6ee7b7; }
+        .gen-decl .num { color: #93c5fd; }
+        .gen-decl .typ { color: #fca5a5; font-weight: 700; }
+
+        /* ─── Lista visual ─── */
+        .gen-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            min-height: 70px;
+            padding: 14px 8px;
+            margin-bottom: 16px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow-x: auto;
+            gap: 4px;
+        }
+        .gen-node {
+            display: flex;
+            align-items: stretch;
+            background: #eef2ff;
+            border: 2px solid #6366f1;
+            border-radius: 6px;
+            overflow: hidden;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            flex-shrink: 0;
+            animation: genPop .3s ease;
+        }
+        @keyframes genPop {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .gen-node-val { padding: 9px 14px; color: #3730a3; font-size: 15px; font-weight: 700; }
+        .gen-node-next {
+            padding: 9px 8px;
+            background: rgba(99,102,241,.12);
+            color: #4338ca;
+            border-left: 1px solid rgba(99,102,241,.25);
+            display: flex; align-items: center; font-size: 13px;
+        }
+        .gen-arrow { color: #6366f1; font-size: 20px; font-weight: 700; margin: 0 2px; }
+        .gen-null { font-size: 11px; color: #9ca3af; font-style: italic; }
+        .gen-link { font-size: 11px; }
+
+        /* ─── Output ─── */
+        .gen-output {
+            background: #111827;
+            color: #d1d5db;
+            border-radius: 6px;
+            padding: 12px 16px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            min-height: 60px;
+        }
+        .gen-output-title { color: #9ca3af; font-size: 12px; margin-bottom: 6px; }
+        .gen-output-line { color: #34d399; }
+        .gen-output-line.warn { color: #fbbf24; }
+
+        /* ─── Toggle toString ─── */
+        .gen-toggle {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            font-size: 13px;
+            color: #374151;
+        }
+        .gen-toggle.visible { display: flex; }
+        .gen-toggle-btn {
+            border: 2px solid #d97706;
+            background: #fff;
+            color: #92400e;
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font: inherit;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .gen-toggle-btn.on { background: #d97706; color: #fff; }
+    </style>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Lista Ligada Genérica</h1>
+
+<div class="audio-player" data-tracks='[{"label":"Aula","src":"audio/lista-ligada-generica-aula.m4a"},{"label":"Conceitual","src":"audio/lista-ligada-generica-conceitual.m4a"}]'>
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Nas aulas anteriores a <a href="../lista-ligada/lista-ligada.html">lista ligada</a> só guardava <code>String</code> — o tipo estava chumbado no código. Mas a estrutura (nós, ponteiros, adicionar, remover) <strong>não tem nada a ver com o tipo do valor</strong>. Seria desperdício escrever uma <code>ListaLigada</code> nova pra cada tipo. A solução é deixar o tipo como uma <strong>variável</strong>: <code>&lt;TIPO&gt;</code>. Isso é <strong>Generics</strong>. Um molde só, e quem usa decide o tipo na hora de criar. O exemplo vem da <strong>aula 05 de Estruturas de Dados em Java</strong> (Leandro Guarino).</p>
+
+<p>📌 Troque o tipo nas abas abaixo. O <strong>mesmo</strong> <code>Elemento&lt;TIPO&gt;</code> e <code>ListaLigada&lt;TIPO&gt;</code> servem os três — só o que você escreve entre os <code>&lt; &gt;</code> muda.</p>
+
+<div class="gen-demo">
+
+    <div class="gen-tabs">
+        <button class="gen-tab active" data-type="String">ListaLigada&lt;String&gt;</button>
+        <button class="gen-tab" data-type="Integer">ListaLigada&lt;Integer&gt;</button>
+        <button class="gen-tab" data-type="Cliente">ListaLigada&lt;Cliente&gt;</button>
+    </div>
+
+    <div class="gen-molde">
+        <div class="gen-molde-title">Elemento&lt;TIPO&gt; &nbsp;·&nbsp; o molde não muda</div>
+<div class="gen-molde-body"><span class="kw">public class</span> <span class="cls">Elemento</span>&lt;<span class="gen-tipo t-String" data-slot="tipo">TIPO</span>&gt; {
+    <span class="kw">private</span> <span class="gen-tipo t-String" data-slot="tipo">TIPO</span> valor;
+    <span class="kw">private</span> <span class="cls">Elemento</span>&lt;<span class="gen-tipo t-String" data-slot="tipo">TIPO</span>&gt; proximo;
+    <span class="cmt">// ... getValor() devolve TIPO, setValor(TIPO) ...</span>
+}</div>
+    </div>
+
+    <div class="gen-decl" id="genDecl"></div>
+
+    <div class="gen-toggle" id="genToggle">
+        <span>Classe <code>Cliente</code> tem <code>toString()</code>?</span>
+        <button class="gen-toggle-btn on" id="genToggleBtn">com toString()</button>
+    </div>
+
+    <div class="gen-area" id="genArea"></div>
+
+    <div class="gen-output">
+        <div class="gen-output-title">System.out:</div>
+        <div class="gen-output-content" id="genOutput"></div>
+    </div>
+</div>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O que muda com <code>&lt;TIPO&gt;</code> — o tipo vira variável</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Antes, o nó guardava <code>String</code> fixo. Agora ele guarda um <strong>tipo a definir</strong>, escrito como <code>&lt;TIPO&gt;</code> ao lado do nome da classe. Esse <code>TIPO</code> é um <strong>parâmetro de tipo</strong> — funciona como uma variável, só que em vez de guardar um valor, guarda um tipo.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Antes (aula 03/04)</th><th>Depois (genérico)</th></tr>
+                    <tr><td><code>class Elemento {</code></td><td><code>class Elemento&lt;TIPO&gt; {</code></td></tr>
+                    <tr><td><code>private String valor;</code></td><td><code>private TIPO valor;</code></td></tr>
+                    <tr><td><code>void adicionar(String v)</code></td><td><code>void adicionar(TIPO v)</code></td></tr>
+                </table>
+            </div>
+
+            <p>O nome <code>TIPO</code> é livre (a convenção Java usa letras únicas: <code>T</code>, <code>E</code>, <code>K</code>, <code>V</code>). O importante é que <strong>todo lugar que era <code>String</code> virou <code>TIPO</code></strong> — e o compilador troca <code>TIPO</code> pelo tipo real no momento em que você cria a lista.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Um molde, três tipos — o reaproveitamento</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Com a lista genérica, o mesmo código serve qualquer tipo. Quem cria a lista escolhe escrevendo o tipo entre <code>&lt; &gt;</code>:</p>
+<pre><code class="language-java">ListaLigada&lt;String&gt;  estados  = new ListaLigada&lt;String&gt;();
+ListaLigada&lt;Integer&gt; numeros  = new ListaLigada&lt;Integer&gt;();
+ListaLigada&lt;Cliente&gt; clientes = new ListaLigada&lt;Cliente&gt;();</code></pre>
+            <p>A partir daí o compilador <strong>amarra o tipo</strong>: <code>estados.adicionar(3)</code> nem compila — ele só aceita <code>String</code>. É a vantagem central de generics sobre guardar tudo como <code>Object</code>: <strong>segurança de tipo em tempo de compilação</strong>, sem precisar de <em>cast</em> na hora de ler.</p>
+            <p>Na aula são três <code>main</code> separados (<code>Programa</code>, <code>ProgramaInteiros</code>, <code>ProgramaClientes</code>), cada um exercitando a mesma <code>ListaLigada</code> com um tipo diferente.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title"><code>equals()</code> em vez de <code>equalsIgnoreCase()</code></span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>No <code>remover()</code> da aula 04, a comparação era <code>atual.getValor().equalsIgnoreCase(valor)</code>. Mas <code>equalsIgnoreCase()</code> <strong>só existe em <code>String</code></strong> — agora o valor é <code>TIPO</code>, pode ser <code>Integer</code> ou <code>Cliente</code>, que não têm esse método.</p>
+            <p>A troca é por <code>equals()</code>, que <strong>todo objeto Java tem</strong> (vem de <code>Object</code>):</p>
+<pre><code class="language-java">// antes (só String):
+if (atual.getValor().equalsIgnoreCase(valorProcurado)) { ... }
+
+// agora (qualquer tipo):
+if (atual.getValor().equals(valorProcurado)) { ... }</code></pre>
+            <p>O preço é que <code>equals()</code> compara <strong>exato</strong> — sem ignorar maiúsculas. E pra <code>Cliente</code>, o <code>equals()</code> padrão compara por <strong>identidade</strong> (mesmo objeto na memória), não por CPF. Se você quisesse "dois clientes com mesmo CPF são iguais", teria que sobrescrever <code>equals()</code> no <code>Cliente</code> — mas isso a aula não faz.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title"><code>toString()</code> no <code>Cliente</code> — por que <code>Cliente@1b6d</code></span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Quando você faz <code>System.out.println(cliente)</code>, o Java chama o <code>toString()</code> do objeto pra virar texto. O <code>toString()</code> <strong>padrão</strong> (herdado de <code>Object</code>) devolve algo inútil: o nome da classe + um código hexadecimal da memória, tipo <code>Cliente@1b6d3586</code>.</p>
+            <p>Pra sair o nome do cliente, a classe sobrescreve <code>toString()</code>:</p>
+<pre><code class="language-java">public class Cliente {
+    private String cpf;
+    private String nome;
+    // ...
+    public String toString() {
+        return this.nome;   // sem isso, imprimiria "Cliente@1b6d3586"
+    }
+}</code></pre>
+            <p>Com <code>String</code> e <code>Integer</code> esse problema não aparece, porque essas classes <strong>já trazem</strong> um <code>toString()</code> útil de fábrica. O <code>toString()</code> só vira assunto quando você guarda <strong>seus próprios objetos</strong> na lista. Use o botão <em>com / sem toString()</em> na aba <code>Cliente</code> acima pra ver a diferença.</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+(function () {
+    const $ = id => document.getElementById(id);
+
+    const DATA = {
+        String: {
+            decl: 'ListaLigada<<span class="typ">String</span>> estados = <span class="kw">new</span> ListaLigada<<span class="typ">String</span>>();\n'
+                + 'estados.<span class="mth">adicionar</span>(<span class="str">"AC"</span>);\n'
+                + 'estados.<span class="mth">adicionar</span>(<span class="str">"BA"</span>);\n'
+                + 'estados.<span class="mth">adicionar</span>(<span class="str">"CE"</span>);',
+            vals: ['AC', 'BA', 'CE'],
+            out:  ['AC', 'BA', 'CE'],
+            hasToggle: false
+        },
+        Integer: {
+            decl: 'ListaLigada<<span class="typ">Integer</span>> numeros = <span class="kw">new</span> ListaLigada<<span class="typ">Integer</span>>();\n'
+                + 'numeros.<span class="mth">adicionar</span>(<span class="num">3</span>);\n'
+                + 'numeros.<span class="mth">adicionar</span>(<span class="num">4</span>);\n'
+                + 'numeros.<span class="mth">adicionar</span>(<span class="num">5</span>);',
+            vals: ['3', '4', '5'],
+            out:  ['3', '4', '5'],
+            hasToggle: false
+        },
+        Cliente: {
+            decl: 'ListaLigada<<span class="typ">Cliente</span>> clientes = <span class="kw">new</span> ListaLigada<<span class="typ">Cliente</span>>();\n'
+                + 'clientes.<span class="mth">adicionar</span>(<span class="kw">new</span> Cliente(<span class="str">"123"</span>, <span class="str">"Jao"</span>));\n'
+                + 'clientes.<span class="mth">adicionar</span>(<span class="kw">new</span> Cliente(<span class="str">"124"</span>, <span class="str">"Juca"</span>));\n'
+                + 'clientes.<span class="mth">adicionar</span>(<span class="kw">new</span> Cliente(<span class="str">"125"</span>, <span class="str">"Ze"</span>));',
+            vals: ['Jao', 'Juca', 'Ze'],
+            out:  ['Jao', 'Juca', 'Ze'],
+            outNoToString: ['Cliente@1b6d', 'Cliente@4e25', 'Cliente@70de'],
+            hasToggle: true
+        }
+    };
+
+    let current = 'String';
+    let toStringOn = true;
+
+    function renderMolde(type) {
+        document.querySelectorAll('.gen-tipo[data-slot="tipo"]').forEach(el => {
+            el.textContent = type;
+            el.className = 'gen-tipo t-' + type;
+        });
+    }
+
+    function renderDecl(type) {
+        $('genDecl').innerHTML = DATA[type].decl;
+    }
+
+    function renderArea(type) {
+        const vals = DATA[type].vals;
+        const area = $('genArea');
+        let html = '';
+        vals.forEach((v, i) => {
+            const isLast = i === vals.length - 1;
+            const next = isLast
+                ? '<span class="gen-null">null</span>'
+                : '<span class="gen-link">●</span>';
+            html += '<div class="gen-node"><div class="gen-node-val">' + v + '</div>'
+                  + '<div class="gen-node-next">' + next + '</div></div>';
+            if (!isLast) html += '<div class="gen-arrow">→</div>';
+        });
+        area.innerHTML = html;
+    }
+
+    function renderOutput(type) {
+        const d = DATA[type];
+        const lines = (type === 'Cliente' && !toStringOn) ? d.outNoToString : d.out;
+        const warn = (type === 'Cliente' && !toStringOn);
+        const out = $('genOutput');
+        out.innerHTML = '';
+        out.appendChild(mkLine('Tamanho: ' + d.vals.length, false));
+        lines.forEach(l => out.appendChild(mkLine(l, warn)));
+    }
+
+    function mkLine(text, warn) {
+        const div = document.createElement('div');
+        div.className = 'gen-output-line' + (warn ? ' warn' : '');
+        div.textContent = text;
+        return div;
+    }
+
+    function renderToggle(type) {
+        const t = $('genToggle');
+        if (DATA[type].hasToggle) {
+            t.classList.add('visible');
+        } else {
+            t.classList.remove('visible');
+        }
+    }
+
+    function select(type) {
+        current = type;
+        document.querySelectorAll('.gen-tab').forEach(b => {
+            b.classList.toggle('active', b.dataset.type === type);
+        });
+        renderMolde(type);
+        renderDecl(type);
+        renderArea(type);
+        renderToggle(type);
+        renderOutput(type);
+    }
+
+    function toggleToString() {
+        toStringOn = !toStringOn;
+        const btn = $('genToggleBtn');
+        btn.classList.toggle('on', toStringOn);
+        btn.textContent = toStringOn ? 'com toString()' : 'sem toString()';
+        renderOutput('Cliente');
+    }
+
+    // Event delegation no document — sobrevive ao rewrite de innerHTML do layout.js.
+    document.addEventListener('click', e => {
+        const tab = e.target.closest('.gen-tab');
+        if (tab) { select(tab.dataset.type); return; }
+        if (e.target.closest('#genToggleBtn')) { toggleToString(); return; }
+    });
+
+    // Init — espera o layout.js terminar de montar o DOM.
+    function init() {
+        if (!$('genArea')) { setTimeout(init, 60); return; }
+        select('String');
+    }
+    init();
+})();
+</script>
+
+</body>
+</html>

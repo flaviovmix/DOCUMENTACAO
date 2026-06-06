@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Por Que o Desenho Corta — Interfaces Que Se Ajustam — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Por Que o Desenho Corta</h1>
+
+<div class="audio-player" data-src="audio/por-que-o-desenho-corta.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Você tem um gráfico de linha numa tela. A linha de baixo desce e simplesmente some na borda, como se cortada com tesoura. O reflexo é pensar "o gráfico está grande demais, deixa ele menor". Mas diminuir a altura não muda nada. Esse é o ponto de partida: por que mexer no tamanho não resolve? A resposta junta duas ideias, o recorte do viewBox e o estouro da curva suave.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O sintoma — a linha some na borda</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Todos os pontos de dado estão dentro da área visível, mas um pedaço da linha aparece cortado bem na beirada de baixo. E o detalhe que engana: encolher o gráfico em pixels não devolve o pedaço que sumiu. Isso é a primeira pista de que o corte não é uma questão de tamanho, e sim de coordenada.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O viewBox e o recorte — corte é de coordenada, não de tamanho</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Um SVG tem um sistema de coordenadas interno, o <strong>viewBox</strong>. Você declara, por exemplo, que o espaço vai de 0 a 600 na horizontal e de 0 a 200 na vertical. Tudo o que você desenha usa essas coordenadas. A regra: o que cai fora do viewBox é recortado e não aparece.</p>
+            <pre><code class="language-html">&lt;svg viewBox="0 0 600 200" preserveAspectRatio="none"&gt;
+    &lt;path d="..." class="linha"&gt;&lt;/path&gt;
+&lt;/svg&gt;</code></pre>
+            <p>O <code>preserveAspectRatio="none"</code> estica esse espaço interno pra preencher o tamanho real na tela. E aqui está o que fecha o caso: a conta do recorte continua sendo feita no espaço interno de coordenadas, não nos pixels finais. Por isso mudar a altura em pixels não muda o que é cortado. O ponto que está fora continua fora depois de esticar.</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Pergunta</th><th>Resposta</th></tr>
+                    <tr><td>O corte é por falta de espaço na tela?</td><td>Não. É a curva saindo do viewBox.</td></tr>
+                    <tr><td>Diminuir a altura em px resolve?</td><td>Não. O recorte é no espaço de coordenadas.</td></tr>
+                    <tr><td>Onde está o problema então?</td><td>Em algo que passa do limite do viewBox.</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">A curva que estoura — overshoot da Bézier</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A linha não era reta ligando ponto a ponto. Era uma curva suave. Pra suavizar, entre dois pontos de dado o desenho calcula pontos de controle que puxam a curva e formam aquela barriga macia. Isso é uma curva de <strong>Bézier</strong> cúbica, alimentada por um método chamado <strong>Catmull-Rom</strong>.</p>
+            <p>O problema aparece numa queda íngreme: o ponto de controle pode ser jogado pra além do ponto final. A curva então mergulha abaixo do menor valor real antes de voltar. Esse exagero tem nome, <strong>overshoot</strong>, o estouro. Mesmo com todos os dados dentro da área, a curva suave inventa um pedaço que passa do limite, e é esse pedaço que o viewBox recorta.</p>
+            <pre><code class="language-javascript">// pontos de controle de cada trecho (Catmull-Rom -&gt; Bézier)
+const c1y = p1.y + (p2.y - p0.y) / 6;
+const c2y = p2.y - (p3.y - p1.y) / 6;
+// numa descida ingreme, c1y/c2y podem cair ABAIXO do menor ponto</code></pre>
+            <p>A primeira tentativa foi dar uma folga, uma margem extra em cima e embaixo na escala, uns quinze por cento. Ajuda, mas é remendo: numa queda mais íngreme ainda estoura. Folga não é garantia.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">A garantia — casco convexo e clamp</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A solução que resolve de vez vem de uma propriedade da curva de Bézier: o <strong>casco convexo</strong>. A curva inteira fica sempre dentro do polígono formado pelos seus pontos (o início, o fim e os dois pontos de controle). A imagem que ajuda: estique um elástico por fora desses pontos, a curva nunca sai dele.</p>
+            <p>A consequência é direta. Se você <strong>prender</strong> os pontos de controle dentro da faixa que pode ser desenhada, ou seja, não deixar nenhum passar do teto nem do piso, então a curva também não passa. Não por sorte, por matemática. Esse prender chama <strong>clamp</strong>: limitar o valor a um mínimo e um máximo.</p>
+            <pre><code class="language-javascript">const clampY = (v) =&gt; Math.max(topo, Math.min(piso, v));
+
+// prende os controles dentro da faixa desenhavel:
+const c1y = clampY(p1.y + (p2.y - p0.y) / 6);
+const c2y = clampY(p2.y - (p3.y - p1.y) / 6);</code></pre>
+            <p>Prendeu os controles, acabou o corte. Os pontos de dado já ficam dentro por causa da folga na escala, e os controles presos garantem que nada vive fora do casco. A curva inteira passa a respeitar a borda.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atualizando os Repos no GitHub — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Atualizando os Repos no GitHub</h1>
+
+<div class="audio-player" data-src="audio/repos.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Este making-of é diferente: não é sobre uma tela, é sobre uma <strong>tarefa de bastidor</strong> que a gente faz toda hora e quase nunca para pra entender. Salvar o trabalho no GitHub. No fim do dia, um comando só (<code>/commit</code>) levou três projetos inteiros pro GitHub, cada um arrumadinho. O episódio abre essa caixa preta: os conceitos de Git por trás (branch, commit, push, squash, merge ours) e o passo mais valioso do roteiro, que nem é um comando: é a pausa pra olhar a lista antes de empurrar.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Três repos pro GitHub, organizados">O que a gente queria</h2>
+<p>Pegar tudo que mudou em <strong>três projetos diferentes</strong> e mandar pro GitHub de um jeito organizado, sem misturar lixo e sem quebrar o histórico. Os três: o <strong>XT-ZERO</strong> (o repositório principal na raiz <code>c:\src</code>, com o Java do treinamento, as instruções, o backup das memórias e a raiz da doc); o <strong>XT-DOCUMENTACAO</strong> (só o site de estudo: páginas, áudios, imagens); e o <strong>Nexus</strong> (o projeto grande, Spring Boot + SvelteKit). Cada um é um repositório Git independente ("repositório" é só o nome chique pra a pasta que o Git está vigiando). E a primeira ideia: isso não foi feito na mão, comando por comando. Foi um <strong>slash command</strong>.</p>
+
+<h2 id="conceitos" data-toc-title="Os conceitos" data-sub="Slash command, branch, commit/push, squash, ours">Os conceitos</h2>
+<p><strong>Slash command.</strong> Um roteiro salvo. A lista exata de passos pra atualizar um repositório, escrita uma vez num arquivo (dezesseis passos, na ordem, com avisos de onde parar e perguntar). Depois, em vez de lembrar de cada passo, é só digitar <code>/commit</code>. O valor não é fazer mais rápido, é fazer <strong>sempre igual</strong>, sem pular passo por esquecimento.</p>
+<p><strong>Branch.</strong> Uma linha do tempo paralela do projeto. A gente trabalha na <code>dev</code>, onde a sujeira acontece (commit pela metade, testa, conserta). E tem a <code>main</code>, a versão limpa, a oficial. A bagunça fica na dev; na main entra só o resultado final. Assim o histórico da main fica legível: uma sequência de "essa feature ficou pronta", em vez de duzentos "ops, corrigi um typo".</p>
+<p><strong>Commit e push.</strong> Commit é tirar uma foto do estado dos arquivos e guardar no histórico, com uma mensagem. Essa foto fica na sua máquina. Push é empurrar as fotos pra nuvem, pro GitHub. <strong>Commit salva, push publica.</strong> Um detalhe que o roteiro insiste: antes de commitar, escolher <strong>a dedo</strong> o que entra. O atalho preguiçoso "adicionar tudo" é cego, pega qualquer coisa na pasta. O roteiro manda olhar a lista primeiro.</p>
+<p><strong>Merge squash.</strong> Merge é juntar duas branches; squash quer dizer "amassar". Então pega todos os commits bagunçados da dev e amassa num <strong>único commit limpo</strong> na main. Os quinze passos intermediários ficam guardados na dev, mas a main recebe um commit só, tipo "essa feature ficou pronta".</p>
+<p><strong>Merge ours (o passo crítico).</strong> Depois de amassar a dev na main, um último passo: um merge com a <strong>estratégia ours</strong> ("a nossa"). Quando você faz squash, a main ganha o conteúdo, mas o Git não registra que a dev "já foi mesclada". Pro Git, aqueles commits ainda estão pendentes, e no dia seguinte ele tenta trazer tudo de novo, dando conflito. O merge ours é um <strong>aperto de mão</strong>: diz pro Git "registra que dev e main estão em dia, mas não muda o conteúdo da main". Sem ele, todo merge vira briga de conflitos no dia seguinte.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="O fluxo real do dia">Como montamos, o fluxo real</h2>
+<p>Digitei o comando e disse "todos os projetos". O assistente foi numa lista que eu mantenho (os repositórios ativos), achou os três (XT-ZERO, XT-DOCUMENTACAO, Nexus) e, antes de tocar no Git, olhou o <strong>status</strong> dos três (<code>git status</code> mostra o que mudou desde a última foto).</p>
+<p>Depois de confirmar o que entrava, um passo de segurança que o roteiro exige: <strong>copiar as memórias e configurações</strong> pra dentro do repositório, pra irem junto no backup. Só então o ciclo do Git. Pro XT-ZERO: adicionar os arquivos confirmados, commitar na dev, push da dev; depois o merge pra main (trocar pra main, merge squash, commitar o squash, merge ours pra fechar, push da main, voltar pra dev). Esse vai-e-volta de branch é o coração do roteiro. O XT-DOCUMENTACAO foi a mesma dança.</p>
+<p>O <strong>Nexus tem uma diferença</strong>: ele <em>não</em> faz merge pra main. Por enquanto só commita e dá push na dev (a regra está na própria lista de repositórios). Por quê? Porque o Nexus ainda muda muito; não faz sentido manter uma "versão oficial limpa" de algo que muda toda semana. Pra ele o ciclo parou no push da dev (foram 76 arquivos modificados e 30+ novos, toda a feature de finanças, com onze migrations).</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="A pausa que salvou, e o tamanho dos arquivos">Decisões e becos</h2>
+<p><strong>Os três arquivos estranhos (o melhor pedaço).</strong> No XT-ZERO o status mostrou três suspeitos: um <code>CLAUDE(1).md</code> (com aquele "(1)" de download duplicado), um <code>virus.png</code> e um <code>Screenshot.png</code>. Em vez de mandar tudo pra dentro, o assistente <strong>parou e perguntou</strong>. O <code>CLAUDE(1).md</code> era lixo mesmo, apaguei. Já o <code>virus.png</code> eu mandei manter de propósito (quero estudar depois). Se tivesse usado o "adicionar tudo" cego, ou apagaria minha anotação, ou comitaria o lixo. A pergunta evitou os dois. A lição: <strong>o passo mais valioso do roteiro não é um comando do Git, é a pausa pra um humano olhar a lista.</strong></p>
+<p><strong>Cada projeto pela sua regra.</strong> Dois fazem merge na main, o Nexus não. Um roteiro bom não é "faz igual pra todos", é "faz o certo pra cada um".</p>
+<p><strong>O tamanho dos arquivos.</strong> No push da documentação, o GitHub soltou um <strong>aviso</strong> (não erro): o <code>menu.m4a</code> tem 53,87 MB, acima dos 50 recomendados. Passou normal. Isso levantou a dúvida: o limite é da conta inteira ou por projeto? No Git comum, o limite é <strong>por arquivo e por repositório</strong>, não há soma da conta: 50 MB dá aviso amarelo, 100 MB é o limite duro; por repo, recomenda-se abaixo de 1 GB. Não existe teto somando os três projetos, cada um vive isolado. A exceção é o <strong>Git LFS</strong> (pra arquivos grandes, tipo vídeo e áudio): aí sim existe uma cota da <em>conta</em> inteira (no plano grátis, 1 GB de armazenamento e 1 GB de tráfego/mês). Ponta solta pro futuro: uma hora vale mover os <code>.m4a</code> pesados pro LFS pra não inflar o repo. Fica anotado.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>Um comando salvo dispara um roteiro de dezesseis passos: olha o que mudou, pergunta antes de mandar qualquer coisa estranha, faz backup, commita e dá push na branch de trabalho, e pros projetos que pedem, amassa tudo num commit limpo na main e fecha o histórico com o aperto de mão do merge ours. Cada projeto seguindo a sua regra. Os conceitos que ficam: <strong>branch</strong> é linha do tempo paralela, <strong>commit</strong> salva, <strong>push</strong> publica, <strong>squash</strong> amassa, <strong>ours</strong> reconcilia, e o limite de tamanho no GitHub é por arquivo e por repositório, não da conta inteira (a não ser que você entre no mundo do LFS).</p>
+
+</body>
+</html>

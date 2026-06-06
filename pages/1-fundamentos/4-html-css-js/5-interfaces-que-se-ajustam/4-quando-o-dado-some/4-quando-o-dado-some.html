@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quando o Dado Some — Interfaces Que Se Ajustam — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Quando o Dado Some</h1>
+
+<div class="audio-player" data-src="audio/quando-o-dado-some.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Os três problemas anteriores foram sobre o visual: o desenho que corta, a caixa que preenche o espaço, a decisão que precisa medir. Esse troca de assunto: é sobre o dado que some, mesmo existindo. O sintoma foi um painel mostrando dois registros quando havia vários. A causa quase sempre são duas coisas se somando.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O sintoma — tenho vários, só aparecem dois</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Um painel de lançamentos mostrava dois itens. Mas existiam vários no banco. A pergunta foi direta: por que só dois? Esse tipo de sumiço costuma ter causa boba, e quase sempre são dois fatores juntos: o que é pedido e o que dispara o pedido.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O filtro implícito de escopo</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A primeira causa: um filtro escondido. A tela passava pro componente o mês atual. O componente, por sua vez, pedia ao servidor só os lançamentos daquele mês. Os outros existiam, mas nunca foram pedidos. Não é que sumiram, é que nunca foram buscados.</p>
+            <pre><code class="language-javascript">// a tela passa o mes atual...
+&lt;Lancamentos mes={mesAtual()} /&gt;
+
+// ...e o componente busca SO aquele mes
+api.listLancamentos({ mes }); // os outros meses nunca chegam</code></pre>
+            <p>A lição é a primeira coisa a desconfiar quando um dado some: o escopo da consulta. Muitas vezes tem um parâmetro, um filtro de data, um "só o ativo", que você esqueceu que estava ali. Antes de achar bug grande, confira o que você está de fato pedindo.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O gatilho que nunca acontece</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A segunda causa é mais sutil. O componente tinha scroll infinito. A ideia era boa: conforme você rola pro fim, ele carrega o mês anterior, depois o anterior, e vai puxando o histórico. Mas tinha uma condição escondida: isso só dispara quando a lista transborda e dá pra rolar.</p>
+            <pre><code class="language-javascript">function onScroll(el) {
+    // so carrega mais se faltam menos de 80px pro fim
+    if (el.scrollHeight - el.scrollTop - el.clientHeight &lt; 80) {
+        carregarProximoMes();
+    }
+}
+// com poucos itens nao ha rolagem -&gt; onScroll nunca dispara</code></pre>
+            <p>Com poucos itens não havia rolagem, então o gatilho nunca era acionado, e os meses antigos nunca chegavam. Dois filtros se somando: o de mês na consulta, e a condição de carregamento que dependia de um evento que não acontecia.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">A correção e o trade-off</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A saída foi pedir todos os meses de uma vez e agrupar no próprio cliente, em vez de depender do scroll pra ir buscando aos poucos. Funciona, mostra tudo.</p>
+            <pre><code class="language-javascript">// antes: mes atual + scroll pra carregar o resto
+&lt;Lancamentos mes={mesAtual()} /&gt;
+
+// depois: pede tudo, agrupa por mes no cliente
+&lt;Lancamentos mes="" /&gt;</code></pre>
+            <p>Mas toda mudança de escopo tem efeito colateral, e vale dizer em voz alta. As contagens que apareciam, tipo lançados e pendentes, antes eram do mês. Agora viram totais de tudo. Mudou o filtro, mudou o significado dos números. Não é errado, mas é uma decisão, melhor tomar consciente do que ser pego de surpresa.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

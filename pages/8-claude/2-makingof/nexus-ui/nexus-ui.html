@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus · UI e Componentes — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+    <div class="home-header">
+        <h1 class="home-title">NEXUS · UI E COMPONENTES</h1>
+        <p class="home-sub">Padronizar a interface: menus, botões, dropdowns e o comportamento dos modais</p>
+    </div>
+
+    <div class="home-grid">
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>A barra do topo e a subnav que escondem dentro de um botão "Mais" o que não cabe quando a janela encolhe, e a armadilha de flexbox por trás.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/menu.png" alt="Menu que Vira Mais">
+            </div>
+            <div class="card-bar">
+                <a href="../2-menu/menu.html" class="card-tag" style="--tag-clr:#2563eb;">MENU QUE VIRA MAIS</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Como pegamos os botões de ação (editar, excluir, compartilhar) espalhados e inconsistentes pelo app e padronizamos tudo num único componente reutilizável.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/botoes.png" alt="Botões num Componente Só">
+            </div>
+            <div class="card-bar">
+                <a href="../3-botoes/botoes.html" class="card-tag" style="--tag-clr:#0891b2;">BOTÕES NUM COMPONENTE SÓ</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Quase uma continuação dos botões: padronizar todos os dropdowns do app num molde único (o StyledSelect). O detalhe novo: o navegador não deixa você pintar a listinha do select nativo, então o caminho é recriar com HTML comum mais um portal que teletransporta a lista pro fim da página, pra não ficar presa nem atrás de um modal. A troca foi em ondas, e no meio descobrimos que o obrigatório estava no código, não no atributo.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/dropdown.png" alt="Dropdown que o Browser Não Deixa Pintar">
+            </div>
+            <div class="card-bar">
+                <a href="../6-dropdown/dropdown.html" class="card-tag" style="--tag-clr:#0369a1;">DROPDOWN QUE O BROWSER NÃO DEIXA PINTAR</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>O botão "Mais" virou um ícone de hamburger, com o nome da seção ativa do lado no celular. E o conserto de um bug de corrida: dois observadores medindo ao mesmo tempo cacheavam largura zero e o menu transbordava.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/hamburger.png" alt="Hamburger e a Corrida">
+            </div>
+            <div class="card-bar">
+                <a href="../7-hamburger/hamburger.html" class="card-tag" style="--tag-clr:#ea580c;">HAMBURGER E A CORRIDA</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Clicar fora de um modal no Nexus fechava ele, e isso atrapalhava nos modais cheios de conteúdo. A gente desligou o fechar-ao-clicar-fora em todos. O conceito por trás é a propagação de eventos (o clique que borbulha até o fundo escuro), e a parte difícil não foi o código: foi separar os modais (não fecham) dos menus (devem fechar) entre os 40 lugares que a busca achou.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/clique-fora.png" alt="Clique Fora Não Fecha">
+            </div>
+            <div class="card-bar">
+                <a href="../16-clique-fora/clique-fora.html" class="card-tag" style="--tag-clr:#9333ea;">CLIQUE FORA NÃO FECHA</a>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

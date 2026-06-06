@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O alívio: Svelte — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>O alívio: Svelte</h1>
+
+<div class="audio-player" data-src="audio/svelte.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Você sentiu a dor: sem framework, é você quem mantém a tela em sincronia com o estado, na mão, sempre. O <strong>Svelte</strong> resolve exatamente isso. Vamos montar o projeto e refazer o <strong>mesmo</strong> contador e a mesma lista — e ver a máquina manual evaporar.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O que o Svelte resolve</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Na versão na unha, cada mudança exigia duas coisas: mexer no estado <strong>e</strong> mandar pintar na tela (<code>textContent</code>, <code>desenharLista()</code>). A ideia do Svelte é <strong>reatividade</strong>: você declara o estado, escreve ele no HTML, e o framework <strong>mantém a tela em dia sozinho</strong>. Você cuida do estado; ele cuida da tela.</p>
+            <p>É a mesma peça que o Nexus usa no front (SvelteKit) — por isso ela entra aqui.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Montar o projeto — scaffold</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Antes de escrever lógica, precisa existir um projeto. O <strong>scaffold</strong> monta a estrutura inteira de uma vez (pastas, configs, um exemplo que já roda). Você não cria os arquivos um a um.</p>
+<pre><code class="language-bash">npx sv create 01-ola-web-svelte</code></pre>
+            <p>Ele faz <strong>perguntas</strong> no terminal. Pras escolhas mais simples pra aprender:</p>
+            <ul>
+                <li><strong>Template:</strong> <code>minimal</code> (o mais enxuto)</li>
+                <li><strong>TypeScript?</strong> Não — JavaScript puro, menos ruído</li>
+                <li><strong>Add-ons?</strong> Nenhum por agora</li>
+            </ul>
+            <p>O que ele cria, em dois grupos:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Peça</th><th>O que é</th><th>Você mexe?</th></tr>
+                    <tr><td><code>src/</code></td><td>Onde você trabalha (as páginas)</td><td>Sim</td></tr>
+                    <tr><td><code>package.json</code></td><td>Lista de dependências e scripts (<code>dev</code>, <code>build</code>)</td><td>Raramente</td></tr>
+                    <tr><td><code>svelte.config.js</code>, <code>vite.config.js</code></td><td>Configs que ligam as ferramentas</td><td>Quase nunca</td></tr>
+                    <tr><td><code>node_modules/</code></td><td>As dependências baixadas (gerado)</td><td>Nunca — nem entra no git</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Instalar — npm install</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O scaffold só lista as dependências no <code>package.json</code>; baixá-las é um passo separado. Dentro da pasta do projeto:</p>
+<pre><code class="language-bash">cd 01-ola-web-svelte
+npm install   # (ou só "npm i")</code></pre>
+            <p>O <code>npm install</code> <strong>lê o <code>package.json</code></strong> e baixa tudo pra dentro de <code>node_modules/</code>. Avisos de "low severity vulnerabilities" são comuns e de baixa gravidade — <strong>pode ignorar</strong> (não rode <code>audit fix --force</code>, que pode quebrar coisas).</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Rodar — npm run dev</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Liga o <strong>servidor de desenvolvimento</strong>:</p>
+<pre><code class="language-bash">npm run dev</code></pre>
+            <ul>
+                <li>Ele imprime um endereço, quase sempre <strong>http://localhost:5173/</strong> — abra no navegador.</li>
+                <li>O terminal fica <strong>ocupado</strong> segurando o servidor. Pra parar: <strong>Ctrl + C</strong>.</li>
+                <li><strong>Hot reload:</strong> com ele rodando, salvou um arquivo → a tela atualiza sozinha, sem reiniciar.</li>
+            </ul>
+            <p>É <strong>exatamente</strong> isto que significa "subir o front" de qualquer projeto SvelteKit — inclusive o Nexus. Lá são dois servidores: o front com <code>npm run dev</code> (:5173) e o back com <code>./mvnw spring-boot:run</code> (:8080).</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O contador reativo — +page.svelte</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>No SvelteKit, a pasta <code>src/routes/</code> vira o roteador, e o arquivo <strong><code>+page.svelte</code></strong> direto nela é a página da raiz (<code>/</code>). O <code>+</code> marca arquivos especiais do framework. É lá que escrevemos. Um arquivo <code>.svelte</code> é um <strong>componente</strong>: junta a lógica (<code>&lt;script&gt;</code>) e a marcação (HTML) num arquivo só.</p>
+<pre><code class="language-svelte">&lt;script&gt;
+    let contador = $state(0);
+    let itens = $state(["Maçã", "Banana", "Laranja"]);
+&lt;/script&gt;
+
+&lt;h1&gt;Olá Web na unha — agora em Svelte&lt;/h1&gt;
+
+&lt;p&gt;Contador: {contador}&lt;/p&gt;
+&lt;button onclick={() =&gt; contador++}&gt;+1&lt;/button&gt;
+
+&lt;h2&gt;Lista&lt;/h2&gt;
+&lt;ul&gt;
+    {#each itens as item, i}
+        &lt;li&gt;{item} &lt;button onclick={() =&gt; itens.splice(i, 1)}&gt;remover&lt;/button&gt;&lt;/li&gt;
+    {/each}
+&lt;/ul&gt;</code></pre>
+
+            <h3><code>$state(...)</code> — o estado reativo</h3>
+            <p><code>$state</code> é uma <strong>rune</strong>: uma palavrinha do Svelte (começa com <code>$</code>) que marca a variável como <strong>reativa</strong>. Quando ela muda, tudo que a usa na tela se atualiza sozinho. No JS puro a variável era "burra"; <code>$state</code> deixa ela "esperta".</p>
+
+            <h3><code>{contador}</code> — mostrar o valor</h3>
+            <p>As chaves <code>{ }</code> colam o valor da variável no meio do HTML, <strong>ao vivo</strong>: mudou <code>contador</code>, esse ponto se repinta. Substitui o <code>numero.textContent = contador</code> da versão na unha.</p>
+
+            <h3><code>onclick={() =&gt; contador++}</code> — o clique</h3>
+            <p>Você liga o evento <strong>direto no elemento</strong>, sem <code>getElementById</code> nem <code>addEventListener</code>. O <code>() =&gt; contador++</code> é uma <strong>arrow function</strong> (função curta): o mesmo que <code>function () { contador = contador + 1 }</code>. E repare: <strong>não tem</strong> linha de "pintar na tela".</p>
+
+            <h3><code>{#each}</code> — a lista</h3>
+            <p>É um laço <strong>dentro do HTML</strong>: "para cada item de <code>itens</code>, desenhe este <code>&lt;li&gt;</code>". O Svelte vigia o array e adiciona/remove os <code>&lt;li&gt;</code> sozinho. Esse pedacinho substitui <strong>tudo</strong> aquilo: o <code>for</code>, o <code>createElement</code>, o <code>appendChild</code>, o <code>innerHTML</code> e a <code>desenharLista</code> inteira.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O que evaporou — na mão vs Svelte</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O mapa do que o framework tirou das suas costas:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Na unha (JavaScript)</th><th>Em Svelte</th></tr>
+                    <tr><td><code>getElementById</code></td><td>— (não precisa achar nada)</td></tr>
+                    <tr><td><code>addEventListener("click", ...)</code></td><td><code>onclick={...}</code> no elemento</td></tr>
+                    <tr><td><code>numero.textContent = ...</code></td><td><code>{contador}</code> (atualiza sozinho)</td></tr>
+                    <tr><td><code>for</code> + <code>createElement</code> + <code>appendChild</code> + <code>innerHTML</code> + <code>desenharLista()</code></td><td>um <code>{#each}</code></td></tr>
+                </table>
+            </div>
+            <p>O detalhe que fecha a história: remover um item na unha era <code>itens.splice(i,1)</code> <strong>+</strong> <code>desenharLista()</code>. Em Svelte ficou só <code>itens.splice(i,1)</code>. <strong>A linha de redesenhar — a que você era obrigado a lembrar — sumiu.</strong> Você cuida do estado, o framework cuida da tela.</p>
+            <p class="muted"><code>$state</code> é uma das runes; tem outras como <code>$derived</code> e <code>$effect</code>, pra mais pra frente.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Código completo — +page.svelte</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O arquivo inteiro que vai em <code>src/routes/+page.svelte</code>:</p>
+<pre><code class="language-svelte">&lt;script&gt;
+    let contador = $state(0);                          // o ESTADO, declarado
+    let itens = $state(["Maçã", "Banana", "Laranja"]); // a lista, também estado
+&lt;/script&gt;
+
+&lt;h1&gt;Olá Web na unha — agora em Svelte&lt;/h1&gt;
+
+&lt;p&gt;Contador: {contador}&lt;/p&gt;
+&lt;button onclick={() =&gt; contador++}&gt;+1&lt;/button&gt;
+
+&lt;h2&gt;Lista&lt;/h2&gt;
+&lt;ul&gt;
+    {#each itens as item, i}
+        &lt;li&gt;{item} &lt;button onclick={() =&gt; itens.splice(i, 1)}&gt;remover&lt;/button&gt;&lt;/li&gt;
+    {/each}
+&lt;/ul&gt;</code></pre>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

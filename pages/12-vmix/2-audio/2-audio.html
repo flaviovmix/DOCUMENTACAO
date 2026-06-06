@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>vMix — Áudio — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>vMix — Áudio</h1>
+
+<p>O áudio do vMix tem duas metades. Primeiro o <strong>Mixer de Áudio</strong>: o controle de cada fonte de som por dentro (volume, mute, solo, ganho, equalizador). Depois o <strong>roteamento</strong>: pra onde esse som vai, os oito buses (Master e A–G) e a tela de Audio Outputs. Cada metade tem seu próprio áudio.</p>
+
+<h2>O Mixer de Áudio</h2>
+
+<div class="audio-player" data-src="audio/audio-mixer.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O que é o Mixer de Áudio</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>É uma aba que abre do lado direito da tela. Cada input que tem som ganha um canal (um <strong>fader</strong>), mais o fader do <strong>Master</strong>, que é a mistura final de tudo. A ideia é a mesma de uma mesa de som: cada microfone, vídeo ou fonte de áudio tem seu próprio volume e seus próprios ajustes, e o Master é a soma de todos.</p>
+            <p>Cada fader já mostra um medidor de nível pros canais esquerdo e direito.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Os controles de cada fader</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Controle</th><th>O que faz</th></tr>
+                    <tr><td><strong>Volume</strong> (fader)</td><td>Sobe e desce o nível daquela fonte.</td></tr>
+                    <tr><td><strong>Mute</strong> (alto-falante)</td><td>Liga/desliga o som da fonte. Mutado, o medidor fica azul em vez de verde.</td></tr>
+                    <tr><td><strong>Solo</strong> (S)</td><td>Ouve só aquela fonte no seu fone, sem mexer na mistura do público. Nunca afeta stream/gravação. Botão direito = solo em várias fontes.</td></tr>
+                    <tr><td><strong>Engrenagem</strong> (cog)</td><td>Abre o Audio Settings, onde ficam os ajustes finos.</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Automatically Mix Audio (o "Follow")</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O botão de seta verde e laranja liga o <strong>Automatically Mix Audio</strong> (em mesas de TV chamam de "Follow"). Quando ligado, o vMix muta sozinho as fontes que não estão no ar e abre o som da fonte que entrou. Assim você não precisa subir e descer cada microfone na mão a cada troca de câmera.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Audio Settings — ajuste fino por fonte</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Clicando na engrenagem do fader:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Ajuste</th><th>Pra que serve</th></tr>
+                    <tr><td><strong>Gain</strong></td><td>Amplifica a fonte em decibéis. Útil pra microfone fraco.</td></tr>
+                    <tr><td><strong>Headphones Volume</strong></td><td>Volume de fone separado do que vai pro stream. Dá pra deixar sua voz cheia no stream mas mutada no seu fone (evita o eco com atraso).</td></tr>
+                    <tr><td><strong>EQ</strong></td><td>Ajusta graves e agudos.</td></tr>
+                    <tr><td><strong>Compressor</strong></td><td>Aproxima o som mais alto do mais baixo, deixa o volume mais parelho.</td></tr>
+                    <tr><td><strong>Noise Gate</strong></td><td>Corta o ruído de fundo quando o som cai abaixo de um limite.</td></tr>
+                    <tr><td><strong>Delay</strong></td><td>Atrasa o áudio em ms pra sincronizar com o vídeo.</td></tr>
+                    <tr><td><strong>Channel</strong></td><td>De qual canal vem o som. Separate Mono pra mic só num lado.</td></tr>
+                    <tr><td><strong>Plugins VST3</strong></td><td>Plugins de áudio de terceiros, o mesmo padrão da produção musical.</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Medidores de nível (dBFS)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O vMix mostra medidores em quatro lugares: tela principal, ao lado de cada input, no Mixer e no Audio Settings. São medidos em <strong>dBFS</strong>, onde 0 dB é o volume máximo possível. Regra prática: som forte o bastante pra aparecer bem nas faixas coloridas, mas sem bater no topo, que é onde distorce.</p>
+        </div>
+    </div>
+
+</div>
+
+<h2>Roteamento e Saídas</h2>
+
+<div class="audio-player" data-src="audio/audio-roteamento.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Por que mais de um caminho de som</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Numa transmissão real quase nunca dá pra ter um som só. Você precisa de um mix pro público do stream, às vezes outro pro seu fone, e às vezes um terceiro pra um convidado remoto que não pode ouvir a própria voz voltando. Pra isso o vMix tem oito caminhos de saída independentes.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Os oito buses — Master e A–G</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Bus</th><th>Pra onde vai</th></tr>
+                    <tr><td><strong>Master (M)</strong></td><td>A mistura principal. Vai pra gravação, streaming e External Output. Toda fonte nova entra aqui por padrão.</td></tr>
+                    <tr><td><strong>A, B, C, D, E, F, G</strong></td><td>Sete mixes adicionais, cada um saindo por um dispositivo configurado em Audio Outputs.</td></tr>
+                </table>
+            </div>
+            <p>Embaixo de cada input ficam os botões <strong>M, A e B</strong>, que decidem pra quais buses aquela fonte vai. Pra ver C–G, botão direito no A ou no B. Uma fonte pode ir pra um bus, pra vários, ou ser tirada do Master e mandada só pra um bus específico.</p>
+            <p>Clicar o M embaixo de um bus A–G faz aquele bus também entrar no Master. Tem exceção no vMix Call por causa do mix-minus (veja abaixo).</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">A tela de Audio Outputs</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Em <code>Settings → Audio Outputs</code>. É onde cada bus é ligado a um dispositivo de saída real.</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Campo</th><th>O que é</th></tr>
+                    <tr><td><strong>Master Output</strong></td><td>Dispositivo do mix principal. No caso comum, o Default Windows Playback Device.</td></tr>
+                    <tr><td><strong>Headphones</strong></td><td>Dispositivo do fone. Igual ao Master, mas com Solo só ele toca.</td></tr>
+                    <tr><td><strong>A–G</strong></td><td>Dispositivo + par de canais por bus. Só ligam quando você seleciona Enabled ou um dispositivo (o Master fica sempre ativo).</td></tr>
+                    <tr><td><strong>Par de canais (1+2, 3+4, 5+6)</strong></td><td>Muitas placas têm mais de uma saída estéreo. 1+2 é o estéreo comum; 3+4 e 5+6 usam as outras saídas da mesma placa. Dá pra mandar 3 mixes estéreo por uma placa só.</td></tr>
+                    <tr><td><strong>Default Bus for New Inputs</strong></td><td>Pra qual bus toda fonte nova entra por padrão. Normalmente Master.</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Caso real — mix separado pro cabo virtual (VB-Cable)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Uso comum: um mix indo pro Windows normal e outro indo pra dentro de outro programa do PC (uma chamada, um OBS, um gravador separado). Pra isso usa um <strong>cabo de áudio virtual</strong>, como o VB-Cable, que só existe dentro do computador e liga a saída de um programa na entrada de outro.</p>
+            <p>No exemplo: <strong>Master Output</strong> no Default Windows (o que você ouve nas caixas) e <strong>Bus A</strong> no <code>CABLE Input (VB-Audio Virtual Cable)</code>. Tudo que você manda pro bus A vai pra dentro do cabo, e o outro programa pega esse som pela entrada do cabo. Você controla o que vai pra cada lado escolhendo, em cada fonte, se ela vai pro M, pro A, ou pros dois.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Mix-minus e mixer externo</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p><strong>Mix-minus</strong> é mandar pra alguém todo o som <em>menos</em> a voz da própria pessoa. É o que evita o convidado remoto ouvir a própria voz voltando com atraso. No vMix você monta isso com um bus separado pro convidado, com todas as fontes menos a dele. Por isso o vMix Call trata os buses com cuidado: o retorno do convidado não pode incluir a voz dele.</p>
+            <p><strong>Mixer externo:</strong> se você já tem uma mesa de som física juntando os microfones, dá pra desligar o bus M de uma fonte e usar o bus A no lugar, e depois mandar a gravação e o stream pegarem o som do Bus A em vez do Master. O vMix ainda tem um ajuste de delay negativo pra compensar o atraso de rotear o áudio por fora.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>
