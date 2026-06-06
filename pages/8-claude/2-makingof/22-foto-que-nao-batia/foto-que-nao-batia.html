@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Foto que Não Batia — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>A Foto que Não Batia</h1>
+
+<div class="audio-player" data-src="audio/foto-que-nao-batia.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>O relatório do orçamento mostrava, pra cada item, uma foto que <strong>não era</strong> a foto cadastrada daquele item. No cadastro do inventário, "Operação de Câmera Fixa" tinha uma foto; no relatório, ao lado do mesmo item, aparecia outra. Mesmo item, foto diferente. O motivo está em como o item chega no orçamento: ele é uma <strong>cópia congelada</strong> que guarda só nome, quantidade e valor, sem a foto e sem saber de qual item do inventário veio. Sem foto pra mostrar, o relatório enchia o buraco com uma de três imagens de exemplo, girando pela ordem. O conserto: na hora de gerar o relatório, casar cada item com o inventário <strong>pelo nome</strong> e trazer a foto real, embutida na página.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="O relatório mostrando a foto real do item">O que a gente queria</h2>
+<p>O problema apareceu visual: o Flávio abriu o relatório, aquela página com um card por item, e a foto de um item não era a que ele cadastrou. O pedido virou simples de dizer: o relatório tem que mostrar <strong>exatamente</strong> a foto do item registrado. Se eu registrei aquela foto, é ela que vai na proposta pro cliente. Nada de imagem aleatória. Pra entender por que não estava assim, foi preciso olhar como o item chega no orçamento, e é aí que mora o conceito do episódio.</p>
+
+<h2 id="conceitos" data-toc-title="Os conceitos" data-sub="Cópia congelada, casar pelo nome, consulta enxuta, base64">Os conceitos</h2>
+<p><strong>A cópia congelada.</strong> O inventário é o cadastro mestre de cada item, com nome, valor e foto. Quando você adiciona um item ao orçamento, o sistema <strong>não aponta</strong> pro item do inventário: ele tira uma cópia do nome e do valor daquele momento e grava como um item novo dentro do orçamento. Isso é de propósito e é bom: se daqui a seis meses você reajustar o preço no inventário, os orçamentos já enviados continuam com o preço do dia em que saíram. O número fica fiel à proposta. O problema é que a cópia guardou só nome, quantidade e valor. Ela <strong>não guardou a foto</strong>, e nem sabe de qual item veio, porque não tem um número de vínculo apontando pra origem. É uma cópia órfã que conhece só o próprio nome. Sem foto, o relatório girava entre três figuras de exemplo pela ordem dos itens. Por isso a foto não batia: ela nunca foi a foto do item, era tapa-buraco.</p>
+<p><strong>Reconectar pelo nome.</strong> A cópia não tem o número do item de origem, mas tem uma coisa em comum com ele: o nome. "Operação de Câmera Fixa" no orçamento é o mesmo texto que no inventário. Então dá pra reconectar pelo nome: ao gerar o relatório, monta uma listinha de <strong>nome → foto</strong> do inventário do dono e, pra cada item do orçamento, procura o nome ali. É barato e funciona, mas é honesto dizer que é <strong>frágil</strong>: renomeou no inventário, o nome para de bater e a foto some. O jeito robusto seria a cópia carregar o número do item de origem, mas isso é um passo maior, pra outro dia.</p>
+<p><strong>O banco só traz o que você pede.</strong> A foto não mora junto com o item: fica numa outra tabela (anexos), e o item só tem uma ligação <strong>preguiçosa</strong> pra lá (o banco só busca a foto se você tocar nela). Só que o relatório roda quando a conexão com o banco já fechou. Se ele tentasse puxar a foto nessa hora, quebraria. A saída foi pedir certo, na hora certa: numa consulta só, pedir do banco <strong>exatamente duas colunas</strong> (o nome e o identificador da foto) e mais nada. Sem deixar nada pendente, não tem surpresa preguiçosa. Isso se chama projeção: pedir só o que precisa enquanto a porta do banco ainda está aberta.</p>
+<p><strong>A foto colada na página (base64).</strong> Conceito que já apareceu nos episódios do PDF, então só encostamos: o relatório é um arquivo único que abre sozinho. A foto não é um link pra um arquivo lá fora; são os <strong>bytes da imagem colados dentro do HTML</strong>, escritos como texto. A página carrega a própria foto junto.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="Consulta enxuta, mapa nome→foto, troca da regra da imagem">Como montamos</h2>
+<p><strong>1. A consulta no inventário.</strong> Uma pergunta ao banco que devolve, pros itens do dono que têm foto, só o par <em>nome + identificador da foto</em>. Duas colunas. Esse formato enxuto é o que evita a quebra da foto preguiçosa: como nunca pedimos o objeto inteiro, não há ligação pendente pra estourar fora da sessão.</p>
+<p><strong>2. O mapa nome → foto.</strong> Com a consulta na mão, percorre o resultado e, pra cada linha, lê o arquivo da foto pelo identificador e transforma em texto base64. O resultado é um mapa: de um lado o nome, do outro a foto pronta pra colar. A chave é o nome <strong>normalizado</strong> (sem espaço nas pontas, tudo minúsculo), pra uma diferença boba de maiúscula não atrapalhar o encontro.</p>
+<p><strong>3. A troca da regra da imagem.</strong> Na montagem de cada card, antes era sempre a figura de exemplo da vez. Agora procura o nome do item no mapa: achou, usa a foto real; não achou (item digitado na mão, ou sem foto), aí sim cai na figura de exemplo. O tapa-buraco virou <strong>plano B</strong>, não mais o padrão. Pronto: o item com cadastro no inventário passa a aparecer no relatório com a foto que o Flávio registrou.</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="O conserto certo que não rodava + congela o contrato, mostra ao vivo o enfeite">Decisões, becos e o toque de quem tem mais experiência</h2>
+<p><strong>O beco que ensina: o conserto estava certo e mesmo assim não funcionou.</strong> Depois de escrever a correção e o código compilar limpo, o Flávio atualizou o relatório e a foto continuou errada. "Ainda não apareceu." É o tipo de momento que faz duvidar do próprio conserto e querer reescrever tudo. Mas antes de mexer mais, fomos conferir o dado peça por peça, em vez de chutar. No banco: o item do orçamento tinha o nome <strong>exatamente igual</strong> ao do inventário. No cadastro: o item tinha sim uma foto ligada. No disco: o arquivo da foto existia, no lugar certo. Todo o caminho do conserto estava de pé. Se o dado estava certo e o código estava certo, só sobrava uma explicação: o servidor no ar ainda rodava a versão <strong>antiga</strong> do código. O conserto estava no arquivo, mas não no processo rodando. Reiniciamos com a versão nova e a foto apareceu. A lição: quando um conserto de backend "não funciona", antes de duvidar da lógica, <strong>confirme que o código novo está de fato rodando</strong>. Compilar não é estar no ar.</p>
+<p><strong>Congela o contrato, mostra ao vivo o enfeite.</strong> Parece contraditório o orçamento congelar o valor e ao mesmo tempo buscar a foto ao vivo. Mas faz sentido quando você separa o que é histórico do que é só aparência. O valor <strong>precisa</strong> ser histórico: a proposta que o cliente recebeu por tal preço continua com aquele preço pra sempre. A foto é só ilustração, não muda o trato, então pode vir viva do cadastro atual. Congela o que é contrato, mostra ao vivo o que é enfeite.</p>
+<p><strong>Casar pelo nome é remendo, de propósito.</strong> Vale repetir: é frágil, renomeou no inventário, quebrou. A forma certa seria a cópia guardar o número do item de origem, um vínculo firme que não depende do texto. Escolhemos o remendo porque resolve o que o Flávio precisava ver agora, e o vínculo por número é mudança maior (mexe em como o item é gravado). Ficou anotado como próximo passo. Assumir que é remendo, e saber por quê, já é melhor que fingir que é a solução final.</p>
+<p><strong>O toque de quem tem mais experiência veio do próprio Flávio, no papel de quem cobra.</strong> A primeira tentativa de mostrar a foto ainda era meia-boca, e ele cravou a regra: <em>"o orçamento tem que refletir exatamente o registro dos itens"</em>. Essa frase é a voz do revisor. Ela não deixou a gente se contentar com uma imagem mais ou menos certa. Foi essa exigência de fidelidade à fonte da verdade, o cadastro, que transformou um tapa-buraco bonitinho numa ligação real com o dado.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>O relatório mostrava uma foto de exemplo no lugar da real porque o item do orçamento é uma cópia congelada que guarda só nome e valor, sem a foto e sem saber de onde veio. Reconectamos pelo nome: ao gerar o relatório, busca no inventário do dono uma listinha de nome → foto (com uma consulta enxuta que pede só o necessário) e usa a foto real em cada card, caindo na de exemplo só quando não acha. A coisa pra levar é tripla. Uma: cópia congelada é ótima pra fixar o que é histórico (o preço), mas ela esquece tudo que você não mandou guardar (a foto). Duas: quando duas coisas perderam o vínculo, dá pra reconectar pelo que têm em comum, mesmo que seja só o nome, sabendo que é remendo. Três: se um conserto de backend não aparece, confirme que o código novo está mesmo rodando antes de duvidar dele.</p>
+
+</body>
+</html>

@@ -436,7 +436,10 @@ var MENU = [
         pagina: 'vmix.html',
         items: [
             { label: '1 - Visão Geral', arquivo: '1-visao-geral/1-visao-geral.html', tipo: 'check' },
-            { label: '2 - Áudio', arquivo: '2-audio/2-audio.html', tipo: 'check' }
+            { label: '2 - Áudio', arquivo: '2-audio/2-audio.html', tipo: 'check' },
+            { label: '3 - Decibel e Gain', arquivo: '3-decibel-gain/3-decibel-gain.html', tipo: 'check' },
+            { label: '4 - Audio Outputs', arquivo: '4-audio-outputs/4-audio-outputs.html', tipo: 'novo' },
+            { label: '5 - Saídas de Áudio', arquivo: '5-saidas-audio/5-saidas-audio.html', tipo: 'novo' }
         ],
         pasta: '12-vmix',
         basePath: '12-vmix'
