@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>vMix — Decibel, Gain e Volume — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>vMix — Decibel, Gain e Volume</h1>
+
+<p>Toda mesa de som, física ou dentro do vMix, tem dois "volumes" em momentos diferentes da cadeia: o <strong>GAIN</strong>, que trata o sinal na entrada, e o <strong>fader</strong>, que decide quanto desse sinal vai pra mistura. Antes disso tem o <strong>decibel</strong>, a unidade que aparece em tudo e que confunde porque é relativa e em degraus. Esta página junta os três e a ordem certa de mexer neles.</p>
+
+<div class="audio-player" data-src="audio/decibel-gain.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<h2>O decibel (dB)</h2>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">dB é relativo, não absoluto</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Decibel sempre compara uma coisa com uma referência. Não existe "10 dB de som" solto no ar como existe "10 metros". Na mesa, o dB do canal é medido em relação ao <strong>nível nominal</strong>, o nível de trabalho ideal do aparelho.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">É uma escala em degraus (logarítmica)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Não é uma régua reta. Cada degrau vale muito mais que o anterior, parecido com a escala de terremoto. Duas regras práticas que valem ouro:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Passo</th><th>O que acontece</th></tr>
+                    <tr><td><strong>+10 dB</strong></td><td>A gente percebe como mais ou menos o <strong>dobro</strong> do volume.</td></tr>
+                    <tr><td><strong>+6 dB</strong></td><td>É o <strong>dobro da força</strong> (amplitude) do sinal.</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O fader e o ponto U (unity)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A escala do controle deslizante vai de <strong>+10</strong> no topo, passa por um <strong>U</strong> no meio, e desce 5, 10, 20, 30, 40, 50, 60 até o símbolo de infinito.</p>
+            <p>O <strong>U</strong> é de "unity", ganho unitário, o <strong>zero dB</strong>. Nessa posição o fader não soma nem corta nada, o sinal passa do jeito que chegou. Acima do U você amplifica (+5, +10). Abaixo você corta (-5, -10, -20... até o infinito, que é silêncio total).</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Por que a escala fica amontoada embaixo + o PK</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Perto do U os números são espaçados; lá embaixo (-40, -50, -60) ficam quase colados. Não é enfeite: cortar de -40 pra -50 dB é uma diferença mínima no que você escuta (já é quase nada), então não precisa de espaço. Perto do U, onde você mais trabalha, a escala dá espaço pro ajuste fino.</p>
+            <p>O LED <strong>PK</strong> (peak) acende quando o sinal passou do teto e vai distorcer (clipar). É o aviso de "passou do ponto".</p>
+        </div>
+    </div>
+
+</div>
+
+<h2>GAIN não é a mesma coisa que volume</h2>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Torneira na entrada, copo na mistura</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>São dois ajustes de "volume" em lugares diferentes da cadeia: o <strong>GAIN</strong> (botão giratório na entrada do canal) e o <strong>fader</strong> (o deslizante).</p>
+            <p>O GAIN é a <strong>torneira</strong> na entrada da casa: acontece logo na chegada do sinal, antes de tudo, e traz ele pro nível de trabalho ideal (perto do U). O fader é quanto desse sinal já tratado você <strong>serve no copo</strong> da mistura final, equilibrando o canal contra os outros.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">MIC vs LINHA — por que a entrada precisa de gain</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O gain existe por causa do "tamanho" do sinal que chega. Quase toda mesa tem duas entradas lado a lado:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Entrada</th><th>Conector</th><th>Sinal</th><th>Gain</th></tr>
+                    <tr><td><strong>MIC</strong></td><td>XLR (redondo, 3 pinos)</td><td>Microfone, fraquíssimo</td><td>Muito ganho (escala chega a +60 e poucos dB)</td></tr>
+                    <tr><td><strong>LINHA</strong> (line)</td><td>P10 / jack (furo único)</td><td>Teclado, player, outra mesa, já chega forte</td><td>Pouco ganho, às vezes corte (de +20 até -6)</td></tr>
+                </table>
+            </div>
+            <p>Mesmo botão de gain, mesma mesa: a escala muda conforme a entrada porque o sinal que chega é de tamanho muito diferente.</p>
+        </div>
+    </div>
+
+</div>
+
+<h2>A ordem certa e a pegadinha do chiado</h2>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Gain primeiro, volume depois</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p><strong>Passo 1:</strong> com o canal tocando de verdade (a pessoa falando, o instrumento tocando), ajustar o <strong>GAIN</strong> primeiro. Subir até o <strong>PK</strong> quase acender nos picos e recuar um tiquinho. Isso dá sinal forte e limpo, com boa relação entre o som que você quer e o ruído de fundo, sem estourar.</p>
+            <p><strong>Passo 2:</strong> só depois mexer no <strong>fader</strong>, pra equilibrar o volume daquele canal contra os outros na mistura.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">A pegadinha clássica</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Se o som está baixo e você tenta resolver só puxando o fader pra cima, sem ter dado gain direito, você amplifica o sinal <strong>e o ruído junto</strong>. Por isso vem o chiado: o sinal nunca chegou no nível certo lá na entrada, então o fader só está esticando um sinal fraco. A solução é voltar e dar gain primeiro.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

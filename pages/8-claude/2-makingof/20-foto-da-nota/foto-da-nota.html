@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Foto que Veio da Nota — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>A Foto que Veio da Nota</h1>
+
+<div class="audio-player" data-src="audio/foto-da-nota.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>O item do inventário do Nexus tinha nome, quantidade, valor, status e observação, mas faltava o óbvio: uma <strong>foto</strong> do item (e um link da loja). A gente colocou a foto reaproveitando todo o sistema de imagem que a <strong>capa da nota</strong> já tinha (subir, cortar, trocar), virando um <strong>componente compartilhado</strong>, sem copiar código. Arquivos reais: <code>frontend/src/lib/components/CoverImageField.svelte</code>, <code>frontend/src/routes/inventario/+page.svelte</code> e o backend em <code>backend/src/main/java/io/nexus/inventory/</code>.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Foto no item, com os recursos da nota">O que a gente queria</h2>
+<p>Cada item do inventário mostrava só texto. Faltava bater o olho na lista e ver a cara do equipamento. O pedido tinha um detalhe: a foto não podia ser qualquer uma. Tinha que ter os <strong>mesmos recursos da capa de uma nota</strong> (upload, cortar num enquadramento, trocar depois), e <strong>sem copiar e colar</strong> o código da nota. Reaproveitar de verdade.</p>
+<p>E tinha meio caminho andado: a coluna pra guardar a foto (e a do link) já existia no banco de uma mudança anterior, mas nada no código usava. Eram colunas órfãs, paradas lá.</p>
+
+<h2 id="conceitos" data-toc-title="Os conceitos" data-sub="Attachment, imagem re-cortável, reuso, portal">Os conceitos</h2>
+<p><strong>1. Como um arquivo é guardado.</strong> A imagem não vai pro banco. Pensa num guarda-volumes: a foto vai pro disco do servidor, e o banco anota só um registro (nome, tipo, tamanho e um código único impossível de adivinhar, um <strong>UUID</strong>). A imagem é servida num endereço público (<code>/attachments/{uuid}</code>), e o item carrega só a <strong>etiqueta</strong> (o id do registro), não a imagem.</p>
+<p><strong>2. O que faz uma imagem ser re-cortável.</strong> Se você só guardar a foto cortada, corta uma vez e acabou. Pra clicar em "ajustar corte" depois, precisa de <strong>três coisas</strong>: a foto cortada (a que aparece), a foto <strong>original</strong> antes do corte (o negativo, guardado junto pra reenquadrar), e os <strong>dados do corte</strong> (a região: onde começa, largura e altura).</p>
+<p><strong>3. Reaproveitar sem duplicar.</strong> A nota já fazia tudo isso, mas o código estava <em>inline</em>, grudado dentro do modal da nota. Copiar pro inventário seria o caminho fácil e errado (dois lugares com a mesma lógica). Reusar de verdade é virar uma <strong>peça de lego</strong> que várias telas montam chamando pelo nome.</p>
+<p><strong>4. Fixo preso por transform → portal.</strong> O cortador abre cobrindo a tela com um posicionamento <code>fixed</code>. Mas quando um pai usa <code>transform</code> pra se centralizar, o filho fixo para de se medir pela tela e passa a se medir por esse pai, e fica preso dentro dele. A saída é um <strong>portal</strong>: teletransportar o cortador pro fim da página, como tirar um móvel de uma sala apertada e levar pro saguão.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="Link, backend, o componente, plugar">Como montamos</h2>
+<p><strong>O barato primeiro.</strong> O link da loja era trivial (coluna já existia, é só texto). Liguei da ponta do banco até um campo no formulário.</p>
+<p><strong>A foto é feature, não campo.</strong> Precisa do guarda-volumes pra subir e servir. No servidor, o item ganhou três ligações: a foto cortada, a original e os dados do corte. O banco só tinha a coluna da cortada, então criei a migração <code>V78</code> pras outras duas. E juntei tudo numa rotina (<code>applyPhoto</code>) que resolve a foto conferindo que o arquivo é <strong>do próprio usuário</strong> (pra ninguém usar imagem dos outros), guarda original e corte, e limpa as três quando a foto é removida. Serve criar e editar, sem repetir.</p>
+<pre><code class="language-java">private void applyPhoto(InventoryItem item, InventoryItemRequest req, User user) {
+    Attachment photo = resolvePhoto(req.photoAttachmentId(), user);
+    item.setPhotoAttachment(photo);
+    if (photo == null) {                 // sem foto: limpa original + corte
+        item.setOriginalPhotoAttachment(null);
+        item.setPhotoCropData(null);
+    } else {
+        if (req.originalPhotoAttachmentId() != null)
+            item.setOriginalPhotoAttachment(resolvePhoto(req.originalPhotoAttachmentId(), user));
+        item.setPhotoCropData(trimToNull(req.photoCropData()));
+    }
+}</code></pre>
+<p><strong>A peça de lego.</strong> Na tela, nasceu o <code>CoverImageField</code>: botão de adicionar, upload, preview, "Ajustar corte" e "Trocar imagem". Reuso honesto: o cortador em si (<code>ImageCropDialog</code>) já existia e <strong>não foi reescrito</strong>, o componente só chama ele. O estado fica de fora (no formulário), então a mesma peça serve qualquer dono de imagem.</p>
+<pre><code class="language-svelte">&lt;CoverImageField
+    bind:croppedAttId={photoCroppedAttId}
+    bind:croppedUuid={photoCroppedUuid}
+    bind:originalAttId={photoOriginalAttId}
+    bind:originalUuid={photoOriginalUuid}
+    bind:cropData={photoCropData}
+    addLabel="📷 Adicionar foto"
+    fill /&gt;</code></pre>
+
+<h2 id="becos" data-toc-title="Becos e o que ficou pra depois" data-sub="O cropper preso, o layout, a refatoração adiada">Becos e o que ficou pra depois</h2>
+<p><strong>O rascunho caseiro.</strong> A primeira versão da foto era um botão e um quadradinho de preview, sem corte. O Flávio mandou um print da capa da nota: quero <em>isso</em>, com ajustar corte e trocar, sem duplicar código. Foi esse pedido que empurrou pra extrair o componente compartilhado em vez de remendar.</p>
+<p><strong>O cropper preso.</strong> Ao plugar o cortador, ele apareceu <strong>espremido dentro da largura do modal</strong>, em vez de cobrir a tela. É o fixo aprisionado pelo <code>transform</code> do modal. Conserto: o <strong>portal</strong>, mandar o cortador renderizar no fim da página. Na hora voltou a ocupar a tela inteira, como na nota.</p>
+<p><strong>O layout, em duas rodadas.</strong> Primeiro o pedido foi deixar o modal mais horizontal, com a foto do lado (virou duas colunas). Depois, a foto ocupando <strong>toda a altura</strong> do lado direito (um modo de "preencher" no componente, com as colunas da mesma altura).</p>
+<p><strong>A decisão de NÃO fazer.</strong> A gente extraiu o componente e o inventário usa ele. Mas o modal da nota, de onde a ideia veio, <strong>ainda tem a cópia inline antiga</strong>. Ou seja, a duplicação não sumiu de vez: existe a peça nova (usada pelo inventário) e a versão velha morando dentro da nota. Pra apagar a duplicação por completo, faltaria migrar a nota pro componente novo, e a gente decidiu de propósito <strong>não fazer isso agora</strong>, pra não arriscar mexer numa peça central que já funciona. Ficou anotado como próximo passo.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>O item do inventário ganhou foto, com upload, corte e troca, do mesmo jeito que a capa da nota. Por baixo: o arquivo vai pro guarda-volumes do servidor e o item carrega só a etiqueta; pra reenquadrar depois, guardamos a foto cortada, o negativo original e os dados do corte; e o cortador precisou de um portal pra não ficar preso no modal. O recurso virou uma peça de lego (<code>CoverImageField</code>) que reaproveita o cortador que já existia. A coisa pra levar não é a foto, é o jeito de reaproveitar: extrair o componente e usar no lugar novo já mata a duplicação no código novo; migrar os lugares antigos (a nota) pra apagar a cópia velha é uma faxina à parte, com risco próprio, que a gente conscientemente deixou pra depois.</p>
+
+</body>
+</html>
