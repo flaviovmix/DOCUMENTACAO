@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dropdown que o Browser Não Deixa Pintar — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Dropdown que o Browser Não Deixa Pintar</h1>
+
+<div class="audio-player" data-src="audio/dropdown.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Quase uma continuação do <em>Botões num Componente Só</em>: de novo a gente pegou uma coisa com cara diferente em cada tela do Nexus, os <strong>dropdowns</strong>, e padronizou num molde único. Só que dessa vez tem um detalhe novo: tem um pedaço que o navegador <strong>simplesmente não deixa você pintar</strong>. O conceito de componente reutilizável já foi explicado no episódio dos botões; aqui o foco é por que o dropdown nativo é impintável e como recriar ele com HTML comum mais um <strong>portal</strong>.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Todo dropdown com a mesma cara">O que a gente queria</h2>
+<p>Dropdown é aquele campo que você clica e abre uma listinha pra escolher uma opção. O Nexus tem isso em muito lugar (filtro de status do orçamento, filtro de mês, tipo do lançamento, categoria, conta). O problema: tinham <strong>duas caras</strong>. Uns eram o dropdown <strong>nativo</strong> do navegador (aquele campo com a setinha sem graça, que muda de aparência de um navegador pro outro); outros eram <strong>estilizados</strong>, feitos à mão, já com a cara do app. O Flávio mandou um print com os dois lado a lado e falou direto: "muda todos pros estilizados". Objetivo concreto: todo dropdown do app com a mesma cara, a estilizada.</p>
+
+<h2 id="conceitos" data-toc-title="Os conceitos" data-sub="Nativo não pinta, molde, portal, z-index">Os conceitos</h2>
+<p><strong>Por que não dá pra só pintar o nativo?</strong> Porque o dropdown nativo tem duas partes, e elas não são iguais pro CSS. Tem o campinho fechado (esse até dá pra mexer um pouco: borda, fundo). E tem a <strong>listinha</strong> que abre quando você clica: quem desenha essa listinha é o navegador junto com o sistema operacional, não a sua página. Seu CSS quase não encosta nela. Por isso ela fica diferente em cada máquina. A saída é <strong>não usar a listinha nativa</strong>: fazer a sua própria, com HTML normal, que aí sim você pinta como quiser.</p>
+<p><strong>O molde.</strong> Mesmo princípio dos botões: coisa que se repete vira uma peça única, usada em todo canto. Aqui o molde se chama <strong>StyledSelect</strong>. Por dentro é simples: um botão que mostra a opção escolhida com uma setinha, e ao clicar aparece uma lista de opções (cada uma um botãozinho). Clicou, ele guarda o valor e fecha. Tudo HTML comum, então tudo pintável.</p>
+<p><strong>O portal (a parte mais espertinha).</strong> Se a lista abre "dentro" do lugar onde o dropdown mora, e esse lugar tem rolagem ou corta o que transborda, a lista fica capada. Dentro de um modal, podia até aparecer <em>atrás</em> dele. A solução é o <strong>portal</strong>: em vez de deixar a lista presa na caixinha, a gente <strong>teletransporta</strong> ela pro fim da página, solta, longe de qualquer coisa que corte. Aí ela precisa saber onde aparecer: a gente mede a posição exata do botão na tela e coloca a lista bem ali embaixo, fixa. Quando você rola a página, a lista fecha (senão ficaria boiando no lugar errado).</p>
+<p><strong>Quem fica na frente (z-index).</strong> Número maior fica por cima. A lista fica num número alto (2000). Mas antes de confiar, a gente foi conferir em que número os modais do app ficam: vão de 1000 a 1300, todos abaixo de 2000. Ou seja, a lista abre por cima do modal, como tem que ser. Esse tipo de conferida evita um bug silencioso. E uma última ideia pequena: enquanto a lista está aberta, liga-se um "ouvinte" de cliques na página inteira pra fechar ao clicar fora ou apertar Esc; quando fecha, <strong>desliga</strong> o ouvinte (ouvinte esquecido ligado é lixo acumulando).</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="A troca em ondas">Como montamos</h2>
+<p>O molde já existia meio escondido: o StyledSelect tinha sido feito antes só pra uma tela (a importação de extrato do banco). A gente pegou ele e saiu espalhando. Usar é simples: você entrega duas coisas, o valor selecionado e a lista de opções (cada opção um par de valor + texto). O resto (mostrar, abrir, fechar, teletransportar a lista) ele faz sozinho.</p>
+<p>A troca foi em <strong>ondas</strong>, de propósito, da mais segura pra mais arriscada. Primeiro os <strong>filtros</strong> (status, mês, tipo): filtro é só pra filtrar, se der problema ninguém perde dado. Depois os <strong>formulários simples</strong> (categoria, banco, conta nos modais de cadastro): trocar o select nativo pelo molde, montando a lista a partir dos dados do servidor. E por último os <strong>casos especiais</strong>. Pra fechar cada onda, faxina: todo select que saía deixava CSS órfão (regra mirando num select que não existe mais). A gente rodou o verificador depois de cada onda: só apareceram avisos de estilo morto, nenhum erro novo.</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="O obrigatório redundante e onde parar">Decisões e becos</h2>
+<p><strong>O modal teimoso (lançamento).</strong> Ele tem três dropdowns: tipo, categoria e conta. E a categoria é <strong>obrigatória</strong> quando o lançamento é uma saída. Obrigatório, no select nativo, é aquele aviso do navegador que trava o envio se você não escolheu nada. Só que o nosso molde é um botão, ele não participa dessa validação automática. Por isso, na primeira passada, eu <strong>pulei</strong> esse modal (medo de quebrar a validação, e converter só 2 dos 3 deixaria o modal com cara misturada). Quando o Flávio perguntou justo sobre ele, fui olhar o código que salva o lançamento: a regra "categoria obrigatória pra saída" <strong>já estava escrita ali, na mão</strong>. O atributo obrigatório do nativo era <strong>redundante</strong>, a trava de verdade estava no nosso código o tempo todo. Dava pra converter os três sem perder nada. A lição: antes de assumir que um atributo do HTML é essencial, confira se a regra de verdade não está no seu próprio código. Muitas vezes está, e o atributo era só um <strong>cinto a mais</strong>.</p>
+<p><strong>O "disabled" (travado).</strong> Três dropdowns ficam bloqueados em certas situações, e o molde ainda não sabe ficar travado e cinza. Em vez de gambiarra na pressa, deixamos esses três pra depois, anotados numa lista de pendências, junto com a melhoria de ensinar o molde a ficar desabilitado direito. Adiar com a coisa anotada é diferente de esquecer.</p>
+<p><strong>O calendário (o que dá nome ao episódio).</strong> Os formulários têm um campo de data que abre um calendarinho. O Flávio perguntou se dava pra deixar com a cara do app. Resposta honesta: não dá. Aquele calendário é 100% desenhado pelo sistema, CSS não pega nele, igual ao problema da listinha do select nativo. Pra ter um com a cara do app, teria que construir do zero (a grade dos dias, navegação de mês, teclado, formato em português). Decidimos não fazer agora e anotar como pendência. Saber a hora de parar também é parte do trabalho.</p>
+<p><strong>O que não mexer.</strong> O seletor de mês da tela de tarefas já era estilizado, com setinhas de mês grudadas do lado. Trocar pelo molde ia desmontar o arranjo sem ganho. Deixamos quieto. Padronizar não é passar o trator em tudo: é deixar coerente o que estava bagunçado e respeitar o que já estava bom.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>O navegador não deixa você pintar a listinha do dropdown nativo, então o caminho é recriar o dropdown com HTML comum (um botão mais uma lista) e usar um <strong>portal</strong> pra teletransportar essa lista pro fim da página, pra ela não ficar presa nem atrás de um modal. A troca foi em ondas, do mais seguro (filtros) pro mais arriscado (formulários). No meio, descobrimos que o "obrigatório" estava no código e não no atributo, e deixamos anotado o que falta (campos travados e calendário). A lição: quando o navegador não te deixa estilizar um controle, o padrão é recriar com HTML normal mais um portal pra parte que abre. E sempre conferir onde mora a regra de verdade antes de tirar o que parece essencial.</p>
+
+</body>
+</html>

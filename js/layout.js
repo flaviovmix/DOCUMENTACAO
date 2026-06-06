@@ -129,10 +129,25 @@ var MENU = [
             { label: '1 - Visão Geral', arquivo: '1-visao-geral/1-visao-geral.html', tipo: 'check' },
             { label: '2 - HTML',        arquivo: '2-html/2-html.html',               tipo: 'check' },
             { label: '3 - CSS',         arquivo: '3-css/3-css.html',                 tipo: 'check' },
-            { label: '4 - JavaScript',  arquivo: '4-javascript/4-javascript.html',   tipo: 'check' }
+            { label: '4 - JavaScript',  arquivo: '4-javascript/4-javascript.html',   tipo: 'check' },
+            { label: '5 - Interfaces Que Se Ajustam', arquivo: '5-interfaces-que-se-ajustam/5-interfaces-que-se-ajustam.html', tipo: 'check' }
         ],
         pasta: '4-html-css-js',
         basePath: '1-fundamentos/4-html-css-js'
+    },
+    {
+        grupo: 'INTERFACES QUE SE AJUSTAM',
+        pagina: '5-interfaces-que-se-ajustam.html',
+        parent: { label: 'HTML-CSS-JS', href: '1-fundamentos/4-html-css-js/html-css-js.html' },
+        hidden: true,
+        items: [
+            { label: '1 - Por Que o Desenho Corta',     arquivo: '1-por-que-o-desenho-corta/1-por-que-o-desenho-corta.html', tipo: 'check' },
+            { label: '2 - Layout Que Preenche o Espaço', arquivo: '2-layout-que-preenche-o-espaco/2-layout-que-preenche-o-espaco.html', tipo: 'check' },
+            { label: '3 - Medir Antes de Decidir',       arquivo: '3-medir-antes-de-decidir/3-medir-antes-de-decidir.html', tipo: 'check' },
+            { label: '4 - Quando o Dado Some',           arquivo: '4-quando-o-dado-some/4-quando-o-dado-some.html', tipo: 'check' }
+        ],
+        pasta: '5-interfaces-que-se-ajustam',
+        basePath: '1-fundamentos/4-html-css-js/5-interfaces-que-se-ajustam'
     },
     {
         grupo: 'ALGORITMOS',
@@ -415,6 +430,16 @@ var MENU = [
         ],
         pasta: '7-interface',
         basePath: '7-interface'
+    },
+    {
+        grupo: 'VMIX',
+        pagina: 'vmix.html',
+        items: [
+            { label: '1 - Visão Geral', arquivo: '1-visao-geral/1-visao-geral.html', tipo: 'check' },
+            { label: '2 - Áudio', arquivo: '2-audio/2-audio.html', tipo: 'check' }
+        ],
+        pasta: '12-vmix',
+        basePath: '12-vmix'
     },
     {
         grupo: 'CLAUDE',

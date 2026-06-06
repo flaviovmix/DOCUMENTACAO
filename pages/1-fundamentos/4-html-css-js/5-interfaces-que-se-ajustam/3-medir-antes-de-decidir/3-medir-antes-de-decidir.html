@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medir Antes de Decidir — Interfaces Que Se Ajustam — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Medir Antes de Decidir</h1>
+
+<div class="audio-player" data-src="audio/medir-antes-de-decidir.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>No problema anterior a gente fez o layout preencher o espaço com flex. Mas tem caso em que o CSS sozinho não sabe decidir. A regra era: mostrar uma segunda linha de cards, mas só se ela não atrapalhar o gráfico em cima. Isso depende de quanto espaço sobra de verdade, e o CSS não te conta diretamente. A saída é parar de adivinhar e medir.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O limite do CSS puro — o número mágico falha</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A primeira tentativa foi um limite fixo: se a janela passa de 900 de altura, mostra duas linhas. Deu errado. Em algumas telas a segunda linha aparecia e esmagava o gráfico, até sumir com ele.</p>
+            <pre><code class="language-javascript">// chute: nao sabe quanto os cards e o resto ocupam
+const linhas = janelaAltura &gt;= 900 ? 2 : 1;</code></pre>
+            <p>O motivo é simples: 900 é um chute que não enxerga o layout. Não sabe quanto os cards, mais os outros blocos, realmente ocupam naquela tela. Número mágico não mede nada.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">As ferramentas de medir</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A virada é medir o tamanho real renderizado. Duas ferramentas. O <strong>getBoundingClientRect</strong> dá a posição e o tamanho de um elemento na tela, de verdade, depois que o navegador desenhou. O <strong>clientHeight</strong> dá a altura interna de um elemento.</p>
+            <pre><code class="language-javascript">const caixa = elemento.getBoundingClientRect(); // {top, left, width, height}
+const alturaInterna = container.clientHeight;</code></pre>
+            <p>Com isso você lê o que de fato aconteceu, não o que imaginou.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Orçar o espaço</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Com a medida na mão, a conta vira um orçamento: você tem um total, desconta o fixo, vê o que sobra. O total é a altura disponível. Desconta o que é fixo (a posição onde o gráfico começa, a base da área de cards). O que resta é o espaço livre, o <strong>pool</strong>.</p>
+            <pre><code class="language-javascript">const total = dashboard.clientHeight;
+const topoDoGrafico = chartBlock.getBoundingClientRect().top - dashboard.getBoundingClientRect().top;
+const pool = total - topoDoGrafico - baseDosCards;
+
+// abre a 2a linha so se sobrar gráfico confortavel:
+const cabe2 = pool - (2 * alturaDoCard + gap) &gt;= GRAFICO_MIN;</code></pre>
+            <p>A decisão fica objetiva: abre a segunda linha só se o pool, depois de tirar duas linhas de card, ainda deixa o gráfico com pelo menos um mínimo confortável. Acabou o chute, virou conta.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O perigo do loop e o truque do invariante</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Tem uma armadilha em medir e decidir. Se a sua decisão muda o layout, e você mede justamente aquilo que mudou, dá pra entrar num loop: mede, decide, muda, mede de novo, desfaz, e fica oscilando na tela.</p>
+            <p>O truque é medir uma grandeza que <strong>não muda</strong> com a decisão. A altura total da janela não muda por causa dos cards. A posição do topo do gráfico não muda quando você adiciona cards abaixo dele. Medindo coisas estáveis, você decide uma vez e fica firme.</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Medir isto</th><th>Muda com a decisão?</th></tr>
+                    <tr><td>Altura total da janela</td><td>Não. Seguro.</td></tr>
+                    <tr><td>Posição do topo do gráfico (cards vêm abaixo)</td><td>Não. Seguro.</td></tr>
+                    <tr><td>Altura da área de cards</td><td>Sim. Evitar, gera loop.</td></tr>
+                </table>
+            </div>
+            <p>A regra geral: baseie a decisão em algo invariante à própria decisão.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

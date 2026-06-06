@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Olá Web na unha — Visão Geral — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Visão Geral — Olá Web na unha</h1>
+
+<div class="audio-player" data-src="audio/visao-geral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Esta é a <strong>primeira fase</strong> da trilha. O objetivo não é fazer um site bonito, é fazer a web <strong>na unha</strong>: escrever um <code>index.html</code> à mão, abrir no browser, e tentar deixá-lo <strong>reativo</strong> sem nenhum framework. Você vai criar um contador e uma lista que mudam, mexendo no DOM com JavaScript puro. No caminho, vai bater na dor de manter o <strong>estado</strong> (uma variável) e a <strong>tela</strong> (o que aparece) em sincronia na mão. Essa dor é exatamente o que o <strong>Svelte</strong> resolve, e é por isso que a fase termina apontando pra ele.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O que você vai construir</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Uma página única, sem build e sem dependências, que faz duas coisas:</p>
+            <ul>
+                <li>Um <strong>contador</strong>: um número na tela e um botão "+1" que soma 1 a cada clique.</li>
+                <li>Uma <strong>lista</strong> de itens, cada um com um botão "remover" que tira aquele item da tela.</li>
+            </ul>
+            <p>Tudo versionado num <strong>repositório git</strong> próprio, criado do zero na pasta <code>01-ola-web/</code> da sandbox. Pequeno de propósito: é simples o bastante pra você fazer inteiro à mão, e já é o suficiente pra dor aparecer.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Git — versionar desde o primeiro arquivo</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Antes de escrever qualquer HTML, a pasta vira um repositório. A ideia é pegar o hábito de salvar o histórico desde o começo, não só no fim.</p>
+            <ul>
+                <li><code>git init</code> — transforma uma pasta comum em repositório (cria a área onde o git guarda o histórico).</li>
+                <li><strong>Working tree vs staged</strong> — a diferença entre o que você editou no disco e o que está "marcado" pra entrar no próximo commit.</li>
+                <li><code>git add</code> — move uma mudança da working tree pra área de stage.</li>
+                <li><code>git commit</code> — congela o que está em stage num ponto do histórico, com uma mensagem.</li>
+            </ul>
+            <p>No fim da fase você terá pelo menos dois commits: um com a página estática e outro com a parte reativa.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">HTML como árvore — o DOM</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O browser não lê seu HTML como texto solto. Ele monta uma <strong>árvore de elementos</strong> na memória, o <strong>DOM</strong> (Document Object Model). Cada <code>&lt;h1&gt;</code>, <code>&lt;button&gt;</code>, <code>&lt;li&gt;</code> vira um nó dessa árvore, e é nessa árvore que o JavaScript mexe.</p>
+            <p>O que você vai entender aqui:</p>
+            <ul>
+                <li>O que o browser faz ao abrir um arquivo <code>.html</code> (parse → árvore → desenho na tela).</li>
+                <li>Como a estrutura aninhada do HTML (uma tag dentro da outra) vira a hierarquia de nós.</li>
+                <li>Que mudar a tela é, na prática, <strong>mudar essa árvore</strong>.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">JavaScript tocando o DOM</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Com o DOM na cabeça, o JS entra pra mexer nele. Três movimentos básicos cobrem tudo nesta fase:</p>
+            <ul>
+                <li><strong>Pegar um elemento</strong> — <code>document.querySelector('#contador')</code> devolve o nó pra você manipular.</li>
+                <li><strong>Mudar o conteúdo</strong> — <code>elemento.textContent = ...</code> ou <code>elemento.innerHTML = ...</code> reescreve o que aparece.</li>
+                <li><strong>Escutar um evento</strong> — <code>botao.addEventListener('click', ...)</code> roda uma função quando o usuário clica.</li>
+            </ul>
+            <p>Com isso já dá pra fazer o contador e a lista funcionarem. O problema não é a falta de ferramenta, é o que acontece quando a tela cresce.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">A dor — estado e tela desencontrados</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Aqui mora o ponto da fase inteira. Você tem o <strong>estado</strong> de um lado (a variável <code>count</code>, o array de itens) e a <strong>tela</strong> do outro (o número desenhado, os <code>&lt;li&gt;</code> visíveis). Toda vez que o estado muda, <strong>você</strong> tem que lembrar de atualizar a tela na mão.</p>
+            <ul>
+                <li>Somou no <code>count</code>? Tem que reescrever o texto do número.</li>
+                <li>Removeu um item do array? Tem que remover o <code>&lt;li&gt;</code> certo do DOM.</li>
+                <li>Esqueceu de atualizar um lugar? A tela mente: mostra um valor, a variável tem outro. É o bug clássico.</li>
+            </ul>
+            <p>Com uma lista que muda, isso vira um vai-e-vem cansativo: reconstruir a lista na mão a cada mudança, ou caçar exatamente o nó a remover. <strong>Essa</strong> é a dor que justifica o próximo passo.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Aí o framework entra — Svelte</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Depois de sentir a dor na pele, o <strong>Svelte</strong> aparece como resposta. Em vez de você sincronizar estado e tela na mão, você <strong>declara</strong> o estado e escreve onde ele aparece, e o framework mantém os dois juntos:</p>
+            <pre><code class="language-javascript">let count = 0;        // o estado
+// no HTML: &lt;span&gt;{count}&lt;/span&gt; e &lt;button on:click={() =&gt; count++}&gt;+1&lt;/button&gt;</code></pre>
+            <p>Mudou <code>count</code>, a tela se atualiza sozinha. Isso se chama <strong>reatividade</strong>, e é exatamente o que doía na mão. Essa é a peça de frontend da stack do Nexus: o <strong>SvelteKit</strong>. A fase não te ensina Svelte ainda, ela te faz <em>querer</em> o Svelte.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O passo a passo da fase</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A ordem do exercício, do mais simples ao ponto da dor:</p>
+            <ol>
+                <li><code>git init</code> numa pasta nova em <code>01-ola-web/</code>.</li>
+                <li>Escrever um <code>index.html</code> com um <code>&lt;h1&gt;</code>, um botão "+1" e um número.</li>
+                <li>JS na unha: clicar soma 1 e atualiza o texto via DOM.</li>
+                <li>Primeiro <code>commit</code>.</li>
+                <li>Adicionar uma lista de itens, cada um com botão "remover", e sentir a dor de re-renderizar a lista na mão.</li>
+            </ol>
+            <p>Quando essa dor ficar óbvia, a Fase 1 cumpriu o papel. O comando <code>/exercícios</code> conduz cada passo e marca o progresso no world map.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

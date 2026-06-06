@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arrastar e Afundar — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Arrastar e Afundar</h1>
+
+<div class="audio-player" data-src="audio/arrastar-e-afundar.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>No Nexus, um orçamento tem uma lista de itens, que são os serviços. Cada item pode estar <strong>incluído</strong> ou não. Quando você desmarca um, ele não some: aparece <strong>tachado</strong>, pra mostrar que a gente sabe fazer aquilo mas o cliente não contratou. Essa lista vive dentro do modal de edição que abre no botão <em>abrir lista de itens</em>, e a gente melhorou duas coisas nela: os itens desmarcados <strong>afundam</strong> pro fim da lista, e dá pra <strong>reordenar arrastando</strong> por um puxador, em vez de só as setinhas. Com uma regra de desenho: como o desmarcado sempre vai pro fim, o arrastar vale só dentro do próprio grupo.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Organizar sozinho e arrastar pra reordenar">O que a gente queria</h2>
+<p><strong>Primeiro, organizar sozinho.</strong> Quando você desmarca um item, ele deve afundar pro fim da lista. Os incluídos ficam todos juntos em cima, e os desmarcados, tachados, descem pro fundo. Quando você remarca um, ele sobe de volta pro meio dos incluídos. Antes ficava tudo embaralhado, marcado e desmarcado na ordem que você mexeu.</p>
+<p><strong>Segundo, reordenar arrastando.</strong> Antes, pra mudar a ordem de um item, só dava pra clicar numa setinha pra cima ou pra baixo, um passo de cada vez. A gente quis poder pegar o item e arrastar pro lugar, com um puxador do lado, aqueles seis pontinhos que você vê em lista reorganizável. E uma decisão combinada no começo: como o desmarcado sempre vai pro fim, o arrastar só vale dentro do próprio grupo. Os incluídos reordenam entre si lá em cima, os desmarcados entre si lá embaixo, e um nunca atravessa pro lado do outro.</p>
+
+<h2 id="conceitos" data-toc-title="Os conceitos" data-sub="Ordenação estável, drag nativo, etiqueta por item">Os conceitos</h2>
+<p><strong>Separar a lista em dois grupos sem bagunçar a ordem de cada um.</strong> A lista, por dentro, é uma fila só de itens. A gente quer mostrar em dois blocos: incluídos em cima, desmarcados embaixo, mas dentro de cada bloco a ordem que você escolheu tem que ser respeitada. O jeito é simples: varre a fila inteira e separa em duas, uma só com os incluídos, outra só com os desmarcados, e cola uma na outra, incluídos primeiro. Como você varre do começo ao fim, cada grupo sai na mesma ordem em que estava. Isso tem nome: <strong>ordenação estável</strong>, separar sem embaralhar quem já estava junto. Pensa numa prateleira: você empurra pro fim os livros que não vai levar, e tanto os da frente quanto os do fim continuam na ordem que estavam.</p>
+<p><strong>O arrastar já vem pronto no navegador.</strong> A gente não inventou drag-and-drop do zero. O próprio navegador sabe fazer: você marca um pedaço da tela como <strong>arrastável</strong>, e ele te avisa em três momentos, quando você <strong>pegou</strong>, quando está <strong>passando por cima</strong> de alguém, e quando <strong>soltou</strong>. Tem uma pegadinha clássica: por padrão o navegador não deixa soltar em cima de outro elemento, acha que ali é proibido. Você precisa dizer, no momento em que passa por cima, que <em>ali pode soltar</em>. Resolvido isso, em vez de esperar você soltar, a gente reordena a lista <strong>ao vivo</strong>: enquanto você arrasta, a linha vai se encaixando e segue o seu dedo.</p>
+<p><strong>Cada item precisa de uma etiqueta própria.</strong> Quando a tela mostra uma lista, o programa precisa saber qual linha é qual, pra atualizar só o que mudou. Se a etiqueta de cada linha for a <strong>posição</strong> dela (o primeiro, o segundo, o terceiro), dá ruim ao arrastar: você troca os itens de lugar, as posições mudam, e o programa acha que todo mundo virou outra coisa, se perde e mistura o conteúdo. A correção é dar a cada item uma etiqueta que nasce com ele e não muda: um numerinho próprio, colado nele. Aí, mesmo o item pulando de posição, o programa segue a etiqueta e sabe que é o mesmo. É uma caixa com o nome escrito do lado, em vez de só "a terceira da pilha".</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="Toggle, setas travadas, etiqueta, puxador, clamp">Como montamos</h2>
+<p>A coisa ficou em algumas peças, todas no formulário do orçamento.</p>
+<p><strong>1. O afundar.</strong> Uma função cuida do botão de marcar e desmarcar. Ela vira o estado do item e logo refaz a lista, separando incluídos e desmarcados e colando os incluídos na frente. É a mesma separação estável do conceito, então cada grupo mantém a ordem. E a carga inicial, quando você abre um orçamento salvo, já passa por essa separação: os desmarcados nascem no fim.</p>
+<p><strong>2. Travar as setinhas.</strong> As setas continuam, como alternativa ao arrastar, mas não podem furar a regra de incluídos em cima. A gente travou: a seta só troca o item com o vizinho do <strong>mesmo grupo</strong>. Se o vizinho de baixo já é de outro grupo, a seta não faz nada.</p>
+<p><strong>3. A etiqueta.</strong> Cada item ganhou um numerinho próprio, vindo de um contador que só cresce. E a lista na tela passou a se identificar por essa etiqueta, não mais pela posição. Esse foi o passo que destravou o arrastar.</p>
+<p><strong>4. O puxador.</strong> Uma coluninha nova na esquerda de cada linha, com seis pontinhos desenhados. Detalhe esperto: a linha só vira arrastável quando você <strong>pega no puxador</strong>. No momento que você aperta, ele guarda a etiqueta daquela linha e libera o arrastar só dela. Por quê? Porque se a linha inteira fosse arrastável o tempo todo, você não conseguiria nem selecionar o texto dos campos: ao tentar marcar uma palavra, sairia arrastando a linha. A gente pega a caixa pela alça, que é o puxador, não pela tampa, que são os campos.</p>
+<p><strong>5. Prender o arrastar no grupo certo.</strong> Enquanto você arrasta, a cada linha que passa por cima, a gente calcula onde encaixar. Aqui entra a regra de desenho: descobrimos de que grupo é o item que você pegou e prendemos o destino dentro do intervalo daquele grupo. Incluído só anda na faixa dos incluídos; desmarcado só na faixa dos desmarcados. Tentou sair da faixa, ele para na beirada. Nunca atravessa.</p>
+<p>E quando você salva o orçamento, a nova ordem vai junto, gravada num campo de ordem no servidor. Da próxima vez que abrir, está do jeito que você deixou.</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="A tela errada e o desenho que cresceu">Decisões, becos e o toque de quem tem mais experiência</h2>
+<p><strong>O "não apareceu" que não era bug.</strong> Assim que a gente terminou o afundar, o Flávio foi testar e disse: não apareceu, será que tem que reiniciar o servidor. A gente quase saiu caçando problema no código. Mas a feature estava certa. Ele estava na <strong>tela errada</strong>: olhando a tela de visualização do orçamento, a que só mostra, e não o modal de edição, que é onde a lista editável mora e onde a mudança vive. A lição é direta: quando alguém diz "não aparece", nem sempre é bug. Muitas vezes é a tela errada. Antes de mexer no código, confirme <strong>onde a pessoa está olhando</strong>. Foi o que resolveu, sem reiniciar nada, sem trocar uma linha.</p>
+<p><strong>O desenho que cresceu pela mão de quem usa.</strong> No começo a gente combinou que o puxador ia só nos itens incluídos: os desmarcados ficam presos no fim, sem arrastar. Implementamos assim. Aí o Flávio usou e pediu: coloca nos desmarcados também. Faz sentido, ele pode querer organizar a ordem dos tachados entre si. O desenho cresceu de "arrastar só nos incluídos" pra "cada grupo reordena dentro de si". O primeiro desenho era mais fechado do que precisava, e quem percebeu foi quem estava usando. O toque de fora, aqui, não veio de um chefe: veio do próprio uso apontando que dava pra ser mais solto sem quebrar a regra.</p>
+<p><strong>O beco que a gente não caiu porque foi avisado.</strong> A lista, antes, se identificava pela posição. Se a gente tivesse só colocado o arrastar por cima disso, ele teria embaralhado feio, porque o programa se perderia a cada troca de lugar. Trocar a posição pela etiqueta própria foi o passo silencioso que fez o arrastar deslizar liso em vez de piscar e bagunçar. Um beco que a gente evitou porque foi avisado antes de começar.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>Pra organizar sozinho, a gente separa a lista em dois grupos e cola um no outro sem bagunçar a ordem de cada um, que é a ordenação estável. Pra arrastar, usa o que o navegador já dá de graça: marca o que é arrastável, escuta os três momentos (pegou, passou por cima, soltou), lembra de dizer que ali pode soltar, e reordena ao vivo. E, pra lista não se perder no meio do arrasta pra cá, arrasta pra lá, cada item carrega uma etiqueta própria em vez de depender da posição. As duas coisas pra levar não são de código. Uma: quando alguém diz que não aparece, antes de caçar bug, confira se a pessoa está na tela certa. Outra: o limite de uma feature não precisa ser fechado no primeiro desenho. Quem usa mostra até onde ela deve ir.</p>
+
+</body>
+</html>

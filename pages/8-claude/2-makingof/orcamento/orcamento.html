@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orçamento — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+    <div class="home-header">
+        <h1 class="home-title">ORÇAMENTO</h1>
+        <p class="home-sub">O módulo de orçamentos: preço, PDF, página pública e a hora de aposentar o PDF</p>
+    </div>
+
+    <div class="home-grid">
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>O PDF do orçamento era desenhado célula a célula em Java e nunca ficava igual ao modelo em HTML. A gente virou a chave: o backend agora renderiza um HTML em PDF (openhtmltopdf, sem navegador). Inclui o template com lacunas, o porquê de flexbox virar tabela, e o beco de ter que reiniciar o servidor a cada mudança.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/pdf-html.png" alt="PDF que Nasce de um HTML">
+            </div>
+            <div class="card-bar">
+                <a href="../11-pdf-html/pdf-html.html" class="card-tag" style="--tag-clr:#4338ca;">PDF QUE NASCE DE UM HTML</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Um orçamento de verdade pra um cliente (dois estúdios de transmissão) que saiu errado na primeira versão. Como precificar de baixo pra cima (custo real + consultoria + imposto + margem), ganhar no equipamento por comissão em vez de revenda, e o toque de alguém mais experiente que pegou os custos escondidos.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/precificando-orcamento.png" alt="Precificando um Orçamento">
+            </div>
+            <div class="card-bar">
+                <a href="../12-precificando-orcamento/precificando-orcamento.html" class="card-tag" style="--tag-clr:#b45309;">PRECIFICANDO UM ORÇAMENTO</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Editar um orçamento e clicar em Salvar deixava o botão preso em "Salvando..." pra sempre, sem erro nenhum. A causa estava no backend, longe da tela onde travava: ao salvar, ele montava a resposta antes de gravar, e os itens voltavam com id null. No front, a lista usava o id como etiqueta única, e dois null abortavam o desenho. O conserto foi uma linha (saveAndFlush) e a lição é seguir a evidência, não o palpite.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/salvando-para-sempre.png" alt="Salvando para Sempre">
+            </div>
+            <div class="card-bar">
+                <a href="../14-salvando-para-sempre/salvando-para-sempre.html" class="card-tag" style="--tag-clr:#0ea5e9;">SALVANDO PARA SEMPRE</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Colar uma caixa de aviso e a assinatura no rodapé do PDF do orçamento virou uma novela de cinco tentativas. O motivo: o motor que gera o PDF não é um navegador. É mídia paginada, fixo repete em toda folha e sobrepõe, margem negativa é ignorada, e um inline-table escondia um espaço alto. A saída foi compactar o conteúdo e pintar as caixas pra achar o bug.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/pdf-nao-e-navegador.png" alt="Quando o PDF não é Navegador">
+            </div>
+            <div class="card-bar">
+                <a href="../15-pdf-nao-e-navegador/pdf-nao-e-navegador.html" class="card-tag" style="--tag-clr:#e11d48;">QUANDO O PDF NÃO É NAVEGADOR</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>O orçamento já tinha um botão HTML, mas a página só abria pra quem estava logado. A gente virou isso num link de verdade na web, que o cliente abre sem conta. O conceito por trás é a URL que carrega o próprio segredo: um token impossível de adivinhar no lugar de uma senha. E a decisão que guiou tudo: um link que você manda pra fora nunca leva o seu login junto.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/link-publico.png" alt="Link Público do Orçamento">
+            </div>
+            <div class="card-bar">
+                <a href="../17-link-publico/link-publico.html" class="card-tag" style="--tag-clr:#16a34a;">LINK PÚBLICO DO ORÇAMENTO</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Episódio atípico: aqui a gente apaga uma feature. O orçamento gerava um PDF no servidor (openhtmltopdf) além da página HTML que o cliente abre por link. Ouvindo os making-ofs do próprio PDF, com os becos empilhados, ficou claro que mantê-lo ia ser um inferno, e que a página já resolvia. A gente apagou o PDF do servidor inteiro. Os conceitos: quem gera o PDF (o navegador do cliente faz de graça, no Ctrl+P), recurso duplicado é manutenção em dobro, e remover código é progresso.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/pdf-apagado.png" alt="O PDF que a Gente Apagou">
+            </div>
+            <div class="card-bar">
+                <a href="../18-pdf-apagado/pdf-apagado.html" class="card-tag" style="--tag-clr:#f97316;">O PDF QUE A GENTE APAGOU</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>A lista de itens do orçamento ganhou duas coisas no modal de edição: os itens desmarcados afundam pro fim, e dá pra reordenar arrastando por um puxador, em vez de só setinhas. Os conceitos: separar a lista em dois grupos sem bagunçar a ordem de cada um (ordenação estável), o drag-and-drop nativo do navegador, e a etiqueta única por item pra a lista não se perder ao reordenar. E o beco da sessão: o "não apareceu" que era só a tela errada.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/arrastar-e-afundar.png" alt="Arrastar e Afundar">
+            </div>
+            <div class="card-bar">
+                <a href="../19-arrastar-e-afundar/arrastar-e-afundar.html" class="card-tag" style="--tag-clr:#db2777;">ARRASTAR E AFUNDAR</a>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

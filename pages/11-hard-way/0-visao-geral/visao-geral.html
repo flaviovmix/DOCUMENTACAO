@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Hard Way — Visão Geral — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Visão Geral — The Hard Way</h1>
+
+<div class="audio-player" data-src="audio/visao-geral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Esta trilha reconstrói a stack do <strong>Nexus</strong> do zero, <strong>na unha</strong>, atravessando as 7 áreas (git, frontend, backend, banco, segurança, protocolos, servidores). A ideia não é construir o Nexus inteiro à mão. É fazer o <strong>começo cru</strong> de cada camada pra sentir a dor que o framework resolve. Quando a dor fica óbvia, o Svelte, o Spring, o JPA, o Docker aparecem como resposta, e aí fazem sentido de verdade.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">A regra do jogo — dor antes da solução</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Cada área da trilha tem o mesmo vai-e-vem: você faz o mínimo cru, bate na parede, e só então traz o framework como alívio.</p>
+            <ul>
+                <li><strong>Frontend</strong> — HTML e JS na mão, segurando o estado e mexendo no DOM manualmente. A dor de manter tela e estado em sincronia pede o <strong>Svelte</strong>.</li>
+                <li><strong>Backend</strong> — servidor HTTP cru, roteando e parseando requisição na mão. O boilerplate pede o <strong>Spring</strong>.</li>
+                <li><strong>Banco</strong> — SQL e JDBC crus, abrindo conexão e mapeando linha em objeto na marra. A repetição pede o <strong>JPA</strong>.</li>
+            </ul>
+            <p>Nunca pular direto pro framework. A dor vem primeiro, senão a peça que resolve não faz sentido.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">As 7 fases em ordem</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A jornada é linear: cada fase cruza várias áreas e prepara a próxima. Não são trilhas isoladas, é uma jornada só.</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>#</th><th>Fase</th><th>Áreas</th><th>A dor crua → o alívio</th></tr>
+                    <tr><td>1</td><td><strong>Olá Web na unha</strong></td><td>git, frontend, protocolos</td><td>HTML+JS na mão, DOM e estado manual → <strong>Svelte</strong></td></tr>
+                    <tr><td>2</td><td><strong>Sobe pro servidor</strong></td><td>servidores, git, protocolos</td><td>subir arquivo na mão, ver na web, o que é "servir"</td></tr>
+                    <tr><td>3</td><td><strong>Dado na unha</strong></td><td>banco de dados</td><td>SQL/JDBC cru, conexão e mapeamento na mão → <strong>JPA</strong></td></tr>
+                    <tr><td>4</td><td><strong>Backend que responde</strong></td><td>backend, protocolos</td><td>servlet/HTTP cru, rota e parse na mão → <strong>Spring</strong></td></tr>
+                    <tr><td>5</td><td><strong>Conecta tudo</strong></td><td>backend, frontend, banco</td><td>front fala com back fala com banco (a stack viva)</td></tr>
+                    <tr><td>6</td><td><strong>Tranca a porta</strong></td><td>segurança</td><td>sem login tudo é aberto → auth, sessão, <code>SecurityConfig</code></td></tr>
+                    <tr><td>7</td><td><strong>Deploy de verdade</strong></td><td>servidores</td><td>rodar local ≠ rodar pra mundo → Docker + Caddy na VM</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Onde o Nexus aparece</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O Nexus não é o ponto de partida, é o <strong>destino</strong>. Cada framework que entra na trilha é exatamente uma peça da stack real do Nexus:</p>
+            <ul>
+                <li><strong>Svelte</strong> na Fase 1 (frontend SvelteKit)</li>
+                <li><strong>JPA</strong> na Fase 3 (Spring Data + Postgres)</li>
+                <li><strong>Spring</strong> na Fase 4 (backend Spring Boot)</li>
+                <li><strong>Auth</strong> na Fase 6 (Spring Security, filtros, rotas públicas)</li>
+                <li><strong>Docker + Caddy</strong> na Fase 7 (deploy, 3 containers, VM Ubuntu)</li>
+            </ul>
+            <p>No fim, olhar o código do Nexus deixa de ser misterioso: você já sentiu a dor que cada peça resolve.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O que você entrega no final</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Fechando a Fase 7, você tem nas mãos, concreto:</p>
+            <ul>
+                <li>Um <strong>app web seu, rodando na web</strong> (domínio acessível): uma mini-aplicação de notas (criar, listar, apagar).</li>
+                <li><strong>Front Svelte</strong> que fala com <strong>back Spring</strong> que lê e grava no <strong>Postgres</strong>, com <strong>login</strong> protegendo seus dados.</li>
+                <li>Tudo <strong>empacotado em Docker + Caddy</strong> na VM, o mesmo desenho da stack real do Nexus.</li>
+                <li>Um <strong>repositório git</strong> com o histórico da jornada, fase por fase.</li>
+                <li>O ganho invisível: capacidade de <strong>abrir o código do Nexus e entender cada peça</strong>, porque você construiu uma versão mínima de cada uma.</li>
+            </ul>
+            <p>Em uma frase: <strong>um "Nexus de bolso" no ar, mais a cabeça pra ler o Nexus de verdade.</strong></p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Como ler esta trilha</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Aqui a ordem importa, diferente de outras trilhas. Cada fase usa o que a anterior construiu, então o caminho é <strong>1 → 2 → 3 → 4 → 5 → 6 → 7</strong>, sem pular.</p>
+            <p>Cada fase é uma sessão de trabalho na sandbox (<code>PROJETOS/ESTUDO/NEXUS - THE HARD WAY/</code>): você faz o cru, sente a dor, traz o framework, e só então segue pra próxima. O comando <code>/exercícios</code> conduz fase a fase e marca o progresso no world map.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

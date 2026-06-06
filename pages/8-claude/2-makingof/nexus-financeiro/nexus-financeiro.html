@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus · Financeiro — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+    <div class="home-header">
+        <h1 class="home-title">NEXUS · FINANCEIRO</h1>
+        <p class="home-sub">O módulo de finanças: classificar transações, gráficos que seguem o filtro</p>
+    </div>
+
+    <div class="home-grid">
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Como ajeitamos a navegação do modal de classificar transações: o botão "Anterior" sempre apagado e a diferença entre a lista filtrada e a ordem do arquivo.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/reclassificar.png" alt="Voltar pra Reclassificar">
+            </div>
+            <div class="card-bar">
+                <a href="../5-reclassificar/reclassificar.html" class="card-tag" style="--tag-clr:#ca8a04;">VOLTAR PRA RECLASSIFICAR</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>O gráfico de saldo do Financeiro ignorava o seletor de mês. A gente ligou os dois: "Últimos 12 meses" mostra a janela até hoje, e um mês específico mostra 5 meses centrados nele. Inclui generalizar o backend pra aceitar um intervalo e o beco do fallback silencioso (o gráfico voltava com 6 meses porque o servidor não tinha sido reiniciado).</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/grafico-filtro.png" alt="Gráfico que Segue o Filtro">
+            </div>
+            <div class="card-bar">
+                <a href="../10-grafico-filtro/grafico-filtro.html" class="card-tag" style="--tag-clr:#0d9488;">GRÁFICO QUE SEGUE O FILTRO</a>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

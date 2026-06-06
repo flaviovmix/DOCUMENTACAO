@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>vMix — Visão Geral — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>vMix — Visão Geral</h1>
+
+<p>O vMix é um software de produção de vídeo ao vivo que roda num PC ou laptop com Windows. Ele faz em software o que uma mesa de corte (switcher) de TV faz no hardware: receber várias fontes de vídeo e áudio, escolher o que vai no ar, aplicar transições, sobrepor gráficos, e ao mesmo tempo gravar e transmitir a produção. Tudo de uma máquina só, em SD, HD ou 4K.</p>
+
+<div class="audio-player" data-src="audio/visao-geral.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O que é o vMix — e que problema resolve</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Antes, pra fazer uma transmissão multicâmera com qualidade era preciso uma mesa de corte de hardware, equipamento caro e uma equipe. O vMix coloca esse trabalho dentro de um computador comum.</p>
+
+            <p>A ideia central: juntar várias fontes (câmeras, vídeos gravados, slides, gráficos) e, ao vivo, escolher o que vai pro ar, aplicar transição entre uma fonte e outra, sobrepor gráficos, e ao mesmo tempo gravar e transmitir tudo.</p>
+
+            <p>A comparação que o próprio manual do vMix usa: ele faz em software o que o diretor de TV faz na mesa de corte física, trocando de câmera ao vivo.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">A tela — as 4 áreas</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Quando você abre o vMix, a janela principal tem quatro partes:</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Área</th><th>Onde fica</th><th>O que é</th></tr>
+                    <tr><td><strong>Output (Program)</strong></td><td>Canto sup. direito, barra verde</td><td>O que está no ar agora. É o que vai pra gravação e transmissão.</td></tr>
+                    <tr><td><strong>Preview</strong></td><td>Canto sup. esquerdo, barra laranja</td><td>O bastidor: a próxima fonte fica aqui esperando antes de entrar.</td></tr>
+                    <tr><td><strong>Abas laterais</strong></td><td>Esquerda e direita</td><td>Esquerda organiza Inputs em categorias; direita encaixa recursos como o mixer de áudio.</td></tr>
+                    <tr><td><strong>Input Bar</strong></td><td>Fileira de baixo</td><td>Todas as fontes carregadas, cada uma com miniatura ao vivo.</td></tr>
+                </table>
+            </div>
+
+            <p>Embaixo de tudo fica o rodapé, com o botão <strong>Add Input</strong> e os botões pra ligar gravação, streaming e External Output.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O fluxo básico — fonte → Preview → Output</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O caminho é sempre o mesmo, igual numa mesa de TV:</p>
+
+            <ol>
+                <li>A fonte é carregada na <strong>Input Bar</strong>.</li>
+                <li>Você clica e ela vai pro <strong>Preview</strong> (bastidor).</li>
+                <li>Uma <strong>transição</strong> (Cut, Fade…) coloca ela no <strong>Output</strong> (no ar). O que estava no ar troca de lugar com o que estava no Preview.</li>
+            </ol>
+
+            <p>Clicar uma fonte joga ela pro Preview; clicar duas vezes abre as configurações daquela fonte.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O que pode virar Input</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Quase qualquer coisa vira uma fonte no vMix:</p>
+
+            <ul>
+                <li>Câmera por placa de captura (HDMI, SDI…), de SD a 4K</li>
+                <li>Arquivos de vídeo e de áudio, fotos</li>
+                <li>Fontes <strong>NDI</strong>, que chegam de outro computador pela rede</li>
+                <li>Navegador web, slides de PowerPoint</li>
+                <li>Títulos e placares (CGI Titles, ScoreBoard)</li>
+                <li>Chamada de vídeo com um convidado remoto (vMix Call)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Transições e overlays</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p><strong>Transições:</strong> trocar de uma fonte pra outra pode ser um corte seco (Cut), um fade, um wipe, um efeito de zoom, ou um <strong>stinger</strong> (aquela animação curta que cobre a troca, tipo as vinhetas de transmissão de esports).</p>
+
+            <p><strong>Overlays:</strong> dá pra sobrepor uma fonte por cima da outra, como um quadrado de câmera no canto (picture-in-picture) ou um gráfico com fundo transparente. O vMix segura até quatro overlays ao mesmo tempo.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Áudio e saídas</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p><strong>Áudio:</strong> cada Input tem seu próprio controle de volume e mixer. Além do mix principal (Master), dá pra montar até oito mixes de áudio independentes e mandar cada um pra um dispositivo diferente. Esse é o assunto da tela de Audio Outputs, que tem episódio próprio mais pra frente.</p>
+
+            <p><strong>Saídas:</strong> o ponto forte do vMix é entregar quatro saídas ao mesmo tempo.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Saída</th><th>Pra que serve</th></tr>
+                    <tr><td><strong>Tela cheia</strong></td><td>Mandar pro segundo monitor ou projetor</td></tr>
+                    <tr><td><strong>Recording</strong></td><td>Gravar a produção em arquivo (MP4, etc.)</td></tr>
+                    <tr><td><strong>External Output</strong></td><td>Mandar pra uma placa de vídeo ou outro destino</td></tr>
+                    <tr><td><strong>Streaming</strong></td><td>Transmitir pro YouTube, Facebook e outros</td></tr>
+                </table>
+            </div>
+
+            <p>Tem ainda <strong>NDI</strong>, pra mandar vídeo pela rede local, e <strong>SRT</strong>, pra mandar pela internet de forma confiável.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Onde aparece na vida real</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>vMix é muito usado em transmissão de culto com várias câmeras, campeonato de games com placar e replay, casamento transmitido ao vivo, podcast em vídeo com troca de enquadramento, aula online e webinar com slides e convidados remotos. Sempre que tem mais de uma fonte e a coisa é ao vivo, é o cenário do vMix.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Público do Orçamento — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Link Público do Orçamento</h1>
+
+<div class="audio-player" data-src="audio/link-publico.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Um cliente pede um orçamento. Em vez de mandar um PDF anexo, a ideia é mandar um <strong>link</strong>: o cliente abre uma página, vê o orçamento e, se quiser, imprime ou gera o PDF ele mesmo. O Nexus já tinha um botão HTML que montava essa página, mas ela <strong>só abria pra quem estava logado</strong>. A gente transformou isso num link de verdade na web, que o cliente abre <strong>sem conta e sem senha</strong>. O conceito por trás é a <strong>URL que carrega o próprio segredo</strong>: um token impossível de adivinhar no lugar de uma senha. Arquivos reais: <code>PublicOrcamentoController.java</code>, <code>OrcamentoService.java</code>, <code>SecurityConfig.java</code> no backend, e <code>OrcamentoDetailModal.svelte</code> no front.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Um link pro cliente, sem login">O que a gente queria</h2>
+<p>O cenário: o cliente pede um orçamento, e em vez de um PDF no email a gente quer mandar um link. Ele abre, vê o orçamento numa página bonita, e imprime ou gera o PDF ali mesmo no navegador. Os dados são dele, e só ele recebe o link.</p>
+<p>O Nexus já tinha um botão HTML que montava a página. O problema: ela <strong>só abria pra quem estava logado</strong>. O botão pegava a página pronta e abria numa aba como um <strong>arquivo temporário</strong>, um rascunho que só existe naquela aba, naquele computador logado. Servia pra gente conferir, não pra mandar pro cliente, que não tem login no sistema. O pedido foi virar isso num link de verdade na web: um endereço que o cliente abre no celular dele, sem senha.</p>
+
+<h2 id="conceitos" data-toc-title="Os conceitos" data-sub="O token na URL é a credencial">Os conceitos</h2>
+<p><strong>Rota protegida vs pública.</strong> Quase tudo no Nexus pede crachá. Quando você faz login, o sistema te dá um crachá digital (um <strong>token</strong>), e a cada tela um <strong>porteiro</strong> confere esse crachá. Sem crachá, a porta não abre. Mas a página do orçamento, pra ir pro cliente, não pode pedir crachá: o cliente não tem.</p>
+<p><strong>O token inadivinhável como credencial.</strong> Como deixar <em>uma</em> página aberta sem escancarar o resto? Põe o segredo dentro do próprio link. Em vez de uma senha separada, o endereço carrega um código secreto: um número gigante e aleatório que ninguém digita por acaso nem adivinha tentando, um <strong>UUID</strong>. O link fica tipo <code>/public/orcamentos/fbfc5a34-3d8f-4981-a659-236afd47158a</code>. Quem tem o link entra; quem não tem teria que adivinhar uma chave entre bilhões de bilhões de combinações. Na prática, impossível. <strong>O link virou a credencial</strong>, a mesma ideia do "qualquer um com o link pode ver" do Google Drive.</p>
+<p><strong>O encurtador (de passagem).</strong> Esse link com o código gigante fica comprido. Pra mandar mais fácil, passamos ele por um encurtador: um link curtinho que, ao ser aberto, <strong>redireciona</strong> pro comprido. É só um atalho, opcional. O link comprido já funcionaria sozinho.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="Token, rota pública, porteiro, botão">Como montamos</h2>
+<p><strong>1. O token.</strong> Demos ao orçamento um campo novo, o token, que nasce vazio e só é gerado na primeira vez que você compartilha (uma coluna <code>public_token</code> no banco).</p>
+<p><strong>2. A rota pública.</strong> Uma porta nova no servidor: alguém abre <code>/public/orcamentos/{token}</code>, o sistema acha o orçamento daquele token e devolve a página HTML. Sem pedir crachá.</p>
+<pre><code class="language-java">@GetMapping("/{token}")
+public ResponseEntity&lt;byte[]&gt; page(@PathVariable UUID token) {
+    Orcamento o = service.loadPublicByToken(token);
+    byte[] bytes = html.generate(o);
+    return ResponseEntity.ok().contentType(/* text/html */).body(bytes);
+}</code></pre>
+<p><strong>3. Avisar o porteiro.</strong> O porteiro de segurança tem uma lista de endereços que entram sem crachá (o login, as páginas públicas de notas). A gente só adicionou o endereço novo na lista.</p>
+<pre><code class="language-java">.requestMatchers(HttpMethod.GET, "/public/orcamentos/*").permitAll()</code></pre>
+<p><strong>4. O botão compartilhar.</strong> Ao clicar, ele garante que o orçamento tem um token (cria na hora se não tinha), monta o link da página pública e cria, ou <strong>reaproveita</strong>, um link curto apontando pra lá. Reaproveita pra não encher o encurtador de links repetidos.</p>
+<p><strong>5. O modal.</strong> Na tela, clicar HTML agora abre um modalzinho com o link pronto e um botão de copiar, pra você mandar pro cliente.</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="O link nunca leva seu login junto">Decisões, becos e o toque de quem tem mais experiência</h2>
+<p>Antes de codar, a gente parou num detalhe fácil de passar batido, e é a lição do episódio. A ideia ingênua seria: "já existe um botão que gera a página e um encurtador pronto, então é só apontar um link curto pra página que a gente tem". Mas isso <strong>quebraria na mão do cliente</strong>. Por quê? Porque um link curto é só um redirecionamento: o navegador do cliente é mandado pra página <strong>sem crachá nenhum junto</strong>, e a página velha pedia crachá. O cliente tomaria um "acesso negado". O ponto cego: <strong>um link que você manda pra fora nunca leva o seu login junto</strong>. Foi isso que decidiu o desenho inteiro, ter que criar uma rota pública de propósito, com o token fazendo o papel da senha. Perceber antes de codar evitou refazer tudo depois.</p>
+<p><strong>O beco da aba anônima.</strong> Na primeira versão, o botão ainda abria a página como aquele arquivo temporário. Pra testar de verdade, abrimos o link numa <strong>aba anônima</strong> (o cenário do cliente: nenhum login). Deu "arquivo não encontrado", porque o rascunho só existe na aba que o criou. Foi a prova viva de que precisava de um link na web de verdade.</p>
+<p><strong>O 401 enganoso.</strong> Testando a rota nova, em vez de "não existe" (404) vinha "não autorizado" (401). O motivo: a rota nova ainda nem tinha entrado no servidor rodando, e o porteiro, ao não reconhecer o endereço e não ver crachá, já respondia "não autorizado". A correção foi reiniciar o servidor. Lição pequena: no backend, código novo só vale depois de reiniciar.</p>
+<p><strong>Direto vs encurtado, e público é público.</strong> Duas decisões de fechamento. O encurtador é <strong>opcional</strong>: o link comprido com o token já resolve, o <code>/s/</code> curtinho só deixa mais bonito de mandar (mantivemos porque já estava pronto). Pra ter um link curto na raiz de um domínio só dele precisaria de um subdomínio dedicado, coisa de produção. E a página é <strong>pública de propósito</strong>: qualquer um com o link vê os dados do cliente. No nosso caso tudo bem, o dono dos dados é o próprio cliente que recebe o link. Mas é uma escolha consciente, não um descuido.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>A gente transformou a página do orçamento, que só abria logado, num link que o cliente abre sem conta. O truque é a <strong>URL que carrega o próprio segredo</strong>: um token gigante e aleatório que faz o papel da senha. Por baixo, uma <strong>rota pública</strong> no servidor, liberada no porteiro, e um token que nasce só na hora de compartilhar. A coisa pra levar é a do começo: um link que você manda pra fora nunca leva o seu login junto, então a página do outro lado precisa de uma <strong>chave própria</strong>. Esse mesmo desenho serve pra qualquer coisa compartilhável por link: uma nota, uma foto, um relatório.</p>
+
+</body>
+</html>

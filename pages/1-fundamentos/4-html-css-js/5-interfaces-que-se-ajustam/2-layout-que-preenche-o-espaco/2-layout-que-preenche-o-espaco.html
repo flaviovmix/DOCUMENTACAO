@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layout Que Preenche o Espaço — Interfaces Que Se Ajustam — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Layout Que Preenche o Espaço</h1>
+
+<div class="audio-player" data-src="audio/layout-que-preenche-o-espaco.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>No problema anterior a gente fez um gráfico parar de cortar a própria linha. Agora o foco é a caixa em volta: como ela decide a altura. A jornada vai de altura fixa em pixels, passa por amarrar na janela com vh e clamp, e chega no preenchimento de verdade com a cadeia flex. No fim, duas decisões de dimensionamento: medir por largura ou por altura, e manter cards numa linha só.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O problema da altura fixa</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Quando você define a altura em pixels, o elemento é sempre daquele tamanho. Numa tela alta sobra espaço embaixo e fica um buraco. Numa tela baixa não cabe, e ou corta ou empurra o resto pra fora. Altura fixa não conversa com o tamanho da tela.</p>
+            <pre><code class="language-css">.grafico {
+    height: 240px; /* sempre 240, em qualquer tela */
+}</code></pre>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Amarrar na janela — vh e clamp</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O primeiro passo pra adaptar é a unidade <strong>vh</strong>. Um vh é um por cento da altura da janela. Então <code>20vh</code> é sempre um quinto da altura visível, seja qual for a tela. Já adapta, mas é uma proporção fixa, ainda é meio chute.</p>
+            <p>Pra não exagerar nos extremos, entra o <strong>clamp</strong>: você dá um piso, um valor preferido e um teto. Em tela gigante não estica demais, em tela minúscula não some.</p>
+            <pre><code class="language-css">.grafico {
+    /* no minimo 140px, de preferencia 20vh, no maximo 210px */
+    height: clamp(140px, 20vh, 210px);
+}</code></pre>
+            <p>Mesmo assim, continua sendo um palpite proporcional. Não sabe quanto espaço de fato sobrou.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Preencher de verdade — a cadeia flex e o min-height zero</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Pra um elemento ocupar exatamente o que sobra, e não um palpite, usa-se o flexbox. O container vira flex em coluna, e o filho que deve crescer recebe <code>flex: 1</code>. Ele estica pra pegar todo o espaço que os irmãos não usaram.</p>
+            <p>Tem uma pegadinha que pega quase todo mundo: o <strong>min-height: 0</strong>. Por padrão, um item flex não encolhe abaixo do tamanho do próprio conteúdo. Isso quebra o "preencher", porque o item se recusa a caber e acaba transbordando. Setar <code>min-height: 0</code> libera ele pra encolher.</p>
+            <pre><code class="language-css">.scroll-area {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;        /* libera o encolher */
+}
+.chart-block {
+    flex: 1;              /* ocupa o que sobra */
+    min-height: 0;
+}</code></pre>
+            <p>E precisa ser na cadeia inteira: se são vários níveis aninhados, cada nível que repassa o espaço precisa do <code>flex: 1</code> e do <code>min-height: 0</code>. Quebrou em um nível, a corrente toda para.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Por largura ou por altura, e a linha de cards</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Duas decisões de dimensionamento. A primeira: medir por largura ou por altura. A propriedade <strong>aspect-ratio</strong> faz a altura sair da largura (ou o contrário). Um card com proporção fixa: você manda a largura, a altura segue sozinha.</p>
+            <pre><code class="language-css">.card {
+    aspect-ratio: 3.5 / 4.5;       /* altura derivada da largura */
+    max-height: clamp(120px, 24vh, 230px); /* mas responde a altura tambem */
+}</code></pre>
+            <p>Se você quer que o card encolha quando a <strong>tela</strong> fica baixa, o aspect-ratio sozinho não faz, porque ele olha a largura. Por isso entra um teto de altura em vh junto.</p>
+            <p>A segunda: cards numa única linha. Existe um jeito de grid (<code>auto-fill</code> com <code>minmax</code>) que cria quantas colunas couberem. Ótimo, mas ele quebra pra próxima linha quando passa do espaço. Se a regra é "sempre uma linha só", isso atrapalha. A alternativa foi calcular quantas colunas cabem e desenhar exatamente esse tanto de card.</p>
+            <pre><code class="language-css">/* quebra pra 2a linha quando passa: */
+grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+
+/* sempre 1 linha, com o numero de colunas calculado: */
+grid-template-columns: repeat(var(--cols), 1fr);</code></pre>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

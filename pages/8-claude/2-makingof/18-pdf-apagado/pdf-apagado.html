@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O PDF que a Gente Apagou — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>O PDF que a Gente Apagou</h1>
+
+<div class="audio-player" data-src="audio/pdf-apagado.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Episódio atípico da sequência: nos outros a gente <strong>constrói</strong> uma feature, neste a gente <strong>apaga</strong> uma. O orçamento do Nexus tinha duas saídas pro mesmo conteúdo: um <strong>PDF gerado no servidor</strong> (a biblioteca openhtmltopdf, dos episódios <em>PDF que Nasce de um HTML</em> e <em>Quando o PDF não é Navegador</em>) e uma <strong>página HTML</strong> que o cliente abre por link (o episódio <em>Link Público do Orçamento</em>). Manter o PDF do servidor era caro. Ouvindo os próprios making-ofs do PDF, com os becos empilhados, ficou claro que seguir naquele caminho ia ser um inferno, e que nem precisava: a página HTML já resolve, porque o cliente imprime ou gera o PDF ele mesmo, no navegador. Então a gente apagou o PDF do servidor e ficou só com a página.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Parar de manter o PDF do servidor">O que a gente queria</h2>
+<p>O orçamento tinha <strong>duas saídas</strong> pro mesmo conteúdo. Uma era o PDF gerado no servidor, em Java, com a openhtmltopdf. Foi um trabalhão: dois episódios só sobre ele (<em>PDF que Nasce de um HTML</em>, sobre trocar desenhar por renderizar; e <em>Quando o PDF não é Navegador</em>, a novela de cinco tentativas pra colar a assinatura no rodapé). A outra saída era a página HTML do episódio <em>Link Público</em>: o cliente recebe um link, abre no celular sem login, e ali lê, imprime ou gera o PDF ele mesmo.</p>
+<p>Ter as duas parecia bom, mas o PDF do servidor cobrava caro: <strong>dois modelos pra manter sincronizados</strong>, uma biblioteca a mais carregada, e uma briga sem fim com as limitações dela. Toda mudança de visual era feita em dois lugares, e o lado do PDF era o chato, o que não aceitava as coisas modernas. A virada veio ouvindo os próprios making-ofs do PDF: com os becos empilhados, ficou óbvio que aquilo ia doer pra sempre, e que a página HTML já dava conta. O pedido virou simples: parar de manter o PDF do servidor.</p>
+
+<h2 id="conceitos" data-toc-title="Os conceitos" data-sub="Servidor vs navegador, duplicação, remover é progresso">Os conceitos</h2>
+<p><strong>Quem deve gerar o PDF: o servidor ou o navegador do cliente.</strong> Gerar no servidor tem custo: precisa da biblioteca, precisa que a fonte tenha cada símbolo, entende só o CSS antigo, exige um modelo separado e obriga a reiniciar a cada mudança. Do outro lado, <strong>todo navegador já sabe imprimir uma página pra PDF</strong>, de graça, com o motor mais caprichado que existe: é o Ctrl+P, salvar como PDF. Se o cliente já abre a página pelo link, ele gera o PDF dele ali mesmo, idêntico ao que vê. A responsabilidade de virar PDF não precisava morar no servidor. Ela <strong>mudou de dono</strong> e foi pro navegador, que faz melhor e sem custo pra gente.</p>
+<p><strong>O custo escondido de um recurso que duplica.</strong> A gente tinha <strong>dois modelos</strong> do orçamento: um simples (o que a biblioteca do PDF renderizava) e um rico (o da página HTML, com foto e acordeão). Mostravam a mesma proposta, cada um do seu jeito. Ter dois significa que <strong>toda melhoria é feita duas vezes</strong>, e um deles ainda era o limitado. Recurso duplicado é manutenção em dobro, e quase sempre um dos dois é o pobre que te segura.</p>
+<p><strong>Remover código é progresso.</strong> A gente acha que trabalho é sempre adicionar. Mas a melhor versão de um recurso, às vezes, é não tê-lo. Quando outra peça já cobre o caso, apagar a peça velha <strong>tira peso</strong>: menos código pra entender, menos biblioteca carregada, menos lugar pra bug se esconder. Deletar não é desistir, é simplificar.</p>
+
+<h2 id="como-desmontamos" data-toc-title="Como desmontamos" data-sub="As cinco coisas que saíram">Como desmontamos</h2>
+<p>Nos outros episódios essa parte é "como montamos". Aqui é o contrário: cinco coisas saíram.</p>
+<p><strong>1. O serviço que gerava o PDF</strong> (<code>OrcamentoPdfService</code>) saiu inteiro. Era a classe que lia o modelo simples, preenchia as lacunas com os dados do orçamento e chamava a biblioteca pra devolver os bytes. Muito trabalho um dia; virou arquivo apagado.</p>
+<p><strong>2. A configuração da empresa</strong> (<code>OrcamentoEmpresaProperties</code> + o bloco <code>nexus.orcamento.empresa</code> no <code>application.yml</code>) saiu junto. Nome, CNPJ, telefones, site: aparecia só no cabeçalho do PDF. Sem PDF, virou <strong>config órfã</strong>, e saiu também. Regra: quando remove um recurso, remove o que só existia por causa dele, senão fica lixo pra confundir quem vier depois.</p>
+<p><strong>3. A dependência da biblioteca</strong> saiu do <code>pom.xml</code>. Uma linha a menos, uma biblioteca a menos carregada, e uma preocupação a menos quando o Nexus for pra produção num container.</p>
+<p><strong>4. O modelo simples do PDF</strong> (<code>proposta.html</code>) saiu. Sobrou só o modelo rico (<code>proposta-detalhada.html</code>). De dois modelos pra manter, voltamos pra um.</p>
+<p><strong>5. Na tela, o botão laranja de PDF</strong> saiu do menu do orçamento, junto com a função que baixava o arquivo. Sobrou o botão HTML, que abre a página e gera o link pro cliente. Quem precisar de PDF, gera pela página, no navegador.</p>
+<p>E o que <strong>não</strong> saiu: a página HTML inteira ficou de pé (o serviço que monta ela, o modelo rico, a rota pública, o link com token). É ela que faz o trabalho agora, sozinha.</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="O making-of virou a própria revisão">Decisões, becos e o toque de quem tem mais experiência</h2>
+<p>O toque de quem tem mais experiência, aqui, veio de um jeito que vale contar, porque é a lição principal. Na maioria das vezes esse toque vem de fora: um colega, o chefe, alguém mais sênior aponta o ponto cego. Aqui foi diferente: <strong>o toque veio de ouvir o próprio making-of</strong>. Os episódios do PDF contavam, um atrás do outro, cada beco daquele caminho: o CSS antigo, o alinhamento moderno que virava tabela, a fonte sem o símbolo certo, o servidor reiniciado um monte de vezes, a novela das cinco tentativas pra colar a assinatura. Ouvindo tudo empilhado, de fora, ficou óbvio que manter aquilo ia doer pra sempre, e que a página HTML já resolvia. <strong>A documentação do trabalho virou a revisão.</strong> O ponto cego apareceu porque a gente parou pra explicar o que tinha feito, e na hora de explicar a conta não fechou. Documentar não é só registro: é uma chance de revisar.</p>
+<p><strong>O PDF não sumiu, mudou de dono.</strong> O cliente ainda consegue um PDF, só que pelo navegador dele (Ctrl+P ou o botão de imprimir da página), com resultado idêntico ao que vê. A gente não tirou uma capacidade do produto. Tirou código nosso que duplicava algo que o navegador já dá de graça.</p>
+<p><strong>Antes de apagar, olhe quem mais usa.</strong> É regra de ouro. O serviço do PDF e o da página HTML <strong>compartilhavam a mesma assinatura</strong> (o arquivo de imagem) e as mesmas fotos dos itens. Apagar na bruta a pasta inteira do PDF levaria junto coisa que a página ainda precisa. Então a gente apagou só o que era exclusivo do PDF (o serviço, a config, o modelo simples) e deixou intacto o compartilhado. Apagar sem olhar a vizinhança quebra o que sobrou.</p>
+<p><strong>Os episódios antigos continuam valendo.</strong> <em>PDF que Nasce de um HTML</em> e <em>Quando o PDF não é Navegador</em> contam como o PDF foi feito, e isso foi verdade naquele momento. Este conta por que ele foi aposentado. Não tem contradição: é a mesma feature em dois momentos da vida dela. Nascer e ser aposentada fazem parte da mesma história.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>A gente apagou o PDF gerado no servidor: saiu a biblioteca, o serviço que montava o PDF, a configuração da empresa que só ele usava, o modelo simples e o botão de PDF na tela. Ficou só a página HTML, que o cliente abre por link e, se quiser um PDF, gera ele mesmo no navegador. A coisa pra levar é dupla. Primeira: às vezes a melhor entrega é <strong>remover</strong>, e a responsabilidade pode mudar de dono pra quem faz melhor (aqui, o navegador do cliente). Segunda, mais sutil: foi <strong>ouvindo o making-of do próprio PDF</strong> que ficou claro que dava pra viver sem ele. Explicar o que você construiu é também a chance de ver que dava pra fazer mais simples, ou nem fazer.</p>
+
+</body>
+</html>
