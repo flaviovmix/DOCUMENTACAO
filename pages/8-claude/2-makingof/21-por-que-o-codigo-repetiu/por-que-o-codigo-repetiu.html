@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Por Que o Código Repetiu — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Por Que o Código Repetiu</h1>
+
+<div class="audio-player" data-src="audio/por-que-o-codigo-repetiu.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Episódio atípico, irmão do <em>Quando Parar de Cavar</em>: não é sobre uma tela nem sobre construir uma feature, é sobre o <strong>jeito de trabalhar</strong>. Nasce de um pedido do Flávio: olhar o código do projeto Nexus, sem mudar nada, e dizer se tem muito código repetido ou função com cara de código fedido. A varredura achou bastante repetição, principalmente no front. A pergunta de verdade veio depois: por que isso acontece, se foi tudo escrito pelo próprio assistente em sessões passadas?</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Entender a causa da repetição">O que a gente queria</h2>
+<p>O pedido foi uma varredura, só leitura, nos dois lados do projeto: o backend (Java + Spring) e o frontend (Svelte). E ela achou repetição pra valer, principalmente no front. Por alto: mais de uma dezena de arquivos de estado repetindo o mesmo bloco de carregar dados palavra por palavra, perto de quinze modais repetindo a mesma abertura e fechamento, e quase trinta componentes de tela de modal repetindo o mesmo CSS de fundo e moldura. No backend, menos grave, mas o mesmo tratamento de erro aparece em mais de vinte controladores (perto de quarenta vezes), <strong>mesmo existindo um lugar central próprio pra isso</strong>. Daí a pergunta que origina o episódio: tudo isso foi escrito pelo próprio assistente, então o que no jeito de trabalhar produz essa repetição toda?</p>
+
+<h2 id="conceitos" data-toc-title="Os conceitos" data-sub="DRY, dívida técnica, regra dos três, ótimo local vs global">Os conceitos</h2>
+<p><strong>DRY e code smell.</strong> DRY, "não se repita", diz que cada pedaço de conhecimento devia viver num lugar só. Quando o mesmo bloco aparece em onze arquivos, você não tem um conhecimento, tem onze cópias dele. A repetição é um <strong>code smell</strong>: um cheiro, não um bug. O código funciona, só tem uma forma que vai doer pra mexer depois.</p>
+<p><strong>Dívida técnica.</strong> É o que o cheiro vira com o tempo, em forma de juros. Cada cópia a mais é um lugar a mais pra corrigir quando o padrão mudar. Mudou a cor do fundo do modal e ela está em trinta lugares? São trinta correções na mão, e basta esquecer uma pra ficar inconsistente. A dívida não é o código ficar feio, é ele ficar caro de mexer.</p>
+<p><strong>Ótimo local vs ótimo global.</strong> É o coração do episódio. Cada decisão isolada de copiar foi a melhor naquele momento: copiar o que já funciona é rápido, é seguro e segue o que estava lá. Decisão local boa. Só que a soma de um monte de decisão local boa deu um resultado global ruim, porque ninguém parou pra olhar o conjunto.</p>
+<p><strong>A analogia da fotocópia e do carimbo.</strong> Cada modal novo foi uma fotocópia: você pegou o formulário do anterior, tirou uma cópia e preencheu por cima. Funciona, e é a coisa mais rápida. O problema vem depois: se o cabeçalho muda, são quinze fotocópias pra corrigir uma a uma. A alternativa é o <strong>carimbo</strong>, um molde único. Com ele, você muda uma vez e todas saem certas. Só que o carimbo dá trabalho, e só compensa quando você vê as quinze cópias juntas. Olhando uma de cada vez, a fotocópia sempre ganha.</p>
+<p><strong>A regra dos três.</strong> É o contrapeso, diz quando vale o carimbo. Na primeira vez você só escreve; na segunda, aguenta a cópia; na terceira, extrai o molde. Antes de três é cedo (<strong>abstração prematura</strong>, que é tão ruim quanto duplicar, porque você molda errado antes de saber o formato). Depois de três, já passou da hora.</p>
+
+<h2 id="como-chegamos" data-toc-title="Como chegamos aqui" data-sub="As quatro causas que se reforçam">Como chegamos aqui</h2>
+<p><strong>1. Cada peça nasceu numa sessão separada, sem memória das outras.</strong> O assistente não lembra os quinze modais que fez. Em cada sessão, ele olha o componente mais parecido na frente (o último que você abriu ou que ele leu) e espelha aquele. O resultado é fotocópia, não carimbo, porque ele nunca vê os quinze juntos. Quem viu os quinze juntos foi a varredura, agora.</p>
+<p><strong>2. As regras do próprio projeto empurram pra fotocopiar.</strong> E são regras boas: seguir o padrão existente, não refatorar sem pedir, não criar arquivo sem confirmar, uma mudança por vez. Fazer um carimbo (um componente base) é exatamente o que essas regras mandam não fazer por conta própria: é decisão de arquitetura, mexe em vários arquivos e cria arquivo novo. Então o único caminho permitido pra um pedido pontual é fotocopiar.</p>
+<p><strong>3. Loop de feedback.</strong> O padrão que o assistente segue <em>é</em> a própria fotocópia. Cada cópia nova vira a referência da próxima. "Siga o padrão existente" garante que ele propaga o que já está lá, com defeitos e tudo. A repetição se alimenta sozinha.</p>
+<p><strong>4. Fotocopiar é o caminho de menor risco.</strong> Uma cópia que já compila e segue a convenção tem risco baixo. Fazer um carimbo tem risco de generalizar errado e quebrar várias coisas de uma vez. Pedido pontual + aversão natural a risco = fotocópia.</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="O toque do Flávio e o equilíbrio dos dois lados">Decisões, becos e o toque de quem tem mais experiência</h2>
+<p>O toque de quem tem mais experiência, de novo, foi o <strong>Flávio</strong>: pedir a varredura transversal. Trabalhando peça por peça, ninguém vê a pilha; é o próprio jeito de trabalhar que esconde o problema. Olhar todas as peças de uma vez é a única coisa que quebra o ótimo local, porque só com o conjunto na frente a repetição salta. O papel de quem tem mais experiência aqui não foi escrever código melhor, foi mandar olhar o todo.</p>
+<p><strong>Uma honestidade de propósito.</strong> O assistente não lembra o raciocínio das sessões em que clonou cada peça. Cada conversa é um contexto fechado. Então a explicação do "porquê" não é memória, é <strong>inferência pela evidência</strong>, pelo código que ficou. Registrar esse limite faz parte da honestidade, igual no episódio do PDF.</p>
+<p><strong>Como melhorar, do lado de fazer de menos:</strong> fazer os carimbos. Um componente de modal base, pra apagar o CSS repetido em trinta lugares. Uma fábrica de estado, pra apagar o bloco de carregar dados repetido em mais de dez. Uma fábrica de CRUD na camada de api, pra apagar a lista de chamadas repetidas. Cada carimbo apaga uma pilha inteira de fotocópias.</p>
+<p><strong>Do lado de fazer demais:</strong> não sair carimbando tudo. A regra dos três protege, só extrai o molde quando já existem três cópias reais. Carimbar cedo demais é abstração prematura, e aí você molda errado antes de saber o formato.</p>
+<p><strong>A peça que faltava no processo:</strong> um gatilho pro assistente avisar na hora, do tipo "esse é o terceiro modal igual, quer um carimbo?". Isso conversa com o arquivo de gatilhos do episódio anterior, porque "uma solução que duplica algo que já existe" já é um dos cheiros que estão lá. A diferença é que aqui o cheiro não acontece dentro de uma sessão, acontece <strong>entre sessões</strong>, e por isso escapou: ninguém segura o fio de uma conversa pra outra.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>A repetição no Nexus não foi descuido nem preguiça. Foi o resultado previsível de construir peça por peça, em sessões separadas, com regras que (com razão) pedem pra seguir o padrão e não refatorar sozinho. Cada fotocópia foi a decisão local certa; a soma é que ficou errada. A varredura transversal foi o que revelou, e a saída é fazer os carimbos quando a regra dos três bate (componente <code>&lt;Modal&gt;</code> base, fábrica de store, fábrica de CRUD na api), mais um gatilho pra avisar entre sessões. A coisa pra levar, que serve pra qualquer projeto longo: duplicação quase nunca nasce de alguém fazer errado, nasce de um monte de decisão local certa que ninguém juntou pra olhar de cima.</p>
+
+</body>
+</html>
