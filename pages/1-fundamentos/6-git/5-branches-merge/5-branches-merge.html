@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git — Branches e Merge — XT - Treinamento</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Git — Branches e Merge</h1>
+
+<div class="audio-player" data-src="audio/5-branches-merge.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Até aqui a linha do tempo do git foi uma reta só: um commit atrás do outro. Esse card abre a parte que faz o git valer a pena de verdade: <strong>branches</strong> (ramos paralelos da linha do tempo) e <strong>merge</strong> (juntar dois ramos de volta num só). É o que permite você desenvolver numa branch <code>dev</code> sem mexer na <code>main</code>, e só trazer pra <code>main</code> quando estiver pronto.</p>
+
+<h2 id="o-que-e-branch" data-toc-title="O que é branch" data-sub="Ponteiro, não cópia">O que é uma branch</h2>
+<p>A intuição comum é errada: uma branch <strong>não</strong> é uma cópia da pasta do projeto. Branch é só um <strong>ponteiro</strong> — uma etiqueta leve que aponta pra um commit. Quando você commita estando numa branch, a etiqueta anda junto, sempre marcando o commit mais recente daquele ramo.</p>
+<p>Por isso criar branch no git é instantâneo e barato: não copia arquivo nenhum, só cria mais uma etiqueta. Os commits ficam todos no mesmo repositório; o que muda é qual etiqueta aponta pra qual ponto da linha do tempo.</p>
+<p>A branch padrão, criada no primeiro commit, costuma se chamar <code>main</code> (antigamente <code>master</code>). A partir dela você cria outras pra trabalhar em paralelo.</p>
+
+<h2 id="head" data-toc-title="HEAD" data-sub="Onde você está">HEAD — onde você está agora</h2>
+<p>Além das etiquetas de branch, existe um ponteiro especial chamado <code>HEAD</code>. Ele aponta pra <strong>branch em que você está no momento</strong>. Quando você troca de branch, o <code>HEAD</code> muda de alvo e o git reescreve os arquivos do disco pra refletir aquele ramo.</p>
+<p>Resumindo os três tipos de ponteiro que aparecem no <code>git log</code>: <code>main</code> e <code>dev</code> são etiquetas de branch; <code>HEAD</code> é "você está aqui". Quando o log mostra <code>(HEAD -&gt; dev)</code>, significa "você está na branch dev".</p>
+
+<h2 id="criar-trocar" data-toc-title="Criar e trocar" data-sub="branch, switch, checkout">Criar e trocar de branch</h2>
+<p>Dois passos conceitualmente separados: <strong>criar</strong> a branch e <strong>mover</strong> pra ela.</p>
+<pre><code class="language-bash">git branch dev      # cria a branch dev (você CONTINUA onde está)
+git switch dev      # move pra ela (HEAD passa a apontar pra dev)</code></pre>
+<p>O <code>git branch dev</code> sozinho só cria a etiqueta — você não sai da branch atual. O <code>git switch dev</code> é que faz o <code>HEAD</code> pular pra lá. Tem o atalho que junta os dois num comando só:</p>
+<pre><code class="language-bash">git switch -c dev   # -c = create: cria e já move</code></pre>
+<p><strong>E o <code>git checkout</code>?</strong> O <code>git checkout dev</code> faz a mesma troca de branch. Ele é o comando <em>antigo</em>, que acumula muitas funções (trocar branch, restaurar arquivo, navegar pra um commit). O <code>git switch</code> foi criado depois pra isolar só a parte de trocar de branch, deixando o comando mais claro. Os dois funcionam; <code>switch</code> é o recomendado hoje pra essa tarefa específica.</p>
+
+<h2 id="fluxo-dev" data-toc-title="Fluxo dev/main" data-sub="Por que separar">Por que ter uma branch dev</h2>
+<p>A ideia: a <code>main</code> guarda só o que está pronto e estável; o desenvolvimento do dia a dia acontece numa branch <code>dev</code> (ou em branches de feature). Você commita à vontade na <code>dev</code> — inclusive coisas pela metade, com bug, em teste — sem sujar a <code>main</code>. Quando o conjunto fica pronto, você junta <code>dev</code> na <code>main</code> com um merge.</p>
+<p>Isso te dá uma <code>main</code> sempre confiável (dá pra publicar a qualquer momento) e liberdade pra experimentar na <code>dev</code> sem medo.</p>
+
+<h2 id="merge" data-toc-title="git merge" data-sub="Juntar ramos">git merge — juntando os ramos</h2>
+<p>Merge é trazer os commits de uma branch pra dentro de outra. Você fica na branch de <strong>destino</strong> (a que vai receber) e manda mergear a de <strong>origem</strong>:</p>
+<pre><code class="language-bash">git switch main        # vai pro destino
+git merge dev          # traz os commits da dev pra main</code></pre>
+<p>O git resolve isso de duas formas, dependendo da situação:</p>
+<ul>
+    <li><strong>Fast-forward</strong> — se a <code>main</code> não recebeu nenhum commit novo desde que a <code>dev</code> saiu dela, não há o que conciliar: o git só "empurra" a etiqueta <code>main</code> pra frente, até o último commit da <code>dev</code>. A linha do tempo continua reta. Nenhum commit novo é criado.</li>
+    <li><strong>Merge commit</strong> — se as duas branches andaram (cada uma ganhou commits próprios), o git cria um <strong>commit de merge</strong> novo, com <em>dois pais</em>, amarrando as duas histórias. É aqui que o <code>git log --graph</code> mostra os ramos convergindo.</li>
+</ul>
+<p>Em ambos os casos, todos os commits individuais da <code>dev</code> ficam preservados no histórico da <code>main</code>.</p>
+
+<h2 id="squash" data-toc-title="Squash merge" data-sub="Achatar em 1 commit">Squash merge — achatar tudo num commit só</h2>
+<p>Às vezes a <code>dev</code> tem 15 commits bagunçados ("wip", "ajuste", "corrige typo") e você não quer poluir a <code>main</code> com esse rastro. O <strong>squash</strong> pega todas as mudanças da branch e deixa preparadas como <em>um único</em> conjunto, sem comitar:</p>
+<pre><code class="language-bash">git switch main
+git merge --squash dev      # joga todas as mudanças no stage, NÃO commita
+git commit -m "mensagem do conjunto inteiro"</code></pre>
+<p>O <code>--squash</code> não cria commit sozinho — ele só prepara as mudanças. O <code>git commit</code> seguinte é que gera <strong>um</strong> commit limpo com tudo dentro.</p>
+<p><strong>Merge normal vs squash, lado a lado:</strong></p>
+<ul>
+    <li><strong>Merge normal</strong> preserva cada commit da <code>dev</code> na história da <code>main</code>. Bom quando o histórico detalhado importa.</li>
+    <li><strong>Squash</strong> achata todos num só. Bom quando você quer a <code>main</code> com um commit por feature, sem o ruído do desenvolvimento.</li>
+</ul>
+<p>Detalhe: depois de um squash, o git não considera a <code>dev</code> "mergeada" (porque não há commit de merge ligando as histórias). Se for continuar usando a <code>dev</code>, o normal é apagá-la e criar uma nova a partir da <code>main</code> atualizada.</p>
+
+<h2 id="clone" data-toc-title="Clone do zero" data-sub="init vs clone">Clone — começar a partir de um repo que já existe</h2>
+<p>Até agora a gente partiu de <code>git init</code> (transformar uma pasta local em repo). Mas quando o repositório <strong>já existe</strong> (no GitHub, por exemplo), o caminho é <code>git clone</code>:</p>
+<pre><code class="language-bash">git clone git@github.com:usuario/projeto.git
+cd projeto</code></pre>
+<p>O <code>clone</code> faz tudo de uma vez: baixa todos os commits e todas as branches, cria a pasta, já configura o <strong>remoto</strong> (<code>origin</code>) apontando pro endereço, e já te deixa na branch principal com o rastreamento pronto. Você cai num repositório completo, com a linha do tempo inteira.</p>
+<p><strong>init vs clone</strong>, a diferença em uma frase: <code>init</code> nasce vazio a partir de uma pasta sua; <code>clone</code> nasce já preenchido a partir de um repo que existe. Depois do clone você trabalha igual: cria branch, commita, e (próximo card) sincroniza com <code>push</code> e <code>pull</code>.</p>
+
+<h2 id="erros" data-toc-title="Erros comuns" data-sub="Armadilhas">Erros comuns</h2>
+<ul>
+    <li><strong>Achar que branch é cópia de arquivos.</strong> Não é. É ponteiro. Trocar de branch reescreve o disco, mas os commits moram todos no mesmo <code>.git</code>.</li>
+    <li><strong>Commitar na branch errada.</strong> Antes de commitar, um <code>git status</code> mostra na primeira linha em que branch você está. Conferir vira hábito barato.</li>
+    <li><strong>Esperar squash e levar merge normal (ou vice-versa).</strong> Sem <code>--squash</code> o merge preserva todos os commits. Com <code>--squash</code> você ainda precisa do <code>git commit</code> depois, senão nada é gravado.</li>
+    <li><strong>Tentar trocar de branch com trabalho não commitado que conflita.</strong> O git pode barrar. Resolve commitando ou guardando de lado (<code>git stash</code>, no próximo card).</li>
+</ul>
+
+</body>
+</html>

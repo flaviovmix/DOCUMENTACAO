@@ -80,11 +80,11 @@
             <span class="info-row-btn">+</span>
         </div>
         <div class="info-row-body">
-            <p>Com o DOM na cabeça, o JS entra pra mexer nele. Três movimentos básicos cobrem tudo nesta fase:</p>
+            <p>Com o DOM na cabeça, o JS entra pra mexer nele. Três funções cobrem tudo nesta fase (são exatamente as que aparecem no código da página):</p>
             <ul>
-                <li><strong>Pegar um elemento</strong> — <code>document.querySelector('#contador')</code> devolve o nó pra você manipular.</li>
-                <li><strong>Mudar o conteúdo</strong> — <code>elemento.textContent = ...</code> ou <code>elemento.innerHTML = ...</code> reescreve o que aparece.</li>
-                <li><strong>Escutar um evento</strong> — <code>botao.addEventListener('click', ...)</code> roda uma função quando o usuário clica.</li>
+                <li><strong>Achar um elemento</strong> — <code>document.getElementById("numero")</code> devolve o nó pra você manipular.</li>
+                <li><strong>Trocar o conteúdo</strong> — <code>numero.textContent = contador</code> reescreve o texto que aparece; <code>lista.innerHTML = ""</code> esvazia.</li>
+                <li><strong>Escutar um evento</strong> — <code>botao.addEventListener("click", ...)</code> roda uma função quando o usuário clica.</li>
             </ul>
             <p>Com isso já dá pra fazer o contador e a lista funcionarem. O problema não é a falta de ferramenta, é o que acontece quando a tela cresce.</p>
         </div>
@@ -96,10 +96,10 @@
             <span class="info-row-btn">+</span>
         </div>
         <div class="info-row-body">
-            <p>Aqui mora o ponto da fase inteira. Você tem o <strong>estado</strong> de um lado (a variável <code>count</code>, o array de itens) e a <strong>tela</strong> do outro (o número desenhado, os <code>&lt;li&gt;</code> visíveis). Toda vez que o estado muda, <strong>você</strong> tem que lembrar de atualizar a tela na mão.</p>
+            <p>Aqui mora o ponto da fase inteira. Você tem o <strong>estado</strong> de um lado (a variável <code>contador</code>, o array <code>itens</code>) e a <strong>tela</strong> do outro (o número desenhado, os <code>&lt;li&gt;</code> visíveis). Toda vez que o estado muda, <strong>você</strong> tem que lembrar de atualizar a tela na mão.</p>
             <ul>
-                <li>Somou no <code>count</code>? Tem que reescrever o texto do número.</li>
-                <li>Removeu um item do array? Tem que remover o <code>&lt;li&gt;</code> certo do DOM.</li>
+                <li>Somou no <code>contador</code>? Tem que reescrever o <code>numero.textContent</code>.</li>
+                <li>Mexeu no array com <code>splice</code>? Tem que chamar <code>desenharLista()</code> de novo.</li>
                 <li>Esqueceu de atualizar um lugar? A tela mente: mostra um valor, a variável tem outro. É o bug clássico.</li>
             </ul>
             <p>Com uma lista que muda, isso vira um vai-e-vem cansativo: reconstruir a lista na mão a cada mudança, ou caçar exatamente o nó a remover. <strong>Essa</strong> é a dor que justifica o próximo passo.</p>
@@ -112,10 +112,11 @@
             <span class="info-row-btn">+</span>
         </div>
         <div class="info-row-body">
-            <p>Depois de sentir a dor na pele, o <strong>Svelte</strong> aparece como resposta. Em vez de você sincronizar estado e tela na mão, você <strong>declara</strong> o estado e escreve onde ele aparece, e o framework mantém os dois juntos:</p>
-            <pre><code class="language-javascript">let count = 0;        // o estado
-// no HTML: &lt;span&gt;{count}&lt;/span&gt; e &lt;button on:click={() =&gt; count++}&gt;+1&lt;/button&gt;</code></pre>
-            <p>Mudou <code>count</code>, a tela se atualiza sozinha. Isso se chama <strong>reatividade</strong>, e é exatamente o que doía na mão. Essa é a peça de frontend da stack do Nexus: o <strong>SvelteKit</strong>. A fase não te ensina Svelte ainda, ela te faz <em>querer</em> o Svelte.</p>
+            <p>Depois de sentir a dor na pele, o <strong>Svelte</strong> aparece como resposta. Em vez de você sincronizar estado e tela na mão, você <strong>declara</strong> o estado com a rune <code>$state</code> e escreve onde ele aparece, e o framework mantém os dois juntos:</p>
+            <pre><code class="language-svelte">let contador = $state(0);   // o estado, reativo
+&lt;!-- no HTML: --&gt; &lt;p&gt;Contador: {contador}&lt;/p&gt;
+&lt;button onclick={() =&gt; contador++}&gt;+1&lt;/button&gt;</code></pre>
+            <p>Mudou <code>contador</code>, a tela se atualiza sozinha, sem <code>textContent</code> nem <code>desenharLista</code>. Isso se chama <strong>reatividade</strong>, e é exatamente o que doía na mão. Essa é a peça de frontend da stack do Nexus: o <strong>SvelteKit</strong>. A fase não te ensina Svelte a fundo ainda, ela te faz <em>querer</em> o Svelte.</p>
         </div>
     </div>
 

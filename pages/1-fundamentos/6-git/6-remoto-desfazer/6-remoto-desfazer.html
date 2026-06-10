@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git — Remoto e Desfazer — XT - Treinamento</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Git — Remoto e Desfazer</h1>
+
+<div class="audio-player" data-src="audio/6-remoto-desfazer.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Até aqui tudo aconteceu na sua máquina. Esse card cobre as duas frentes que faltam: <strong>o remoto</strong> (mandar e trazer commits do GitHub, lidar com divergência e conflitos) e <strong>desfazer</strong> (voltar atrás antes ou depois de commitar, sem perder trabalho por acidente). É a parte onde mais gente se assusta, e quase todo susto vem de agir sem olhar o estado antes.</p>
+
+<h2 id="remoto" data-toc-title="O remoto (origin)" data-sub="Ligar ao GitHub">O remoto — ligando o local ao GitHub</h2>
+<p>Um <strong>remoto</strong> é um repositório espelho hospedado em outro lugar (GitHub, GitLab). O apelido padrão dele é <code>origin</code>. Se você criou o repo local com <code>git init</code>, precisa ligá-lo ao remoto uma vez:</p>
+<pre><code class="language-bash">git remote add origin git@github.com:usuario/projeto.git
+git branch -M main          # garante que a branch principal se chama main
+git push -u origin main     # primeiro envio</code></pre>
+<p>O <code>-u</code> (de <em>upstream</em>) amarra sua <code>main</code> local à <code>main</code> do <code>origin</code>. Feito uma vez, os próximos envios viram só <code>git push</code>, sem repetir o resto. (Quem começou com <code>git clone</code> já tem o <code>origin</code> e o rastreamento configurados — pula esse passo.)</p>
+
+<h2 id="push-pull" data-toc-title="push e pull" data-sub="Mandar e trazer">push e pull — sincronizar</h2>
+<p>Dois sentidos:</p>
+<ul>
+    <li><strong><code>git push</code></strong> — envia seus commits locais pro remoto. "Sobe" o que você fez.</li>
+    <li><strong><code>git pull</code></strong> — traz os commits do remoto pro seu local e já tenta juntar. "Desce" o que mudou lá.</li>
+</ul>
+<p>Por baixo, <code>pull</code> = <code>fetch</code> (baixar os commits novos, sem mexer no seu trabalho) + <code>merge</code> (juntar). Dá pra fazer só o <code>git fetch</code> quando você quer ver o que veio antes de juntar.</p>
+
+<h2 id="divergencia" data-toc-title="Divergência" data-sub="push recusado">Divergência local/web — o push recusado</h2>
+<p>O problema clássico: você fez commits locais <strong>e</strong> o remoto também ganhou commits (você editou direto na web, ou outra máquina deu push). As duas histórias andaram em paralelo — <strong>divergiram</strong>. Nenhuma é continuação direta da outra.</p>
+<p>Aí o <code>git push</code> é recusado, com algo como <em>"rejected — remote contains work that you do not have"</em>. O git se recusa a sobrescrever o que está no remoto. A solução é <strong>trazer o de lá primeiro</strong> e juntar com o seu:</p>
+<pre><code class="language-bash">git pull origin main
+# resolve o que vier...
+git push</code></pre>
+<p>Regra que evita dor: <code>pull</code> <strong>antes</strong> de começar a trabalhar e <strong>antes</strong> de cada <code>push</code>. Quanto mais sincronizado, menos chance de divergir.</p>
+
+<h2 id="conflitos" data-toc-title="Conflitos" data-sub="Resolver à mão">Conflitos — quando o git não decide sozinho</h2>
+<p>Se os dois lados mexeram em arquivos/linhas <strong>diferentes</strong>, o git junta sozinho. O conflito só acontece quando os dois mexeram na <strong>mesma linha do mesmo arquivo</strong> — aí o git não tem como saber qual vale, e pausa pra você decidir. Ele marca o trecho no arquivo:</p>
+<pre><code class="language-bash">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+versão do seu computador
+=======
+versão que veio do remoto
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; origin/main</code></pre>
+<p>Você abre <strong>cada</strong> arquivo conflitado, em <strong>cada</strong> trecho marcado, deixa só o que vale (um lado, o outro, ou uma mistura escrita à mão) e apaga as linhas <code>&lt;&lt;&lt;</code>, <code>===</code>, <code>&gt;&gt;&gt;</code>. Depois fecha o merge:</p>
+<pre><code class="language-bash">git add .
+git commit          # conclui o merge
+git push</code></pre>
+<p>Se forem 10 arquivos com vários conflitos cada, são dezenas de decisões manuais. Esse é o custo que assusta — e o motivo de sincronizar cedo e em pedaços pequenos.</p>
+
+<h2 id="escolher-lado" data-toc-title="Escolher um lado" data-sub="ours / theirs">Escolher um lado inteiro — ours e theirs</h2>
+<p>Quando você tem <strong>certeza</strong> de que um lado inteiro vale e o outro pode ser descartado sem olhar, dá pra mandar o git resolver os empates sempre pro mesmo lado:</p>
+<pre><code class="language-bash">git merge -X ours origin/main      # em empate, mantém o MEU (local)
+git merge -X theirs origin/main    # em empate, mantém o de LÁ (remoto)</code></pre>
+<p>A pegadinha está no nome: <code>ours</code> = o lado de quem dá o comando (seu local); <code>theirs</code> = o outro lado (o remoto). Pra escolher um lado de <strong>um arquivo específico</strong> durante um conflito:</p>
+<pre><code class="language-bash">git checkout --ours caminho/arquivo.txt
+git checkout --theirs caminho/arquivo.txt</code></pre>
+<p><strong>O risco de escolher no escuro:</strong> o <code>-X ours/theirs</code> não apaga arquivos inteiros nem o trabalho que <em>não</em> conflita — só decide os empates. Mas "sei que o meu está certo" costuma valer pro arquivo que você editou, e o outro lado pode ter um commit legítimo em <strong>outro</strong> arquivo que você nem lembra. Ao escolher cego, você descarta silenciosamente as edições conflitantes do outro lado e nunca vê o que perdeu. É seguro quando você controlou os dois lados (ex: seu próprio fluxo <code>dev → main</code>); arriscado quando outra pessoa ou outra máquina pode ter mexido. O meio-termo: deixar o <code>pull</code> listar os arquivos em conflito e decidir vendo a lista.</p>
+
+<h2 id="gitignore" data-toc-title=".gitignore" data-sub="O que não versionar">.gitignore — o que o git deve ignorar</h2>
+<p>Arquivo de texto na raiz do repo, uma linha por padrão, listando o que <strong>não</strong> deve ser versionado:</p>
+<pre><code class="language-bash">node_modules/
+dist/
+.env
+*.log</code></pre>
+<p>O git passa a ignorar esses caminhos: não aparecem no <code>status</code>, não entram no <code>git add .</code>. Serve pra dependências (baixáveis de novo), arquivos de build (gerados) e <strong>segredos</strong> (senhas, tokens).</p>
+<p><strong>Pegadinha:</strong> o <code>.gitignore</code> só vale pra arquivo que <em>ainda não foi commitado</em>. Se você já commitou <code>node_modules</code>, adicionar no ignore não tira — precisa parar de rastrear primeiro, sem apagar do disco:</p>
+<pre><code class="language-bash">git rm -r --cached node_modules</code></pre>
+
+<h2 id="desfazer-antes" data-toc-title="Desfazer (antes)" data-sub="git restore">Desfazer antes de commitar — git restore</h2>
+<p>Você editou e se arrependeu, ainda não commitou:</p>
+<pre><code class="language-bash">git restore arquivo            # joga fora a edição, volta ao último commit
+git restore --staged arquivo   # tira do stage, mas MANTÉM a edição</code></pre>
+<p>A diferença: com <code>--staged</code> ele só desfaz o <code>git add</code> (o arquivo volta pra "modificado, não preparado"), mantendo seu conteúdo. <strong>Sem</strong> <code>--staged</code>, ele apaga a mudança de vez — e como ela não estava em commit nenhum, é irreversível. Cuidado com essa.</p>
+
+<h2 id="desfazer-depois" data-toc-title="Desfazer (depois)" data-sub="revert vs reset">Desfazer depois de commitar — revert vs reset</h2>
+<p>Já commitou e quer voltar atrás. Dois caminhos opostos:</p>
+<pre><code class="language-bash">git revert &lt;hash&gt;    # cria um NOVO commit que desfaz aquele. Histórico intacto.
+git reset &lt;hash&gt;     # APAGA commits, movendo a branch pra trás.</code></pre>
+<p><strong><code>revert</code></strong> é o seguro, principalmente se já deu push: não reescreve história, só adiciona um commit "anti". É o certo pra repo compartilhado.</p>
+<p><strong><code>reset</code></strong> reescreve a história. Tem três intensidades, e a diferença está no que ele faz com as suas mudanças:</p>
+<ul>
+    <li><strong><code>--soft</code></strong> — desfaz o commit, mas mantém as mudanças <em>preparadas</em> (no stage). Útil pra refazer a mensagem ou juntar commits.</li>
+    <li><strong><code>--mixed</code></strong> (padrão) — desfaz o commit, mantém as mudanças no working tree, mas tira do stage.</li>
+    <li><strong><code>--hard</code></strong> — desfaz o commit <strong>e apaga as mudanças</strong>. É o mais perigoso: o que não estava commitado some. Antes dele, sempre <code>git status</code>; nunca rode no escuro.</li>
+</ul>
+
+<h2 id="stash" data-toc-title="git stash" data-sub="Guardar de lado">git stash — guardar trabalho de lado</h2>
+<p>Você está no meio de uma edição, não quer commitar ainda, mas precisa pular pra outra branch. O <code>stash</code> guarda as mudanças numa gaveta e limpa a área de trabalho:</p>
+<pre><code class="language-bash">git stash          # guarda tudo e volta ao último commit
+git switch outra-branch
+# faz o que precisa...
+git switch dev
+git stash pop      # traz a gaveta de volta e a esvazia</code></pre>
+<p><code>git stash list</code> mostra o que está guardado (dá pra empilhar vários). <code>pop</code> aplica a última e remove da gaveta; <code>apply</code> aplica mas mantém guardada.</p>
+
+<h2 id="force-push" data-toc-title="force push" data-sub="Sobrescrever o remoto">force push — sobrescrever o remoto</h2>
+<p>O <code>push</code> normal é recusado quando seu local diverge do remoto (a divergência lá de cima). O <code>--force</code> ignora isso e <strong>manda o seu por cima</strong>, apagando o que estava no remoto:</p>
+<pre><code class="language-bash">git push --force              # perigoso: apaga o que estava lá
+git push --force-with-lease   # mais seguro: aborta se mexeram no remoto</code></pre>
+<p>O <code>--force-with-lease</code> só força se ninguém mexeu no remoto desde seu último <code>fetch</code> — se mexeram, ele aborta em vez de apagar. Regra: em repo só seu, <code>--force-with-lease</code> é aceitável; em repo compartilhado, evite, prefira resolver com <code>pull</code>.</p>
+
+<h2 id="ver-antes" data-toc-title="Ver antes de agir" data-sub="status, diff, log">Ver antes de agir</h2>
+<p>A maioria dos sustos com git (reset que apagou trabalho, merge que comeu um arquivo) vem de agir sem olhar o estado. A trinca de leitura — vista no card de Histórico — é o seguro barato antes de qualquer <code>merge</code>, <code>reset</code> ou <code>push --force</code>:</p>
+<pre><code class="language-bash">git status              # onde estou, o que está pendente
+git diff                # o que exatamente mudou
+git log --oneline       # como cheguei aqui</code></pre>
+<p><code>status</code> responde "onde estou"; <code>diff</code> responde "o que mudou"; <code>log</code> responde "como cheguei aqui". Rodar os três antes de uma ação destrutiva custa segundos e evita perder horas.</p>
+
+<h2 id="erros" data-toc-title="Erros comuns" data-sub="Armadilhas">Erros comuns</h2>
+<ul>
+    <li><strong>Dar <code>push --force</code> em repo compartilhado.</strong> Apaga commits de outras pessoas sem aviso. Use <code>--force-with-lease</code> ou, melhor, resolva com <code>pull</code>.</li>
+    <li><strong>Confundir <code>ours</code> e <code>theirs</code>.</strong> <code>ours</code> é o seu lado, <code>theirs</code> é o do outro — e quem é "o outro" depende de você estar em merge ou rebase. Na dúvida, veja a lista de conflitos antes.</li>
+    <li><strong><code>git reset --hard</code> no escuro.</strong> Apaga o que não estava commitado. Sempre <code>git status</code> antes.</li>
+    <li><strong>Adicionar ao <code>.gitignore</code> esperando que tire arquivo já commitado.</strong> Não tira. Precisa de <code>git rm --cached</code> primeiro.</li>
+    <li><strong>Commitar segredo (<code>.env</code>, senha).</strong> Uma vez no histórico, fica lá mesmo se você apagar depois. Prevenir com <code>.gitignore</code> desde o início.</li>
+</ul>
+
+</body>
+</html>

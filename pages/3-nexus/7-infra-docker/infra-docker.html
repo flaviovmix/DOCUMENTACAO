@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Inicial em Docker — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Setup Inicial — Subir o Nexus em Docker <span class="badge badge-new">making-of</span></h1>
+
+<p>A máquina foi formatada. O projeto estava no disco, mas a máquina estava limpa: sem Java, sem Node, sem banco. Aqui está o passo a passo real de colocar o Nexus pra rodar do zero, com o banco num container Docker e backend/frontend direto na máquina. Cada comando explicado pedaço por pedaço.</p>
+
+<div class="audio-player" data-src="audio/infra-docker.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<h2 id="as-tres-pecas" data-toc-title="As 3 peças" data-sub="o que precisa estar de pé">As 3 peças (e o conceito que amarra tudo)</h2>
+<p>O Nexus só funciona com três coisas ligadas ao mesmo tempo:</p>
+<ul>
+    <li><strong>Banco PostgreSQL</strong> — onde a informação mora. Vai rodar num container Docker.</li>
+    <li><strong>Backend Spring Boot</strong> (porta 8080) — o cérebro: recebe pedido, fala com o banco, responde. Roda direto na máquina com Java 25.</li>
+    <li><strong>Frontend SvelteKit</strong> (porta 5173) — a tela no navegador. Roda direto na máquina com Node.</li>
+</ul>
+<p>O conceito que torna tudo isso possível: a aplicação <strong>não sabe nem liga</strong> se o Postgres é um container ou um programa instalado. A config dela (<code>application.yml</code>) só diz "conecta em <code>localhost:5432</code>, banco <code>nexus</code>, usuário <code>nexus</code>, senha <code>nexus_dev</code>". Quem aparecer nesse endereço com nome e senha certos, serve. Por isso dá pra usar Docker numa máquina e instalação normal em outra, sem mudar uma linha do projeto.</p>
+
+<h2 id="passo-1" data-toc-title="Passo 1 — Banco" data-sub="Postgres no Docker">Passo 1 — O banco no Docker</h2>
+<p>Primeiro, baixar a imagem do Postgres (a "caixinha" pronta com o banco dentro):</p>
+<pre><code class="language-powershell">docker pull postgres:16-alpine</code></pre>
+<p><code>docker pull</code> baixa uma imagem. <code>postgres:16-alpine</code> é qual: Postgres versão 16, na variante <code>alpine</code> (enxuta, leve).</p>
+
+<p>Depois, criar e ligar o container:</p>
+<pre><code class="language-powershell">docker run -d --name nexus-postgres -e POSTGRES_DB=nexus -e POSTGRES_USER=nexus -e POSTGRES_PASSWORD=nexus_dev -p 5432:5432 -v nexus_pgdata:/var/lib/postgresql/data postgres:16-alpine</code></pre>
+<p>Parte por parte:</p>
+<ul>
+    <li><code>docker run</code> — cria e liga um container novo.</li>
+    <li><code>-d</code> — <em>detached</em>: roda em segundo plano e devolve o terminal. Sem isso, o terminal ficaria preso no log do banco.</li>
+    <li><code>--name nexus-postgres</code> — apelido do container, pra achar ele depois.</li>
+    <li><code>-e POSTGRES_DB=nexus</code> — variável de ambiente (<code>-e</code> = <em>environment</em>). Já cria um banco chamado <code>nexus</code>.</li>
+    <li><code>-e POSTGRES_USER=nexus</code> — cria o usuário.</li>
+    <li><code>-e POSTGRES_PASSWORD=nexus_dev</code> — define a senha. Esses três juntos são exatamente o que o backend espera achar.</li>
+    <li><code>-p 5432:5432</code> — abre a porta. Esquerda = porta no Windows, direita = porta dentro do container. Mapeadas, o Windows enxerga o banco.</li>
+    <li><code>-v nexus_pgdata:/var/lib/postgresql/data</code> — o volume. Container é descartável; se você apagar, os dados sumiriam junto. O volume guarda os dados num cofre que sobrevive a recriar o container.</li>
+    <li><code>postgres:16-alpine</code> — a imagem usada.</li>
+</ul>
+<p>Pra conferir se subiu (procurar <code>nexus-postgres</code> com status <code>Up</code>):</p>
+<pre><code class="language-powershell">docker ps</code></pre>
+
+<h2 id="passo-2" data-toc-title="Passo 2 — Backend" data-sub="Spring Boot, Java 25">Passo 2 — O backend (Java 25)</h2>
+<p>O backend é Java, então precisa do JDK 25 instalado (usamos o Eclipse Temurin 25, gratuito). No instalador, marcar a opção de configurar o <code>JAVA_HOME</code> e o PATH. Pra conferir, num terminal <strong>novo</strong>:</p>
+<pre><code class="language-powershell">java -version</code></pre>
+<p>Tem que mostrar a versão 25. Detalhe importante: um terminal aberto <strong>antes</strong> da instalação não enxerga o <code>java</code>. As variáveis de ambiente só valem em terminais abertos depois. (Mais sobre isso nos becos, lá embaixo.)</p>
+
+<p>Com o Java no lugar, entrar na pasta e subir:</p>
+<pre><code class="language-powershell">cd "C:\src\PROJETOS\nexus\backend"
+.\mvnw.cmd spring-boot:run</code></pre>
+<ul>
+    <li><code>.\</code> — executa um arquivo da pasta atual (o PowerShell só roda algo local se você apontar).</li>
+    <li><code>mvnw.cmd</code> — o Maven Wrapper (o "w" é de <em>wrapper</em>). Maven é a ferramenta que compila e roda projetos Java; o wrapper é um atalho que já vem no projeto e baixa a versão certa do Maven sozinho, sem você instalar Maven. O <code>.cmd</code> é a versão pro Windows.</li>
+    <li><code>spring-boot:run</code> — a tarefa: compila e sobe a aplicação Spring Boot, deixando ela rodando.</li>
+</ul>
+<p>A primeira vez demora, e aqui tem um conceito: o projeto não carrega as bibliotecas junto, só a <strong>receita</strong> delas, no arquivo <code>pom.xml</code>. O Maven lê essa receita, vai no repositório público (Maven Central) e baixa cada biblioteca pra um cache na máquina (a pasta <code>.m2</code>). Da segunda vez em diante, sobe rápido.</p>
+<p>Pronto quando o log mostra <code>Started NexusApplication</code> e <code>Tomcat started on port 8080</code>. Nesse momento o Flyway cria as tabelas no banco automaticamente.</p>
+
+<h2 id="passo-3" data-toc-title="Passo 3 — Frontend" data-sub="SvelteKit, Node">Passo 3 — O frontend (Node)</h2>
+<p>O frontend é SvelteKit, que roda sobre o Node. Instalar o Node na versão LTS (a estável recomendada). A tela do instalador que oferece ferramentas extras pra compilar módulos nativos (Python + Build Tools) pode ficar <strong>desmarcada</strong>: o Nexus não precisa. Conferir num terminal novo:</p>
+<pre><code class="language-powershell">node -v</code></pre>
+<p>Entrar na pasta e baixar as dependências:</p>
+<pre><code class="language-powershell">cd "C:\src\PROJETOS\nexus\frontend"
+npm install</code></pre>
+<p><code>npm</code> é o gerenciador de pacotes do Node. <code>npm install</code> lê o <code>package.json</code> (a receita do frontend, igual o <code>pom.xml</code> era a do backend) e baixa tudo pra pasta <code>node_modules</code>.</p>
+
+<p>Numa máquina recém-formatada, o PowerShell costuma <strong>bloquear</strong> o npm com erro de segurança, porque no Windows o npm é, por baixo, um script. A correção, rodada uma vez só:</p>
+<pre><code class="language-powershell">Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code></pre>
+<ul>
+    <li><code>Set-ExecutionPolicy</code> — muda a política de quais scripts podem rodar.</li>
+    <li><code>RemoteSigned</code> — scripts que você criou/instalou na máquina rodam livres; só os baixados da internet precisariam de assinatura. É o nível recomendado pela própria Microsoft pra desenvolvimento.</li>
+    <li><code>-Scope CurrentUser</code> — vale só pro seu usuário, sem mexer no sistema nem precisar de admin.</li>
+</ul>
+<p>Depois disso, o <code>npm install</code> roda. Os avisos amarelos de "vulnerabilities" são ruído; <strong>não</strong> rode <code>npm audit fix</code> (pode atualizar pacotes e quebrar). Por fim, subir o frontend:</p>
+<pre><code class="language-powershell">npm run dev</code></pre>
+<p>Aparece <code>Local: http://localhost:5173</code>. Abrir no navegador e o Nexus está de pé.</p>
+
+<h2 id="religar" data-toc-title="Religar depois" data-sub="start, não run">Religar o container depois</h2>
+<p>O container já existe. Ao reiniciar o PC, <strong>não</strong> rode <code>docker run</code> de novo (ele tentaria criar outro com o mesmo nome e reclamaria). Use:</p>
+<pre><code class="language-powershell">docker start nexus-postgres</code></pre>
+<p><code>run</code> = criar do zero. <code>start</code> = ligar o que já existe. Os dados continuam lá por causa do volume. No Docker Desktop, o botão de <strong>play</strong> faz exatamente o mesmo que o <code>docker start</code>.</p>
+
+<h2 id="becos" data-toc-title="Becos" data-sub="o que tropeçou">Becos e o que aprendemos</h2>
+<p><strong>O terminal velho que não via o Java.</strong> Depois de instalar o JDK, o primeiro terminal jurava que <code>java</code> não existia. Quando um instalador mexe nas variáveis de ambiente, isso só vale pra terminais abertos depois. O que já estava aberto carregou o ambiente antigo. Lição: instalou algo que mexe no PATH, abre um terminal novo pra testar.</p>
+<p><strong>O npm bloqueado.</strong> Máquina nova chega com o PowerShell travando scripts. Assusta de cara, mas a correção é uma linha e é segura (mexe só no seu usuário). Vai acontecer toda vez que formatar e for usar npm.</p>
+<p><strong>A sobra de uma limpeza anterior.</strong> No <code>pom.xml</code> ainda havia a biblioteca OpenPDF, que o projeto não usa mais. Numa sessão passada o código que a usava saiu, mas a linha no pom ficou. Removemos agora. Detalhe fino: o jar já baixado continua no cache <code>.m2</code> (inofensivo); remover do pom só garante que a próxima compilação não o inclui. "Limpei tudo" precisa incluir a receita, não só o código.</p>
+
+<h2 id="pendente" data-toc-title="Pendente" data-sub="trazer os dados">Pendente — trazer os dados</h2>
+<p>O banco subiu <strong>vazio</strong>. O Flyway criou a estrutura (as tabelas), mas os dados reais (notas, lançamentos) estão em outra máquina, onde o Postgres era instalado normalmente. Próximo passo: gerar um <code>pg_dump</code> na máquina antiga e restaurar dentro do container daqui.</p>
+
+</body>
+</html>
