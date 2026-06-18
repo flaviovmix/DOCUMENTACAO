@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tudo num Lugar Só — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Tudo num Lugar Só</h1>
+
+<div class="audio-player" data-src="audio/tudo-num-lugar-so.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Making-of da faxina grande no frontend do Nexus: como pegamos as coisas que estavam copiadas e espalhadas (a cor dos botões, o código das listas, o CRUD, os hexadecimais soltos, os componentes jogados numa pasta só) e botamos cada uma num lugar único, de onde o resto aponta.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Repetição em três frentes">O que a gente queria</h2>
+<p>O frontend do Nexus cresceu rápido, feature atrás de feature, e foi acumulando repetição. Três exemplos do que a gente via:</p>
+<ul>
+    <li><strong>Os botões.</strong> O botão principal de uma tela (salvar, criar) tinha três cores convivendo no app: verde num modal, vermelho noutro, laranja noutro. Ninguém decidiu isso de propósito, foi saindo assim.</li>
+    <li><strong>O código.</strong> Quase toda área carrega uma lista (tags, tarefas, inventário, colaboradores, projetos), e o código era sempre o mesmo: uma variável pros itens, uma pro "carregando", uma pro erro, uma função pra buscar. Esse bloco estava copiado em <strong>treze</strong> lugares. Do lado do servidor, o mesmo: listar, pegar, criar, editar, excluir, copiado em <strong>dezessete</strong> recursos.</li>
+    <li><strong>As cores soltas.</strong> No CSS de cada componente, hexadecimal escrito na mão. O mesmo cinza de borda aparecia de cinco jeitos, espalhado por dezenas de arquivos. E mais de setenta componentes jogados numa pasta única.</li>
+</ul>
+<p>O objetivo era um só, e concreto: <strong>cada coisa num lugar único</strong>. A cor num lugar, o código da lista num lugar, o CRUD num lugar, cada componente na gaveta da área dele. Mexeu lá, mudou em todo lugar.</p>
+
+<h2 id="conceitos" data-toc-title="Conceitos" data-sub="Token, fábrica, gaveta">Os conceitos</h2>
+<p>São três ideias diferentes, mas todas saem da mesma raiz, que os programadores chamam de "não se repita": se a mesma coisa aparece copiada em vários lugares, dá um nome pra ela e põe num lugar só.</p>
+<h3>1. Design token (uma etiqueta no valor)</h3>
+<p>Token é só um nome pra um valor de estilo. Em vez de escrever a cor laranja (<code>#ff3e00</code>) dentro de vinte e quatro botões, você escreve o valor <strong>uma</strong> vez, dá um nome (a "cor da marca"), e os botões apontam pro nome. Como uma etiqueta colada num pote de tinta: todos os botões pedem "me pinta com a cor da marca". Troca a tinta do pote, todos mudam juntos. Isso é um <strong>knob</strong>, um botão de ajuste: um lugar só pra girar, e a mudança se espalha sozinha. Vale pra cor, borda, sombra e pros níveis de empilhamento (aquele número que decide o que fica na frente do quê).</p>
+<h3>2. Fábrica (uma forma de bolo)</h3>
+<p>Quando o mesmo bloco está copiado em treze lugares mudando só um detalhe, dá pra escrever uma função que <strong>fabrica</strong> o bloco. Você passa só o que muda (qual endereço buscar) e ela devolve a peça pronta: itens, "carregando", erro, função de buscar. Como uma forma de bolo: a forma é uma só, troca o sabor da massa. Treze listas, uma forma. O mesmo vale pro CRUD.</p>
+<h3>3. Organizar por área (cada peça na sua gaveta)</h3>
+<p>Cada componente vai morar na gaveta da área dele: o do financeiro na pasta do financeiro, o de notas na de notas. As peças genéricas, que servem o app inteiro (botão, modal, toggle, ícones), vão pra gaveta <code>ui</code>. Pra achar uma peça, você pensa "de que área ela é" e vai direto. As pastas do frontend passam a espelhar as áreas do servidor.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="Tokens, botão, fábricas, mudança">Como montamos</h2>
+<p><strong>As cores primeiro.</strong> Criamos um arquivo só, o <code>app.css</code>, com um bloco <code>:root</code> onde os tokens moram: a cor da marca, a cor de perigo (excluir), a escala de cinzas, os níveis de empilhamento com nome (o <code>1000</code> solto virou "camada do modal"), o raio das bordas, as sombras. Importado uma vez no layout que embrulha o app, todo mundo enxerga os nomes.</p>
+<pre><code class="language-css">:root {
+  --color-brand: #ff3e00;   /* o knob do botao primario */
+  --color-danger: #dc2626;
+  --z-modal: 1001;          /* numero magico vira nome */
+  --radius: 10px;
+}</code></pre>
+<p><strong>O botão.</strong> O <code>Button</code> ganhou o tipo <code>primary</code>, cuja cor de fundo não é um número, e sim <code>var(--color-brand)</code>. Esse é o knob principal: trocar a cor da marca no <code>app.css</code> repinta todos os primários de uma vez.</p>
+<pre><code class="language-css">.btn-primary { background: var(--color-brand); color: #fff; }</code></pre>
+<p><strong>As fábricas.</strong> Escrevemos a função que fabrica lista e trocamos as treze stores feitas na mão por uma chamada a ela. Escrevemos a do CRUD e ligamos os dezessete recursos. E pros modais, criamos uma base comum (o pedaço que todo modal tem: "tá aberto", fechar, limpar) que catorze modais passaram a reaproveitar.</p>
+<pre><code class="language-typescript">function crud&lt;T, CreateReq, UpdateReq&gt;(base: string) {
+  return {
+    list:   () =&gt; request&lt;T[]&gt;(base),
+    get:    (id) =&gt; request&lt;T&gt;(`${base}/${id}`),
+    create: (body) =&gt; request&lt;T&gt;(base, { method: 'POST', body }),
+    update: (id, body) =&gt; request&lt;T&gt;(`${base}/${id}`, { method: 'PUT', body }),
+    remove: (id) =&gt; request&lt;void&gt;(`${base}/${id}`, { method: 'DELETE' })
+  };
+}
+const tagsCrud = crud&lt;Tag, TagRequest&gt;('/tags');</code></pre>
+<p><strong>A mudança mais braba.</strong> Mover mais de setenta componentes pras gavetas certas. O perigo: mover um arquivo quebra os imports que apontavam pra ele, e eram quase duzentos. Pra não quebrar na mão, fizemos por script: primeiro um passo reescreveu todos os imports pro formato <strong>absoluto</strong> (apontando da raiz, não do vizinho), e só depois moveu. Com o caminho absoluto, mover não quebra o aponte. No fim de cada etapa, o verificador do projeto: zero erro novo.</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="A cor, a automação, o limite">Decisões e becos</h2>
+<p><strong>A cor do botão (decisão do dono).</strong> Cheguei nas três cores convivendo e sinalizei: "tem três cores de primário aqui, é inconsistência, mas escolher <strong>uma</strong> é decisão sua, não minha". Cor de marca é decisão do dono. O Flávio escolheu o laranja. Só aí o knob fez todo sentido: como tudo já apontava pra um nome, bastou pôr o laranja no nome, e os botões verdes de salvar viraram laranja junto, de propósito. Sem unificar antes, essa escolha teria que ser repetida em vinte e quatro lugares.</p>
+<p><strong>O erro da automação.</strong> Numa parte da migração, um passo automático trocou os botões laranja por uma variante vermelha, e ainda afirmou "a cor não mudou". Tinha mudado (vermelho e laranja são tokens diferentes). A regra de conferir contra o <strong>código real</strong>, não contra o que a ferramenta diz, pegou o erro: abrimos os arquivos, vimos o vermelho no lugar do laranja e corrigimos os cinco botões.</p>
+<p><strong>O limite da abstração.</strong> Na base dos modais, a primeira tentativa foi colocar também o "abrir" (o <code>show</code>) na base. Não deu: cada modal abre com uma assinatura diferente (um com <code>id</code>, outro com um pacote de opções, outro sem nada), e o TypeScript reclamou de sobrescrita incompatível. A solução foi recuar: a base ficou só com "tá aberto", fechar e limpar; o "abrir" cada modal declara do seu jeito. A base centraliza o que é de fato igual; o que varia fica de fora.</p>
+<p><strong>O que NÃO migrou (honestidade).</strong> Alguns botões ficaram de fora de propósito, porque eram casos genuinamente diferentes: um botão escuro de importação, um azul de detalhe de projeto, barras de ferramenta com largura fixa que quebrariam a grade. A regra: consistente por papel, não idêntico à força. Quando o caso é mesmo diferente, ele continua diferente, e a gente anota o porquê.</p>
+<p><strong>Os doze erros antigos.</strong> O verificador acusa doze erros, mas são de antes da faxina. A tentação de "já que estou aqui, conserto" foi deixada de lado: misturar conserto de bug com reorganização embola tudo. Os doze ficaram anotados pra uma tarefa própria.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>A faxina foi botar cada coisa repetida num lugar só. Cor virou token com nome (e o botão primário ganhou um knob: muda a cor da marca, muda todo mundo). Código de lista e CRUD repetido virou fábrica, uma função que gera a peça. E os setenta componentes soltos foram pras gavetas das áreas, com as genéricas na gaveta <code>ui</code>. A lição que serve pra qualquer projeto: quando o mesmo valor (uma cor, um pedaço de lógica, um número mágico) aparece copiado em vários lugares, ele está pedindo um nome e um endereço único. Dá o nome, põe num lugar só, aponta todo mundo pra ele. Depois disso, mudar vira girar um botão, não caçar vinte cópias.</p>
+
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adicionar e remover na lista — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Adicionar e remover: o estado mexe, a tela acompanha</h1>
+
+<div class="audio-player" data-src="audio/lista-add-remove.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>No episódio anterior, o clique chegou na função <code>adicionar</code> e passou do portão. Agora a gente vê <strong>o que ela faz com o estado</strong> e como a lista na tela se redesenha sozinha, mais o botão <strong>remover</strong>. Tudo no navegador, no runtime reativo do Svelte. O foco aqui é o <strong>estado</strong>: você mexe nele, a tela acompanha, sem você pintar nada na mão.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 1 — itens é estado reativo</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A lista começa assim, declarada com <code>$state</code>:</p>
+<pre><code class="language-js">let itens = $state(["Maçã", "Banana", "Laranja"]);</code></pre>
+            <p>O <code>$state</code> marca o array como <strong>reativo</strong>: tudo que usa <code>itens</code> na tela fica grudado nele. Quando o array muda, esse pedaço da tela se redesenha sozinho. Sem o <code>$state</code>, <code>itens</code> seria um array "burro": você mudaria o valor e a tela não saberia de nada. É a mesma rune do contador, agora numa lista.</p>
+            <p><strong>Arquivo:</strong> <code>src/routes/+page.svelte</code> (o <code>$state</code> da lista).</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 2 — adicionar: itens.push(...) muda o estado</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Passado o portão, a função faz duas linhas. A primeira:</p>
+<pre><code class="language-js">itens.push(nova.trim());</code></pre>
+            <p>O <code>push</code> coloca a fruta (já sem espaços nas pontas) no fim do array. Pronto: <strong>você mexeu no estado</strong>. Repare no que <strong>não</strong> tem aqui: nenhuma linha pra criar o <code>&lt;li&gt;</code> novo, nenhuma pra pendurar ele no <code>&lt;ul&gt;</code>. Você só empurrou o item pra dentro do array.</p>
+            <p><strong>Arquivo:</strong> <code>src/routes/+page.svelte</code>, função <code>adicionar</code>.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 3 — nova = "" limpa o input sozinho</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A segunda linha da função:</p>
+<pre><code class="language-js">nova = "";</code></pre>
+            <p>Ela zera a variável <code>nova</code>. E porque o <code>bind:value={nova}</code> é de mão dupla (a gente viu no episódio do botão), o campo na tela <strong>esvazia sozinho</strong> junto. Você não escreveu <code>input.value = ""</code>: mudou a variável, e o campo acompanhou. De novo, você mexeu só no estado.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 4 — o {#each} redesenha sozinho</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Quem mostra a lista na tela é um laço dentro do HTML:</p>
+<pre><code class="language-svelte">&lt;ul&gt;
+    {#each itens as item, i}
+        &lt;li&gt;
+            &lt;span&gt;{item}&lt;/span&gt;
+            &lt;button class="remover" onclick={() =&gt; itens.splice(i, 1)}&gt;remover&lt;/button&gt;
+        &lt;/li&gt;
+    {/each}
+&lt;/ul&gt;</code></pre>
+            <p>O <code>{#each itens as item, i}</code> diz: pra cada <code>item</code> de <code>itens</code> (com a posição <code>i</code>), desenhe este <code>&lt;li&gt;</code>. O Svelte <strong>vigia o array</strong>. Quando o <code>push</code> da parada anterior entrou um item novo, o <code>{#each}</code> percebeu e adicionou o <code>&lt;li&gt;</code> correspondente, na hora. Você não chamou nada pra pintar: o estado mudou, a janela que olha o estado se atualizou.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 5 — remover: itens.splice(i, 1)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Cada <code>&lt;li&gt;</code> traz seu próprio botão remover, com o handler escrito ali mesmo:</p>
+<pre><code class="language-svelte">&lt;button class="remover" onclick={() =&gt; itens.splice(i, 1)}&gt;remover&lt;/button&gt;</code></pre>
+            <p>O <code>i</code> é a posição daquele item, que veio do <code>{#each itens as item, i}</code>. O <code>splice(i, 1)</code> tira <strong>1</strong> item a partir da posição <code>i</code> do array. Você clicou, mexeu no estado de novo. O <code>{#each}</code> percebe que aquele item sumiu do array e <strong>remove o <code>&lt;li&gt;</code></strong> da tela. Mesma história do adicionar, na direção contrária: mexe no estado, a tela acompanha.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O que evaporou — na unha vs Svelte</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Esse é o coração da fase. Na versão na unha, mexer no array era só metade do trabalho: você ainda tinha que <strong>redesenhar a lista na mão</strong>. Remover um item era:</p>
+<pre><code class="language-js">itens.splice(i, 1);   // tira do array
+desenharLista();       // ...e redesenha tudo de novo, na mão</code></pre>
+            <p>E a <code>desenharLista</code> apagava o <code>&lt;ul&gt;</code> inteiro com <code>innerHTML = ""</code> e reconstruía item por item num <code>for</code> com <code>createElement</code> e <code>appendChild</code>. Toda vez. No Svelte:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Na unha (JavaScript)</th><th>Em Svelte</th></tr>
+                    <tr><td><code>itens.push(...)</code> <strong>+</strong> <code>desenharLista()</code></td><td>só <code>itens.push(...)</code></td></tr>
+                    <tr><td><code>itens.splice(i,1)</code> <strong>+</strong> <code>desenharLista()</code></td><td>só <code>itens.splice(i,1)</code></td></tr>
+                    <tr><td><code>desenharLista</code>: <code>innerHTML=""</code> + <code>for</code> + <code>createElement</code> + <code>appendChild</code></td><td>um <code>{#each}</code></td></tr>
+                </table>
+            </div>
+            <p><strong>A linha de redesenhar, a que você era obrigado a lembrar, sumiu.</strong> É a lição da fase fechando: você cuida do estado (<code>push</code>, <code>splice</code>), o framework cuida da tela (<code>{#each}</code>). E é o mesmo Svelte que o front do Nexus usa.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refatorar no VS Code — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Refatorar no VS Code</h1>
+
+<div class="audio-player" data-src="audio/refatorar-vs-code.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Um aquecimento sobre o editor. No anterior a gente largou o botão "play" do NetBeans e rodou Java na mão. Agora que o código vai morar no VS Code, surge uma dúvida prática: como renomear uma variável (ou método, ou classe) e trocar em <strong>todos</strong> os lugares certos, do jeito que o NetBeans fazia num clique. A resposta curta: o VS Code puro não faz isso sozinho, quem faz é uma extensão.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O problema — renomear em vários lugares</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Você chamou uma variável de <code>x</code> e quer que vire <code>contador</code>. Só que esse nome aparece em vários pontos: na declaração, dentro de uma conta, dentro de um <code>if</code>, talvez em outro arquivo. No NetBeans era um clique e ele trocava tudo de uma vez. A pergunta é: como repetir isso no VS Code sem deixar nenhum lugar pra trás.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">A tentação do find and replace — e por que quebra</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A primeira ideia é o buscar e substituir (<code>Ctrl + H</code>): põe <code>x</code>, troca por <code>contador</code> em tudo. O problema é que ele troca <strong>texto</strong>, não entende código. Três jeitos de dar errado:</p>
+            <ul>
+                <li>existe outra variável <code>x</code> em outra função, sem relação com essa, e ele troca ela também;</li>
+                <li>a letra <code>x</code> aparece no meio de uma palavra maior (<code>max</code>, <code>exemplo</code>) ou num comentário, e ele mexe ali;</li>
+                <li>a letra <code>x</code> aparece dentro de uma string (um texto que ia pra tela), e ele estraga o texto.</li>
+            </ul>
+            <p>O buscar e substituir não sabe a diferença entre dois <code>x</code> diferentes, nem entre código e comentário. Por isso é perigoso pra renomear.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O que falta: entender o código, não o texto</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O que o NetBeans fazia (e o que a gente quer) é o <strong>rename semântico</strong>. "Semântico" aqui quer dizer que a ferramenta entende a estrutura do código: sabe qual <code>x</code> é qual, sabe o <strong>escopo</strong> de cada variável (onde ela vive), e sabe que comentário e string não são código. Com isso ela troca <strong>só</strong> as ocorrências certas daquela variável específica e ignora o resto. É a diferença entre achar e trocar no cego e alguém que leu e entendeu o texto.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">A solução no VS Code — a extensão</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O VS Code sozinho é só um editor de texto esperto, não entende Java de cara. Quem dá esse poder é uma extensão: o <strong>Extension Pack for Java</strong> (da Microsoft), que traz, entre outras coisas, o <strong>Language Support for Java by Red Hat</strong>.</p>
+            <p>Essa extensão sobe por baixo um <strong>language server</strong>: um programa que fica lendo seu código e entendendo a estrutura. O motor dele é o mesmo do Eclipse (o <code>JDT</code>), que faz rename há muitos anos, e é por isso que dá pra confiar pra renomear.</p>
+            <p>Detalhe prático: ao abrir o projeto, o language server demora alguns segundos pra carregar e indexar. Tem um aviso de status embaixo que vai de "carregando" até <strong>Java: Ready</strong>. Renomear antes disso pode trocar só uma parte. Regra: espere o <strong>Java: Ready</strong>.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Como usar — F2 (Rename Symbol)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Com a extensão instalada e o projeto carregado, renomear é assim:</p>
+            <ol>
+                <li>clique em cima do nome da variável, método ou classe;</li>
+                <li>aperte <strong>F2</strong> (o atalho do <em>Rename Symbol</em>); dá também por botão direito, <em>Rename Symbol</em>;</li>
+                <li>digite o nome novo e aperte <strong>Enter</strong>.</li>
+            </ol>
+            <p>Ele troca em todos os lugares certos, em todos os arquivos, respeitando o escopo. O <code>F2</code> é genérico: funciona pra qualquer linguagem que tenha um language server instalado, não só Java. Pra Java, quem dá o poder é a extensão do Red Hat.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Os limites (sendo honesto)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Pra renomear variável, método e classe, é seguro e equivalente ao NetBeans (é o mesmo tipo de rename semântico). Mas dois pontos valem a honestidade, e valem <strong>pro NetBeans também</strong>:</p>
+            <ul>
+                <li>espere o language server carregar (<strong>Java: Ready</strong>), senão a troca pode sair incompleta;</li>
+                <li>nenhum rename pega referência que está <strong>fora do código tipado</strong>: nome dentro de string, código que usa reflection, ou arquivo de configuração (XML, Spring). Nesse ponto os dois são igualmente cegos.</li>
+            </ul>
+            <p>Na dúvida, dá pra revisar os arquivos afetados antes de aplicar.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

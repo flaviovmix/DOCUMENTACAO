@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Montar o ambiente — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Montar o ambiente: do zero até pronto pra rodar</h1>
+
+<div class="audio-player" data-src="audio/ambiente.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Esse episódio dá um passo atrás. Todos os trajetos até aqui (rodar com o <code>npm run dev</code>, clicar, adicionar, remover) já partem de um projeto montado na máquina. Aqui a gente volta ao começo de tudo: como esse ambiente <strong>nasce do zero</strong>, do nada até o projeto pronto pra um <code>npm run dev</code>. Ele está numerado por último, mas na prática é o <strong>passo zero</strong>, vem antes de todos os outros. O ator aqui não é servidor nem navegador: são as <strong>ferramentas de linha de comando</strong> (<code>npx</code>, <code>sv</code> e <code>npm</code>).</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 1 — o pré-requisito: Node e npm na máquina</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Antes de qualquer comando do projeto, a máquina precisa ter o <strong>Node.js</strong> instalado. Ele não vem sozinho: traz junto duas ferramentas que a gente usa o tempo todo.</p>
+            <ul>
+                <li><code>npm</code> — instala e gerencia os pacotes (as dependências).</li>
+                <li><code>npx</code> — roda um pacote na hora, sem precisar instalar de forma permanente.</li>
+            </ul>
+            <p>Dá pra conferir se está tudo no lugar:</p>
+<pre><code class="language-bash">node -v   # neste projeto: v24.16.0
+npm -v    # neste projeto: 11.13.0</code></pre>
+            <p>Sem Node, nenhum dos próximos passos roda. Ele é o chão de tudo.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 2 — criar o projeto: npx sv create</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O projeto não foi montado arquivo por arquivo na mão. Um comando faz o <strong>scaffold</strong>, ou seja, monta a estrutura inteira de uma vez. O comando exato que criou este projeto:</p>
+<pre><code class="language-bash">npx sv@0.15.4 create --template minimal --no-types --no-install 01-ola-web-svelte</code></pre>
+            <p>Lendo por partes:</p>
+            <ul>
+                <li><code>npx sv</code> — o <code>npx</code> baixa o CLI do Svelte (o <code>sv</code>) na hora e executa, <strong>sem instalar global</strong> na máquina.</li>
+                <li><code>create ... 01-ola-web-svelte</code> — cria o projeto nessa pasta.</li>
+                <li><code>--template minimal</code> — o esqueleto mais enxuto.</li>
+                <li><code>--no-types</code> — JavaScript puro, sem TypeScript (menos ruído pra aprender).</li>
+                <li><code>--no-install</code> — <strong>adia</strong> o download das dependências pra um passo separado (a Parada 5).</li>
+            </ul>
+            <p>Rodado sem essas flags, o <code>sv create</code> faz as mesmas perguntas no terminal (template, TypeScript, add-ons). As flags só respondem tudo de uma vez.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 3 — o que o scaffold gera</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Em um comando, ele monta o projeto todo. As peças:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Peça</th><th>O que é</th><th>Você mexe?</th></tr>
+                    <tr><td><code>src/</code></td><td>Onde você trabalha (as rotas e páginas)</td><td>Sim</td></tr>
+                    <tr><td><code>static/</code></td><td>Arquivos servidos como estão (imagens, robots.txt)</td><td>Às vezes</td></tr>
+                    <tr><td><code>package.json</code></td><td>Lista de dependências e os scripts (<code>dev</code>, <code>build</code>)</td><td>Raramente</td></tr>
+                    <tr><td><code>svelte.config.js</code>, <code>vite.config.js</code></td><td>Configs que ligam as ferramentas</td><td>Quase nunca</td></tr>
+                    <tr><td><code>.npmrc</code></td><td>Ajustes do npm pra este projeto</td><td>Quase nunca</td></tr>
+                    <tr><td><code>jsconfig.json</code></td><td>Ajuda o editor a entender o projeto</td><td>Não</td></tr>
+                    <tr><td><code>.gitignore</code></td><td>O que o git deve ignorar (ex: <code>node_modules</code>)</td><td>Raramente</td></tr>
+                </table>
+            </div>
+            <p>Repare que ainda <strong>não existe</strong> a pasta <code>node_modules/</code>. Foi o <code>--no-install</code> que segurou isso. É o próximo passo.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 4 — o .npmrc e o engine-strict</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Entre os arquivos gerados tem um pequeno e importante, o <code>.npmrc</code>:</p>
+<pre><code class="language-bash">engine-strict=true</code></pre>
+            <p>Ele liga uma regra: o npm passa a <strong>exigir</strong> a versão de Node que o projeto pede (declarada nas dependências). Se a sua versão não bate, ele <strong>falha cedo</strong>, com um aviso claro, em vez de deixar o projeto quebrar de um jeito estranho lá na frente. É uma rede de segurança da versão.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 5 — instalar as dependências: npm install</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O scaffold só <strong>listou</strong> as dependências no <code>package.json</code>. Baixá-las é um passo separado, que o <code>--no-install</code> tinha adiado. Dentro da pasta do projeto:</p>
+<pre><code class="language-bash">cd 01-ola-web-svelte
+npm install</code></pre>
+            <p>O <code>npm install</code> lê a seção de dependências do <code>package.json</code> e baixa tudo pra dentro da pasta <code>node_modules/</code>. É lá que mora, entre outras coisas, o binário do <strong>Vite</strong>, que o <code>npm run dev</code> vai executar no próximo episódio.</p>
+            <p>Essa pasta <code>node_modules/</code> é <strong>gerada</strong>, não entra no git (está no <code>.gitignore</code>). Quem clona o projeto roda <code>npm install</code> e refaz a pasta a partir do <code>package.json</code>.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 6 — ambiente pronto</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Fim do trajeto do ambiente. Agora existe um projeto completo: a estrutura de pastas, as configs, um exemplo que já roda e as dependências baixadas em <code>node_modules/</code>. A máquina tem tudo que precisa.</p>
+            <p>O próximo passo é ligar o servidor de desenvolvimento com <code>npm run dev</code>, que é justamente o episódio que abre essa sequência de trajetos (numerado antes deste, mas que só faz sentido depois deste). Daqui pra frente o caminho é o que os outros episódios já seguiram.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">npx vs npm install: duas formas, dois usos</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Os dois aparecem no setup e é fácil confundir:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Comando</th><th>Pra quê</th></tr>
+                    <tr><td><code>npx sv create</code></td><td>Rodar uma ferramenta <strong>uma vez</strong> (o scaffold), sem instalar nada permanente na máquina</td></tr>
+                    <tr><td><code>npm install</code></td><td>Baixar as dependências <strong>do projeto</strong> pra <code>node_modules/</code> (fica no projeto)</td></tr>
+                </table>
+            </div>
+            <p>E o que entra no git: o código (<code>src/</code>), as configs e o <code>package.json</code> entram. O <code>node_modules/</code> e as pastas geradas (<code>.svelte-kit/</code>, <code>build/</code>) não, são reconstruídas a partir do <code>package.json</code>.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

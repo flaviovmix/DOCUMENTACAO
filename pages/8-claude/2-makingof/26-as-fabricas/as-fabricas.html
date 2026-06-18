@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>As Fábricas — Making-of (código)</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>As Fábricas</h1>
+
+<div class="audio-player" data-src="audio/as-fabricas.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Episódio <strong>focado no código</strong>, o mais denso da trinca. Par do conceitual <a href="../24-tudo-num-lugar-so/tudo-num-lugar-so.html">Tudo num Lugar Só</a>: a gente lê os três arquivos das fábricas (<code>createListStore</code>, <code>ModalStore</code> e o <code>crud</code>) linha por linha, pra entender como uma função consegue fabricar o código que antes era copiado.</p>
+
+<h2 id="o-que-faz" data-toc-title="O que esse código faz" data-sub="Três fábricas, uma dor">O que esse código faz</h2>
+<p>Três arquivos pequenos, mesma dor: código copiado. O <code>createListStore</code> resolve a lista que toda área carregava na mão (itens, carregando, erro, buscar). O <code>ModalStore</code> resolve o miolo que todo modal repetia (o "tá aberto", o fechar, a limpeza). O <code>crud</code> resolve o quinteto de servidor (listar, pegar, criar, editar, excluir) copiado em dezessete recursos. Todos: uma função (ou classe) que <strong>fabrica</strong> a peça, em vez de a peça ser copiada.</p>
+
+<h2 id="conceito-minimo" data-toc-title="Conceito mínimo" data-sub="Generic">O conceito mínimo: generic</h2>
+<p>Uma ideia, porque aparece nos três. Quando uma função serve pra vários tipos de dado (lista de tags, de tarefas, de clientes), você não quer uma versão pra cada. O <strong>generic</strong> é um tipo coringa: você põe uma letra (normalmente <code>T</code>, de <em>type</em>) entre <code>&lt;</code> e <code>&gt;</code>, e ela vira um espaço em branco que quem chama preenche. <code>createListStore&lt;T&gt;</code> é "uma lista de <strong>alguma</strong> coisa, você me diz qual quando usar".</p>
+
+<h2 id="createliststore" data-toc-title="createListStore" data-sub="generic, $state, getters">Lendo o código: createListStore</h2>
+<p><strong>A assinatura.</strong> <code>export function createListStore&lt;T&gt;(apiFn: () =&gt; Promise&lt;T[]&gt;)</code>. O <code>export</code> deixa outros arquivos importarem. O <code>&lt;T&gt;</code> é o generic. O parâmetro <code>apiFn</code> tem tipo "uma função que não recebe nada e devolve uma <code>Promise</code> de uma lista de <code>T</code>" (<code>Promise</code> = algo que chega do servidor mais tarde, não na hora). Resumindo: "me dá uma função que busca a lista lá fora, eu monto a store em cima".</p>
+<pre><code class="language-typescript">export function createListStore&lt;T&gt;(apiFn: () =&gt; Promise&lt;T[]&gt;) {
+  let items = $state&lt;T[]&gt;([]);
+  let loading = $state(false);
+  let error = $state&lt;string | null&gt;(null);</code></pre>
+<p><strong>Os três estados.</strong> O <code>$state</code> é o rune de reatividade do Svelte 5: marcar a variável com <code>$state</code> faz a tela que a usa se redesenhar sozinha quando ela muda. <code>items</code> começa lista vazia, <code>loading</code> começa <code>false</code>, <code>error</code> é <code>string | null</code> (começa <code>null</code>, "sem erro ainda").</p>
+<p><strong>O ponto que pega de surpresa: o getter.</strong> A função devolve um objeto, mas o retorno <strong>não</strong> é <code>items: items</code>. É <code>get items() { return items }</code> — um <em>getter</em>. Por quê? Se devolvesse o valor direto, quem recebesse pegaria uma <strong>foto</strong> congelada do valor naquele instante e nunca mais veria a lista mudar. Com o getter, toda vez que alguém lê <code>.items</code>, a função roda de novo e devolve o valor <strong>atual</strong>. Por isso a regra de quem usa: sempre <code>store.items</code>, <strong>nunca desestruturar</strong> (desestruturar volta a pegar a foto congelada).</p>
+<pre><code class="language-typescript">return {
+  get items()   { return items; },    // getter, nao "items: items"
+  get loading() { return loading; },
+  get error()   { return error; },
+  async refresh() {
+    loading = true; error = null;
+    try { items = await apiFn(); }
+    catch (e) { error = e instanceof Error ? e.message : 'erro'; }
+    finally { loading = false; }
+  },
+  clear() { items = []; error = null; }
+};</code></pre>
+<p><strong>O refresh.</strong> O <code>async</code> marca que tem espera dentro. Liga <code>loading</code>, zera <code>error</code>, abre <code>try</code>. A linha principal: <code>items = await apiFn()</code> — o <code>await</code> espera a promessa chegar; o resultado cai em <code>items</code> e a tela redesenha (porque é <code>$state</code>). Se der ruim, o <code>catch</code> pega a mensagem; o <code>finally</code> roda dando certo ou não e desliga o <code>loading</code>.</p>
+<p><strong>O rodapé.</strong> Store com lógica própria (polling, <code>get</code> de um item) <strong>não</strong> reescreve essa base: ela <strong>compõe</strong> por cima, com <code>Object.assign(createListStore(...), { extras })</code>, e assim os getters da base continuam vivos. A fábrica cobre o caso base; o especial soma em cima.</p>
+
+<h2 id="modalstore" data-toc-title="ModalStore" data-sub="classe base e o beco do show()">Lendo o código: ModalStore</h2>
+<p>Mais curto, e tem o melhor beco. <code>export class ModalStore</code> — aqui é uma <strong>classe</strong> (não função), porque os modais vão <strong>estender</strong> essa base, herdar dela. Dentro: <code>open = $state(false)</code>, o único estado que todo modal tem em comum, começa fechado. O <code>hide()</code> faz duas coisas: baixa o <code>open</code> e chama <code>this.reset()</code>. E <code>protected reset() {}</code> — <code>protected</code> quer dizer que só a própria classe e as filhas chamam; está vazio na base de propósito (a base não sabe os campos da filha; cada modal reescreve o <code>reset</code> pra limpar os dele).</p>
+<pre><code class="language-typescript">export class ModalStore {
+  open = $state(false);
+  hide() { this.open = false; this.reset(); }
+  protected reset() {}   // a filha limpa os campos dela aqui
+}</code></pre>
+<p><strong>O beco (a parte que mais ensina): por que o <code>show()</code> NÃO está na base.</strong> Parece o lugar óbvio pra ele. O problema: cada modal abre de um jeito — um com <code>show(id)</code>, outro com <code>show(opts)</code>, outro com <code>show()</code> puro. Se a base declarasse um <code>show()</code> sem parâmetro e a filha declarasse <code>show(id)</code>, o TypeScript reclamaria de <strong>sobrescrita incompatível</strong> ("esperava 1+ argumentos, recebeu 0"). A solução foi recuar: a base centraliza só o que é <strong>de fato igual</strong> (<code>open</code>, <code>hide</code>, <code>reset</code>); o <code>show</code>, que varia, cada filho declara o seu (e no fim faz <code>this.open = true</code>).</p>
+<pre><code class="language-typescript">class MemberModal extends ModalStore {
+  memberId = $state&lt;number | null&gt;(null);
+  show(id: number) { this.memberId = id; this.open = true; }
+  protected reset() { this.memberId = null; }
+}</code></pre>
+<p>A lição: a base puxa pra dentro o que é igual; o que muda fica de fora. Forçar o igual onde não é igual quebra na cara do compilador.</p>
+
+<h2 id="crud" data-toc-title="crud" data-sub="três generics, cinco rotas">Lendo o código: o crud</h2>
+<p>O menor e mais redondo. <code>function crud&lt;T, CreateReq = Partial&lt;T&gt;, UpdateReq = CreateReq&gt;(base: string)</code> — <strong>três</strong> generics. O <code>T</code> é a coisa (ex: uma <code>Tag</code>). <code>CreateReq</code> é o formato do que você manda pra <strong>criar</strong>, e o <code>= Partial&lt;T&gt;</code> quer dizer "se você não disser, assumo um <code>T</code> parcial". <code>UpdateReq</code> por padrão é igual ao de criar. O parâmetro de verdade é um só: <code>base</code>, o começo do endereço (ex: <code>/tags</code>).</p>
+<pre><code class="language-typescript">function crud&lt;T, CreateReq = Partial&lt;T&gt;, UpdateReq = CreateReq&gt;(base: string) {
+  return {
+    list:   () =&gt; request&lt;T[]&gt;(base),
+    get:    (id: number) =&gt; request&lt;T&gt;(`${base}/${id}`),
+    create: (body: CreateReq) =&gt; request&lt;T&gt;(base, { method: 'POST', body }),
+    update: (id, body: UpdateReq) =&gt; request&lt;T&gt;(`${base}/${id}`, { method: 'PUT', body }),
+    remove: (id: number) =&gt; request&lt;void&gt;(`${base}/${id}`, { method: 'DELETE' })
+  };
+}</code></pre>
+<p>O retorno é um objeto com as cinco funções. Repare que <strong>nenhuma</strong> fala com a rede sozinha: todas chamam o mesmo <code>request</code>, a função central que já cuida do token, do cabeçalho e do erro. O <code>remove</code> devolve <code>request&lt;void&gt;</code> (apagar não retorna dado). O endereço de <code>get</code>/<code>update</code> usa <em>template literal</em> (crase + <code>${...}</code>) pra montar <code>/tags/5</code>. A fábrica não reinventa a chamada, só monta as cinco rotas em cima do <code>request</code> que já existia.</p>
+<pre><code class="language-typescript">const tagsCrud = crud&lt;Tag, TagRequest&gt;('/tags');   // uma linha = 5 operacoes
+const tasksCrud = crud&lt;Task, TaskRequest&gt;('/tasks');
+// ...17 recursos. list/get fora do padrao (query string) fica a mao ao lado.</code></pre>
+
+<h2 id="decisoes" data-toc-title="Decisões no código" data-sub="O fio comum">Decisões no código</h2>
+<ul>
+    <li><strong>A regra dos três:</strong> a fábrica cobre o <strong>caso base</strong>, e o especial <strong>compõe</strong> por cima, nunca reimplanta. No <code>createListStore</code> é o <code>Object.assign</code>; no <code>crud</code> é o método à mão ao lado; no <code>ModalStore</code> é o <code>show</code> próprio de cada filho.</li>
+    <li><strong>Os getters não são firula:</strong> são obrigatórios pela reatividade do Svelte 5. Devolver o valor direto congelaria a lista. Por fora, <code>store.items</code> parece propriedade comum; por dentro é uma função rodando toda vez.</li>
+    <li><strong>O <code>show</code> fora da base:</strong> foi a tentativa que o compilador barrou, e o recuo foi o certo. Base magra (só o comum) é mais saudável que base inchada tentando prever toda assinatura de abrir.</li>
+</ul>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>Três fábricas, mesma ideia: parar de copiar. <code>createListStore</code> é uma função com generic <code>T</code> que devolve <code>items</code>/<code>loading</code>/<code>error</code> por <strong>getter</strong> (pra não congelar a reatividade) mais <code>refresh</code>/<code>clear</code>. <code>ModalStore</code> é uma classe base com <code>open</code>/<code>hide</code>/<code>reset</code>, e o <code>show</code> fica de fora porque cada modal abre com assinatura própria. O <code>crud</code> é uma função com três generics que monta as cinco rotas REST em cima do <code>request</code> central, e cada recurso vira uma linha. O fio comum: a fábrica cobre o caso base, o especial soma por cima.</p>
+
+</body>
+</html>

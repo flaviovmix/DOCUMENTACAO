@@ -87,6 +87,96 @@
             </div>
         </div>
 
+        <!-- ESTILO E INPUT -->
+        <div class="card" data-href="4-estilo-e-input/4-estilo-e-input.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>CSS scoped dentro do componente (e :global pra sair dele) e um input ligado ao estado com bind:value. A mesma lição de novo: você cuida do estado, o framework cuida da tela.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/1.png" alt="Estilo e Input">
+            </div>
+            <div class="card-bar">
+                <a href="4-estilo-e-input/4-estilo-e-input.html" class="card-tag" style="--tag-clr:#0891b2;">ESTILO E INPUT</a>
+            </div>
+        </div>
+
+        <!-- NPM RUN DEV -->
+        <div class="card" data-href="5-npm-run-dev/5-npm-run-dev.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>O trajeto do comando que sobe o projeto: o npm lê o package.json, chama o Vite, que lê as configs, abre a porta 5173 e fica vivo servindo a página. Parada por parada, do Enter até o app na tela.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/1.png" alt="npm run dev">
+            </div>
+            <div class="card-bar">
+                <a href="5-npm-run-dev/5-npm-run-dev.html" class="card-tag" style="--tag-clr:#15803d;">NPM RUN DEV</a>
+            </div>
+        </div>
+
+        <!-- O BOTÃO ADICIONAR -->
+        <div class="card" data-href="6-botao-adicionar/6-botao-adicionar.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>O gatilho do clique, do dedo até a função disparar. O servidor já saiu de cena: o onclick que o Svelte ligou no botão, o bind:value que mantém o texto em dia, e o mesmo destino pelo Enter. Tudo roda no navegador.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/1.png" alt="O botão adicionar">
+            </div>
+            <div class="card-bar">
+                <a href="6-botao-adicionar/6-botao-adicionar.html" class="card-tag" style="--tag-clr:#0ea5e9;">O BOTÃO ADICIONAR</a>
+            </div>
+        </div>
+
+        <!-- ADICIONAR E REMOVER -->
+        <div class="card" data-href="7-lista-add-remove/7-lista-add-remove.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>O mecanismo: itens.push e itens.splice mexem no estado e o {#each} redesenha a lista sozinho. O contraste com a versão na unha, onde a linha do desenharLista era obrigatória. Você cuida do estado, o framework cuida da tela.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/1.png" alt="Adicionar e remover na lista">
+            </div>
+            <div class="card-bar">
+                <a href="7-lista-add-remove/7-lista-add-remove.html" class="card-tag" style="--tag-clr:#e11d48;">ADICIONAR E REMOVER</a>
+            </div>
+        </div>
+
+        <!-- MONTAR O AMBIENTE -->
+        <div class="card" data-href="8-ambiente/8-ambiente.html">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>O passo zero, do nada até o projeto pronto pra rodar: Node e npm, o scaffold com npx sv create, a estrutura gerada, o .npmrc e o npm install baixando o node_modules. Numerado por último, mas vem antes de todos os outros.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/1.png" alt="Montar o ambiente">
+            </div>
+            <div class="card-bar">
+                <a href="8-ambiente/8-ambiente.html" class="card-tag" style="--tag-clr:#475569;">MONTAR O AMBIENTE</a>
+            </div>
+        </div>
+
     </div>
 
 </body>

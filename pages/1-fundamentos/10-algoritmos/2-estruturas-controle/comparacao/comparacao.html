@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparação — Estruturas de Controle — Nexus</title>
+    <script src="../../../../../js/layout.js"></script>
+    <style>
+        .vetor-animacao {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+        .vetor-toolbar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .vetor-btn {
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .vetor-btn:hover { filter: brightness(.92); }
+        .vetor-btn:disabled { background: #9ca3af !important; cursor: not-allowed; filter: none; }
+        .vetor-btn.secondary { background: #6b7280; }
+
+        /* ─── Code Debugger ─── */
+        .vetor-debug {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+        .dbg-code { padding: 10px 0; }
+        .dbg-code.hidden { display: none; }
+        .dbg-code-title {
+            padding: 6px 16px;
+            background: #1f2937;
+            color: #fbbf24;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+        .dbg-code-title span { color: #d1d5db; text-transform: none; font-weight: normal; }
+        .dbg-line {
+            padding: 1px 16px 1px 34px;
+            position: relative;
+            white-space: pre;
+            transition: background .2s ease, color .25s ease;
+            min-height: 1.7em;
+        }
+        .dbg-line.active { background: #fef3c7; }
+        .dbg-line.active::before {
+            content: '▶';
+            position: absolute;
+            left: 12px;
+            color: #d97706;
+            font-size: 10px;
+            top: 6px;
+        }
+        .dbg-line.done { color: #9ca3af; }
+        .dbg-line.done .kw,
+        .dbg-line.done .cls,
+        .dbg-line.done .num,
+        .dbg-line.done .str,
+        .dbg-line.done .mth,
+        .dbg-line.done .cmt { color: #c7c9cd; }
+        .dbg-line .kw  { color: #7c3aed; font-weight: 600; }
+        .dbg-line .cls { color: #0891b2; }
+        .dbg-line .mth { color: #b45309; }
+        .dbg-line .num { color: #1d4ed8; }
+        .dbg-line .str { color: #15803d; }
+        .dbg-line .cmt { color: #6b7280; font-style: italic; }
+
+        /* ─── Stage: duas pistas lado a lado ─── */
+        .cmp-stage {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+        .cmp-lane {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px 12px 6px;
+        }
+        .cmp-lane-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .cmp-lane-title {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: #374151;
+        }
+        .cmp-metrics { display: flex; gap: 8px; }
+        .cmp-metric {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 12px;
+            color: #4b5563;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 999px;
+            padding: 3px 12px;
+            transition: background .25s ease, border-color .25s ease, color .25s ease;
+        }
+        .cmp-metric b { color: #111827; }
+        .cmp-metric.saltos.hot {
+            background: #fee2e2;
+            border-color: #f87171;
+            color: #b91c1c;
+        }
+        .cmp-metric.saltos.hot b { color: #991b1b; }
+        .cmp-metric.zero {
+            background: #dcfce7;
+            border-color: #4ade80;
+            color: #15803d;
+        }
+        .cmp-metric.zero b { color: #166534; }
+        .cmp-metric.pulse { transform: scale(1.12); }
+
+        /* ─── Slots (vetor) ─── */
+        .vetor-slots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+        .vetor-slot {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .vetor-index {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        .vetor-value {
+            width: 50px;
+            height: 50px;
+            background: #dbeafe;
+            border: 2px solid #2563eb;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 19px;
+            font-weight: 700;
+            color: #1e40af;
+            transition: transform .3s ease, background .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease;
+        }
+        .vetor-slot.reading .vetor-value {
+            transform: scale(1.14);
+            border-color: #10b981;
+            background: #d1fae5;
+            color: #065f46;
+            box-shadow: 0 0 14px rgba(16, 185, 129, .5);
+        }
+
+        /* ─── Linked List Area (lista) ─── */
+        .ll-area {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 92px;
+            padding: 26px 8px 10px;
+            background: #fff;
+            border: 1px solid #eef2ff;
+            border-radius: 8px;
+            overflow-x: auto;
+            gap: 4px;
+        }
+        .ll-node {
+            display: flex;
+            align-items: stretch;
+            background: #eef2ff;
+            border: 2px solid #6366f1;
+            border-radius: 6px;
+            overflow: hidden;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            position: relative;
+            transition: background .3s ease, border-color .3s ease, box-shadow .3s ease;
+            flex-shrink: 0;
+        }
+        .ll-node.atual::before {
+            content: 'atual ↓';
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 3px;
+            border: 1px solid #fbbf24;
+            white-space: nowrap;
+            font-weight: 700;
+            letter-spacing: .03em;
+        }
+        .ll-node.match {
+            background: #d1fae5;
+            border-color: #10b981;
+            box-shadow: 0 0 14px rgba(16, 185, 129, .5);
+        }
+        .ll-node-val {
+            padding: 9px 13px;
+            color: #3730a3;
+            font-size: 15px;
+            font-weight: 700;
+        }
+        .ll-node.match .ll-node-val { color: #065f46; }
+        .ll-node-next {
+            padding: 9px 7px;
+            background: rgba(99, 102, 241, 0.12);
+            color: #4338ca;
+            border-left: 1px solid rgba(99, 102, 241, 0.25);
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+        }
+        .ll-node.match .ll-node-next {
+            background: rgba(16, 185, 129, 0.15);
+            color: #047857;
+            border-left-color: rgba(16, 185, 129, 0.3);
+        }
+        .ll-link { font-size: 11px; }
+        .ll-null { font-size: 11px; color: #9ca3af; font-style: italic; }
+        .ll-arrow { color: #6366f1; font-size: 20px; margin: 0 2px; font-weight: 700; }
+
+        /* ─── Compare bar ─── */
+        .vetor-compare {
+            background: #1f2937;
+            color: #e5e7eb;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            min-height: 22px;
+            opacity: 0;
+            transition: opacity .2s ease;
+        }
+        .vetor-compare.visible { opacity: 1; }
+        .vetor-compare .ok { color: #34d399; font-weight: 700; }
+        .vetor-compare .no { color: #f87171; font-weight: 700; }
+
+        /* ─── Output ─── */
+        .vetor-output {
+            background: #111827;
+            color: #d1d5db;
+            border-radius: 6px;
+            padding: 12px 16px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            min-height: 60px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .vetor-output-title { color: #9ca3af; font-size: 12px; margin-bottom: 6px; }
+        .vetor-output-line {
+            color: #34d399;
+            opacity: 0;
+            animation: vetorOutFade .35s forwards;
+        }
+        .vetor-output-line.label { color: #fbbf24; }
+        @keyframes vetorOutFade {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .cmp-caption {
+            font-size: 12px;
+            color: #6b7280;
+            margin: -6px 0 18px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Comparação: Vetor × Lista Ligada</h1>
+
+<div class="audio-player" data-tracks='[{"label":"Aula","src":"audio/comparacao-aula.m4a"},{"label":"Conceitual","src":"audio/comparacao-conceitual.m4a"}]'>
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>As cinco aulas anteriores construíram as duas estruturas do zero: o <strong>array</strong> (posições contíguas, acesso por índice) e a <strong>lista ligada</strong> (nós soltos na memória, ligados por ponteiro). Esta última coloca as duas <strong>na mesma corrida</strong>: a classe <code>Comparacao</code> cria um <code>ArrayList</code> e a nossa <code>ListaLigada</code>, joga <strong>10000 números</strong> em cada uma e <strong>cronometra</strong> duas operações — adicionar tudo e depois ler tudo por índice.</p>
+
+<p>Adicionar é empate: as duas enganchain no fim em tempo constante. O abismo aparece na <strong>leitura</strong>. <code>vetor.get(i)</code> é um cálculo direto de endereço; <code>lista.get(i)</code> precisa <strong>caminhar do primeiro nó</strong> até a posição <code>i</code>. Ler a coleção inteira por índice faz a lista pagar um salto a mais a cada posição — e isso cresce ao quadrado.</p>
+
+<h2>A corrida de leitura</h2>
+
+<p>O mesmo laço de leitura roda nas duas estruturas, lado a lado. Repare no contador de <strong>saltos</strong> de cada pista: no vetor ele fica <strong>parado em zero</strong> (acesso direto), na lista ele <strong>dispara</strong> — cada <code>get(i)</code> custa <code>i</code> saltos pra chegar lá.</p>
+
+<div class="vetor-animacao">
+    <div class="vetor-toolbar">
+        <button class="vetor-btn" id="cmpPlay">▶ Seguir</button>
+        <button class="vetor-btn" id="cmpPrev" style="background:#6366f1;" disabled>◄ Anterior</button>
+        <button class="vetor-btn" id="cmpNext" style="background:#10b981;">→ Próximo</button>
+        <button class="vetor-btn secondary" id="cmpReset">↻ Reiniciar</button>
+    </div>
+
+    <div class="vetor-debug" id="cmpDebug">
+        <div class="dbg-code" data-code="comparacao">
+            <div class="dbg-code-title">Comparacao.java <span>— leitura</span></div>
+<div class="dbg-line"><span class="cmt">//ler valores (vetor)</span></div>
+<div class="dbg-line" data-step="C1">        tempoInicial = <span class="cls">System</span>.<span class="mth">currentTimeMillis</span>();</div>
+<div class="dbg-line" data-step="C2">        <span class="kw">for</span>(<span class="kw">int</span> i=<span class="num">0</span>; i &lt; vetor.<span class="mth">size</span>(); i++){</div>
+<div class="dbg-line" data-step="C3">            vetor.<span class="mth">get</span>(i);</div>
+<div class="dbg-line">        }</div>
+<div class="dbg-line" data-step="C5">        tempoFinal = <span class="cls">System</span>.<span class="mth">currentTimeMillis</span>();</div>
+<div class="dbg-line" data-step="C6">        <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="str">"\n\nTempo de leitura do vetor"</span>);</div>
+<div class="dbg-line" data-step="C7">        <span class="cls">System</span>.out.<span class="mth">println</span>(tempoFinal - tempoInicial);</div>
+<div class="dbg-line"> </div>
+<div class="dbg-line"><span class="cmt">//ler valores (lista)</span></div>
+<div class="dbg-line" data-step="C8">        tempoInicial = <span class="cls">System</span>.<span class="mth">currentTimeMillis</span>();</div>
+<div class="dbg-line" data-step="C9">        <span class="kw">for</span>(<span class="kw">int</span> i=<span class="num">0</span>; i &lt; lista.<span class="mth">getTamanho</span>(); i++){</div>
+<div class="dbg-line" data-step="C10">            lista.<span class="mth">get</span>(i);</div>
+<div class="dbg-line">        }</div>
+<div class="dbg-line" data-step="C12">        tempoFinal = <span class="cls">System</span>.<span class="mth">currentTimeMillis</span>();</div>
+<div class="dbg-line" data-step="C13">        <span class="cls">System</span>.out.<span class="mth">println</span>(<span class="str">"\n\nTempo de leitura da lista"</span>);</div>
+<div class="dbg-line" data-step="C14">        <span class="cls">System</span>.out.<span class="mth">println</span>(tempoFinal - tempoInicial);</div>
+        </div>
+
+        <div class="dbg-code hidden" data-code="get">
+            <div class="dbg-code-title">ListaLigada.get<span>(posicao = <span id="cmpArgGet">?</span>)</span></div>
+<div class="dbg-line" data-step="G1">    <span class="kw">public</span> <span class="cls">Elemento</span> <span class="mth">get</span>(<span class="kw">int</span> posicao){</div>
+<div class="dbg-line" data-step="G2">        <span class="cls">Elemento</span> atual = <span class="kw">this</span>.primeiro;</div>
+<div class="dbg-line" data-step="G3">        <span class="kw">for</span>(<span class="kw">int</span> i=<span class="num">0</span>; i &lt; posicao; i++){</div>
+<div class="dbg-line" data-step="G4">            <span class="kw">if</span> (atual.<span class="mth">getProximo</span>() != <span class="kw">null</span>){</div>
+<div class="dbg-line" data-step="G5">                atual = atual.<span class="mth">getProximo</span>();</div>
+<div class="dbg-line" data-step="G6">            }</div>
+<div class="dbg-line" data-step="G7">        }</div>
+<div class="dbg-line" data-step="G8">        <span class="kw">return</span> atual;</div>
+<div class="dbg-line" data-step="G9">    }</div>
+        </div>
+    </div>
+
+    <div class="cmp-stage">
+        <div class="cmp-lane">
+            <div class="cmp-lane-head">
+                <span class="cmp-lane-title">ArrayList — vetor.get(i)</span>
+                <div class="cmp-metrics">
+                    <span class="cmp-metric" id="cmpVLeituras">leituras: <b>0</b></span>
+                    <span class="cmp-metric zero" id="cmpVSaltos">saltos: <b>0</b></span>
+                </div>
+            </div>
+            <div class="vetor-slots" id="cmpSlots">
+                <div class="vetor-slot" data-i="0"><div class="vetor-index">[0]</div><div class="vetor-value">0</div></div>
+                <div class="vetor-slot" data-i="1"><div class="vetor-index">[1]</div><div class="vetor-value">1</div></div>
+                <div class="vetor-slot" data-i="2"><div class="vetor-index">[2]</div><div class="vetor-value">2</div></div>
+                <div class="vetor-slot" data-i="3"><div class="vetor-index">[3]</div><div class="vetor-value">3</div></div>
+                <div class="vetor-slot" data-i="4"><div class="vetor-index">[4]</div><div class="vetor-value">4</div></div>
+                <div class="vetor-slot" data-i="5"><div class="vetor-index">[5]</div><div class="vetor-value">5</div></div>
+            </div>
+        </div>
+
+        <div class="cmp-lane">
+            <div class="cmp-lane-head">
+                <span class="cmp-lane-title">ListaLigada — lista.get(i)</span>
+                <div class="cmp-metrics">
+                    <span class="cmp-metric" id="cmpLLeituras">leituras: <b>0</b></span>
+                    <span class="cmp-metric saltos" id="cmpLSaltos">saltos: <b>0</b></span>
+                </div>
+            </div>
+            <div class="ll-area" id="cmpList">
+                <div class="ll-node"><div class="ll-node-val">0</div><div class="ll-node-next"><span class="ll-link">●</span></div></div>
+                <div class="ll-arrow">→</div>
+                <div class="ll-node"><div class="ll-node-val">1</div><div class="ll-node-next"><span class="ll-link">●</span></div></div>
+                <div class="ll-arrow">→</div>
+                <div class="ll-node"><div class="ll-node-val">2</div><div class="ll-node-next"><span class="ll-link">●</span></div></div>
+                <div class="ll-arrow">→</div>
+                <div class="ll-node"><div class="ll-node-val">3</div><div class="ll-node-next"><span class="ll-link">●</span></div></div>
+                <div class="ll-arrow">→</div>
+                <div class="ll-node"><div class="ll-node-val">4</div><div class="ll-node-next"><span class="ll-link">●</span></div></div>
+                <div class="ll-arrow">→</div>
+                <div class="ll-node"><div class="ll-node-val">5</div><div class="ll-node-next"><span class="ll-null">null</span></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="vetor-compare" id="cmpCompare"></div>
+
+    <div class="vetor-output">
+        <div class="vetor-output-title">System.out:</div>
+        <div class="vetor-output-content" id="cmpOutput"></div>
+    </div>
+</div>
+
+<p class="cmp-caption">Demonstração com 6 elementos pra caber na tela. O código real usa <strong>10000</strong> — onde os saltos da lista passam de 49 milhões.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O experimento — adicionar e ler 10000 elementos</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A classe <code>Comparacao</code> coloca as duas estruturas no mesmo banco de provas. Cria um <code>ArrayList</code> do Java e a <code>ListaLigada</code> que a gente escreveu, e cronometra com <code>System.currentTimeMillis()</code> antes e depois de cada operação:</p>
+<pre><code class="language-java">ListaLigada&lt;Integer&gt; lista = new ListaLigada&lt;Integer&gt;();
+ArrayList&lt;Integer&gt; vetor = new ArrayList&lt;Integer&gt;();
+
+int limite = 10000;
+long tempoInicial = System.currentTimeMillis();
+long tempoFinal;
+for(int i=0; i &lt; limite; i++){
+    vetor.add(i);          // adiciona no vetor
+}
+tempoFinal = System.currentTimeMillis();
+System.out.println("Adicionou "+limite+" elementos no vetor");
+System.out.println(tempoFinal - tempoInicial);</code></pre>
+            <p>São <strong>4 medições</strong>: adicionar no vetor, adicionar na lista, ler o vetor inteiro, ler a lista inteira. <code>tempoFinal - tempoInicial</code> dá os milissegundos gastos em cada bloco. O resultado é o que separa as duas estruturas.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Adicionar — empate técnico (os dois são O(1))</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Inserir no fim é barato nas duas. A <code>ListaLigada</code> guarda um ponteiro <code>ultimo</code>, então <code>adicionar()</code> é só "linka e move" — tempo constante, sem percorrer nada:</p>
+<pre><code class="language-java">this.ultimo.setProximo(novoElemento);
+this.ultimo = novoElemento;
+this.tamanho++;</code></pre>
+            <p>O <code>ArrayList</code> também adiciona no fim em tempo constante <strong>amortizado</strong>: na maioria das vezes só escreve na próxima posição livre. De vez em quando enche e precisa dobrar o array interno (copiar tudo pra um maior), mas isso é raro o bastante pra diluir. Conclusão: na fase de <strong>escrita</strong>, os tempos ficam parecidos. O empate é real.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Ler — o abismo: <code>lista.get(i)</code> caminha toda vez</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Aqui as estruturas se separam. <code>vetor.get(i)</code> calcula o endereço direto (início + i) e pega o valor: <strong>1 operação, O(1)</strong>, não importa o tamanho. Já o <code>get(i)</code> da lista <strong>recomeça do primeiro nó</strong> e dá <code>i</code> saltos pelo ponteiro <code>proximo</code>:</p>
+<pre><code class="language-java">public Elemento get(int posicao){
+    Elemento atual = this.primeiro;
+    for(int i=0; i &lt; posicao; i++){
+        if (atual.getProximo() != null){
+            atual = atual.getProximo();
+        }
+    }
+    return atual;
+}</code></pre>
+            <p><code>get(0)</code> não dá salto, <code>get(1)</code> dá 1, <code>get(5000)</code> dá 5000. Quando o laço da <code>Comparacao</code> lê <strong>todas</strong> as posições por índice, a conta de saltos é <code>0 + 1 + 2 + ... + 9999</code>, que dá <strong>≈ 50 milhões</strong> de hops. Isso é o famoso <strong>O(n²)</strong>: dobrou o número de elementos, quadruplicou o trabalho.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Por que — memória contígua vs. nós espalhados</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>A diferença não é "código mais esperto", é <strong>onde os dados moram na memória</strong>:</p>
+            <ul>
+                <li><strong>Array</strong> — as posições são <strong>contíguas</strong>. A posição <code>i</code> está em <code>endereço_base + i × tamanho</code>. O computador calcula isso numa conta e pula direto. Por isso é O(1).</li>
+                <li><strong>Lista ligada</strong> — cada nó foi alocado <strong>separadamente</strong>, em endereços quaisquer. A única forma de achar a posição <code>i</code> é seguir a corrente de ponteiros do começo. Não tem atalho. Por isso é O(n).</li>
+            </ul>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Operação</th><th>ArrayList (vetor)</th><th>ListaLigada</th></tr>
+                    <tr><td>Adicionar no fim</td><td>O(1) amortizado</td><td>O(1) — ponteiro <code>ultimo</code></td></tr>
+                    <tr><td>Ler por índice <code>get(i)</code></td><td>O(1) — cálculo direto</td><td>O(n) — caminha do início</td></tr>
+                    <tr><td>Ler tudo por índice</td><td>O(n)</td><td>O(n²) — o gargalo</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">A lição prática — qual usar, e como ler a lista certo</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Nenhuma estrutura "ganha" sempre — cada uma otimiza um uso:</p>
+            <ul>
+                <li><strong>Precisa ler por índice toda hora</strong> (acesso aleatório, posições conhecidas) → <code>ArrayList</code>.</li>
+                <li><strong>Só insere/remove nas pontas e percorre em ordem</strong> → lista ligada (<code>LinkedList</code> de fábrica) brilha.</li>
+            </ul>
+            <p>E tem uma pegadinha de uso: o que mata a lista não é <em>ler</em>, é ler <strong>por índice num laço</strong>. Se você percorre seguindo os próprios ponteiros (com <code>for-each</code> / iterator), cada passo é 1 salto só — a leitura inteira volta a ser O(n):</p>
+<pre><code class="language-java">// ❌ O(n²) — cada get recomeça do início
+for (int i = 0; i &lt; lista.getTamanho(); i++) {
+    lista.get(i);
+}
+
+// ✅ O(n) — segue o ponteiro de onde parou
+for (Integer valor : lista) {
+    // ...
+}</code></pre>
+            <p>O experimento da <code>Comparacao</code> usa de propósito o jeito errado pra deixar o abismo visível. Na vida real, é o índice que escolhe a estrutura.</p>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// Event delegation no document — sobrevive ao rewrite de innerHTML do layout.js.
+(function () {
+    const N = 6;
+    let generator = null;
+    let currentStep = 0;
+    let autoplaying = false;
+    let pauseRequested = false;
+    let vLeituras = 0, lLeituras = 0, lSaltos = 0;
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+
+    const $ = () => ({
+        debug: document.getElementById('cmpDebug'),
+        slots: document.querySelectorAll('#cmpSlots .vetor-slot'),
+        list: document.getElementById('cmpList'),
+        playBtn: document.getElementById('cmpPlay'),
+        prevBtn: document.getElementById('cmpPrev'),
+        nextBtn: document.getElementById('cmpNext'),
+        resetBtn: document.getElementById('cmpReset'),
+        compare: document.getElementById('cmpCompare'),
+        out: document.getElementById('cmpOutput'),
+        argGet: document.getElementById('cmpArgGet'),
+        vLeit: document.getElementById('cmpVLeituras'),
+        lLeit: document.getElementById('cmpLLeituras'),
+        lSalt: document.getElementById('cmpLSaltos')
+    });
+
+    function setActive(r, lineId) {
+        r.debug.querySelectorAll('.dbg-line.active').forEach(el => {
+            el.classList.remove('active');
+            el.classList.add('done');
+        });
+        if (lineId) {
+            const el = r.debug.querySelector(`[data-step="${lineId}"]`);
+            if (el) {
+                el.classList.remove('done');
+                el.classList.add('active');
+            }
+        }
+    }
+
+    function showCode(r, name, arg) {
+        r.debug.querySelectorAll('.dbg-code').forEach(el => {
+            el.classList.toggle('hidden', el.dataset.code !== name);
+        });
+        const visible = r.debug.querySelector(`.dbg-code[data-code="${name}"]`);
+        if (visible) {
+            visible.querySelectorAll('.dbg-line').forEach(el => el.classList.remove('active', 'done'));
+        }
+        if (name === 'get' && arg !== undefined && r.argGet) r.argGet.textContent = arg;
+    }
+
+    function setMetric(el, label, value) {
+        el.innerHTML = label + ': <b>' + value + '</b>';
+        el.classList.add('pulse');
+        setTimeout(() => el.classList.remove('pulse'), 250);
+    }
+
+    function bumpVetor(r) {
+        vLeituras++;
+        setMetric(r.vLeit, 'leituras', vLeituras);
+    }
+
+    function bumpListaLeitura(r) {
+        lLeituras++;
+        setMetric(r.lLeit, 'leituras', lLeituras);
+    }
+
+    function bumpListaSalto(r) {
+        lSaltos++;
+        setMetric(r.lSalt, 'saltos', lSaltos);
+        if (lSaltos > 0) r.lSalt.classList.add('hot');
+    }
+
+    function setCompare(r, html) {
+        r.compare.innerHTML = html;
+        r.compare.classList.add('visible');
+    }
+
+    function addOutput(r, text, kind) {
+        const line = document.createElement('div');
+        line.className = 'vetor-output-line' + (kind ? ' ' + kind : '');
+        line.textContent = text;
+        r.out.appendChild(line);
+        r.out.scrollTop = r.out.scrollHeight;
+    }
+
+    function setAtual(r, index) {
+        const nodes = r.list.querySelectorAll('.ll-node');
+        nodes.forEach(n => n.classList.remove('atual'));
+        if (nodes[index]) nodes[index].classList.add('atual');
+    }
+
+    function markMatch(r, index) {
+        const nodes = r.list.querySelectorAll('.ll-node');
+        nodes.forEach(n => n.classList.remove('atual'));
+        if (nodes[index]) nodes[index].classList.add('match');
+    }
+
+    function clearListHighlights(r) {
+        r.list.querySelectorAll('.ll-node').forEach(n => n.classList.remove('atual', 'match'));
+    }
+
+    function reset() {
+        const r = $();
+        if (!r.slots.length) return;
+        vLeituras = 0; lLeituras = 0; lSaltos = 0;
+        r.slots.forEach(s => s.classList.remove('reading'));
+        clearListHighlights(r);
+        r.out.innerHTML = '';
+        r.compare.classList.remove('visible');
+        r.compare.innerHTML = '';
+        r.vLeit.innerHTML = 'leituras: <b>0</b>';
+        r.lLeit.innerHTML = 'leituras: <b>0</b>';
+        r.lSalt.innerHTML = 'saltos: <b>0</b>';
+        r.lSalt.classList.remove('hot');
+        if (r.argGet) r.argGet.textContent = '?';
+        r.debug.querySelectorAll('.dbg-line').forEach(el => el.classList.remove('active', 'done'));
+        r.debug.querySelectorAll('.dbg-code').forEach(el => el.classList.toggle('hidden', el.dataset.code !== 'comparacao'));
+    }
+
+    async function* makeSteps(r) {
+        // ─── Fase 1: leitura do vetor (acesso direto, 0 saltos) ───
+        showCode(r, 'comparacao');
+        setActive(r, 'C1');
+        yield 350;
+        setActive(r, 'C2');
+        yield 450;
+
+        for (let i = 0; i < N; i++) {
+            setActive(r, 'C2');
+            yield 180;
+            setActive(r, 'C3');
+            r.slots[i].classList.add('reading');
+            bumpVetor(r);
+            yield 320;
+            r.slots[i].classList.remove('reading');
+        }
+
+        setActive(r, 'C2');
+        yield 180;
+        setActive(r, 'C5');
+        yield 250;
+        setActive(r, 'C6');
+        addOutput(r, 'Tempo de leitura do vetor', 'label');
+        yield 450;
+        setActive(r, 'C7');
+        addOutput(r, '0');
+        yield 600;
+
+        // ─── Fase 2: leitura da lista (caminha do início) ───
+        showCode(r, 'comparacao');
+        setActive(r, 'C8');
+        yield 350;
+        setActive(r, 'C9');
+        yield 450;
+
+        for (let i = 0; i < N; i++) {
+            setActive(r, 'C9');
+            yield 180;
+            setActive(r, 'C10');
+            yield 280;
+
+            // entra em ListaLigada.get(i)
+            showCode(r, 'get', i);
+            setActive(r, 'G1');
+            yield 200;
+            setActive(r, 'G2');
+            setAtual(r, 0);
+            yield 380;
+            setActive(r, 'G3');
+            yield 260;
+
+            for (let j = 0; j < i; j++) {
+                setActive(r, 'G4');
+                yield 180;
+                setActive(r, 'G5');
+                setAtual(r, j + 1);
+                bumpListaSalto(r);
+                yield 340;
+                setActive(r, 'G3');
+                yield 160;
+            }
+
+            setActive(r, 'G8');
+            markMatch(r, i);
+            yield 360;
+
+            // volta pro laço da Comparacao
+            showCode(r, 'comparacao');
+            setActive(r, 'C10');
+            bumpListaLeitura(r);
+            yield 320;
+            clearListHighlights(r);
+        }
+
+        setActive(r, 'C9');
+        yield 180;
+        setActive(r, 'C12');
+        yield 250;
+        setActive(r, 'C13');
+        addOutput(r, 'Tempo de leitura da lista', 'label');
+        yield 450;
+        setActive(r, 'C14');
+        addOutput(r, '0');
+        yield 500;
+
+        // ─── Veredito ───
+        setActive(r, null);
+        setCompare(r,
+            'Mesmas <b>6 leituras</b> nas duas &nbsp;·&nbsp; vetor: <span class="ok">0 saltos</span> &nbsp;·&nbsp; lista: <span class="no">15 saltos</span> ' +
+            '<br>com 10000 elementos: vetor 0 &nbsp;·&nbsp; lista <span class="no">≈ 50 milhões</span> de saltos (O(n²)).'
+        );
+        yield 600;
+    }
+
+    async function rebuildToStep(n) {
+        reset();
+        const r = $();
+        const g = makeSteps(r);
+        for (let i = 0; i < n; i++) {
+            const res = await g.next();
+            if (res.done) { generator = null; return; }
+        }
+        generator = g;
+    }
+
+    async function stepOnce() {
+        if (!generator) {
+            await rebuildToStep(currentStep);
+            if (!generator) return { done: true, ms: 0 };
+        }
+        const res = await generator.next();
+        if (res.done) { generator = null; return { done: true, ms: 0 }; }
+        currentStep++;
+        return { done: false, ms: (typeof res.value === 'number') ? res.value : 400 };
+    }
+
+    function updateButtons() {
+        const r = $();
+        if (!r.playBtn) return;
+        if (autoplaying) {
+            r.playBtn.disabled = false;
+            r.playBtn.innerHTML = '⏸ Pausar';
+            r.playBtn.style.background = '#f59e0b';
+            if (r.prevBtn) r.prevBtn.disabled = true;
+            if (r.nextBtn) r.nextBtn.disabled = true;
+            if (r.resetBtn) r.resetBtn.disabled = true;
+        } else {
+            r.playBtn.disabled = false;
+            r.playBtn.innerHTML = '▶ Seguir';
+            r.playBtn.style.background = '';
+            if (r.prevBtn) r.prevBtn.disabled = (currentStep === 0);
+            if (r.nextBtn) r.nextBtn.disabled = false;
+            if (r.resetBtn) r.resetBtn.disabled = false;
+        }
+    }
+
+    async function onSeguir() {
+        if (autoplaying) { pauseRequested = true; return; }
+        autoplaying = true;
+        pauseRequested = false;
+        updateButtons();
+        while (!pauseRequested) {
+            const res = await stepOnce();
+            if (res.done) break;
+            const t0 = Date.now();
+            while (Date.now() - t0 < res.ms && !pauseRequested) {
+                await wait(50);
+            }
+        }
+        autoplaying = false;
+        pauseRequested = false;
+        updateButtons();
+    }
+
+    async function onProximo() {
+        if (autoplaying) return;
+        await stepOnce();
+        updateButtons();
+    }
+
+    async function onAnterior() {
+        if (autoplaying || currentStep === 0) return;
+        currentStep--;
+        await rebuildToStep(currentStep);
+        updateButtons();
+    }
+
+    function onReset() {
+        if (autoplaying) return;
+        currentStep = 0;
+        generator = null;
+        reset();
+        updateButtons();
+    }
+
+    document.addEventListener('click', e => {
+        const t = e.target.closest('button');
+        if (!t) return;
+        if (t.id === 'cmpPlay') onSeguir();
+        else if (t.id === 'cmpPrev') onAnterior();
+        else if (t.id === 'cmpNext') onProximo();
+        else if (t.id === 'cmpReset') onReset();
+    });
+})();
+</script>
+
+</body>
+</html>

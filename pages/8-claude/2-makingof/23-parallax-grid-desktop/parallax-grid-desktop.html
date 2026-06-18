@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parallax e Grid no Desktop — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Parallax e Grid no Desktop</h1>
+
+<div class="audio-player" data-src="audio/parallax-grid-desktop.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>O site do Kaco estava bonito no celular e quebrado no desktop. Dois consertos nesta sessão: os grids de Personagens e Emoções, que estouravam pra largura total da tela (cards gigantes em monitor grande), e uma faixa parallax nova entre as duas seções, com o personagem de fundo, texto por cima e o fundo seguindo de leve o scroll. A faixa passou por três versões: <code>background-attachment: fixed</code> (100% travada), fixed com texto e overlay, e a final, uma camada de imagem com sangria movida por JavaScript, que funciona inclusive no iOS.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Desktop quebrado, mobile intocável">O que a gente queria</h2>
+<p>A versão mobile estava aprovada, então a regra era mexer só no desktop. Problema 1: num monitor de 1920px, as seções de Personagens e Emoções ocupavam 100% da largura, com a foto num canto do card e o texto lá longe no outro. Problema 2 (que virou pedido em três etapas): uma faixa com a imagem do Kaco entre as duas seções, depois "mais alta com um texto sobre o personagem", e por fim "é possível ele seguir levemente o movimento da página?". Essa última frase matou a primeira implementação e forçou a versão final.</p>
+
+<h2 id="conceitos" data-toc-title="Os conceitos" data-sub="Full-bleed, min-width, fixed, sangria + translateY">Os conceitos</h2>
+<p><strong>O truque do full-bleed.</strong> Dentro de um container com <code>max-width</code>, dá pra estourar um elemento pra tela inteira com <code>width: 100vw</code> + <code>margin-left: calc(50% - 50vw)</code>. <code>100vw</code> é a largura da janela; o <code>calc</code> puxa o elemento pra esquerda exatamente o que falta pra ele começar na borda. Era proposital pro mobile; no desktop virou o problema.</p>
+<p><strong>min-width vs max-width.</strong> <code>@media (max-width: 600px)</code> é regra "até 600px" (celular); <code>@media (min-width: 900px)</code> é "de 900px pra cima" (desktop). Corrigir o desktop dentro de um bloco <code>min-width</code> garante, por construção, que o mobile não muda nada.</p>
+<p><strong>background-attachment: fixed.</strong> Prende o fundo na janela em vez do elemento. Dá profundidade de graça, mas é tudo ou nada: o fundo fica 100% parado. E o iOS ignora a propriedade.</p>
+<p><strong>Parallax com sangria.</strong> Uma camada de imagem maior que a moldura, com sobra em cima e embaixo (como a sangria de uma gráfica), que o JavaScript empurra com <code>transform: translateY</code> conforme a página rola. O fundo anda mais devagar que a página, como cenário de teatro.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="Grid contido, faixa v1, texto, parallax final">Como montamos</h2>
+
+<h3>1. O grid contido</h3>
+<p>O conserto é um bloco novo, sem tocar no CSS original:</p>
+<pre><code class="language-css">@media (min-width: 900px) {
+    .char-grid {
+        width: 100%;
+        max-width: 1100px;
+        margin-left: auto;
+        margin-right: auto;
+        grid-template-columns: repeat(4, 1fr);
+    }
+}</code></pre>
+<p><code>width: 100%</code> derruba o <code>100vw</code>; <code>max-width: 1100px</code> é o teto; as margens <code>auto</code> centralizam (e anulam o <code>calc</code> do estouro); <code>repeat(4, 1fr)</code> abre 4 colunas pros personagens. O <code>.emocao-grid</code> ganhou um bloco idêntico com <code>repeat(3, 1fr)</code>, porque os cards de emoção têm mais texto.</p>
+
+<h3>2. A faixa parallax, versão 1</h3>
+<pre><code class="language-css">.parallax-strip {
+    height: 380px;
+    background-image: url('img/personagens/KACO.jpeg');
+    background-size: cover;
+    background-position: center 30%;
+    background-attachment: fixed;
+}</code></pre>
+<p><code>cover</code> estica a imagem até cobrir a área; <code>center 30%</code> escolhe a faixa visível; <code>fixed</code> prende o fundo na janela. Funcionou, com as duas limitações já contadas: travado demais e sem iOS.</p>
+
+<h3>3. O texto por cima</h3>
+<p>A faixa virou um <code>section</code> com um <code>.parallax-content</code> dentro (kicker "O PROTAGONISTA", título "Kaco" e um parágrafo). Três peças: um <code>::before</code> com <code>inset: 0</code> e <code>background: rgba(15,39,64,0.45)</code> (overlay azul escuro pro texto branco ter contraste), <code>z-index</code> em camadas (imagem 0, overlay 1, texto 2) e flex pra centralizar. A altura subiu de 380px pra 560px e fechou em 720px, a pedido.</p>
+
+<h3>4. O parallax de verdade</h3>
+<p>O <code>fixed</code> saiu. Entrou um <code>div.parallax-bg</code> vazio com sangria:</p>
+<pre><code class="language-css">.parallax-bg {
+    position: absolute;
+    left: 0; right: 0;
+    top: -220px; bottom: -220px;   /* sangria de 220px */
+    z-index: 0;
+    background-image: url('img/personagens/KACO.jpeg');
+    background-size: cover;
+    background-position: center;
+    will-change: transform;
+}</code></pre>
+<p><code>top</code> e <code>bottom</code> negativos fazem a camada vazar 220px pra cada lado; o <code>overflow: hidden</code> da faixa esconde a sobra. O movimento é do <code>script.js</code>:</p>
+<pre><code class="language-javascript">const maxShift = 200;   // sempre &lt; sangria (220)
+let ticking = false;
+
+function update() {
+    ticking = false;
+    const rect = strip.getBoundingClientRect();
+    if (rect.bottom &lt; 0 || rect.top &gt; window.innerHeight) return;
+    const progress = (rect.top + rect.height / 2 - window.innerHeight / 2)
+                   / (window.innerHeight / 2 + rect.height / 2);
+    const clamped = Math.max(-1, Math.min(1, progress));
+    bg.style.transform = `translateY(${(-clamped * maxShift).toFixed(1)}px)`;
+}
+
+function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(update);
+}
+
+window.addEventListener('scroll', onScroll, { passive: true });</code></pre>
+<p>Peça por peça: <code>getBoundingClientRect()</code> mede a posição da faixa em relação à janela naquele instante; o early-return pula o cálculo quando a faixa está fora da tela; <code>progress</code> é a distância entre o centro da faixa e o centro da janela, normalizada (+1 entrando por baixo, 0 no centro, -1 saindo por cima); <code>Math.max/Math.min</code> é o clamp; o sinal negativo no <code>translateY</code> faz o fundo andar mais devagar que a página. O <code>ticking</code> + <code>requestAnimationFrame</code> é o throttle (um frame agendado por vez, mesmo com o scroll disparando dezenas de eventos por segundo) e <code>passive: true</code> avisa que o listener não bloqueia a rolagem. Antes de tudo, <code>matchMedia('(prefers-reduced-motion: reduce)')</code> desliga o efeito pra quem pediu menos animação no sistema.</p>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="Fixed aposentado, sangria × movimento, o teste headless">Decisões e becos</h2>
+<p><strong>O fixed morreu por um pedido de uso real.</strong> O Flávio rolou a página e estranhou o fundo 100% parado. Com <code>background-attachment: fixed</code> não existe "seguir levemente": é travado ou nada. Foi isso que forçou a camada + JS. De brinde, a versão final funciona no iOS, onde o <code>fixed</code> nem existe.</p>
+<p><strong>Sangria e movimento andam juntos.</strong> Quando veio o "aumenta o movimento", o <code>maxShift</code> subiu de 110 pra 200 e a sangria teve que acompanhar, de 120 pra 220. Se o deslocamento passa da sobra, aparece a borda da imagem. Regra prática: sangria = maxShift + folga.</p>
+<p><strong>O beco do teste.</strong> Pra validar sem abrir o navegador na mão, geramos screenshots com o Edge headless. Só que o hero usa altura em <code>vh</code> (janela alta esticava tudo) e o headless não rola até âncora (<code>#personagens</code> devolvia print em branco). A saída foi um HTML temporário só com as seções de baixo, apontando pro <code>style.css</code> real.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>O desktop quebrado era um truque de full-bleed (<code>100vw</code> + <code>margin-left: calc(50% - 50vw)</code>) ótimo no celular e ruim no monitor; a correção foi um bloco <code>min-width: 900px</code> com <code>max-width: 1100px</code> e mais colunas, sem tocar no original. A faixa parallax nasceu com <code>background-attachment: fixed</code>, ganhou texto com overlay e camadas de <code>z-index</code>, e terminou como uma camada com sangria de 220px empurrada por <code>translateY</code> no scroll: <code>getBoundingClientRect</code> pra medir, clamp pra travar, <code>requestAnimationFrame</code> pra não pesar e <code>prefers-reduced-motion</code> respeitado.</p>
+
+</body>
+</html>

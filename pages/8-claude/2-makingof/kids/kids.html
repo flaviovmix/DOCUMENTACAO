@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus · Financeiro — Making-of</title>
+    <title>Kids — Making-of</title>
     <script src="../../../../js/layout.js"></script>
 </head>
 <body>
 
     <div class="home-header">
-        <h1 class="home-title">NEXUS · FINANCEIRO</h1>
-        <p class="home-sub">O módulo de finanças: classificar transações, gráficos que seguem o filtro</p>
+        <h1 class="home-title">KIDS</h1>
+        <p class="home-sub">O site do Kaco: HTML, CSS e JS na unha, do hero ao parallax</p>
     </div>
 
     <div class="home-grid">
@@ -21,14 +21,14 @@
             </div>
             <div class="card-info">
                 <div class="card-resumo">
-                    <p>Como ajeitamos a navegação do modal de classificar transações: o botão "Anterior" sempre apagado e a diferença entre a lista filtrada e a ordem do arquivo.</p>
+                    <p>O desktop do site do Kaco consertado: os grids de Personagens e Emoções que estouravam pra tela inteira (o truque do 100vw) contidos com media query, e a faixa parallax do personagem em três versões, do background-attachment fixed travado até a camada com sangria movida por JavaScript no scroll.</p>
                 </div>
             </div>
             <div class="card-img">
-                <img src="../img/reclassificar.png" alt="Voltar pra Reclassificar">
+                <img src="../img/parallax-grid-desktop.png" alt="Parallax e Grid no Desktop">
             </div>
             <div class="card-bar">
-                <a href="../5-reclassificar/reclassificar.html" class="card-tag" style="--tag-clr:#ca8a04;">VOLTAR PRA RECLASSIFICAR</a>
+                <a href="../23-parallax-grid-desktop/parallax-grid-desktop.html" class="card-tag" style="--tag-clr:#0891b2;">PARALLAX E GRID NO DESKTOP</a>
             </div>
         </div>
 
@@ -38,14 +38,14 @@
             </div>
             <div class="card-info">
                 <div class="card-resumo">
-                    <p>O gráfico de saldo do Financeiro ignorava o seletor de mês. A gente ligou os dois: "Últimos 12 meses" mostra a janela até hoje, e um mês específico mostra 5 meses centrados nele. Inclui generalizar o backend pra aceitar um intervalo e o beco do fallback silencioso (o gráfico voltava com 6 meses porque o servidor não tinha sido reiniciado).</p>
+                    <p>Três pedaços do site do Kaco lidos peça por peça: o componente de menu (kids-toc.js) que se injeta sozinho com uma fonte única de itens e links que se adaptam à página; o texto da seção Sobre contornando o desenho com shape-outside (polígono côncavo + border-box, depois que o alpha do PNG não deu conta); e o player de áudio com a tag &lt;audio&gt; nativa, escutando os eventos dela, em versão completa e reduzida.</p>
                 </div>
             </div>
             <div class="card-img">
-                <img src="../img/grafico-filtro.png" alt="Gráfico que Segue o Filtro">
+                <img src="../img/componentes-site-kaco.png" alt="Componentes do site Kaco">
             </div>
             <div class="card-bar">
-                <a href="../10-grafico-filtro/grafico-filtro.html" class="card-tag" style="--tag-clr:#0d9488;">GRÁFICO QUE SEGUE O FILTRO</a>
+                <a href="../27-componentes-site-kaco/componentes-site-kaco.html" class="card-tag" style="--tag-clr:#7c3aed;">COMPONENTES DO SITE KACO</a>
             </div>
         </div>
 
@@ -55,14 +55,14 @@
             </div>
             <div class="card-info">
                 <div class="card-resumo">
-                    <p>O Flávio não conseguia ter duas contas correntes chamadas "FLÁVIO", uma no Inter e outra no Itaú: o sistema exigia nome distinto. A gente mudou a chave de duplicata de nome+tipo pra nome+tipo+banco. Inclui a migration V83 (com NULLS NOT DISTINCT pra conta sem banco continuar bloqueada) e o repositório que passou de Optional pra lista.</p>
+                    <p>A faxina anti-duplicação do site do Kaco, lida peça por peça. A mesma cor escrita mais de cem vezes e a sombra repetida viram tokens CSS num :root único (com as categorias apontando pros acentos e a sombra como trio RGB). A lista das histórias, copiada em três páginas, vira fonte única no kids-stories.js. E o menu e o hero, que estavam à mão, viram componentes que se injetam sozinhos, com o hero exposto por uma função pra outro componente reusar. Fecha com a regra: procurar antes de copiar, extrair antes de clonar.</p>
                 </div>
             </div>
             <div class="card-img">
-                <img src="../img/nome-igual-banco-diferente.png" alt="Nome Igual, Banco Diferente">
+                <img src="../img/o-kaco-parou-de-se-repetir.png" alt="O Kaco Parou de Se Repetir">
             </div>
             <div class="card-bar">
-                <a href="../28-nome-igual-banco-diferente/nome-igual-banco-diferente.html" class="card-tag" style="--tag-clr:#7c3aed;">NOME IGUAL, BANCO DIFERENTE</a>
+                <a href="../28-o-kaco-parou-de-se-repetir/o-kaco-parou-de-se-repetir.html" class="card-tag" style="--tag-clr:#ea580c;">O KACO PAROU DE SE REPETIR</a>
             </div>
         </div>
 
@@ -72,14 +72,14 @@
             </div>
             <div class="card-info">
                 <div class="card-resumo">
-                    <p>O intervalo do filtro era de mês a mês; o Flávio queria escolher por dia. A descoberta foi que o miolo já somava por intervalo de dias (LocalDate + data BETWEEN); só a borda prendia no mês. A gente trocou os dropdowns de mês por input de data, o YearMonth.parse por LocalDate.parse e o overload do service.</p>
+                    <p>A navegação por personagem do site do Kaco, peça por peça: o vínculo história-personagem na fonte única (campo personagens em cada história + o mapa KIDS_PERSONAGENS), o filtro por condição na home com a correção do carrossel pra deslizar pela posição entre os visíveis, a página personagens.html reusando o componente de histórias num segundo modo (filtra por lista, e os botões viram miniaturas) e a ligação por URL que abre a página já filtrada num clique automático.</p>
                 </div>
             </div>
             <div class="card-img">
-                <img src="../img/do-mes-pro-dia.png" alt="Do Mês pro Dia">
+                <img src="../img/navegacao-por-personagem.png" alt="Navegação por Personagem">
             </div>
             <div class="card-bar">
-                <a href="../29-do-mes-pro-dia/do-mes-pro-dia.html" class="card-tag" style="--tag-clr:#2563eb;">DO MÊS PRO DIA</a>
+                <a href="../30-navegacao-por-personagem/navegacao-por-personagem.html" class="card-tag" style="--tag-clr:#16a34a;">NAVEGAÇÃO POR PERSONAGEM</a>
             </div>
         </div>
 

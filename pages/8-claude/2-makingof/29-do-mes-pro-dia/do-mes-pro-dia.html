@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Do Mês pro Dia — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Do Mês pro Dia</h1>
+
+<div class="audio-player" data-src="audio/do-mes-pro-dia.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>O seletor de período do dashboard do Financeiro já fazia <strong>"Últimos 12 meses"</strong>, um mês da lista e um <strong>intervalo</strong>. Só que o intervalo era de mês a mês: você escolhia "de Fevereiro até Junho" e pegava meses inteiros. O Flávio queria escolher por <strong>dia</strong> (tipo "de 13/11/2025 até 22/02/2026"). Este making-of é só isso: trocar o intervalo de mês pra dia, no front e no back. Arquivos reais: <code>FinanceMesSeletor.svelte</code>, <code>types.ts</code>, <code>FinanceDashboardController.java</code> e <code>FinanceDashboardService.java</code>.</p>
+
+<h2 id="o-que-mudou" data-toc-title="O que mudou" data-sub="Intervalo de mês vira por dia">O que mudou</h2>
+<p>Antes, o painel "Intervalo" tinha dois dropdowns de mês e o filtro pegava meses inteiros. Agora ele tem dois seletores de data e o recorte é exato no dia. Nada de gráfico, nada de revisão: só o filtro.</p>
+
+<h2 id="a-descoberta" data-toc-title="A descoberta" data-sub="O miolo já era por dia">A descoberta que encolheu a tarefa</h2>
+<p>Antes de mexer, fomos ver o quão fundo o "mês" estava cravado. A descoberta foi o contrário do esperado: os cards (entradas, saídas, saldo, limite, categorias) <strong>já eram calculados por intervalo de dias</strong>. O método que faz a conta, o <code>buildDashboard</code>, já recebia duas datas <code>LocalDate</code> (data com dia, mês e ano, ao contrário do <code>YearMonth</code>, que só tem mês e ano), e a consulta usava <code>data BETWEEN inicio AND fim</code>, que inclui as duas pontas.</p>
+<p>O que prendia tudo no mês era só a <strong>borda</strong>: o front mandava o período como <code>YYYY-MM</code> (só ano e mês) e o controlador fazia <code>YearMonth.parse</code>. O plano ficou pequeno: front manda o dia (<code>YYYY-MM-DD</code>), controlador parseia como <code>LocalDate</code>. O resto já estava pronto.</p>
+
+<h2 id="o-front" data-toc-title="O front" data-sub="input date, dmyFor, $effect">O front, peça por peça</h2>
+<p><strong>O tipo.</strong> O <code>FinancePeriodo</code> é uma união: ou <code>{ mes }</code>, ou <code>{ de, ate }</code>. O <code>de</code>/<code>ate</code> antes guardava <code>YYYY-MM</code>; agora guarda <code>YYYY-MM-DD</code>. A forma do tipo não mudou (continua string); mudou o que a string carrega.</p>
+<p><strong>O seletor.</strong> Os dois dropdowns de mês (<code>StyledSelect</code>) viraram <code>&lt;input type="date"&gt;</code>, o calendário nativo do navegador, que já devolve <code>YYYY-MM-DD</code>. Com os dropdowns saíram a função <code>abbrFor</code> e a lista de meses abreviados que ela usava (código morto). Entrou a <code>dmyFor</code>, que monta o rótulo no formato brasileiro:</p>
+<pre><code class="language-typescript">// Intervalo agora é por dia: rótulo 'DD/MM/AAAA'.
+function dmyFor(value: string): string {
+    if (!value) return '';
+    const [y, m, d] = value.split('-');
+    return `${d}/${m}/${y}`;
+}</code></pre>
+<p><strong>Aplicar.</strong> A <code>aplicarIntervalo</code> compara as duas datas <strong>como texto</strong> e troca se vierem invertidas. Funciona sem converter pra data porque o formato <code>YYYY-MM-DD</code> já ordena certo na comparação de string (ano, depois mês, depois dia, tudo com zero à esquerda):</p>
+<pre><code class="language-typescript">function aplicarIntervalo() {
+    if (!intDe || !intAte) return;
+    // 'YYYY-MM-DD' compara lexicograficamente na ordem certa.
+    const [de, ate] = intDe <= intAte ? [intDe, intAte] : [intAte, intDe];
+    periodo = { de, ate };
+    open = false;
+}</code></pre>
+<p><strong>O re-sync.</strong> Os inputs guardam <code>intDe</code>/<code>intAte</code> num estado próprio. Se você aplica um intervalo, clica num mês e reabre o painel, os inputs mostrariam o intervalo velho. Um <code>$effect</code> resolve: toda vez que o painel abre, re-sincroniza com o período atual. Ele só lê <code>intervaloOpen</code> e <code>periodo</code> (não os próprios inputs), senão digitar uma data dispararia o reset e apagaria o que você acabou de escrever:</p>
+<pre><code class="language-typescript">$effect(() => {
+    if (intervaloOpen) {
+        intDe = 'de' in periodo ? periodo.de : '';
+        intAte = 'de' in periodo ? periodo.ate : '';
+    }
+});</code></pre>
+
+<h2 id="o-back" data-toc-title="O back" data-sub="LocalDate no lugar de YearMonth">O back, peça por peça</h2>
+<p><strong>O controlador.</strong> A mudança é quase boba: onde era <code>YearMonth.parse</code> virou <code>LocalDate.parse</code>. <code>YearMonth</code> só entende ano e mês; <code>LocalDate</code> entende o dia também. Como o front agora manda o dia, aceita numa boa (o <code>import</code> trocou junto):</p>
+<pre><code class="language-java">if (de != null &amp;&amp; !de.isBlank() &amp;&amp; ate != null &amp;&amp; !ate.isBlank()) {
+    return dashboardService.getDashboard(user, LocalDate.parse(de), LocalDate.parse(ate), contaId);
+}
+return dashboardService.getDashboard(user, mes, contaId);</code></pre>
+<p><strong>O service.</strong> O overload do intervalo recebia dois <code>YearMonth</code> e esticava o mês inteiro com <code>de.atDay(1)</code> / <code>ate.atEndOfMonth()</code>. Virou um overload de <code>LocalDate</code>: como já chega o dia exato, passa <code>de</code>/<code>ate</code> direto pro <code>buildDashboard</code> (que já somava por dia). Sumiu o <code>atDay</code>/<code>atEndOfMonth</code>; sobrou só o swap defensivo:</p>
+<pre><code class="language-java">@Transactional(readOnly = true)
+public FinanceDashboardResponse getDashboard(User user, LocalDate de, LocalDate ate, Long contaId) {
+    if (de.isAfter(ate)) { LocalDate tmp = de; de = ate; ate = tmp; }
+    return buildDashboard(user, de, ate, contaId, "");
+}</code></pre>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>O <code>FinancePeriodo</code> passou a carregar dia no <code>de</code>/<code>ate</code>; o seletor trocou os dropdowns de mês por <code>&lt;input type="date"&gt;</code> e ganhou a <code>dmyFor</code>; o controlador trocou <code>YearMonth.parse</code> por <code>LocalDate.parse</code>; e o service trocou o overload de <code>YearMonth</code> (que esticava o mês) por um de <code>LocalDate</code> (que usa o dia direto). A coisa pra levar: antes de achar que uma mudança vai ser grande, veja o quão fundo a suposição antiga está cravada. Aqui o miolo já trabalhava por dia; a tarefa era só parar de arredondar pra mês na borda.</p>
+
+</body>
+</html>

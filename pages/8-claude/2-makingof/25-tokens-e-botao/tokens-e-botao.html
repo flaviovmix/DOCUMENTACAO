@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tokens e Botão — Making-of (código)</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Tokens e Botão</h1>
+
+<div class="audio-player" data-src="audio/tokens-e-botao.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Episódio <strong>focado no código</strong>. Par do conceitual <a href="../24-tudo-num-lugar-so/tudo-num-lugar-so.html">Tudo num Lugar Só</a>: lá a faxina é contada por cima; aqui a gente lê o <code>app.css</code> e o <code>Button.svelte</code> linha por linha pra entender como o knob do botão laranja funciona por dentro.</p>
+
+<h2 id="o-que-faz" data-toc-title="O que esse código faz" data-sub="Dois arquivos">O que esse código faz</h2>
+<p>Dois arquivos. O <code>app.css</code> é onde moram os valores de estilo com um nome cada (a cor da marca, os cinzas, os números de empilhamento, os raios). O <code>Button.svelte</code> é o componente do botão, e a parte que importa é uma linha: a cor de fundo do primário não é um número escrito ali, é "me dá a cor da marca". Juntando os dois, você tem o knob: muda a cor num lugar, muda em todo botão.</p>
+
+<h2 id="conceito-minimo" data-toc-title="Conceito mínimo" data-sub="Custom property">O conceito mínimo: custom property</h2>
+<p>Só uma ideia pra o código fazer sentido. O CSS deixa você criar suas próprias variáveis, as <em>custom properties</em>. O nome <strong>sempre</strong> começa com dois traços (<code>--color-brand</code>). Você guarda um valor nela num lugar, e lê em qualquer outro com <code>var(--nome)</code>. Guarda num lugar, lê em mil. Agora o código.</p>
+
+<h2 id="app-css" data-toc-title="Lendo o app.css" data-sub="Só declara nomes">Lendo o código: app.css</h2>
+<p><strong>A abertura.</strong> <code>:root {</code> — o <code>:root</code> é um seletor especial que casa com a raiz do documento, o elemento mais de fora. Declarar as variáveis aqui faz elas valerem pra <strong>página inteira</strong>: todo elemento enxerga. É o lugar canônico de token global.</p>
+<pre><code class="language-css">:root {
+  --color-text: #1a1a1a;   /* nome : valor ; */
+  --gray-700: #374151;     /* maior numero = mais escuro */
+  --gray-50:  #fafafa;
+}</code></pre>
+<p><strong>Os grupos.</strong> Cada linha é <code>nome: valor;</code>. Os <strong>neutros</strong> (a escala de cinza): repare que o número menor é mais claro (<code>--gray-50</code> é quase branco, <code>--gray-700</code> é escuro). Os números (700, 500, 300) são só convenção de "quão escuro". A paleta não é nova; o que mudou foi <strong>dar nome</strong> aos hexes mais repetidos.</p>
+<pre><code class="language-css">--color-brand: #ff3e00;        /* o knob do botao primario */
+--color-brand-hover: #e03600;
+--color-danger: #dc2626;       /* cada cor tem par normal + hover */</code></pre>
+<p><strong>O z-index com nome.</strong> Antes era número solto (alguém escrevia <code>1000</code> e ninguém sabia por quê). Virou escala nomeada: <code>--z-modal: 1001</code>, <code>--z-modal-nested: 1100</code> (modal em cima de modal), <code>--z-toast: 2000</code>. Agora a ordem é óbvia ao ler.</p>
+<pre><code class="language-css">--z-modal: 1001;
+--z-modal-nested: 1100;
+--z-toast: 2000;</code></pre>
+<p><strong>O detalhe que confunde:</strong> esse arquivo <strong>não tem nenhuma regra de estilo de verdade</strong>, nenhum botão pintado. Ele só <strong>declara nomes</strong>. Quem usa os nomes é o resto do app. E pra os nomes existirem em todo lugar, o <code>app.css</code> é importado <strong>uma vez</strong> no <code>+layout.svelte</code> (o componente que embrulha todas as telas). Carregou ali, o <code>:root</code> vale pro app inteiro.</p>
+
+<h2 id="button" data-toc-title="Lendo o Button.svelte" data-sub="props, classe, var">Lendo o código: Button.svelte</h2>
+<p><strong>O import.</strong> <code>import type { Snippet } from 'svelte'</code> — o <code>import type</code> traz só o <em>tipo</em>, some quando compila. <code>Snippet</code> é o tipo do conteúdo que vai <strong>dentro</strong> do botão.</p>
+<p><strong>As props.</strong> <code>type Props = { ... }</code> lista o que o botão aceita. A <code>?</code> depois do nome quer dizer <strong>opcional</strong>. O <code>variant</code> é uma <em>union</em> (lista de textos fixos separados por <code>|</code>): só pode ser <code>primary</code>, <code>cancel</code>, <code>neutral</code>, <code>link</code> ou <code>danger</code> — o editor não deixa outro. O <code>children: Snippet</code> não tem <code>?</code>, então é obrigatório.</p>
+<pre><code class="language-typescript">variant?: 'primary' | 'cancel' | 'neutral' | 'link' | 'danger';
+form?: string;        // id do form, pra botao fora dele enviar
+children: Snippet;    // sem '?' = obrigatorio</code></pre>
+<p><strong>A entrada das props.</strong> <code>let { ... } = $props()</code> — o <code>$props</code> é um rune do Svelte 5, a porta de entrada das props. Os <code>=</code> dentro das chaves são os <strong>valores padrão</strong>: <code>variant = 'neutral'</code> quer dizer que, se ninguém passar, ele nasce neutral.</p>
+<pre><code class="language-svelte">let { variant = 'neutral', type = 'button', disabled = false,
+      form, onclick, children }: Props = $props();</code></pre>
+<p><strong>O HTML do botão.</strong> Três coisas: (1) <code>{type}</code> sozinho é atalho — quando o nome do atributo é igual ao da variável, escreve uma vez (vira <code>type={type}</code>); (2) <code>class="btn btn-{variant}"</code> monta a classe na hora: se <code>variant</code> for primary, vira <code>btn btn-primary</code>; (3) <code>onclick={(e) => onclick?.(e)}</code> — o <code>?.</code> é a chamada opcional: só chama se o onclick existir, senão não quebra. Dentro, <code>{@render children()}</code> desenha o conteúdo que veio de fora.</p>
+<pre><code class="language-svelte">&lt;button {type} {form} class="btn btn-{variant}" {disabled}
+        onclick={(e) =&gt; onclick?.(e)}&gt;
+    {@render children()}
+&lt;/button&gt;</code></pre>
+<p><strong>A linha que fecha tudo.</strong> No <code>&lt;style&gt;</code>, o <code>.btn</code> é o tronco comum (inline-flex, gap, padding, raio). E então:</p>
+<pre><code class="language-css">.btn-primary { background: var(--color-brand); color: #fff; font-weight: 600; }
+.btn-primary:hover:not(:disabled) { background: var(--color-brand-hover); }</code></pre>
+<p>A cor de fundo do primário <strong>não é um número</strong>, é o <code>var()</code> lendo o token <code>--color-brand</code> lá do <code>app.css</code>. O <code>:hover:not(:disabled)</code> quer dizer "no hover, <strong>mas</strong> só se não estiver desabilitado".</p>
+
+<h2 id="decisoes" data-toc-title="Decisões no código" data-sub="O que NÃO virou token">Decisões no código</h2>
+<ul>
+    <li><strong>O <code>#fff</code> ficou na mão.</strong> O branco do texto não virou token porque branco não muda com a marca; o que muda é o fundo. Token é pra valor que você quer <strong>girar de um lugar</strong>; o branco não é knob.</li>
+    <li><strong>O knob depende de uma disciplina:</strong> apontar pro <code>var</code>, nunca repetir o número. No momento que um botão escrevesse <code>#ff3e00</code> na mão, ele sairia de baixo do knob e mudar a marca o deixaria pra trás.</li>
+    <li><strong>O <code>:not(:disabled)</code> no hover</strong> evita um bug chato: sem ele, um botão desabilitado mudaria de cor no hover, dando impressão de que dá pra clicar.</li>
+</ul>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>O <code>app.css</code> só declara nomes dentro do <code>:root</code> (cores, cinzas, z-index nomeado, raios, sombras), e é carregado uma vez no <code>+layout</code>. O <code>Button.svelte</code> recebe props por <code>$props</code>, monta a classe na hora com <code>btn-{variant}</code>, e a linha-chave é <code>background: var(--color-brand)</code> no <code>.btn-primary</code>. Esse é o knob: o número do laranja mora num lugar só (o token) e todo primário aponta pra ele. A regra pra continuar funcionando: nunca repetir o número, sempre ler o <code>var</code>.</p>
+
+</body>
+</html>

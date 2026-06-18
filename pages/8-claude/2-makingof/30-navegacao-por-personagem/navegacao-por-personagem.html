@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navegação por Personagem — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Navegação por Personagem</h1>
+
+<div class="audio-player" data-src="audio/navegacao-por-personagem.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>O site do Kaco tem uma página de histórias (cada história é um livrinho de imagens) e uma seção de personagens na home, com a turma: Kaco, Mãe, Gato, Rato, Pato. A gente quis duas navegações novas. Na home, o pai filtra os personagens por condição (o site é pra criança com necessidade especial, então ele clica em "Autismo" ou "Paralisia" e vê quem representa o filho dele). E uma página pra filtrar as <strong>histórias por personagem</strong>: escolhe o Gato e vê só as histórias em que o Gato aparece. O problema é que nada disso existia no dado, a lista de histórias não sabia quem aparecia em cada uma. Então o primeiro passo foi criar esse vínculo.</p>
+
+<h2 id="vinculo" data-toc-title="Vínculo história-personagem" data-sub="kids-stories.js: campo personagens + mapa KIDS_PERSONAGENS">O vínculo história-personagem</h2>
+<p>O <code>kids-stories.js</code> é a fonte única: a lista das histórias e o mapa de categorias moram nele. A gente somou duas coisas. Em cada história, um campo <code>personagens</code>, que é a lista dos apelidos (os slugs) de quem aparece:</p>
+<pre><code class="language-javascript">{
+    id: 'o-passeio-feliz', t: 'O Passeio Feliz', cat: 'emocoes',
+    cenas: 9,
+    personagens: ['kaco', 'mae'],   // quem aparece na história
+    // ...
+}</code></pre>
+<p>E um mapa novo, <code>KIDS_PERSONAGENS</code>, que pra cada slug guarda o nome de exibição, o ícone e a cor:</p>
+<pre><code class="language-javascript">window.KIDS_PERSONAGENS = {
+    kaco: { nome: 'Kaco', icone: 'img/icone-kaco.png', cor: '#a9744f' },
+    mae:  { nome: 'Mãe',  icone: 'img/icone-mae.png',  cor: '#e0729e' },
+    // ...
+};</code></pre>
+<p>Esse mapa é a fonte dos botões de filtro da página de personagens, e o campo <code>personagens</code> das histórias aponta pros mesmos slugs. Com isso, o dado finalmente sabe quem está em cada história.</p>
+
+<h2 id="condicao" data-toc-title="Filtro por condição" data-sub="data-cond na home e o beco do carrossel">Filtro por condição na home</h2>
+<p>Na home, a seção de personagens é um carrossel: uma fileira de miniaturas em cima e um palco que desliza embaixo. O slide é por <code>margin-left</code> negativo, e ele usava a posição <strong>original</strong> do personagem na lista. Primeiro a gente colou a etiqueta: um <code>data-cond</code> em cada miniatura, e os botões "Todos / Autismo / Paralisia" em cima.</p>
+<p>Aí veio o beco. Esconder um personagem com <code>display:none</code> tira ele da fileira, e os que sobram encostam um no outro. Mas o slide ainda contava a posição antiga, então clicar num personagem visível deslizava pro lugar errado. A correção foi parar de usar a posição original e usar a posição <strong>entre os visíveis</strong>: a gente guarda numa lista <code>order</code> os índices de quem passou no filtro, e desliza pelo lugar dentro dela.</p>
+<pre><code class="language-javascript">const pos = order.indexOf(domIndex);   // posição ENTRE OS VISÍVEIS
+track.style.marginLeft = '-' + (pos * 100) + '%';</code></pre>
+<p>Quem faz a faxina é o <code>applyFilter</code>: percorre as miniaturas, compara o <code>data-cond</code> com o filtro clicado, liga ou desliga o display da miniatura e do painel (com um ajudante <code>show</code>), e monta o <code>order</code>. No fim, se ninguém bate, esconde o palco e mostra "Ainda não temos personagens nessa categoria"; se tem gente, seleciona o primeiro.</p>
+<pre><code class="language-javascript">function applyFilter(cond) {
+    order = [];
+    thumbs.forEach((t, i) => {
+        const match = cond === 'all' || (t.dataset.cond || 'autismo') === cond;
+        show(t, match);
+        show(panels[i], match);
+        if (match) order.push(i);
+    });
+    const tem = order.length > 0;
+    show(stage, tem);
+    show(vazio, !tem);
+    if (tem) select(order[0]);
+}</code></pre>
+
+<h2 id="reuso" data-toc-title="A página reusa o componente" data-sub="kids-historias.js com dois modos">A página reusa o componente</h2>
+<p>A página de histórias já usava o <code>kids-historias.js</code>, que monta o cabeçalho, os filtros e a grade de cards. A página nova precisava do mesmo desenho, filtrando por personagem em vez de categoria. Em vez de clonar a página, a gente deu dois modos pro componente, escolhidos por um parâmetro:</p>
+<pre><code class="language-javascript">const filtros = cfg.filtros;             // presente = modo personagem
+const chipDefs = filtros || categorias;  // de onde saem os botões de cima</code></pre>
+<p>Cada card ganha uma etiqueta com as chaves que ele casa. No modo categoria isso é só a categoria; no modo personagem, a lista de personagens:</p>
+<pre><code class="language-javascript">const chavesCard = filtros ? (h.filtros || []) : (h.cat ? [h.cat] : []);
+a.dataset.filtros = chavesCard.join(' ');</code></pre>
+<p>E o filtro virou um teste de <strong>pertencer à lista</strong>, em vez de igualdade. Antes era "a categoria do card é igual ao filtro"; agora é "a etiqueta do card contém o filtro":</p>
+<pre><code class="language-javascript">const chaves = (c.dataset.filtros || '').split(' ');
+c.style.display = (f === 'all' || chaves.indexOf(f) !== -1) ? '' : 'none';</code></pre>
+<p>Um detalhe visual: no modo personagem os botões não são pílulas de texto, são as mesmas miniaturas redondas da home (foto e nome), usando o ícone e a cor do <code>KIDS_PERSONAGENS</code>, com um "Todos" (estrela) na frente. A grade embaixo continua mostrando a categoria de cada história como selo; só os botões de cima mudaram. A <code>personagens.html</code> em si é curtinha: passa o <code>KIDS_PERSONAGENS</code> como <code>filtros</code> e joga o <code>personagens</code> de cada história como etiqueta.</p>
+
+<h2 id="url" data-toc-title="Ligação por URL" data-sub="?p=slug e o clique automático">Ligação por URL</h2>
+<p>Faltava o atalho: clicar no Kaco na home e cair na página já filtrada nele. O botão "Ver histórias" de cada personagem virou um link com parâmetro:</p>
+<pre><code class="language-html">&lt;a class="btn-saiba-mais" href="personagens.html?p=kaco"&gt;Ver histórias&lt;/a&gt;</code></pre>
+<p>E o componente, depois de montar os botões, lê o parâmetro e clica no botão certo sozinho. Repara que ele não reimplementa o filtro: acha o botão e dá um clique de mentira, e o clique de verdade já faz o resto. Tem uma trava: só age se a chave existir no <code>chipDefs</code>, pra um valor estranho na URL não quebrar a busca.</p>
+<pre><code class="language-javascript">const inicial = new URLSearchParams(location.search).get('p');
+if (inicial && chipDefs[inicial]) {
+    const alvo = chips.querySelector('[data-filter="' + inicial + '"]');
+    if (alvo) alvo.click();
+}</code></pre>
+
+<h2 id="decisoes" data-toc-title="Decisões e becos" data-sub="slide, duplicação aceita, a skill">Decisões e becos</h2>
+<p>O beco do slide vale a pena guardar: esconder elemento com <code>display:none</code> quebra qualquer coisa que dependa da posição na lista. A correção é contar a posição entre os visíveis, não a original.</p>
+<p>Uma decisão pragmática: o <code>KIDS_PERSONAGENS</code> repete nomes que já estão na seção de personagens da home. Em tese é duplicação. A gente aceitou de propósito, porque transformar a seção inteira em algo gerado por JavaScript era uma obra muito maior do que a tarefa pedia. Ficou um mapa pequeno e separado, com a anotação de que os dois andam juntos. Nem toda duplicação vale a obra de remover na hora.</p>
+<p>E tem o lado da ferramenta: todo esse vínculo não é pra preencher na mão. O comando que publica histórias no site já olha quem aparece nas cenas, grava a lista de <code>personagens</code> e registra cada personagem novo no <code>KIDS_PERSONAGENS</code>. A página e o componente são código fixo; o dado que os alimenta nasce pronto.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>A navegação por personagem foi quatro movimentos. O vínculo no <code>kids-stories.js</code> (campo <code>personagens</code> + mapa <code>KIDS_PERSONAGENS</code>). O filtro por condição na home, com a etiqueta <code>data-cond</code> e a correção do slide pra contar a posição entre os visíveis. A página <code>personagens.html</code>, que reusa o componente de histórias num segundo modo, filtrando por lista em vez de igualdade e trocando as pílulas por miniaturas. E a ligação por URL, com o "Ver histórias" abrindo a página já filtrada por um clique automático. Por cima, a regra: reusar o componente com um parâmetro a mais, em vez de clonar a página.</p>
+
+</body>
+</html>

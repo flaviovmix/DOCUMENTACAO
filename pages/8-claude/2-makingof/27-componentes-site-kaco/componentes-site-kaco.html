@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Componentes do site Kaco — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Componentes do site Kaco</h1>
+
+<div class="audio-player" data-src="audio/componentes-site-kaco.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>O site do Kaco é estático: HTML, CSS e JavaScript puro, sem framework e sem build. Mesmo assim deu pra montar três pedaços que valem ser lidos peça por peça: um componente de menu que se injeta sozinho, o texto da seção Sobre contornando o desenho, e um player de áudio com a tag <code>&lt;audio&gt;</code> nativa. O foco aqui é o código de cada um.</p>
+
+<h2 id="toc" data-toc-title="O componente de menu" data-sub="kids-toc.js que se injeta sozinho">O componente de menu (kids-toc.js)</h2>
+<p>A tentação em site estático é copiar e colar. O menu de cima, por exemplo, está copiado em toda página. Pro menuzinho lateral "Nesta página" a gente fez o contrário: um único arquivo que se injeta sozinho. Cada página só precisa de uma linha, <code>&lt;script src="components/kids-toc.js"&gt;&lt;/script&gt;</code>, e o CSS mora uma vez no <code>style.css</code>.</p>
+<p>O arquivo inteiro é uma IIFE (uma função que se executa na hora) pra não sujar o escopo global. Os itens vivem num array único, a fonte de verdade:</p>
+<pre><code class="language-javascript">var ITEMS = [
+    { id: 'sobre',       label: 'Sobre' },
+    { id: 'personagens', label: 'Personagens' },
+    { id: 'emocoes',     label: 'Emoções' },
+    { id: 'rotina',      label: 'Ser Criança' },
+    { id: 'familia',     label: 'Família' }
+];</code></pre>
+<p>O pulo do gato está em como cada link é montado. A função <code>isHome()</code> pega o fim da URL (<code>location.pathname.split('/').pop()</code>) e diz se a página é a home. Com isso, o link se adapta:</p>
+<pre><code class="language-javascript">var lis = ITEMS.map(function (it) {
+    var href = (home ? '#' : 'index.html#') + it.id;
+    return '&lt;li&gt;&lt;a href="' + href + '"&gt;' + it.label + '&lt;/a&gt;&lt;/li&gt;';
+}).join('');</code></pre>
+<p>Na home o link é âncora local (<code>#sobre</code>) e o clique rola suave; em qualquer outra página vira <code>index.html#sobre</code>, levando o visitante pra posição certa. O <code>build()</code> começa com um guard (<code>if (document.querySelector('.page-toc')) return null</code>) pra não duplicar, cria o botão com os ícones de tags <code>&lt;i&gt;</code> (hambúrguer e X), e o nav já nasce com a classe <code>collapsed</code> pra não piscar aberto antes do JS rodar. Os dois elementos entram com <code>document.body.appendChild</code> — como são <code>position: fixed</code>, a ordem no DOM não importa.</p>
+<p>O comportamento gira em torno de uma função só:</p>
+<pre><code class="language-javascript">function setOpen(open) {
+    nav.classList.toggle('collapsed', !open);
+    toggle.classList.toggle('active', open);
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+setOpen(false); // sempre comeca fechado</code></pre>
+<p>O clique no botão faz <code>setOpen(nav.classList.contains('collapsed'))</code> (toggle). No clique de um link, se for home dá <code>preventDefault</code> e <code>scrollIntoView({ behavior: 'smooth' })</code>; fora da home deixa navegar. E em tela ≤1440 o menu fecha após o clique. É componente de verdade: muda o array, muda em todas as páginas.</p>
+
+<h2 id="shape" data-toc-title="Texto no contorno" data-sub="shape-outside com polígono + border-box">O texto contornando o desenho (shape-outside)</h2>
+<p>Na seção Sobre, o desenho do Kaco fica de um lado e o texto do outro. A gente queria o texto encostando no contorno do desenho, não no retângulo da imagem.</p>
+<p>Primeira tentativa: <code>shape-outside</code> lendo o canal alpha do próprio PNG.</p>
+<pre><code class="language-css">.sobre-img {
+    float: left;
+    shape-outside: url('img/sobre.png');
+    shape-image-threshold: 0.92;
+}</code></pre>
+<p>O navegador faz o texto contornar só os pixels não transparentes. Detalhe: <code>shape-outside</code> só funciona com a imagem flutuada (<code>float</code>), por isso o container usa <code>display: flow-root</code> (pra conter o float), sem flexbox. Funcionou em cima, mas embaixo o foguete e o skate se esticam pra direita, e as linhas de baixo ficavam retas e longe. O alpha não "fura" um pedaço opaco que avança.</p>
+<p>A virada foi trocar a url por um polígono desenhado à mão, em porcentagem da caixa da imagem. Como o polígono pode ser côncavo, o texto entra nos vãos (sob o capacete, acima do foguete):</p>
+<pre><code class="language-css">.sobre-img {
+    float: left;
+    shape-outside: polygon(
+        20% 12%, 40% 2%, 60% 2%, 67% 12%, 72% 30%,
+        60% 42%,   /* entra no pescoço/ombro (côncavo) */
+        63% 52%, 90% 60%,   /* braço sai pro foguete */
+        85% 70%, 62% 75%,   /* entra antes do skate */
+        80% 85%, 74% 94%, 38% 97%, 10% 90%, 3% 62%, 5% 40%, 10% 22%
+    ) border-box;
+    shape-margin: 40px;
+}</code></pre>
+<p>Dois detalhes que custaram um beco: o <code>border-box</code> no fim do <code>polygon</code> trava o contorno na caixa da imagem — sem ele, ao subir o Kaco com <code>margin-top</code> negativo o contorno desalinhava (o padrão usa a caixa de margem, que a margem negativa distorce). E o <code>shape-margin</code> é a folga entre o contorno e o texto. Lembrar: só funciona servido por http (live-server); em <code>file://</code> o navegador bloqueia a leitura dos pixels.</p>
+
+<h2 id="player" data-toc-title="O player de áudio" data-sub="tag &lt;audio&gt; nativa, completa e reduzida">O player de áudio (tag &lt;audio&gt; nativa)</h2>
+<p>O player veio adaptado de um componente da documentação, pegando só o necessário. A base é a tag nativa <code>&lt;audio preload="metadata"&gt;</code>: o <code>metadata</code> baixa só a duração no load, e o áudio em si só baixa ao dar play (importante em página com várias faixas).</p>
+<p>O detalhe que faz o botão sempre refletir o estado real: a gente não troca o ícone na mão no clique. O clique só dá play/pause; quem troca o ícone são os eventos do próprio <code>&lt;audio&gt;</code>:</p>
+<pre><code class="language-javascript">btn.addEventListener('click', () =&gt; { audio.paused ? audio.play() : audio.pause(); });
+audio.addEventListener('play',  () =&gt; { btn.textContent = '⏸'; });
+audio.addEventListener('pause', () =&gt; { btn.textContent = '▶'; });
+audio.addEventListener('ended', () =&gt; { btn.textContent = '▶'; fill.style.width = '0'; });</code></pre>
+<p>A barra e o tempo vêm do evento <code>timeupdate</code> (dispara enquanto toca): calcula a porcentagem e escreve "atual / total". A barra é clicável pra pular, com uma regra de três em cima do <code>getBoundingClientRect</code>:</p>
+<pre><code class="language-javascript">audio.addEventListener('timeupdate', () =&gt; {
+    const p = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+    fill.style.width = p + '%';
+    time.textContent = fmt(audio.currentTime) + ' / ' + fmt(audio.duration);
+});
+bar.addEventListener('click', (e) =&gt; {
+    const r = bar.getBoundingClientRect();
+    if (audio.duration) audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+});</code></pre>
+<p>O resto da versão completa: os botões de 10 segundos usam <code>Math.max(0, ...)</code> e <code>Math.min(duration, ...)</code> como trava; a velocidade muda <code>audio.playbackRate</code> (com <code>stopPropagation</code> no botão pra o "fecha no clique fora" não fechar o menu na hora de abrir); o volume alterna <code>audio.muted</code> e mexe em <code>audio.volume</code>; e o download é só um <code>&lt;a download href="..."&gt;</code> (botão não baixa, o <code>&lt;a&gt;</code> com <code>download</code> sim).</p>
+<p>Nos cards da home entra a versão reduzida: só play/pause e a barrinha clicável. Um detalhe de UX: ao tocar um card, o script pausa os outros áudios pra não tocar dois juntos.</p>
+<pre><code class="language-javascript">btn.addEventListener('click', () =&gt; {
+    document.querySelectorAll('.home-audio-item audio').forEach((a) =&gt; { if (a !== audio) a.pause(); });
+    audio.paused ? audio.play() : audio.pause();
+});</code></pre>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>O <code>kids-toc.js</code> vira um trecho repetido em componente que se injeta sozinho, com fonte única de dados (o array <code>ITEMS</code>) e links que se adaptam à página. O <code>shape-outside</code> com polígono côncavo e <code>border-box</code> faz o texto abraçar o desenho do Kaco, depois que o alpha do PNG não deu conta. E o player usa a tag <code>&lt;audio&gt;</code> nativa, escutando os eventos dela pra refletir o estado, numa versão completa (página) e numa reduzida (cards da home). Três pedaços de um site estático escritos uma vez pra serem reusados.</p>
+
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O Kaco Parou de Se Repetir — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>O Kaco Parou de Se Repetir</h1>
+
+<div class="audio-player" data-src="audio/o-kaco-parou-de-se-repetir.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>O site do Kaco é estático: HTML, CSS e JavaScript puro, sem framework e sem build. Cada página é um arquivo solto. Com o tempo, copiar e colar virou rotina e o mesmo código foi parar em vários lugares. A cor azul da marca, o hex <code>#2aa9e0</code>, estava escrita mais de cem vezes. A sombra escura dos cartões repetia umas trinta. O menu do topo estava à mão em cada página, o hero estava copiado em cinco arquivos, e a lista das seis histórias vivia em três. A faxina foi tirar tudo isso, lendo o código peça por peça. O objetivo: mudar qualquer coisa num lugar só.</p>
+
+<h2 id="tokens" data-toc-title="Tokens de cor" data-sub=":root como fonte única de cor e sombra">Cores e sombra num lugar só (os tokens)</h2>
+<p>No topo do <code>style.css</code> entrou um bloco <code>:root</code>, que é a raiz do documento. Quem define uma variável aí deixa ela disponível pra página inteira, por causa da cascata do CSS. Primeiro os acentos da marca, cada cor com um nome:</p>
+<pre><code class="language-css">:root {
+    --c-blue:   #2aa9e0;
+    --c-green:  #22b07d;
+    --c-amber:  #f59e0b;
+}</code></pre>
+<p>Depois as categorias das histórias. Elas não repetem a cor, elas <strong>apontam</strong> pro acento:</p>
+<pre><code class="language-css">--c-rotina:   var(--c-blue);
+--c-aventura: var(--c-green);
+--c-emocoes:  var(--c-amber);</code></pre>
+<p>Repara que <code>--c-rotina</code> não é um hexadecimal, é um <code>var()</code> pro <code>--c-blue</code>. A categoria rotina é azul porque aponta pro azul. Se o azul da marca mudar, muda só o <code>--c-blue</code> e a categoria acompanha sozinha.</p>
+<p>A sombra tem um truque. O alpha (a transparência) muda de cartão pra cartão: às vezes <code>.07</code>, às vezes <code>.14</code>. Se a gente guardasse a sombra inteira numa variável, não dava pra variar o alpha. Então guardamos só os três números da cor, como um trio, e soltamos o alpha na hora de usar:</p>
+<pre><code class="language-css">--shadow-rgb: 15, 39, 64;
+
+/* uso: */
+box-shadow: 0 10px 26px rgba(var(--shadow-rgb), .12);</code></pre>
+<p>Pra trocar os mais de cem hex pelos <code>var()</code> sem fazer na mão, rodamos um script. Aí veio o primeiro beco: se ele trocasse <em>todo</em> <code>#2aa9e0</code> por <code>var(--c-blue)</code>, trocaria também a própria definição no <code>:root</code>, virando <code>--c-blue: var(--c-blue)</code>, uma variável apontando pra ela mesma, quebrada. A solução foi o script dividir o arquivo: o bloco de cima (as definições) ele não toca; só troca do reset pra baixo. No fim, cada cor de marca aparece uma vez (a definição) e o resto é <code>var()</code>.</p>
+<p>Uma decisão consciente: a gente <strong>não</strong> tokenizou tudo. Branco e preto puros ficaram como estão (são primitivos, não cor de marca), e os gradientes decorativos da home, que aparecem uma ou duas vezes, também ficaram hex. Tokenizar cada tonzinho criaria uma sopa de variáveis, que é outro tipo de bagunça. A regra: vira token o que é identidade da marca e o que repete muito; o resto fica.</p>
+
+<h2 id="dados" data-toc-title="Dados num lugar só" data-sub="kids-stories.js, a fonte única das histórias">Os dados das histórias (kids-stories.js)</h2>
+<p>A lista das seis histórias estava copiada em três páginas. Criamos o <code>kids-stories.js</code> com dois globais. Um é o mapa de categorias, com nome e cor (e a cor aponta pro token):</p>
+<pre><code class="language-javascript">window.KIDS_CATEGORIAS = {
+    rotina:   { nome: 'Rotina',   cor: 'var(--c-rotina)' },
+    aventura: { nome: 'Aventura', cor: 'var(--c-aventura)' },
+    emocoes:  { nome: 'Emoções',  cor: 'var(--c-emocoes)' },
+};</code></pre>
+<p>O outro é a lista das histórias, cada uma com um id estável, título, categoria, imagem, duração, caminho do áudio e a transcrição:</p>
+<pre><code class="language-javascript">window.KIDS_STORIES = [
+    { id: 'passeio-feliz', t: 'O Passeio Feliz', cat: 'rotina',
+      img: 'img-slide/0 (1).png', dur: '3:12', src: 'audio/o-passeio-feliz.m4a',
+      tx: 'Kaco sai pra passear...' },
+    // ...mais cinco
+];</code></pre>
+<p>Agora as páginas de histórias e colorir não têm mais o array copiado. Elas leem o <code>KIDS_STORIES</code> e só colam o texto que é próprio delas. A página de colorir faz um <code>.map()</code> na lista e adiciona a descrição e o status:</p>
+<pre><code class="language-javascript">itens: window.KIDS_STORIES.map(function (s) {
+    return { t: s.t, cat: s.cat, img: s.img, status: 'em breve', desc: DESCS[s.id] };
+})</code></pre>
+<p>Título, categoria e imagem vêm da fonte única; só o "em breve" e o textinho de pintar ficam na página. Adicionar uma sétima história agora é mexer num arquivo, não em três.</p>
+
+<h2 id="molde" data-toc-title="Componentes que se injetam" data-sub="kids-menu.js e kids-hero.js viram molde">Menu e hero viram molde</h2>
+<p>O rodapé do site (<code>kids-footer.js</code>) já era um componente que se injeta sozinho. O menu do topo, não: estava à mão em toda página. Fizemos o <code>kids-menu.js</code> no mesmo molde. O arquivo inteiro é uma IIFE (função que se executa na hora) pra não sujar o escopo global, e os links vivem num array único:</p>
+<pre><code class="language-javascript">var LINKS = [
+    { href: 'index.html',     label: 'Início' },
+    { href: 'historias.html', label: 'Histórias' },
+    // ...
+];</code></pre>
+<p>Uma função <code>currentPage()</code> pega o fim da URL com <code>location.pathname.split('/').pop()</code> pra saber em que página a gente está e marcar aquele link como ativo. O <code>build()</code> monta o nav como texto, com um guard no começo pra não duplicar, e põe o menu no topo da página:</p>
+<pre><code class="language-javascript">if (document.querySelector('.menu')) return null; // guard: nao duplica
+// ...
+document.body.insertBefore(nav, document.body.firstChild);</code></pre>
+<p>Esse <code>insertBefore</code> é o detalhe: o rodapé usa <code>appendChild</code> pra cair no fim, o menu usa <code>insertBefore</code> pra subir pro começo. A parte de abrir e fechar (o hamburger no celular) saiu de dentro do <code>script.js</code> e entrou no próprio componente, numa função <code>wire()</code> em volta de um <code>setOpen(open)</code> que liga e desliga a classe <code>open</code>. Como o componente agora cuida do próprio menu, o trecho velho no <code>script.js</code> virou código morto e foi removido.</p>
+<p>O hero seguiu a mesma ideia, com um detalhe a mais: ele é usado de dois jeitos. Nas páginas familia e áudio, ele se monta sozinho por configuração (a página põe um <code>&lt;div id="kidsHero"&gt;</code> e um objeto <code>kidsHeroConfig</code>). Mas a página de histórias tem outro componente (<code>kids-historias</code>) que precisa montar o mesmo hero por dentro. Pra não ter dois códigos do hero, o <code>kids-hero.js</code> expõe uma função pública:</p>
+<pre><code class="language-javascript">window.KidsHero = { build: build };</code></pre>
+<p>Assim o <code>kids-historias</code> chama <code>window.KidsHero.build()</code> e recebe o cabeçalho pronto, em vez de ter a própria cópia. Um hero, montado de dois jeitos (por config automática ou chamando a função), com o código num lugar só. A onda em SVG e os emojis flutuantes que se repetiam em cinco arquivos agora vivem só dentro desse componente.</p>
+
+<h2 id="becos" data-toc-title="Decisões e becos" data-sub="auto-referência, regra dos três, rascunhos">Decisões e becos</h2>
+<p>O beco da auto-referência no script de tokens já foi contado: trocar cor por variável sem pisar na própria definição. A lição é que substituição em massa precisa saber o que <strong>não</strong> tocar.</p>
+<p>O player de áudio merece uma nota sobre a regra dos três. Ele tem mais de cem linhas de lógica (tocar, pausar, velocidade, volume) e a gente extraiu pro <code>kids-player.js</code> mesmo ele aparecendo numa página só. Por que não esperou a terceira cópia? Porque player é uma daquelas peças obviamente reutilizáveis, igual botão e menu: já nasce como componente. A regra dos três vale pra lógica de negócio específica, não pra esses blocos que qualquer projeto vai querer de novo.</p>
+<p>E teve uma decisão de segurança, não de código. O site tinha quatro arquivos de rascunho (versões antigas de design, com link quebrado). O caminho óbvio era apagar. Mas esses quatro não estavam no controle de versão, então apagar não teria volta. Em vez disso, movemos pra uma pasta <code>_rascunhos</code>, fora da parte que vai pro ar. O site fica limpo e nada se perde. Apagar de verdade, só quando der pra desfazer.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>A faxina foi três movimentos. As cores e a sombra viraram tokens num <code>:root</code> único, com as categorias apontando pros acentos e a sombra guardada como trio de números pra variar o alpha. Os dados das histórias viraram fonte única no <code>kids-stories.js</code>, e as páginas passaram a só configurar. E o menu e o hero viraram componentes que se injetam sozinhos, com o hero exposto por uma função pra outro componente reusar. Por cima, a regra que guia tudo: procurar antes de copiar, extrair antes de clonar, e só abstrair de verdade na terceira cópia. Tudo isso é código que serve qualquer site estático, não só o do macaquinho.</p>
+
+</body>
+</html>

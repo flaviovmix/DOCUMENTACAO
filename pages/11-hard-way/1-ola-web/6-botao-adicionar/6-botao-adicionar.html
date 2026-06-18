@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O botão adicionar — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>O botão adicionar: o gatilho do clique</h1>
+
+<div class="audio-player" data-src="audio/botao-adicionar.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>A página já montou (foi o trajeto do episódio anterior). Agora a gente segue um clique no botão <strong>adicionar</strong>, do dedo até a função disparar. Mudança importante de ator: o servidor (o Vite) já saiu de cena. Daqui pra frente <strong>tudo roda no navegador</strong>, no runtime do Svelte. O foco deste episódio é o <strong>gatilho</strong>: como o clique vira uma chamada de função. O que a função faz com a lista é o próximo episódio.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 1 — o botão já nasceu com o handler ligado</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>No HTML do componente, o botão é só isto:</p>
+<pre><code class="language-svelte">&lt;button class="adicionar" onclick={adicionar}&gt;adicionar&lt;/button&gt;</code></pre>
+            <p>Quando o Svelte montou a página, ele viu esse <code>onclick={adicionar}</code> e <strong>ligou o evento de clique do botão à função <code>adicionar</code></strong>. Você não escreveu <code>getElementById</code> pra achar o botão, nem <code>addEventListener</code> pra pendurar o ouvinte. O Svelte fez essa ponte sozinho, na compilação. O botão já nasce sabendo quem chamar.</p>
+            <p><strong>Arquivo:</strong> <code>src/routes/+page.svelte</code> (o <code>&lt;button class="adicionar"&gt;</code>).</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 2 — antes do clique, o input já mantém o texto em dia</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O gatilho precisa de algo pra adicionar: o texto digitado. Quem segura esse texto é a variável <code>nova</code>, ligada ao campo:</p>
+<pre><code class="language-svelte">let nova = $state("");
+
+&lt;input placeholder="nova fruta..." bind:value={nova} ... /&gt;</code></pre>
+            <p>O <code>bind:value={nova}</code> é de <strong>mão dupla</strong>: a cada tecla que você digita, ele atualiza <code>nova</code> sozinho. Então, no instante em que o clique vier, <code>nova</code> <strong>já tem</strong> o texto certo. O gatilho não precisa ir buscar o valor do campo: ele já está na variável.</p>
+            <p>Na versão na unha isso era passo manual: pra saber o que estava digitado, você lia <code>input.value</code> na hora de usar. Aqui o <code>bind:value</code> mantém a variável em dia o tempo todo.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 3 — você clica: o navegador dispara o evento</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Você clica no botão. O <strong>clique é um evento do DOM</strong>, gerado pelo navegador, não pelo seu código. Como o Svelte registrou um ouvinte naquele botão lá na montagem, o navegador avisa: "clicaram aqui".</p>
+            <p>Ponto de fidelidade: nada disso sai do navegador. O servidor não fica sabendo do clique, não tem requisição indo pra lugar nenhum. É só o navegador conversando com o código que o Svelte deixou montado na página.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 4 — o Svelte chama adicionar()</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Avisado do clique, o runtime do Svelte executa a função que estava ligada ali: <code>adicionar</code>. É o destino do gatilho. A função mora no <code>&lt;script&gt;</code> do componente:</p>
+<pre><code class="language-js">function adicionar() {
+    if (nova.trim() === "") return;  // o portão de entrada
+    itens.push(nova.trim());          // (isto é o próximo episódio)
+    nova = "";                        // (isto é o próximo episódio)
+}</code></pre>
+            <p>O trajeto do clique chega aqui: a função <strong>roda</strong>. O que ela faz com a lista (o <code>push</code>) e com o input (limpar) é exatamente o tema do próximo episódio. Aqui a gente para no gatilho.</p>
+            <p><strong>Arquivo:</strong> <code>src/routes/+page.svelte</code>, função <code>adicionar</code>.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 5 — a primeira coisa que a função faz: o portão</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Antes de adicionar qualquer coisa, a função checa:</p>
+<pre><code class="language-js">if (nova.trim() === "") return;</code></pre>
+            <p>O <code>nova.trim()</code> tira os espaços das pontas. Se sobrar texto vazio (campo em branco ou só espaços), o <code>return</code> encerra a função ali mesmo e <strong>nada acontece</strong>. É o portão que evita adicionar fruta em branco. Se passou daqui, é porque tem texto de verdade pra adicionar.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 6 — o mesmo destino por outro gatilho: Enter</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O botão não é a única forma de disparar. O input tem um atalho:</p>
+<pre><code class="language-svelte">&lt;input bind:value={nova} onkeydown={(e) =&gt; e.key === "Enter" &amp;&amp; adicionar()} /&gt;</code></pre>
+            <p>O <code>onkeydown</code> escuta as teclas no campo. O <code>e.key === "Enter" &amp;&amp; adicionar()</code> quer dizer: <strong>se</strong> a tecla foi Enter, <strong>então</strong> chama <code>adicionar()</code>. Apertar Enter no campo dispara a mesma função do botão. <strong>Dois gatilhos, um destino.</strong></p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Quem está no comando: o navegador, não o servidor</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Vale fixar, porque é o contraste com o episódio do <code>npm run dev</code>. Lá o ator era o Vite, o servidor, que serviu o JavaScript e ficou de pé. Aqui o Vite só entregou o código e saiu da história. O clique, o evento, a chamada da função, o portão: <strong>tudo roda dentro do navegador</strong>, no runtime do Svelte que veio junto com a página. O servidor não espera o seu clique. Quem espera é o navegador.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">onclick no elemento vs addEventListener (na unha)</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O que o Svelte tirou das suas costas só pra ligar um clique:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Na unha (JavaScript)</th><th>Em Svelte</th></tr>
+                    <tr><td><code>getElementById("botao")</code> pra achar o elemento</td><td>— (não precisa achar nada)</td></tr>
+                    <tr><td><code>botao.addEventListener("click", adicionar)</code></td><td><code>onclick={adicionar}</code> no próprio elemento</td></tr>
+                    <tr><td>Ler <code>input.value</code> na hora de usar</td><td><code>bind:value={nova}</code> mantém a variável em dia</td></tr>
+                </table>
+            </div>
+            <p>O contador <code>+1</code> usa a mesma mecânica, na forma mais curta: <code>onclick={() =&gt; contador++}</code>, o handler escrito ali mesmo. Mesmo gatilho, função inline.</p>
+            <p class="muted">Próximo episódio: o que a função faz depois do portão — <code>push</code> na lista, limpar o input, e a tela redesenhar sozinha. Mais o botão <strong>remover</strong>.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

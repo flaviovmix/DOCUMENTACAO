@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estilo e Input — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Estilo e Input</h1>
+
+<div class="audio-player" data-src="audio/estilo-e-input.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Com o contador e a lista reativos prontos, faltava dar uma cara pra página e um jeito de adicionar frutas novas. As duas coisas entram no mesmo <code>src/routes/+page.svelte</code>: <strong>CSS scoped</strong> e um <strong>input ligado ao estado</strong>. E os dois reforçam a mesma lição da fase.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Estilo scoped — o &lt;style&gt; do componente</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>No Svelte o CSS mora no próprio <code>.svelte</code>, num bloco <code>&lt;style&gt;</code> no fim do arquivo. O pulo do gato: ele é <strong>scoped automático</strong> — o que você escreve aqui só vale pra este componente. Por baixo, o Svelte injeta uma classe-hash nos elementos do arquivo e amarra as regras nela, então o seu <code>h1</code> colorido aqui não vaza pro <code>h1</code> de outra página.</p>
+<pre><code class="language-svelte">&lt;style&gt;
+    h1 { color: #0f766e; }
+    .mais { background: #14b8a6; color: #fff; }
+&lt;/style&gt;</code></pre>
+            <h3><code>:global(...)</code> — quando precisa sair do componente</h3>
+            <p>Pra mirar algo de fora (ex: o fundo da página, que mora no <code>&lt;body&gt;</code>), usa <code>:global(...)</code>, que desliga o scoping só naquela regra.</p>
+<pre><code class="language-svelte">&lt;style&gt;
+    :global(body) { margin: 0; background: #f0f4ff; }
+&lt;/style&gt;</code></pre>
+            <p>Compare com a <a href="/na-unha.html">versão na unha</a>: lá o CSS ia num <code>&lt;style&gt;</code> no <code>&lt;head&gt;</code>, <strong>global</strong> por natureza, e qualquer seletor podia bater em qualquer página. Aqui é o contrário: nasce isolado, e você abre mão disso de propósito, regra por regra, com <code>:global</code>.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Adicionar à lista — input, estado e bind:value</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Pra criar frutas novas, um <code>&lt;input&gt;</code> ligado a um estado. Declara mais um <code>$state</code> pro texto e uma função que adiciona:</p>
+<pre><code class="language-svelte">&lt;script&gt;
+    let nova = $state("");               // o texto do input
+
+    function adicionar() {
+        if (nova.trim() === "") return;  // não adiciona vazio
+        itens.push(nova.trim());          // muda o estado...
+        nova = "";                        // ...e limpa o input
+    }
+&lt;/script&gt;
+
+&lt;input placeholder="nova fruta..." bind:value={nova}
+       onkeydown={(e) =&gt; e.key === "Enter" &amp;&amp; adicionar()} /&gt;
+&lt;button onclick={adicionar}&gt;adicionar&lt;/button&gt;</code></pre>
+            <h3><code>bind:value</code> — ligação de mão dupla</h3>
+            <p>O <code>bind:value={nova}</code> liga o campo ao estado nos <strong>dois sentidos</strong>: você digita e <code>nova</code> muda sozinho; o código muda <code>nova</code> (ex <code>nova = ""</code>) e o campo limpa sozinho. Na unha isso era trabalho dobrado: ler <code>input.value</code> na hora de usar e escrever <code>input.value = ""</code> pra limpar, na mão, nos dois lados.</p>
+            <h3>A reatividade de novo</h3>
+            <p><code>adicionar()</code> só faz <code>itens.push(...)</code> e <code>nova = ""</code>. O item novo aparece na lista e o campo esvazia <strong>sozinhos</strong>, sem nenhuma linha pra redesenhar a lista nem pra limpar o input. É a mesma dor da fase resolvida outra vez: você cuida do estado, o Svelte cuida da tela. O <code>onkeydown</code> com <code>e.key === "Enter"</code> deixa adicionar pelo Enter, além do botão.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Código completo — a lógica do +page.svelte</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O <code>&lt;script&gt;</code> e a marcação depois das duas adições (o <code>&lt;style&gt;</code> scoped fica logo abaixo, no mesmo arquivo):</p>
+<pre><code class="language-svelte">&lt;script&gt;
+    let contador = $state(0);                          // o ESTADO, declarado
+    let itens = $state(["Maçã", "Banana", "Laranja"]); // a lista, também estado
+    let nova = $state("");                             // o texto do input
+
+    function adicionar() {
+        if (nova.trim() === "") return;  // não adiciona vazio
+        itens.push(nova.trim());          // muda o estado...
+        nova = "";                        // ...e limpa o input
+    }
+&lt;/script&gt;
+
+&lt;h1&gt;Olá Web na unha — agora em Svelte&lt;/h1&gt;
+
+&lt;p&gt;Contador: {contador}&lt;/p&gt;
+&lt;button class="mais" onclick={() =&gt; contador++}&gt;+1&lt;/button&gt;
+
+&lt;h2&gt;Lista&lt;/h2&gt;
+&lt;input placeholder="nova fruta..." bind:value={nova}
+       onkeydown={(e) =&gt; e.key === "Enter" &amp;&amp; adicionar()} /&gt;
+&lt;button onclick={adicionar}&gt;adicionar&lt;/button&gt;
+&lt;ul&gt;
+    {#each itens as item, i}
+        &lt;li&gt;{item} &lt;button onclick={() =&gt; itens.splice(i, 1)}&gt;remover&lt;/button&gt;&lt;/li&gt;
+    {/each}
+&lt;/ul&gt;</code></pre>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

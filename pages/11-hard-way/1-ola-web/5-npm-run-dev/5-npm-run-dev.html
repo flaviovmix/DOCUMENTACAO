@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>npm run dev — Nexus</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>npm run dev: o que acontece</h1>
+
+<div class="audio-player" data-src="audio/npm-run-dev.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Você digita <code>npm run dev</code>, dá Enter, e em menos de um segundo aparece um endereço pra abrir no navegador. Mas entre o Enter e a tela, um monte de peça entra em cena. Vamos seguir o <strong>trajeto parada por parada</strong>, do comando até o app montado na tela. O ator aqui não é o agente que nasce e morre a cada requisição: é o <strong>Vite</strong>, o servidor de desenvolvimento, um processo que sobe e <strong>fica vivo</strong> segurando a porta.</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 1 — o comando no terminal</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Dentro da pasta do projeto, você roda:</p>
+<pre><code class="language-bash">npm run dev</code></pre>
+            <p>Quem recebe isso é o <strong><code>npm</code></strong>, o gerenciador de pacotes que veio junto com o Node. O <code>npm run &lt;nome&gt;</code> não é um comando do Vite: é o npm dizendo "vou procurar um atalho chamado <code>dev</code> e executá-lo". Ele ainda nem sabe o que <code>dev</code> faz.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 2 — npm lê o package.json e acha o atalho</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O npm abre o <code>package.json</code> na raiz do projeto e procura na seção <code>scripts</code> a chave <code>dev</code>:</p>
+<pre><code class="language-json">"scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepare": "svelte-kit sync || echo ''"
+}</code></pre>
+            <p>Achou: <code>"dev": "vite dev"</code>. Então <code>npm run dev</code> é só um apelido pra <code>vite dev</code>. O <code>build</code> e o <code>preview</code> são outros apelidos ali do lado, pra quando você for gerar a versão final.</p>
+            <p><strong>Arquivo:</strong> <code>package.json</code> (raiz do projeto).</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 3 — npm executa o vite</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O npm executa <code>vite dev</code>. Mas qual <code>vite</code>? Não é um programa instalado no sistema todo: é o binário que o <code>npm install</code> baixou pra dentro do projeto, em <code>node_modules/.bin/vite</code>. Quando você roda um script, o npm coloca essa pasta na frente do caminho, então <code>vite</code> resolve pro binário local.</p>
+            <p>É por isso que o <code>npm install</code> tinha que rodar antes: sem ele, a pasta <code>node_modules/</code> não existe e não há <code>vite</code> pra executar.</p>
+            <p><strong>Arquivo:</strong> <code>node_modules/.bin/vite</code> (gerado pelo install, não entra no git).</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 4 — o Vite lê as configs</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Ao subir, o Vite procura o <code>vite.config.js</code> pra saber como se comportar:</p>
+<pre><code class="language-js">import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+    plugins: [sveltekit()]
+});</code></pre>
+            <p>A peça-chave é o plugin <code>sveltekit()</code>. É ele que ensina o Vite a entender arquivos <code>.svelte</code>, a tratar a pasta <code>src/routes/</code> como rotas e a compilar tudo. E esse plugin, por sua vez, lê o <code>svelte.config.js</code>:</p>
+<pre><code class="language-js">import adapter from '@sveltejs/adapter-auto';
+
+const config = {
+    compilerOptions: { runes: true },   // (resumido)
+    kit: { adapter: adapter() }
+};
+
+export default config;</code></pre>
+            <p>Aqui mora a configuração do SvelteKit: o <code>adapter</code> (pra onde o projeto vai quando for pra produção) e o modo <code>runes</code> ligado, que é o que faz o <code>$state</code> funcionar nos seus componentes.</p>
+            <p><strong>Arquivos:</strong> <code>vite.config.js</code> e <code>svelte.config.js</code> (raiz).</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 5 — o servidor sobe e abre a porta</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Com as configs lidas, o Vite monta o servidor de desenvolvimento (um processo Node), abre uma porta e imprime o endereço:</p>
+<pre><code class="language-bash">  VITE v8.0.16  ready in 753 ms
+
+  ➜  Local:   http://localhost:5173/</code></pre>
+            <p>A porta padrão é a <strong>5173</strong>. É aqui que nasce o ator de longa duração: o processo <strong>fica vivo</strong>, escutando essa porta. Por isso o terminal trava ali, ocupado segurando o servidor. Pra parar, <strong>Ctrl + C</strong>.</p>
+            <p>Repare: até agora <strong>nenhuma página foi servida ainda</strong>. O servidor só está de pé, esperando alguém bater na porta.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 6 — o navegador pede a página</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Você abre <code>http://localhost:5173/</code> no navegador. Agora sim existe uma <strong>requisição</strong>: o navegador bate na porta do Vite pedindo a rota <code>/</code>.</p>
+            <p>O Vite serve o esqueleto da página (<code>src/app.html</code>) e, pra rota <code>/</code>, compila <strong>na hora</strong> o arquivo <code>src/routes/+page.svelte</code>, transformando o seu componente em JavaScript que o navegador entende, e manda esse JS junto.</p>
+            <p>Detalhe de fidelidade: quem responde é o <strong>Vite servindo e compilando arquivos</strong>, não um backend processando a lógica do seu app. É outro tipo de servidor.</p>
+            <p><strong>Arquivos:</strong> <code>src/app.html</code> (esqueleto), <code>src/routes/+page.svelte</code> (a rota <code>/</code>).</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Parada 7 — o app monta na tela</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>O navegador recebe o JS, executa, e o Svelte cria os elementos na tela: o contador e a lista de frutas aparecem. O trajeto do <code>npm run dev</code> termina aqui, com a página montada.</p>
+            <p>Daqui pra frente, clicar no <strong>+1</strong> ou no <strong>adicionar</strong> roda <strong>dentro do navegador</strong>, sem voltar ao Vite. O servidor não fica "esperando o clique": quem espera é o navegador. (É exatamente isso que os próximos dois episódios seguem de perto.)</p>
+            <p>O Vite continua vivo só pra uma coisa: o <strong>hot reload</strong>. Você salva um arquivo <code>.svelte</code>, ele recompila aquele pedaço e a tela atualiza sozinha, sem reiniciar nada.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Quem é o ator: o Vite, processo de longa duração</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>Vale separar dois tipos de servidor pra não confundir mais pra frente:</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Servidor de aplicação (ex: o back)</th><th>Servidor de desenvolvimento (Vite)</th></tr>
+                    <tr><td>Processa a lógica do app a cada requisição</td><td>Serve e compila os arquivos do front</td></tr>
+                    <tr><td>Você sobe pra rodar a regra de negócio</td><td>Você sobe pra <strong>desenvolver</strong> com hot reload</td></tr>
+                    <tr><td>Vive enquanto o app está no ar</td><td>Vive enquanto você está codando (Ctrl + C encerra)</td></tr>
+                </table>
+            </div>
+            <p>O ponto comum: os dois são processos de <strong>longa duração</strong>, não o agente que nasce e morre numa requisição só. O <code>npm run dev</code> sobe um deles e o deixa de pé.</p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">dev vs build — dois atalhos diferentes</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>No mesmo <code>package.json</code> moram outros atalhos. O <code>dev</code> é pra <strong>desenvolver</strong>: rápido de subir, compila sob demanda, hot reload. O <code>build</code> gera a <strong>versão final</strong>, otimizada, pra colocar no ar; e o <code>preview</code> serve essa versão final pra você conferir antes de publicar.</p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Atalho</th><th>Pra quê</th></tr>
+                    <tr><td><code>npm run dev</code></td><td>Desenvolver agora, com hot reload (:5173)</td></tr>
+                    <tr><td><code>npm run build</code></td><td>Gerar a versão final otimizada</td></tr>
+                    <tr><td><code>npm run preview</code></td><td>Conferir a versão final localmente</td></tr>
+                </table>
+            </div>
+            <p>É o mesmo <code>npm run dev</code> que sobe o front do Nexus (também na :5173). Lá tem ainda o back, que sobe por outro comando, na :8080. O atalho que você aprendeu aqui é o mesmo.</p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

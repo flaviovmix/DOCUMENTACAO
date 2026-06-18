@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nome Igual, Banco Diferente — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Nome Igual, Banco Diferente</h1>
+
+<div class="audio-player" data-src="audio/nome-igual-banco-diferente.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>No Financeiro do Nexus você cadastra contas: a conta de um banco, o dinheiro na carteira, o cartão. O Flávio queria <strong>duas contas correntes chamadas "FLÁVIO"</strong>, uma no Inter e outra no Itaú, com o banco diferenciando as duas nos botões de filtro. Mas o sistema barrava: <code>nome de conta já em uso: FLÁVIO</code>. A gente afrouxou a regra de duplicata. Arquivos reais: a migration <code>V83__finance_contas_unique_per_banco.sql</code>, o <code>FinanceContaRepository.java</code> e o <code>FinanceContaService.java</code>.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Duas contas com o mesmo nome">O que a gente queria</h2>
+<p>Cada conta tem um nome, um tipo (corrente, poupança, dinheiro, cartão) e, opcionalmente, um banco. A regra de duplicata olhava só <strong>nome + tipo</strong>: duas "FLÁVIO" corrente eram a mesma coisa pro sistema, mesmo com bancos diferentes. Por isso a segunda não entrava. A gente queria deixar o mesmo nome repetir, <strong>desde que o banco mude</strong>.</p>
+
+<h2 id="conceitos" data-toc-title="Conceitos" data-sub="Chave, nulo, migration">Os conceitos</h2>
+
+<h3>1. A chave de identidade</h3>
+<p>Em todo cadastro existe um conjunto de campos que o sistema usa pra decidir se dois registros são "a mesma coisa". Se esse conjunto bate, é duplicata, e ele bloqueia. Aqui a chave era <strong>nome + tipo</strong>. A mudança do episódio é uma mudança nessa chave: a gente acrescentou o banco. Agora é <strong>nome + tipo + banco</strong>. "FLÁVIO corrente Inter" e "FLÁVIO corrente Itaú" têm a mesma dupla nome-tipo, mas banco diferente, então a chave não bate e as duas convivem. É como duas pessoas com o mesmo primeiro nome: só o nome não identifica, você olha o documento. O banco virou o documento da conta.</p>
+
+<h3>2. O nulo que conta como igual</h3>
+<p>Banco é opcional, uma conta pode não ter banco. No Postgres, quando a regra de unicidade é sobre vários campos e um deles está vazio (nulo), o padrão é tratar cada nulo como <strong>único</strong>, diferente de qualquer outro nulo. Ou seja: se a chave inclui o banco, duas contas com nome igual, tipo igual e banco nulo passariam (nulo não bate com nulo). Isso abriria um buraco: duas contas sem banco com o mesmo nome. Pra fechar, usamos <code>NULLS NOT DISTINCT</code>, que manda o banco tratar nulo como um valor igual a outro nulo. Assim, conta sem banco com mesmo nome e tipo continua bloqueada.</p>
+
+<h3>3. Migrations append-only</h3>
+<p>O esquema do banco do Nexus é versionado por arquivos numerados (Flyway). Migration que já rodou <strong>nunca se edita</strong>: pra mudar o esquema, você escreve uma nova, com número maior. A regra antiga vivia na <code>V67</code>; a gente não voltou lá. Criou a <code>V83</code>, que apaga o índice antigo e cria o novo. O histórico fica honesto, dá pra ver a regra como era e como ficou.</p>
+
+<h2 id="como-montamos" data-toc-title="Como montamos" data-sub="Migration, repo, serviço">Como montamos</h2>
+
+<p><strong>A migration V83.</strong> Duas linhas. A primeira apaga o índice único antigo (sobre user, nome e tipo). A segunda cria o novo, sobre user, nome, tipo <strong>e banco</strong>, com o <code>NULLS NOT DISTINCT</code> no fim. Índice único é o que <em>garante</em> a regra no banco: mesmo que o código deixasse passar, o banco recusaria a duplicata. A troca é segura porque a regra nova é mais frouxa que a velha: tudo que já estava gravado respeitava a antiga (mais exigente), então respeita a nova.</p>
+<pre><code class="language-sql">DROP INDEX uk_finance_contas_user_nome_tipo;
+
+CREATE UNIQUE INDEX uk_finance_contas_user_nome_tipo_banco
+    ON finance_contas (user_id, lower(nome), tipo, banco_id) NULLS NOT DISTINCT;</code></pre>
+
+<p><strong>O repositório.</strong> Tinha um método que buscava conta por nome e tipo e devolvia no máximo <em>uma</em> (um <code>Optional</code>). Isso valia quando nome+tipo era único. Agora pode existir mais de uma (uma por banco), e um método "no máximo uma" estouraria ao achar duas. A troca pra <code>List</code> não é enfeite, é obrigatória:</p>
+<pre><code class="language-java">// antes — no maximo uma
+Optional&lt;FinanceConta&gt; findByUserAndNomeIgnoreCaseAndTipo(User user, String nome, TipoConta tipo);
+
+// agora — todas com esse nome e tipo; o desempate de banco e no codigo
+List&lt;FinanceConta&gt; findAllByUserAndNomeIgnoreCaseAndTipo(User user, String nome, TipoConta tipo);</code></pre>
+
+<p><strong>O serviço.</strong> A checagem virou o ajudante <code>existsConflito</code>. Ele recebe as candidatas (mesmo nome e tipo), o banco que estou salvando e o id da própria conta na edição. Tem conflito se alguma candidata tem o <strong>mesmo banco</strong> e não é ela mesma. Dois cuidados: comparar bancos com <code>Objects.equals</code> (trata "sem banco" igual a "sem banco" sem estourar no nulo), e ignorar a própria conta na edição pelo <code>selfId</code> (senão ela acharia conflito consigo mesma). Na criação o <code>selfId</code> é nulo.</p>
+<pre><code class="language-java">private static boolean existsConflito(List&lt;FinanceConta&gt; candidatas, Long bancoId, Long selfId) {
+    return candidatas.stream().anyMatch(c -&gt;
+        !c.getId().equals(selfId) &amp;&amp; java.util.Objects.equals(c.getBancoId(), bancoId));
+}
+
+// no update — passa o id da conta editada pra ela se ignorar
+if (existsConflito(contas.findAllByUserAndNomeIgnoreCaseAndTipo(conta.getUser(), nome, request.tipo()),
+                   request.bancoId(), conta.getId())) {
+    throw new FinanceContaNameAlreadyInUseException(nome);
+}</code></pre>
+
+<h2 id="decisoes-becos" data-toc-title="Decisões e becos" data-sub="Por que o banco, o nulo, o restart">Decisões e becos</h2>
+<p><strong>Incluir o banco, não tirar a regra.</strong> Seria mais fácil deixar repetir nome à vontade. Mas a regra existe pra evitar duas contas iguais de verdade. Incluir o banco na chave mantém o bloqueio da duplicata real (mesmo nome, tipo e banco) e abre só o caso legítimo (bancos diferentes).</p>
+<p><strong>O NULLS NOT DISTINCT é fácil passar batido.</strong> Sem ele, a mudança teria um efeito colateral que ninguém pediu: liberar duas contas sem banco com o mesmo nome. O banco faria isso calado, e só apareceria lá na frente. Pensar no caso do nulo na hora evitou o buraco silencioso.</p>
+<p><strong>Reiniciar o backend.</strong> A migration só roda quando a aplicação sobe, e o código novo do serviço e do repositório só vale com o processo reiniciado. Enquanto o servidor velho estava no ar, a regra antiga continuava e o erro "nome já em uso" persistia. Subiu de novo, a V83 rodou na inicialização, e a segunda conta FLÁVIO entrou.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>A conta do Financeiro agora pode ter nome repetido, desde que o banco seja outro. A chave que decide duplicata deixou de ser nome + tipo e passou a ser nome + tipo + banco: uma migration nova (V83) que troca o índice único, com <code>NULLS NOT DISTINCT</code> pra conta sem banco continuar bloqueada; um método de repositório que virou lista; e um ajudante no serviço que desempata pelo banco e ignora a própria conta na edição. A coisa pra levar: toda regra de "já existe" é uma chave, um conjunto de campos. E quando um campo pode estar vazio, decida de propósito se vazio conta como igual, senão o banco decide por você.</p>
+
+</body>
+</html>
