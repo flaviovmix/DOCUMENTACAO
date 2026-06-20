@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend na Unha — The Hard Way</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Backend na Unha</h1>
+
+<div class="audio-player" data-src="audio/backend.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Fase 4 da trilha: <strong>o backend que responde</strong>. Já temos o front (Fase 1) e os aquecimentos de Java na linha de comando. Agora a gente sobe a outra ponta: um servidor HTTP escrito <strong>na unha</strong>, em Java puro, sem nenhum framework. A regra da trilha é a de sempre: fazer o backend cru primeiro, sentir a dor, pra só depois o Spring entrar como alívio. Esta página anda pelo arquivo <code>Servidor.java</code> peça por peça.</p>
+
+<h2 id="o-que-queriamos" data-toc-title="O que queríamos" data-sub="Cru antes do framework">O que a gente queria</h2>
+<p>A regra do The Hard Way é sempre a mesma: fazer a coisa crua primeiro, bater na dor, e só depois trazer o framework como resposta. Então antes de ligar o Spring, a gente escreve um servidor HTTP na mão, pra sentir na pele o que o Spring faz por baixo.</p>
+<p>Surpresa boa logo de cara: não precisou baixar nada. O Java 25 já estava na máquina, e desde o Java 11 dá pra rodar um arquivo <code>.java</code> direto, sem compilar à parte. O comando é só <code>java Servidor.java</code>. Nada de Maven, nada de download. É o aquecimento do <code>javac</code> e do <code>java</code> na mão que explica por que isso funciona.</p>
+<pre><code class="language-bash">cd "NEXUS - THE HARD WAY/04-backend"
+java Servidor.java</code></pre>
+
+<h2 id="subir-servidor" data-toc-title="Subir o servidor" data-sub="create, createContext, start">Subir o servidor</h2>
+<p>O servidor não veio de biblioteca de fora: ele vem dentro do próprio JDK. O import é <code>com.sun.net.httpserver.HttpServer</code>. O Java já traz um servidor HTTP simples de fábrica, bom pra estudo e coisa pequena.</p>
+<pre><code class="language-java">HttpServer servidor = HttpServer.create(new InetSocketAddress(8080), 0);
+
+servidor.createContext("/ping", Servidor::ping);
+servidor.createContext("/notas", Servidor::notas);
+
+servidor.start();</code></pre>
+<ul>
+    <li><code>HttpServer.create(...)</code> prepara o servidor na porta <strong>8080</strong>. O segundo argumento, <code>0</code>, é o tamanho da fila de conexões esperando atendimento. Zero quer dizer "usa o padrão".</li>
+    <li><code>createContext</code> é o coração da Fase 4: registra <strong>rota por rota, na mão</strong>. Cada chamada liga um caminho a uma função que responde por ele. São duas agora, dá pra fazer no dedo. Num app com cinquenta rotas, isso vira uma lista enorme de <code>createContext</code> amarrada à mão. Guarda essa dor.</li>
+    <li><code>servidor.start()</code> liga de verdade e começa a atender.</li>
+</ul>
+
+<h2 id="rotas" data-toc-title="As duas rotas" data-sub="pong vs JSON no braço">As duas rotas e a dor de montar a resposta</h2>
+<p>A rota <code>/ping</code> é o "tá vivo?": devolve a palavra <code>pong</code> com status 200. Abriu, respondeu, provou que o servidor responde.</p>
+<p>A rota <code>/notas</code> é onde mora a dor. Ela devolve uma lista em JSON, só que o JSON a gente <strong>monta no braço</strong>:</p>
+<pre><code class="language-java">static void notas(HttpExchange troca) throws IOException {
+    var repositorio = new RepositorioDeNotas();   // o "banco" fake (Fase 3 ainda não existe)
+    List&lt;String&gt; itens = repositorio.listar();
+
+    StringBuilder json = new StringBuilder("[");
+    for (int i = 0; i &lt; itens.size(); i++) {
+        json.append("\"").append(itens.get(i)).append("\"");
+        if (i &lt; itens.size() - 1) json.append(",");
+    }
+    json.append("]");
+
+    responder(troca, 200, "application/json", json.toString());
+}</code></pre>
+<p>Funciona, mas é frágil: nenhum objeto virou JSON sozinho. Se você esquecer uma aspas ou uma vírgula, o JSON sai quebrado e o compilador não reclama, porque pra ele é só um texto qualquer. Você só descobre o erro quando o outro lado tenta ler.</p>
+<p>O ajudante <code>responder</code> escreve a resposta HTTP na mão, em três passos: vira o texto em bytes (UTF-8, pra acento não virar lixo), seta o <code>Content-Type</code>, e manda status + tamanho + corpo. Repara em quanta etapa manual pra devolver um texto.</p>
+<pre><code class="language-java">static void responder(HttpExchange troca, int status, String tipo, String corpo) throws IOException {
+    byte[] bytes = corpo.getBytes(StandardCharsets.UTF_8);
+    troca.getResponseHeaders().set("Content-Type", tipo + "; charset=utf-8");
+    troca.sendResponseHeaders(status, bytes.length);   // 1a linha (status) + headers
+    try (OutputStream saida = troca.getResponseBody()) {
+        saida.write(bytes);                            // o corpo
+    }
+}</code></pre>
+
+<h2 id="teia-de-new" data-toc-title="A teia de new" data-sub="DI que ainda não existe">A teia de new</h2>
+<p>Volta naquele <code>new RepositorioDeNotas()</code> dentro da rota. Hoje é um <code>new</code> só, inocente. Mas mostra um problema que cresce: pra rota entregar o dado, ela precisa do repositório, e quem cria o repositório é a própria rota, dando <code>new</code> na mão. Num app de verdade isso empilha: a rota precisa de um serviço, o serviço precisa do repositório, o repositório precisa da conexão. Cada um dando <code>new</code> no próximo e passando adiante. Vira uma <strong>teia de new</strong> amarrada no braço.</p>
+<p>Isso tem nome: é o problema que a <strong>injeção de dependência</strong> resolve. Em vez de cada peça dar <code>new</code> na seguinte, alguém de fora monta tudo e entrega pronto. No próximo passo da jornada é exatamente o que o Spring faz: você só diz "preciso do repositório" e ele entrega, montado.</p>
+
+<h2 id="o-beco" data-toc-title="O beco real" data-sub="throws Exception → IOException">O beco: o erro que não deixou compilar</h2>
+<p>Na primeira vez que mandamos rodar, nem compilou:</p>
+<pre><code class="language-bash">Servidor.java:22: error: incompatible thrown types Exception in functional expression
+        servidor.createContext("/ping", Servidor::ping);</code></pre>
+<p>A causa é fina e vale ouro. O <code>createContext</code> espera um <code>HttpHandler</code>, cuja função <code>handle</code> só permite lançar <strong>um</strong> tipo de erro: <code>IOException</code>. Mas os métodos <code>ping</code> e <code>notas</code> estavam com <code>throws Exception</code>, que é o pai de todas as exceções, mais amplo. Quando você liga um método a uma interface por referência, esse método <strong>não pode lançar um erro mais amplo</strong> do que a interface aceita. <code>Exception</code> é mais amplo que <code>IOException</code>, então o Java barrou.</p>
+<p>O conserto foi trocar <code>throws Exception</code> por <code>throws IOException</code> nos três métodos e importar o <code>IOException</code>. A lição: quando você conecta um método a uma interface, a assinatura tem que caber inteira, inclusive a parte do <code>throws</code>. Não dá pra prometer lançar mais do que o contrato permite.</p>
+
+<h2 id="encosta-no-front" data-toc-title="Onde encosta no front" data-sub="fetch e CORS na Fase 5">Onde isso encosta no front</h2>
+<p>Por que esse backend existe? Lá no front, na Fase 1, a lista de frutas estava <strong>chumbada</strong> no código da tela, escrita à mão dentro da página. O backend existe pra ser o <strong>dono</strong> dessa lista: a rota <code>/notas</code> devolve ela como JSON, num lugar só.</p>
+<p>O próximo passo (Fase 5) é o front parar de ter a lista chumbada e passar a buscar do servidor, com um <code>fetch</code> em <code>/notas</code>. Aí o dado mora num lugar só, e depois sai de um banco de verdade. E é nessa hora que aparece a primeira pedra real: o navegador <strong>bloqueia</strong> esse fetch, porque o front roda numa porta e o back noutra. Isso se chama CORS, e é a dor da próxima fase.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>Subir um servidor são três coisas: <code>HttpServer.create</code> na porta, <code>createContext</code> pra cada rota, e <code>start</code>. Responder é montar status, cabeçalho e corpo na mão. Virar JSON no braço com <code>StringBuilder</code> é frágil, e é o que um framework faz sozinho. Dar <code>new</code> no repositório dentro da rota é a teia de <code>new</code> que a injeção de dependência desfaz. E o erro do <code>throws Exception</code> virando <code>IOException</code> mostrou que referência de método tem que respeitar até as exceções do contrato. Tudo isso junto é a dor que o Spring Boot vai tirar na sequência da Fase 4.</p>
+
+</body>
+</html>
