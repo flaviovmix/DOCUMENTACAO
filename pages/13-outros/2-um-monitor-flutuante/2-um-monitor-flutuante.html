@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Um Monitor Flutuante - Outros</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Um Monitor Flutuante</h1>
+
+<div class="audio-player" data-src="audio/um-monitor-flutuante.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Making-of de uma <strong>extensão do Chrome pro YouTube Studio</strong>: durante uma transmissão ao vivo, deixar só dois números na tela (<strong>Espectadores</strong> e <strong>Gostei</strong>) pra um narrador monitorar. O valor aqui não é o código final, é o <strong>caminho</strong>: a gente errou de propósito e corrigiu a estratégia duas vezes. Arquivos reais: <code>manifest.json</code>, <code>content.js</code> e <code>content.css</code>.</p>
+
+<h2 id="a-dor" data-toc-title="A dor" data-sub="Limpar o control room toda live">A dor</h2>
+<p>O control room do Studio é cheio: preview, chave de transmissão, chat, barra de navegação na esquerda, cabeçalho em cima. Toda transmissão, a saída era limpar tudo isso na mão pra sobrar só o quadrinho com os números que o narrador acompanha. A ideia foi automatizar num botão. O Studio usa web components, mas em <strong>"shady DOM"</strong> (DOM normal), então o CSS de fora alcança os elementos.</p>
+
+<h2 id="limpar-ao-redor" data-toc-title="Limpar ao redor" data-sub="A lista que não acabava">Primeira abordagem: limpar ao redor</h2>
+<p>A ideia natural foi esconder peça por peça. Inspeciona o chat e esconde; depois a navegação; depois o cabeçalho. Cada um virava uma regra de CSS ligada por uma classe no <code>&lt;html&gt;</code>:</p>
+<pre><code class="language-css">html.yt-chat-hidden #chat,
+html.yt-chat-hidden ytls-navigation,
+html.yt-chat-hidden #header-container {
+    display: none !important;
+}</code></pre>
+<p>Funcionava, mas a lista <strong>não parava de crescer</strong>. O control room tem muito painel, e em estados diferentes da live (offline, ao vivo, iniciando) aparecem coisas novas. Ia ser caça a elemento pra sempre.</p>
+
+<h2 id="modo-foco" data-toc-title="Modo foco" data-sub="Inverter: dizer o que fica">Primeira virada: focar no que fica</h2>
+<p>A correção de rota: em vez de listar tudo que sai, <strong>inverter</strong> e dizer qual é o único elemento que <strong>fica</strong>, escondendo o resto. O alvo é o <code>#viewers-row</code>. A função <code>isolate</code> começa nele e sobe a árvore até o <code>body</code>; em cada nível, esconde os <strong>irmãos</strong> do nó atual. Sobra só o caminho do body até o quadro. O botão é poupado pra não sumir junto:</p>
+<pre><code class="language-javascript">function isolate() {
+    const target = findTarget();
+    if (!target) return;
+    target.dataset.ytFocusTarget = "1";
+    let el = target;
+    while (el &amp;&amp; el.parentElement &amp;&amp; el !== document.body) {
+        const parent = el.parentElement;
+        Array.from(parent.children).forEach(function (sib) {
+            if (sib !== el &amp;&amp; sib.id !== BTN_ID) hideEl(sib);
+        });
+        el = parent;
+        if (el !== document.body) el.dataset.ytFocusKeep = "1";
+    }
+}</code></pre>
+<p>O que o YouTube criar depois já nasce escondido, porque o <code>isolate</code> re-roda quando a página re-renderiza (via <code>MutationObserver</code>). Pra grudar no canto e tirar o espaço vazio, o quadro vira <code>position: fixed</code> no canto e os containers do caminho perdem <code>min-width</code> e fundo.</p>
+
+<h2 id="o-muro" data-toc-title="O muro" data-sub="O limite é do Chrome, não do CSS">Segunda virada: o muro do tamanho</h2>
+<p>A meta era encolher a janela até a largura dos dois números. Não dava: parava num ponto. O motivo não era mais a página, era o <strong>Chrome</strong>. Uma janela normal do navegador tem largura mínima e você não arrasta pra menos. Nenhum CSS resolve, porque é limite da janela, não do site. Reconhecer isso foi o que destravou: não adiantava insistir no CSS, a saída era <strong>trocar de ferramenta</strong>.</p>
+
+<h2 id="picture-in-picture" data-toc-title="Picture-in-Picture" data-sub="Janelinha sempre por cima">A solução: Document Picture-in-Picture</h2>
+<p>O <strong>Document Picture-in-Picture</strong> é uma API do Chrome que abre uma janelinha separada, sempre por cima, redimensionável à vontade. A <code>openMonitor</code> chama <code>requestWindow</code> (só funciona disparada por um clique, que exige gesto do usuário) e monta um HTML próprio dentro dela:</p>
+<pre><code class="language-javascript">async function openMonitor() {
+    if (!window.documentPictureInPicture) throw new Error("Document PiP indisponível");
+    pipWindow = await window.documentPictureInPicture.requestWindow({ width: 320, height: 130 });
+    // ... monta o style e os dois blocos (label + número) ...
+    sync();
+    syncTimer = setInterval(sync, 1000);
+    pipWindow.addEventListener("pagehide", closeMonitor);
+}</code></pre>
+
+<h2 id="espelho-ao-vivo" data-toc-title="Espelho ao vivo" data-sub="display:none não pausa o update">O espelho ao vivo</h2>
+<p>A janelinha não calcula nada. A <code>readStats</code> lê o <code>#viewers-row</code> na aba do Studio, pega os valores e labels, e a <code>sync</code> copia pra janelinha a cada 1 segundo (<code>setInterval</code>). Quem mantém o número fresco é o próprio YouTube. O detalhe que confunde: a gente esconde com <code>display: none</code>, mas <strong>isso não pausa o JavaScript nem o data-binding</strong>. O número segue sendo atualizado no DOM mesmo escondido, por isso o espelho funciona.</p>
+<pre><code class="language-javascript">function readStats() {
+    const row = document.querySelector(TARGET);
+    if (!row) return null;
+    return Array.from(row.querySelectorAll(".metadata-item"))
+        .filter(function (it) { return !it.hasAttribute("hidden"); })
+        .map(function (it) {
+            const label = it.querySelector(".label");
+            const value = it.querySelector(".value");
+            return {
+                label: label ? label.textContent.trim() : "",
+                value: value ? value.textContent.trim() : "–",
+            };
+        });
+}</code></pre>
+
+<h2 id="fallback" data-toc-title="Fallback" data-sub="try-catch pro modo foco">O fallback</h2>
+<p>Se o navegador não suportar o Picture-in-Picture, o clique cai sozinho no modo foco da aba (o <code>isolate</code> de antes). É um <code>try-catch</code>: tenta abrir a janelinha; se der erro, ativa o foco. Nada de tela quebrada. O texto do botão conta o estado:</p>
+<pre><code class="language-javascript">async function onClick() {
+    if (pipWindow) { closeMonitor(); return; }
+    if (focusActive) { focusActive = false; applyFocus(); updateLabel(); return; }
+    try {
+        await openMonitor();        // tenta a janelinha flutuante
+    } catch (e) {
+        focusActive = true;         // não rolou: cai no modo foco
+        applyFocus();
+        updateLabel();
+    }
+}</code></pre>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="As duas viradas">Resumo</h2>
+<p>O caminho: começamos escondendo peça por peça (lista que não acabava); invertemos pro modo foco (<code>isolate</code> sobe a árvore e deixa só o quadro, grudado no canto); e batemos no limite de largura da janela do Chrome, o que forçou a virada final, uma janelinha Picture-in-Picture sempre por cima espelhando os contadores ao vivo, com o foco de reserva. As duas coisas pra levar: quando a lista de "esconde isso também" não acaba, <strong>inverta</strong> e diga o que fica; e quando o limite é da <strong>ferramenta</strong> (a janela do navegador), troque de ferramenta em vez de insistir no código.</p>
+
+</body>
+</html>

@@ -445,6 +445,16 @@ var MENU = [
         basePath: '12-vmix'
     },
     {
+        grupo: 'OUTROS',
+        pagina: 'outros.html',
+        items: [
+            { label: '1 - Escondendo a Lista do WhatsApp', arquivo: '1-escondendo-a-lista-do-whatsapp/1-escondendo-a-lista-do-whatsapp.html', tipo: 'check' },
+            { label: '2 - Um Monitor Flutuante', arquivo: '2-um-monitor-flutuante/2-um-monitor-flutuante.html', tipo: 'check' }
+        ],
+        pasta: '13-outros',
+        basePath: '13-outros'
+    },
+    {
         grupo: 'CLAUDE',
         pagina: 'claude.html',
         items: [
