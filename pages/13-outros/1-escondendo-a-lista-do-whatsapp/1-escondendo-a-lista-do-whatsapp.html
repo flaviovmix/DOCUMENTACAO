@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escondendo a Lista do WhatsApp - Outros</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Escondendo a Lista do WhatsApp</h1>
+
+<div class="audio-player" data-src="audio/escondendo-a-lista-do-whatsapp.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Este é o making-of de uma <strong>extensão do Chrome</strong> feita do zero, com um objetivo pequeno e concreto: um botão que <strong>esconde a lista de conversas do WhatsApp Web</strong> e a traz de volta com outro clique. O foco é o código, peça por peça. Arquivos reais: <code>manifest.json</code>, <code>content.js</code> e <code>content.css</code>.</p>
+
+<h2 id="a-raiva" data-toc-title="A raiva" data-sub="O que motivou tudo">A raiva de todo dia</h2>
+<p>Quando você deixa a janela do WhatsApp Web menor, pra caber do lado de outra coisa, a lista de contatos come metade do espaço e não existe botão nenhum pra escondê-la. A saída antiga era na mão: abrir o inspetor do navegador e mexer toda vez, ou conviver com a coluna ocupando espaço. A ideia foi virar esse "na mão" num botão que fica sempre lá.</p>
+
+<h2 id="o-manifest" data-toc-title="O manifest" data-sub="A identidade da extensão">O manifest, a identidade da extensão</h2>
+<p>Uma extensão não tem build nem instalação complicada. É uma <strong>pasta</strong> com um arquivo <code>manifest.json</code> e os arquivos de código. No navegador, você abre <code>chrome://extensions</code>, liga o <strong>modo do desenvolvedor</strong> e clica em <strong>"carregar sem compactação"</strong> apontando pra pasta. Está rodando.</p>
+<p>O <code>manifest.json</code> é a identidade. O <code>manifest_version</code> é <code>3</code> (o formato atual); <code>name</code> e <code>version</code> aparecem na lista; e o <code>action</code> com <code>default_popup</code> é a janelinha que abre ao clicar no ícone. A primeira versão (0.1) não fazia nada útil: só abria um popup escrito "tá viva", de propósito, pra provar que ela carrega antes de botar lógica.</p>
+
+<h2 id="o-content-script" data-toc-title="Content script" data-sub="Injetar código na página">O content script</h2>
+<p>A parte que faz o trabalho é o <strong>content script</strong>: código seu que o navegador injeta dentro de uma página que não é sua. No manifest, o bloco <code>content_scripts</code> tem quatro campos. <code>matches</code> diz em quais páginas o script entra; <code>js</code> e <code>css</code> apontam os arquivos; <code>run_at</code> com <code>document_idle</code> roda depois que a página carregou.</p>
+<pre><code class="language-json">"content_scripts": [
+  {
+    "matches": ["https://web.whatsapp.com/*"],
+    "js": ["content.js"],
+    "css": ["content.css"],
+    "run_at": "document_idle"
+  }
+]</code></pre>
+<p>O <code>content.js</code> começa criando o botão. A função <code>ensureButton</code> monta um <code>&lt;button&gt;</code>, dá um id e o pendura no <code>document.body</code>, <strong>fora</strong> do pedaço que o WhatsApp controla. O CSS deixa ele <code>position: fixed</code> no canto inferior direito, com <code>z-index</code> altíssimo. No clique, alterna o estado e troca o próprio texto.</p>
+<pre><code class="language-javascript">function ensureButton() {
+    let btn = document.getElementById(BTN_ID);
+    if (!btn) {
+        btn = document.createElement("button");
+        btn.id = BTN_ID;
+        btn.addEventListener("click", function () {
+            hidden = !hidden;
+            apply();
+        });
+        document.body.appendChild(btn);
+    }
+    btn.textContent = hidden ? "Mostrar lista" : "Ocultar lista";
+}</code></pre>
+
+<h2 id="esconder-a-coluna" data-toc-title="Esconder a coluna" data-sub="#side, :has e a classe no html">Esconder a coluna</h2>
+<p><strong>A primeira tentativa furou.</strong> O WhatsApp Web tem um elemento com id <code>side</code>, que é a busca mais a lista. Esconder o <code>#side</code> sumiu com a lista, mas sobrou o cabeçalho "WhatsApp" em cima e o espaço vazio da coluna. O <code>#side</code> é só o miolo, não a coluna inteira.</p>
+<p><strong>A solução foi subir um nível.</strong> Em vez do <code>#side</code>, escondemos o <strong>pai</strong> dele (cabeçalho, largura e lista). Pra pegar esse pai sem saber o nome, usamos o seletor <code>:has</code>: "o elemento que tem um <code>#side</code> como filho direto". E ligamos isso por uma <strong>classe no <code>&lt;html&gt;</code></strong>, não mexendo no elemento na mão. Fazer por seletor sobrevive quando o WhatsApp redesenha a tela.</p>
+<pre><code class="language-css">html.wa-list-hidden :has(&gt; #side) {
+    display: none !important;
+}</code></pre>
+
+<h2 id="a-linha-estranha" data-toc-title="A linha estranha" data-sub="Matar a divisória por formato">A linha estranha</h2>
+<p>Funcionou, mas sobrou uma linha vertical no meio da tela: a <strong>barra de redimensionar</strong> do WhatsApp, que mora fora da coluna. Pra matá-la, o <code>content.js</code> pega a faixa que segura a coluna e a conversa, olha os filhos diretos e procura um elemento <strong>fino</strong> (menos de 24px) e <strong>alto</strong> (mais de 40% da tela). Isso descreve uma divisória e nada mais. Não dependemos de um nome de classe que o WhatsApp pode trocar; dependemos do formato.</p>
+<pre><code class="language-javascript">function hideDividers() {
+    const side = document.querySelector("#side");
+    const row = side &amp;&amp; side.parentElement &amp;&amp; side.parentElement.parentElement;
+    if (!row) return;
+    Array.from(row.children).forEach(function (child) {
+        const r = child.getBoundingClientRect();
+        if (r.width &gt; 0 &amp;&amp; r.width &lt; 24 &amp;&amp; r.height &gt; window.innerHeight * 0.4) {
+            child.dataset.waDivider = "1";
+            child.style.setProperty("display", "none", "important");
+        }
+    });
+}</code></pre>
+
+<h2 id="sobreviver-ao-react" data-toc-title="Sobreviver ao React" data-sub="MutationObserver">Sobreviver ao React</h2>
+<p>O WhatsApp Web é feito em <strong>React</strong>, que redesenha pedaços da tela o tempo todo. Isso pode apagar o botão ou recriar a coluna do zero. O <code>MutationObserver</code> é uma ferramenta do navegador que avisa toda vez que o HTML muda. Observamos o <code>document.body</code> e, a cada mudança, garantimos que o botão existe e reaplicamos o estado. O <code>requestAnimationFrame</code> agrupa as mudanças num passo por quadro, pra não rodar mil vezes por segundo.</p>
+<pre><code class="language-javascript">let raf = false;
+new MutationObserver(function () {
+    if (raf) return;
+    raf = true;
+    requestAnimationFrame(function () {
+        raf = false;
+        ensureButton();
+        if (hidden) hideDividers();
+    });
+}).observe(document.body, { childList: true, subtree: true });</code></pre>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>Uma extensão é uma pasta com <code>manifest.json</code> carregada no modo desenvolvedor. O content script injeta o nosso código na página do WhatsApp. Escondemos a coluna pegando o pai do <code>#side</code> com <code>:has</code> e ligando por uma classe no <code>&lt;html&gt;</code>; matamos a divisória por formato (fina e alta); e usamos o <code>MutationObserver</code> pra sobreviver aos redesenhos do React. A coisa pra levar: extensão é só web (HTML, CSS, JS) rodando com um pouco mais de permissão sobre a página. De uma chateação de todo dia saiu um botão que fica sempre lá.</p>
+
+</body>
+</html>
