@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O Painel e os Personagens — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>O Painel e os Personagens</h1>
+
+<div class="audio-player" data-src="audio/o-painel-e-os-personagens.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Etapa 8 da migração do site do Kaco pra Java, parte 1 de 2 — o coração do pedido original: um <strong>painel admin</strong> pra publicar conteúdo sem tocar em arquivo. Entre o capítulo anterior e este, as etapas 6 e 7 aconteceram sem episódio próprio (os 15 clones viraram 2 templates Thymeleaf e a carga oficial encheu o banco). Este capítulo cobre a casa do painel (layout em fragments, menu lateral, dashboard) e o primeiro CRUD, o de <strong>personagens</strong> — escolhido de propósito por ser o mais simples (um upload só) e validar o padrão de tela que as histórias herdam.</p>
+
+<h2 id="casa" data-toc-title="A casa do painel" data-sub="Fragments + a pegadinha do 'head'">A casa do painel</h2>
+<p>Um arquivo de fragments (<code>admin/fragments/admin.html</code>) com dois pedaços: <code>head-admin(titulo)</code>, que leva title, fontes e todo o CSS do painel (em cima dos tokens do <code>base.css</code> do site — a cara é a mesma do Kaco), e <code>menu(secao)</code>, a barra lateral que destaca a seção ativa e mostra as seções futuras desabilitadas com a etiqueta "etapa 9".</p>
+<p>A pegadinha real do dia: o fragment nasceu chamado <code>head</code> e tudo quebrou com um erro de "synthetic parameters" que não dizia nada. O motivo: o seletor de fragment do Thymeleaf também casa por <strong>nome de tag</strong> — pedir <code>:: head</code> achava a <code>&lt;head&gt;</code> do próprio arquivo, sem assinatura de parâmetros:</p>
+<pre><code class="language-html">&lt;!-- head-admin (e não "head"): o seletor de fragment também casa por nome de
+     tag, e ':: head' acharia a &lt;head&gt; deste arquivo — mesmo motivo do
+     head-comum no layout do site --&gt;
+&lt;th:block th:fragment="head-admin(titulo)"&gt;</code></pre>
+<p>O layout do próprio site já tinha um <code>head-comum</code> — e a gente só entendeu o porquê do nome quando caiu na mesma armadilha.</p>
+
+<h2 id="crud" data-toc-title="O CRUD de personagens" data-sub="Slug imutável + exclusão protegida">O CRUD de personagens</h2>
+<p><code>AdminPersonagemController</code> em <code>/admin/personagens</code>: lista com <code>findAll</code> ordenado, form novo com ordem sugerida (<code>findTopByOrderByOrdemDesc</code> + 1), salvar com parâmetros simples + o <code>MultipartFile</code> do ícone. Personagem novo ganha <strong>slug a partir do nome — e o slug nunca mais muda</strong>, porque vira nome de arquivo no disco (<code>icone-&lt;slug&gt;.&lt;ext&gt;</code>, a convenção que o site estático sempre usou):</p>
+<pre><code class="language-java">/** "São João" → "sao-joao". */
+public static String slugify(String nome) {
+    String s = Normalizer.normalize(nome == null ? "" : nome, Normalizer.Form.NFD)
+            .replaceAll("\\p{M}", "")
+            .toLowerCase(Locale.ROOT)
+            .replaceAll("[^a-z0-9]+", "-")
+            .replaceAll("(^-+|-+$)", "");
+    return s.isBlank() ? "item" : s;
+}</code></pre>
+<p>Excluir tem guarda: personagem vinculado a história ou desenho não sai — dois métodos derivados resolvem o join da N-N pelo nome (<code>existsByPersonagens_Id</code>). E excluir <em>não</em> apaga o arquivo do ícone, de propósito: o site estático (produção até a virada) ainda referencia esses arquivos.</p>
+
+<h2 id="upload" data-toc-title="O upload seguro" data-sub="Nome do servidor + tipo/tamanho + confinamento">O upload seguro</h2>
+<p>Upload é superfície de ataque; o <code>ArquivoConteudoService</code> concentra as defesas. O nome do arquivo é 100% decidido no servidor (o nome que o navegador manda só aparece em mensagem de erro), a extensão sai de um mapa de content-type, tem teto de tamanho, e o destino é confinado na pasta de conteúdo:</p>
+<pre><code class="language-java">private static final Map&lt;String, String&gt; TIPOS_IMAGEM = Map.of(
+        "image/png", "png",
+        "image/jpeg", "jpeg",
+        "image/webp", "webp");
+
+String relativo = subpasta + "/" + nomeBase + "." + ext;
+Path destino = contentDir.resolve(relativo).normalize();
+if (!destino.startsWith(contentDir)) {
+    throw new IllegalArgumentException("Caminho de destino inválido.");
+}</code></pre>
+<p>Mesmo que alguém invente um nome com <code>../</code>, o <code>normalize()</code> + <code>startsWith()</code> não deixa sair da pasta. No form, um <code>URL.createObjectURL</code> mostra o preview do ícone antes de subir — JS vanilla, três linhas.</p>
+
+<h2 id="error" data-toc-title="A armadilha do /error" data-sub="Status 999 depois do login">A armadilha do /error</h2>
+<p>Na validação visual, o dono do projeto logou e caiu num JSON cru: <code>{"status":999,"error":"None"}</code>. Nenhum erro no log. O mecanismo: em algum momento anônimo, uma requisição caiu em erro e o container despachou pro <code>/error</code> interno; o Spring Security (que protege tudo que não está liberado) interceptou, salvou <code>/error</code> como <em>destino desejado</em> e mandou pro login. Login feito, o Security devolveu o usuário... pra página de erro vazia, status 999.</p>
+<pre><code class="language-java">// /error trancado vira armadilha: o Security salva /error como destino,
+// manda pro login e devolve o usuário pro JSON cru (status 999)
+.requestMatchers("/error").permitAll()</code></pre>
+<p>Lição: a página de erro do Spring precisa ser pública, senão vira armadilha de pós-login.</p>
+
+<h2 id="prova" data-toc-title="A prova por curl" data-sub="Upload, tipo inválido, vínculo, 403">A prova por curl</h2>
+<p>Criar personagem com upload de um PNG de 1 pixel (o arquivo aparece no disco com o nome do servidor: <code>icone-teste-curl.png</code>); mandar um <code>.txt</code> no lugar da imagem (recusado com "A imagem precisa ser JPEG, PNG ou WebP"); excluir o Kaco (bloqueado — vinculado a histórias); excluir o personagem de teste (some do banco); e um usuário FAMILIA em <code>/admin/personagens</code> (403 — só ADMIN). Beco recorrente: a porta 8080 ocupada por uma instância órfã de outra sessão, rodando código velho — o app "sobe" instantâneo e as mudanças não aparecem.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>O painel existe com a cara do site: fragments Thymeleaf (com a lição do nome <code>head</code> — o seletor casa por tag), dashboard com contagens, e o CRUD de personagens completo: slug imutável nascido do nome, upload com nome decidido no servidor + tipo/tamanho validados + caminho confinado, exclusão protegida por vínculo, e a armadilha do <code>/error</code> desarmada. Próximo capítulo: as histórias entram no painel — upload múltiplo de cenas, arraste pra reordenar e dois bugs de gente grande (dirty checking e o unique da renumeração).</p>
+
+</body>
+</html>

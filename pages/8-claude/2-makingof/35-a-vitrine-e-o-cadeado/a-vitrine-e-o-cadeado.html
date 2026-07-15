@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Vitrine e o Cadeado — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>A Vitrine e o Cadeado</h1>
+
+<div class="audio-player" data-src="audio/a-vitrine-e-o-cadeado.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Etapa 4 da migração do site do Kaco pra Java: o login, requisito central do projeto. O plano original dizia "tudo autenticado", mas a decisão de produto mudou o desenho antes do código: a home vira <strong>vitrine pública</strong> com uma amostra por categoria (1-2 histórias, 1-2 desenhos, quebra-cabeça usando as histórias da amostra), o resto ganha cadeado, e quem clica no cadeado não vai pra tela de login — um <strong>modal desce na própria página</strong>, com o fundo desfocado, pedindo nome e e-mail. As decisões viraram registro no plano (D7 e D8) e uma migration nova, a V3: flag <code>vitrine</code> em <code>historia</code> e <code>desenho_colorir</code> + tabela <code>solicitacao_acesso</code> (status PENDENTE / APROVADA / RECUSADA).</p>
+
+<h2 id="ponte" data-toc-title="A ponte com a tabela" data-sub="UsuarioDetailsService + BCrypt validando o hash do Postgres">A ponte com a tabela usuario</h2>
+<p>O Spring Security consulta uma interface no login, o <code>UserDetailsService</code>. A nossa implementação tem um método só: recebe o e-mail digitado, busca com o <code>findByEmail</code> que nasceu na etapa anterior, e devolve o pacote que o Security entende:</p>
+<pre><code class="language-java">@Override
+public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    Usuario usuario = usuarios.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + email));
+    return User.withUsername(usuario.getEmail())
+            .password(usuario.getSenhaHash())
+            .roles(usuario.getPapel().name())   // ADMIN ou FAMILIA vira ROLE_
+            .disabled(!usuario.isAtivo())
+            .build();
+}</code></pre>
+<p>Só de existir esse bean, o usuário em memória que o Spring gera por padrão morre. O par dele é o <code>PasswordEncoder</code> devolvendo <code>BCryptPasswordEncoder</code> — e aqui tem um detalhe bonito: o admin inicial foi semeado na V2 <em>pelo próprio Postgres</em>, com o <code>crypt()</code> da extensão pgcrypto. O Spring valida aquele hash numa boa: BCrypt é BCrypt dos dois lados. O banco gerou, o Java confere.</p>
+
+<h2 id="corrente" data-toc-title="A corrente de regras" data-sub="Público, autenticado, ADMIN — na ordem">A corrente de regras</h2>
+<p>O <code>SecurityConfig</code> da etapa 2 era uma linha (tudo liberado). Foi reescrito como uma corrente avaliada <strong>na ordem</strong> — a primeira regra que casa com a URL decide:</p>
+<pre><code class="language-java">.authorizeHttpRequests(auth -> auth
+    .requestMatchers("/", "/index.html", "/favicon.ico",
+            "/css/**", "/js/**", "/components/**", "/assets/**",
+            "/content/**", "/colorir/**").permitAll()          // a rua (vitrine)
+    .requestMatchers("/login", "/solicitar-acesso", "/api/sessao").permitAll()
+    .requestMatchers("/admin/**").hasRole("ADMIN")             // o escritório
+    .anyRequest().authenticated())                             // a loja, só com chave
+.formLogin(login -> login
+    .loginPage("/login")
+    .usernameParameter("email")      // o padrão do Spring é username/password
+    .passwordParameter("senha"))
+.rememberMe(remember -> remember
+    .key(rememberMeKey)              // assina o cookie; chave vem do application.yml
+    .tokenValiditySeconds((int) Duration.ofDays(90).toSeconds()))</code></pre>
+<p>O remember-me tem validade de 90 dias porque o público é família: sessão não pode expirar toda hora. O logout aceita link simples (GET), porque o botão Sair mora num menu estático sem token CSRF — risco assumido e anotado (pior caso: alguém força um logout). A tela de login em si é Thymeleaf com a cara do site, importando o <code>base.css</code> e usando os tokens; o <code>th:action</code> injeta o token CSRF sozinho.</p>
+
+<h2 id="modal" data-toc-title="O modal que desce" data-sub="kids-acesso.js: backdrop blur + honeypot">O modal que desce</h2>
+<p><code>kids-acesso.js</code> é componente novo no padrão da casa: injeta o próprio CSS, monta o overlay e expõe <code>window.kidsAcesso.abrir()</code>. O visual pedido: fundo com <code>backdrop-filter: blur(6px)</code> e o cartão descendo por keyframes:</p>
+<pre><code class="language-css">@keyframes kidsAcessoDesce {
+    from { transform: translateY(-60px); opacity: 0; }
+    to   { transform: translateY(0);     opacity: 1; }
+}</code></pre>
+<p>Dentro do form, além de nome e e-mail, mora o <strong>campo armadilha</strong> (honeypot): um input chamado <code>site</code>, posicionado fora da tela, invisível pra gente. Robô de spam preenche tudo — inclusive ele — e se entrega. O envio é <code>fetch</code> POST com JSON; sucesso troca o form pela mensagem de "pedido enviado". No live-server (sem app por trás) o fetch falha com mensagem amigável.</p>
+
+<h2 id="endpoint" data-toc-title="Endpoint com defesa própria" data-sub="Fora do CSRF: honeypot, rate limit, idempotência">O endpoint público com defesa própria</h2>
+<p>O <code>/solicitar-acesso</code> ficou <strong>fora do CSRF</strong> de propósito (quem posta é um form estático, sem token). Endpoint público sem CSRF precisa de defesas próprias, e são três:</p>
+<pre><code class="language-java">if (pedido.site() != null && !pedido.site().isBlank()) {
+    return ok(); // bot no honeypot: FINGE sucesso e não grava
+}
+if (estourouLimite(request.getRemoteAddr())) {
+    return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+            .body(Map.of("ok", false, "mensagem", "Muitos pedidos seguidos. ..."));
+}
+if (!solicitacoes.existsByEmailIgnoreCaseAndStatus(pedido.email(), StatusSolicitacao.PENDENTE)) {
+    // grava; e-mail que já tem pedido PENDENTE responde o MESMO sucesso
+}</code></pre>
+<p>O rate limit é um mapa em memória de IP pra fila de timestamps: mais de 3 pedidos em 10 minutos, resposta 429. E o pedido repetido é <strong>idempotente</strong>: não duplica no banco e responde igual, sem vazar quem já pediu. A validação é Bean Validation num record, com mensagens em português no tom do site.</p>
+
+<h2 id="cadeado" data-toc-title="O cadeado que abre o modal" data-sub="/api/sessao + interceptor de cliques">O cadeado que abre o modal</h2>
+<p>Pro clique trancado abrir o modal em vez de navegar, o front precisa saber se tem alguém logado. Nasceu o <code>/api/sessao</code> (público, responde <code>{autenticado, papel}</code>), e no <code>kids-acesso.js</code> o interceptor: se anônimo, escuta os cliques do documento na fase de captura; link <code>.html</code> que não seja o index, <code>preventDefault()</code> e abre o modal.</p>
+<pre><code class="language-javascript">document.addEventListener('click', function (e) {
+    var link = e.target.closest ? e.target.closest('a[href]') : null;
+    if (!link || link.target === '_blank') return;
+    var arquivo = new URL(link.href, location.href).pathname.split('/').pop();
+    if (!/\.html$/i.test(arquivo) || arquivo === 'index.html') return;
+    e.preventDefault();
+    abrir();          // o modal desce AQUI, sem sair da página
+}, true);</code></pre>
+<p>Logado, nada é interceptado; no live-server o fetch da sessão falha e o site segue normal; e o redirect do servidor continua como rede de segurança pra URL digitada na mão. O <code>kids-menu</code> faz a mesma consulta e, só quando autenticado, ganha "Trocar senha" e "Sair" — a página <code>/trocar-senha</code> exige a senha atual, e a senha temporária do admin morre nela.</p>
+
+<h2 id="beco" data-toc-title="O beco da arte sumida" data-sub="colorir 302 vs quebra-cabeça 200">O beco: a arte do colorir sumiu</h2>
+<p>Teste visual e o relato: o card do colorir perdeu a arte, mas o quebra-cabeça aparecia normal. Diagnóstico com dois curls no <em>mesmo arquivo</em>: logado, <code>200 image/jpeg</code>; anônimo, <code>302</code> pro login. A causa: as imagens das histórias e do quebra-cabeça moram em <code>content/</code> (público na corrente), mas as artes do colorir moram em <code>site/colorir/</code> — que caía no <code>anyRequest().authenticated()</code>. Correção de uma linha: <code>/colorir/**</code> entra na lista pública, com anotação no plano de avaliar mover essas artes pra <code>content/</code> de vez na etapa da carga.</p>
+
+<h2 id="resultado" data-toc-title="Resultado" data-sub="Os três perfis validados">O resultado</h2>
+<p>Bateria de curl nos três perfis. Anônimo: home 200, rotina 302 pro login, <code>api/sessao</code> dizendo falso. FAMILIA: loga, navega no site inteiro, <code>/admin</code> devolve 403. ADMIN: loga, <code>/admin</code> 200, cookie remember-me no pote. O pedido de acesso: válido grava PENDENTE, repetido não duplica, armadilha finge sucesso, quarto seguido toma 429. E no navegador, o modal descendo com o fundo desfocado, na própria página.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>A etapa 4 em seis movimentos: a decisão de vitrine antes do código (V3 com flag e tabela de solicitação); o <code>UsuarioDetailsService</code> ligando o Security na tabela <code>usuario</code> com o BCrypt validando o hash que o Postgres semeou; a corrente de regras separando rua, loja e escritório; o modal <code>kids-acesso</code> descendo com blur e campo armadilha; o endpoint público com honeypot, rate limit e resposta idempotente; e o beco da arte do colorir resolvido comparando o mesmo curl logado e anônimo. Próximo capítulo: o endpoint de dados que gera o <code>kids-dados.js</code> do banco e liga a vitrine de verdade.</p>
+
+</body>
+</html>
