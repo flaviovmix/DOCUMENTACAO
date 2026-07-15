@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A História Sobe pelo Painel — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>A História Sobe pelo Painel</h1>
+
+<div class="audio-player" data-src="audio/a-historia-sobe-pelo-painel.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Etapa 8 da migração do site do Kaco pra Java, parte 2 de 2 — a meta é o critério de pronto da etapa inteira: <strong>publicar uma história de ponta a ponta só pela interface</strong>. História nova nasce rascunho (o upload precisa do slug, que vira nome de pasta), ganha cenas por upload múltiplo, ordena no arraste e publica com guarda: pelo menos 2 cenas, porque a cena 1 é a capa e capa sozinha não é história.</p>
+
+<h2 id="lista" data-toc-title="Lista com filtros" data-sub="Stream + record de exibição (lazy)">A lista com filtros</h2>
+<p><code>AdminHistoriaController</code>: a lista recebe três filtros opcionais (busca por título, categoria, publicadas/rascunhos) e resolve num stream — <code>findAll</code> ordenado, um <code>filter</code> por critério preenchido, e um <code>map</code> final pra um record <code>Linha</code> com tudo que a tabela mostra (título, slug, categoria com cor, capa = cena 1, contagem, badges). O record existe por causa do lazy com <code>open-in-view=false</code>: o template renderiza <em>depois</em> da transação fechar, então o controller inicializa tudo dentro dela.</p>
+
+<h2 id="form" data-toc-title="O form" data-sub="Chips CSS puro + transcrição herdada">O form</h2>
+<p>Três detalhes com história por trás. Os personagens viram <strong>chips</strong>: checkbox escondido cujo label é uma pílula com ícone e nome — CSS puro, zero JS:</p>
+<pre><code class="language-css">.chip input { position: absolute; opacity: 0; pointer-events: none; }
+.chip input:checked + span { border-color: var(--c-green); background: #e8f8ef; }</code></pre>
+<p>A <strong>transcrição herda a descrição</strong> dos dois lados: no navegador, um JS espelha enquanto o usuário não mexer nela (mexeu, o espelho desliga); no servidor, transcrição vazia recebe a descrição no salvar — cobre o caso sem JS. E <strong>publicar tem guarda</strong>: menos de 2 cenas, o salvar recusa com "salva como rascunho e adiciona as cenas primeiro".</p>
+
+<h2 id="dirty" data-toc-title="O bug do dirty checking" data-sub="Erro de validação ≠ rollback">O bug do dirty checking</h2>
+<p>O salvar é transacional e carrega a história <em>gerenciada</em>; seta os campos do form e só depois valida. Se a validação falha, re-renderiza com erro, sem chamar <code>save</code>. Parece certo — mas erro de validação não é exceção que estoura: o commit acontece no fim do método, e o dirty checking gravaria as <strong>mutações parciais</strong> mesmo assim. Você tenta publicar sem cenas, vê a mensagem de erro, mas o título que mudou já foi pro banco por baixo dos panos.</p>
+<pre><code class="language-java">} catch (IllegalArgumentException e) {
+    h.setPublicada(false);
+    if (id != null) {
+        // sem isto o commit do @Transactional gravaria as mutações parciais
+        // (dirty checking) mesmo re-renderizando com erro
+        em.detach(h);
+    }
+    prepararForm(model, h, selecionados, (id == null) ? List.of() : cenaViews(h));
+    model.addAttribute("erro", e.getMessage());
+    return "admin/historia-form";
+}</code></pre>
+<p><code>detach</code> tira a entidade da área gerenciada (as mudanças pendentes não vão pro commit), mas o objeto continua com os valores digitados — exatamente o que o form precisa mostrar de volta. Detalhe: as coleções lazy são inicializadas <em>antes</em> (um <code>size()</code> resolve), porque entidade destacada não carrega mais nada.</p>
+
+<h2 id="cenas" data-toc-title="As cenas" data-sub="Lote validado + arraste + duas fases">As cenas</h2>
+<p><strong>Upload múltiplo</strong> com regra de ouro do lote: validar <em>todos</em> antes de gravar <em>qualquer um</em> (um inválido cancela o lote). O nome físico congela no upload (próximo número livre da pasta, convenção <code>1.jpeg..N</code>) — desvio consciente do plano, que mandava renomear a cada reordenação: o site lê do banco, o nome do arquivo não significa mais nada, e a ordem mora só na coluna.</p>
+<p><strong>O arraste</strong> é HTML5 drag &amp; drop vanilla — três eventos na grade:</p>
+<pre><code class="language-javascript">grid.addEventListener('dragover', e => {
+    e.preventDefault();
+    const alvo = e.target.closest('.cena-card');
+    if (!alvo || alvo === arrastada) return;
+    const r = alvo.getBoundingClientRect();
+    const depois = e.clientX > r.left + r.width / 2;
+    grid.insertBefore(arrastada, depois ? alvo.nextSibling : alvo);
+});</code></pre>
+<p>O <code>insertBefore</code> move o card na hora (feedback imediato); no <code>dragend</code> as etiquetas renumeram ("cena 1 · capa") e o botão "Salvar nova ordem" só aparece se a sequência mudou. No servidor, a renumeração esbarra no unique composto <code>(historia_id, ordem)</code> — não dá pra fazer a cena 3 virar 2 enquanto a 2 existe. Solução em <strong>duas fases com flush</strong>:</p>
+<pre><code class="language-java">private void renumerar(List&lt;Cena&gt; naOrdem) {
+    for (int i = 0; i &lt; naOrdem.size(); i++) {
+        naOrdem.get(i).setOrdem(1000 + i);   // fase 1: fora do intervalo final
+    }
+    em.flush();
+    for (int i = 0; i &lt; naOrdem.size(); i++) {
+        naOrdem.get(i).setOrdem(i + 1);      // fase 2: posição definitiva
+    }
+}</code></pre>
+<p><strong>Remover cena</strong>: <code>orphanRemoval</code> apaga a linha, <code>flush</code> antes de renumerar (senão o UPDATE roda antes do DELETE e o unique reclama), o arquivo sai do disco — e se a história publicada ficar com menos de 2 cenas, <strong>volta pra rascunho sozinha</strong>, com aviso. <strong>Excluir a história</strong>: banco (cascade) + a pasta inteira do disco, com dupla proteção (caminho confinado e nunca a raiz do content).</p>
+
+<h2 id="prova" data-toc-title="A prova por curl" data-sub="+ o mojibake que não era bug">A prova por curl</h2>
+<p>História de teste: 3 PNGs viram <code>1.png..3.png</code> no disco e cenas 1..3 no banco; reordenação pra 3,1,2 conferida no banco; publicar ok; remover renumera e apaga o arquivo; remover de novo despublica sozinho; excluir zera banco e pasta. E um falso alarme que vale a lição: título com acento chegou como mojibake no banco — suspeita de bug de encoding no app, mas as histórias da carga tinham acento perfeito. O teste da inocência: repetir o POST com os bytes UTF-8 em percent-encoding na mão (imune ao shell) → "História Bonita", slug <code>historia-bonita</code>. O culpado era o shell do teste no Windows, não o app.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>O critério da etapa está de pé: história nasce rascunho, ganha cenas por upload em lote (validado inteiro antes de gravar), ordena no arraste com a ordem morando na coluna (nome físico congelado), publica com a guarda das 2 cenas e aparece no site servido pelo banco. Os dois bugs de gente grande — dirty checking desarmado com <code>detach</code> no caminho de erro, e o unique da renumeração vencido em duas fases com flush. O fluxo manual de copiar imagem e editar JavaScript morreu pro conteúdo novo. Próximo: o resto do conteúdo entra no painel (etapa 9).</p>
+
+</body>
+</html>

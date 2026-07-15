@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Os Dados Saíram do Arquivo — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Os Dados Saíram do Arquivo</h1>
+
+<div class="audio-player" data-src="audio/os-dados-sairam-do-arquivo.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Etapa 5 da migração do site do Kaco pra Java: matar a fonte estática de dados. Até aqui, toda página lia de um arquivo no repo (<code>kids-stories.js</code>) que definia quatro globais na janela: <code>KIDS_CATEGORIAS</code>, <code>KIDS_PERSONAGENS</code>, <code>KIDS_STORIES</code> e <code>KIDS_COLORIR</code>. Neste capítulo esse arquivo vira um <strong>endpoint que escreve JavaScript</strong>: um controller monta os mesmos globais direto do banco, com o mesmo contrato (mesmas chaves), e por isso nenhum componente do site precisou mudar. E a vitrine da etapa anterior liga de verdade: anônimo recebe a amostra completa e o resto vem como stub trancado.</p>
+
+<h2 id="contradicao" data-toc-title="A contradição no plano" data-sub="Trocar o script × preservar o estático">A contradição no próprio plano</h2>
+<p>O plano mandava duas coisas que não fecham juntas: trocar nas páginas o <code>&lt;script src="components/kids-stories.js"&gt;</code> pela URL nova, <em>e</em> manter o site estático (live-server) funcionando com o arquivo antigo até a virada final. Se as páginas apontam pro endpoint, o estático quebra — lá o endpoint não existe. Duas saídas foram postas na mesa: servir o JS gerado <strong>no mesmo caminho</strong> do arquivo antigo (controller tem precedência sobre arquivo estático no Spring — zero páginas tocadas), ou seguir o plano com a URL nova e aceitar a quebra. Decisão do dono: <em>"pode quebrar por enquanto, já tenho um backup"</em>. URL nova: <code>/js/kids-dados.js</code>.</p>
+
+<h2 id="controller" data-toc-title="O controller que escreve JS" data-sub="produces application/javascript + Jackson">O controller que escreve JavaScript</h2>
+<p><code>KidsDadosController</code>, um <code>@RestController</code> com um método só. O truque todo está no <code>produces</code> e no corpo: em vez de JSON pra alguém interpretar, ele responde <em>código executável</em> — pro navegador, era um script e continua sendo um script:</p>
+<pre><code class="language-java">@GetMapping(value = "/js/kids-dados.js", produces = "application/javascript")
+@Transactional(readOnly = true)
+public ResponseEntity&lt;String&gt; dados(Authentication auth) throws Exception {
+    boolean anonimo = auth == null || !auth.isAuthenticated()
+            || auth instanceof AnonymousAuthenticationToken;
+    // ... monta os 4 globais ...
+    String js = "window.KIDS_CATEGORIAS = " + json.writeValueAsString(cats) + ";\n"
+              + "window.KIDS_PERSONAGENS = " + json.writeValueAsString(pers) + ";\n"
+              + "window.KIDS_STORIES = " + json.writeValueAsString(stories) + ";\n"
+              + "window.KIDS_COLORIR = " + json.writeValueAsString(colorir) + ";\n";
+    return ResponseEntity.ok()
+            .cacheControl(CacheControl.maxAge(Duration.ofSeconds(60)))
+            .contentType(MediaType.parseMediaType("application/javascript;charset=UTF-8"))
+            .body(js);
+}</code></pre>
+<p>Peças: o <code>Authentication</code> injetado decide anônimo vs logado (nulo, não autenticado ou <code>AnonymousAuthenticationToken</code>); o <code>ObjectMapper</code> do Jackson serializa cada global (aspas, acentos e caracteres especiais por conta dele — JSON concatenado na mão é bug esperando); o <code>Cache-Control</code> de 60s faz publicação nova aparecer em até um minuto; e o <code>@Transactional(readOnly = true)</code> mantém a transação aberta pras coleções lazy (cenas, personagens) carregarem dentro do método. Os caminhos saem prontos por um helper <code>content()</code> que prefixa <code>/content/</code> no caminho relativo guardado no banco.</p>
+
+<h2 id="stub" data-toc-title="O stub trancado" data-sub="Cenas vazias + trancada:true — e por que colorir é diferente">O stub trancado</h2>
+<p>O plano dizia "anônimo recebe só a amostra" e também "o resto aparece com cadeado na home". As duas juntas não fecham: sem receber o resto, a home não tem o que desenhar. A saída: história fora da vitrine vira <strong>stub sem conteúdo</strong> pra anônimo:</p>
+<pre><code class="language-java">s.put("src", trancada ? "" : content(h.getAudioPath()));
+s.put("cenas", trancada ? List.of()
+        : h.getCenas().stream().map(c -> content(c.getImagemPath())).toList());
+s.put("tx", trancada ? "" : nz(h.getTranscricao()));
+if (trancada) s.put("trancada", true);</code></pre>
+<p>A capa fica (o card precisa dela, e <code>/content/**</code> já era público). Desenho de colorir fora da vitrine é diferente: <strong>nem vira stub</strong> — no colorir a arte É a experiência; mandar o caminho da imagem já entregaria o desenho pra pintar. História trancada sem cenas não entrega nada; desenho trancado com imagem entregaria tudo.</p>
+
+<h2 id="front" data-toc-title="O front mínimo" data-sub="1 linha em 8 páginas + página pública, dado filtrado">O front mínimo</h2>
+<p>Oito páginas trocaram uma linha de script; as sete de experiência ganharam também o <code>kids-acesso.js</code> (o modal, que antes só existia na home). No <code>SecurityConfig</code>, um bloco novo inverte a lógica da etapa 4 — a <strong>página</strong> é pública, os <strong>dados</strong> é que são filtrados:</p>
+<pre><code class="language-java">// ETAPA 5 (D7): páginas de experiência viram públicas — quem é
+// filtrado agora são os DADOS (/js/kids-dados.js manda só a amostra
+// vitrine pra anônimo). Rotinas/emoções/família seguem trancadas.
+.requestMatchers("/historias.html", "/historia.html", "/colorir.html",
+        "/quebra-cabeca.html", "/quebra-cabeca-jogo.html",
+        "/personagens.html", "/audio-historias.html").permitAll()</code></pre>
+<p>E o interceptor de cliques do <code>kids-acesso.js</code>, que na etapa 4 trancava qualquer <code>.html</code>, agora tranca <strong>por item</strong>: whitelist de páginas públicas + lookup no próprio global:</p>
+<pre><code class="language-javascript">function itemTrancado(arquivo, params) {
+    var id = arquivo === 'historia.html' ? params.get('id')
+           : arquivo === 'quebra-cabeca-jogo.html' ? params.get('h')
+           : null;
+    if (!id) return false;   // sem item na URL (hubs, modo livre) = página aberta
+    var story = (window.KIDS_STORIES || []).filter(function (s) { return s.id === id; })[0];
+    return !story || !!story.trancada;
+}</code></pre>
+<p>Não achou a história (nem stub veio) ou veio <code>trancada</code>? <code>preventDefault()</code> e o modal desce. Página pública sem item na URL navega normal; rotinas, emoções e família continuam caindo no modal.</p>
+
+<h2 id="cadeado" data-toc-title="Cadeado com blur" data-sub="hist-trancado: blur(7px) + scale — e a subida pro componente">O cadeado com blur</h2>
+<p>Card de item trancado ganha a classe <code>hist-trancado</code> e um <code>&lt;span class="hist-lock"&gt;🔒&lt;/span&gt;</code>. O pedido do blur veio na validação visual:</p>
+<pre><code class="language-css">.hist-trancado .hist-head img {
+    filter: blur(7px);
+    transform: scale(1.08);   /* esconde as bordas lavadas do blur */
+}</code></pre>
+<p>E um beco clássico de duplicação: o blur nasceu nos grids da home (builders inline) e o dono reportou que o hub do quebra-cabeça não borrava. Claro — os hubs usam o componente compartilhado <code>kids-historias</code>. A correção subiu pro componente (o card builder aceita <code>trancada</code> no item e troca o selo de status pelo cadeado); os hubs só passam a flag adiante.</p>
+
+<h2 id="carga" data-toc-title="Carga mínima" data-sub="generate_series: 43 cenas de uma tacada">A carga mínima</h2>
+<p>O banco estava vazio (a carga de verdade é a etapa 7). Um SQL descartável adiantou o essencial: 8 personagens, 5 histórias, 1 desenho — e as 43 cenas de uma tacada só, sem digitar caminho nenhum:</p>
+<pre><code class="language-sql">INSERT INTO cena (historia_id, ordem, imagem_path)
+SELECT h.id, n, 'historias/' || h.slug || '/' || n || '.jpeg'
+FROM historia h
+JOIN (VALUES ('o-passeio-feliz', 9), ('o-gato-o-rato-e-o-pato', 7),
+             ('kaco-anda-de-bicicleta', 8), ('kaco-vai-a-praia', 10),
+             ('kaco-com-tio-thiago', 9)) AS q(slug, total) ON q.slug = h.slug
+CROSS JOIN LATERAL generate_series(1, q.total) AS n;</code></pre>
+<p>Os vínculos história-personagem saíram de uma tabela <code>VALUES</code> com join por slug (nenhum id na mão). Vitrine marcada: O Passeio Feliz, O Gato o Rato e o Pato, e o desenho1.</p>
+
+<h2 id="prova" data-toc-title="A prova por curl" data-sub="Login com CSRF na mão + anônimo × FAMILIA">A prova por curl</h2>
+<p>Anônimo: as duas histórias da vitrine completas, as outras três como stub (<code>cenas: []</code>, <code>trancada: true</code>). Logado exige o ritual do CSRF na mão: GET na página de login guardando cookie, extrair o token escondido do HTML, POST com e-mail + senha + token — e aí o mesmo endpoint respondeu as 5 histórias completas, sem a palavra <code>trancada</code> no corpo. As 7 páginas públicas: 200 pra anônimo; rotina, emoção e família: 302 pro login. Becos do caminho: a porta 8080 ocupada por um app antigo de outra sessão, e o banco recusando conexão depois de um reinício porque o Docker Desktop nem estava aberto.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>O arquivo estático virou um endpoint que escreve JavaScript com o mesmo contrato (mesmos globais, mesmas chaves) — por isso nenhum componente mudou. O <code>Authentication</code> decide entre o cardápio completo e a degustação; história trancada vira stub com capa mas sem conteúdo (a home desenha o cadeado com blur), desenho trancado nem aparece; o interceptor tranca por item, não por página; e a carga mínima com <code>generate_series</code> encheu o banco pra prova por curl. O <code>kids-stories.js</code> segue no repo aposentado em vida, até a virada final. Próximo capítulo: as 15 páginas clonadas de rotina e emoção começam a virar templates.</p>
+
+</body>
+</html>

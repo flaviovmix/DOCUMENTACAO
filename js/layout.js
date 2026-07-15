@@ -476,6 +476,16 @@ var MENU = [
         basePath: '9-ingles'
     },
     {
+        grupo: 'ESFERA',
+        pagina: 'esfera.html',
+        items: [
+            { label: 'Cards', arquivo: 'esfera.html', tipo: 'check' },
+            { label: '1 - Config PTZ', arquivo: '1-config-ptz/1-config-ptz.html', tipo: 'check' }
+        ],
+        pasta: '14-esfera',
+        basePath: '14-esfera'
+    },
+    {
         grupo: 'SERVIDOR',
         pagina: 'servidor.html',
         subgrupos: [

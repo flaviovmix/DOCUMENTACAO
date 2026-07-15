@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Config PTZ — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<div class="audio-player" data-src="audio/config-ptz.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>
+    A meta era simples de dizer: por a câmera OBSBOT do estúdio pra responder numa controladora PTZ de mesa,
+    aquela com joystick. O caminho até lá passou por três coisas, nessa ordem: descobrir o que a câmera aceita,
+    mexer nela na mão por VISCA over IP, e abrir a própria controladora por dentro pra achar por que ela não
+    estava conversando com a câmera. No meio tem um erro real, dos que ensinam.
+</p>
+
+<div class="info-accordion">
+
+    <div class="info-row open">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Descobrir o que a câmera fala — sem manual</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>
+                Primeiro: a câmera está viva? Um ping no endereço dela respondeu. Depois, quais portas estão
+                abertas, já que cada porta é a entrada de um serviço.
+            </p>
+<pre><code class="language-bash">ping -n 2 192.168.2.108
+
+# portas comuns de câmera
+for p in 80 554 8080 8000 88 443 37777 34567; do
+  (echo &gt; /dev/tcp/192.168.2.108/$p) &gt;/dev/null 2&gt;&amp;1 &amp;&amp; echo "porta $p ABERTA" || echo "porta $p fechada"
+done</code></pre>
+            <p>
+                Voltaram três abertas: <strong>80</strong> (web), <strong>443</strong> (web com cadeado) e
+                <strong>554</strong> (RTSP, o cano do vídeo). Um pedido HTTP na porta 80 entregou a marca no
+                título da página: <strong>OBSBOT</strong>. Só que o controle de movimento não anda por nenhuma
+                dessas três.
+            </p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">VISCA over IP — o pacote byte a byte</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>
+                O jeito padrão de mandar uma câmera dessas girar chama <strong>VISCA</strong>. Viajando pela rede
+                vira <strong>VISCA over IP</strong>, e vai por <strong>UDP na porta 52381</strong>. O pacote tem
+                duas partes: o envelope (8 bytes) e o comando.
+            </p>
+            <h3>O envelope (8 bytes)</h3>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Bytes</th><th>O que é</th><th>Exemplo</th></tr>
+                    <tr><td>1-2</td><td>Tipo do payload: <code>01 00</code> comando, <code>01 10</code> pergunta, <code>01 11</code> resposta</td><td><code>01 00</code></td></tr>
+                    <tr><td>3-4</td><td>Tamanho do comando que vem atrás</td><td><code>00 09</code></td></tr>
+                    <tr><td>5-8</td><td>Número de ordem (sobe a cada envio)</td><td><code>00 00 00 02</code></td></tr>
+                </table>
+            </div>
+            <h3>O comando de mover (pan/tilt)</h3>
+            <p>
+                <code>81 01 06 01 VV WW 0p 0t FF</code> — o <code>81</code> é "câmera 1", o <code>01 06 01</code>
+                é "mover a cabeça", <code>VV</code>/<code>WW</code> são as velocidades, e os dois últimos mandam a
+                direção. O <code>FF</code> fecha todo comando VISCA.
+            </p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Byte</th><th>01</th><th>02</th><th>03</th></tr>
+                    <tr><td><code>0p</code> (horizontal)</td><td>esquerda</td><td>direita</td><td>para</td></tr>
+                    <tr><td><code>0t</code> (vertical)</td><td>cima</td><td>baixo</td><td>para</td></tr>
+                </table>
+            </div>
+<pre><code class="language-bash"># virar pra direita: horizontal=02, vertical=03 (parado)
+81 01 06 01 08 08 02 03 FF
+
+# subir: horizontal=03 (parado), vertical=01
+81 01 06 01 08 08 03 01 FF
+
+# parar tudo
+81 01 06 01 08 08 03 03 FF</code></pre>
+            <p>
+                Detalhe que sempre importa: movimento é <strong>contínuo</strong>. Todo comando de direção precisa
+                de um "para" logo atrás, senão a câmera continua girando.
+            </p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">A controladora por dentro — a API fcgi e o tropeço do login</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>
+                Tinha um segundo aparelho na rede, em <code>192.168.2.119</code>. Parecia outra câmera, mas a
+                página web dele se chamava "Camera Control Panel": era a <strong>própria controladora PTZ</strong>
+                (modelo VDL99010). Ela serve uma página web, e cada botão dela chama por baixo um endereço interno
+                chamado <code>fcgi</code>, passando qual ação quer.
+            </p>
+<pre><code class="language-bash"># descobrir o modelo
+curl -s 'http://192.168.2.119/fcgi?token=0&amp;req=sys-info'
+# {"brand":9,"fw":"V0.1.28","user model":"VDL99010", ...}</code></pre>
+            <p>
+                O <strong>tropeço</strong>: tentei logar chamando o campo de senha de <code>passwd</code>, que é o
+                nome comum. Deu erro. Lendo o JavaScript da tela de login, o campo era <code>password</code> por
+                extenso, e ia em texto puro. Com o nome certo, o clássico <code>admin/admin</code> entrou e
+                devolveu um <strong>token</strong>, o crachá que precisa ir junto em toda chamada seguinte.
+            </p>
+<pre><code class="language-bash">curl -s -X POST 'http://192.168.2.119/fcgi?token=0&amp;req=login' \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"admin","password":"admin"}'
+# {"error":0,"role":1,"token":1798391659}</code></pre>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O diagnóstico — VISCA TCP numa porta que só aceita UDP</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>
+                Logado, a primeira pergunta foi "me lista os dispositivos". A resposta já entregou o problema:
+                a OBSBOT <strong>já estava cadastrada</strong> como Câmera 1, no endereço certo e na porta 52381
+                certa, mas com o <strong>tipo errado</strong>.
+            </p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Tipo</th><th>Protocolo</th><th>Transporte</th></tr>
+                    <tr><td>3</td><td>VISCA Over IP</td><td>UDP</td></tr>
+                    <tr><td>4</td><td>VISCA TCP</td><td>TCP</td></tr>
+                </table>
+            </div>
+            <p>
+                Estava marcada como <strong>tipo 4 (VISCA TCP)</strong>. E lá no scan do começo, a porta 52381
+                estava aberta <strong>só no UDP</strong>; no TCP estava fechada. Ou seja: a controladora tentava
+                falar VISCA TCP numa porta que a câmera só escuta por UDP. Nunca ia conectar. O conserto é trocar
+                o tipo de 4 pra 3.
+            </p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">O beco — o comando que corrompeu o cadastro</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>
+                Pra gravar o tipo novo existe a ação <code>dev-set</code>. Montei o que <em>achei</em> que fosse o
+                formato certo, copiando a cara do objeto que a listagem devolveu, e mandei. A resposta veio
+                <code>{"error":0}</code>, sucesso. Parecia ter dado certo.
+            </p>
+            <p>
+                Por garantia, pedi a lista de novo. O cadastro tinha virado <strong>lixo</strong>:
+            </p>
+<pre><code class="language-json">{ "index": 0, "ip": "0.0.0.3", "name": "",
+  "stream": { "enable": -1307369048, "url": "e" },
+  "type": -1091138020 }</code></pre>
+            <p>
+                Isso é cara de <strong>memória não inicializada</strong>: a controladora tentou encaixar o que
+                mandei num formato que ela esperava, os campos não bateram, e ela preencheu o resto com o que
+                estava sobrando na memória. Duas lições: <strong>"erro zero" não quer dizer que deu certo</strong>,
+                quer dizer só que ela aceitou receber — conferir depois foi o que salvou; e não chutar formato em
+                cima de um aparelho.
+            </p>
+            <h3>O formato certo (achado no JS da própria controladora)</h3>
+            <p>
+                Meu erro foi mandar tudo <strong>solto e plano</strong>. O certo é uma caixa aninhada, com o
+                protocolo entrando como uma <strong>chave nomeada</strong>:
+            </p>
+<pre><code class="language-json">{
+  "index": 0,
+  "devices": {
+    "ip": "192.168.2.108",
+    "name": "Câmera 1",
+    "stream": { "enable": 1, "use_tcp": 1, "password": "admin",
+                "source": 0, "url": "rtsp://0.0.0.0", "username": "admin" },
+    "type": 3,
+    "visca over ip": { "compatiable": 0, "port": 52381 }
+  }
+}</code></pre>
+            <p>
+                Remontado assim, o <code>dev-set</code> gravou limpo: Câmera 1, endereço certo, tipo 3,
+                VISCA over IP. Restaurado e corrigido de uma vez.
+            </p>
+        </div>
+    </div>
+
+    <div class="info-row">
+        <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+            <span class="info-row-title">Bônus — o foco vai pela mesma família</span>
+            <span class="info-row-btn">+</span>
+        </div>
+        <div class="info-row-body">
+            <p>
+                O foco também começa com <code>81</code>, e a família dele é <code>04</code>.
+            </p>
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Comando</th><th>Bytes</th></tr>
+                    <tr><td>Foco automático</td><td><code>81 01 04 38 02 FF</code></td></tr>
+                    <tr><td>Foco manual</td><td><code>81 01 04 38 03 FF</code></td></tr>
+                    <tr><td>Foco pra longe</td><td><code>81 01 04 08 02 FF</code></td></tr>
+                    <tr><td>Foco pra perto</td><td><code>81 01 04 08 03 FF</code></td></tr>
+                    <tr><td>Parar o foco</td><td><code>81 01 04 08 00 FF</code></td></tr>
+                    <tr><td>Perguntar o modo</td><td><code>81 09 04 38 FF</code></td></tr>
+                </table>
+            </div>
+            <p>
+                A regra que sempre vale: pra focar na mão, primeiro troca pra <strong>manual</strong>, senão o
+                automático corrige sozinho na sua frente.
+            </p>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

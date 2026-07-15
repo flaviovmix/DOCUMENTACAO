@@ -83,6 +83,91 @@
             </div>
         </div>
 
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Etapa 3 da migração Java: cada tabela do banco vira uma entidade JPA, lida peça por peça. O Usuario com id gerado pelo banco, enum gravado como texto e defaults espelhados; a Historia com as três relações (categoria preguiçosa, cenas em cascade com orphanRemoval, personagens em junção que não vira classe); os repositories com a consulta derivada do nome do método; e o teste de fumaça @DataJpaTest contra o Postgres real, transacional com rollback, com o em.clear() garantindo que a releitura vem do banco.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/tabela-vira-classe.png" alt="Tabela Vira Classe">
+            </div>
+            <div class="card-bar">
+                <a href="../34-tabela-vira-classe/tabela-vira-classe.html" class="card-tag" style="--tag-clr:#2563eb;">TABELA VIRA CLASSE</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Etapa 4 da migração Java: o login com vitrine. A decisão de produto antes do código (home pública com amostra, resto com cadeado que abre um modal descendo na própria página), o Spring Security lendo a tabela usuario com BCrypt validando o hash que o próprio Postgres semeou, a corrente de regras separando público, autenticado e ADMIN, o endpoint de pedido de acesso com honeypot e rate limit, e o beco da arte do colorir que sumia pra anônimo, diagnosticado comparando o mesmo curl logado e deslogado.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/a-vitrine-e-o-cadeado.png" alt="A Vitrine e o Cadeado">
+            </div>
+            <div class="card-bar">
+                <a href="../35-a-vitrine-e-o-cadeado/a-vitrine-e-o-cadeado.html" class="card-tag" style="--tag-clr:#db2777;">A VITRINE E O CADEADO</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Etapa 5 da migração Java: o arquivo estático de dados vira endpoint do banco. A contradição achada no próprio plano (trocar o script quebrava o estático que o plano mandava preservar) e a decisão de quebrar com backup; o controller que escreve JavaScript com Jackson mantendo o contrato dos globais; o stub trancado (cenas vazias, capa mantida) que liga a vitrine de verdade; o cadeado com blur que subiu da home pro componente compartilhado; e a carga mínima com generate_series provada por curl, incluindo login com CSRF na mão.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/os-dados-sairam-do-arquivo.png" alt="Os Dados Saíram do Arquivo">
+            </div>
+            <div class="card-bar">
+                <a href="../36-os-dados-sairam-do-arquivo/os-dados-sairam-do-arquivo.html" class="card-tag" style="--tag-clr:#ca8a04;">OS DADOS SAÍRAM DO ARQUIVO</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Etapa 8 da migração Java, parte 1: o painel admin nasce. O layout em fragments Thymeleaf com a pegadinha do fragment chamado head (o seletor também casa por nome de tag), o CRUD de personagens com slug que nasce do nome e nunca muda (vira nome de arquivo), o upload seguro do ícone (nome 100% do servidor, tipo e tamanho validados, caminho confinado no content), a exclusão bloqueada por vínculo, e a armadilha do /error do Spring Security que devolvia um JSON status 999 depois do login.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/o-painel-e-os-personagens.png" alt="O Painel e os Personagens">
+            </div>
+            <div class="card-bar">
+                <a href="../37-o-painel-e-os-personagens/o-painel-e-os-personagens.html" class="card-tag" style="--tag-clr:#0d9488;">O PAINEL E OS PERSONAGENS</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-menu btnMenuCard">
+                <svg viewBox="0 0 350 350"><circle cx="39" cy="55" r="39"/><circle cx="39" cy="175" r="39"/><circle cx="39" cy="295" r="39"/><path d="M345,21H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5V26c0-3-2-5-5-5z"/><path d="M345,141H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/><path d="M345,261H114c-3,0-5,2-5,5v58c0,3,2,5,5,5h231c3,0,5-2,5-5v-58c0-3-2-5-5-5z"/></svg>
+            </div>
+            <div class="card-info">
+                <div class="card-resumo">
+                    <p>Etapa 8 da migração Java, parte 2: publicar uma história de ponta a ponta só pela interface. A lista com filtros num record por causa do lazy, os chips de personagens em CSS puro, a transcrição que herda a descrição, o upload múltiplo que valida o lote inteiro antes de gravar, o arraste HTML5 vanilla com a renumeração em duas fases (o unique do banco não deixa duas cenas na mesma posição), a despublicação automática abaixo de 2 cenas, e o bug do dirty checking desarmado com detach no caminho de erro.</p>
+                </div>
+            </div>
+            <div class="card-img">
+                <img src="../img/a-historia-sobe-pelo-painel.png" alt="A História Sobe pelo Painel">
+            </div>
+            <div class="card-bar">
+                <a href="../38-a-historia-sobe-pelo-painel/a-historia-sobe-pelo-painel.html" class="card-tag" style="--tag-clr:#dc2626;">A HISTÓRIA SOBE PELO PAINEL</a>
+            </div>
+        </div>
+
     </div>
 
 </body>

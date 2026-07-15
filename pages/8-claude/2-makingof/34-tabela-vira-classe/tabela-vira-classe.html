@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabela Vira Classe — Making-of</title>
+    <script src="../../../../js/layout.js"></script>
+</head>
+<body>
+
+<nav class="page-toc"></nav>
+
+<h1>Tabela Vira Classe</h1>
+
+<div class="audio-player" data-src="audio/tabela-vira-classe.m4a">
+    <audio preload="metadata"></audio>
+    <button class="audio-btn" title="Play / Pause"></button>
+    <div class="audio-progress-wrap">
+        <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+        <div class="audio-progress-fill"></div>
+    </div>
+    <span class="audio-time">0:00 / 0:00</span>
+</div>
+
+<p>Etapa 3 da migração do site do Kaco pra Java. O app já servia o site e o banco <code>kids</code> já existia com 15 tabelas versionadas em Flyway, mas o Java e o banco ainda não se conheciam. Esta etapa constrói a ponte: cada tabela vira uma <strong>entidade JPA</strong>, cada consulta vira um método de <strong>repository</strong>, e um teste de fumaça prova que o espelho reflete direito, contra o schema real. Regra que guiou tudo: a fonte de verdade é o <code>V1__schema.sql</code>, não o rascunho do plano.</p>
+
+<h2 id="entidade" data-toc-title="A entidade simples" data-sub="Usuario: @Entity, @Id, enum como texto, defaults espelhados">A entidade simples: Usuario</h2>
+<p>Dois pacotes novos, <code>dominio</code> e <code>repositorio</code>. O <code>Usuario</code> mostra o kit básico. <code>@Entity</code> marca a classe, e o nome <code>Usuario</code> casa com a tabela <code>usuario</code> sozinho: a naming strategy do Spring converte camelCase pra snake_case (por isso <code>senhaHash</code> acha <code>senha_hash</code> sem <code>@Column(name)</code> nenhum).</p>
+<pre><code class="language-java">@Entity
+public class Usuario {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Papel papel;          // enum ADMIN / FAMILIA, gravado como TEXTO
+
+    @Column(nullable = false)
+    private boolean ativo = true; // espelha o DEFAULT TRUE do DDL</code></pre>
+<p>Peça por peça: o <code>@GeneratedValue(IDENTITY)</code> diz que o id quem gera é o banco (a coluna é <code>BIGSERIAL</code>); o Java recebe o número de volta depois do insert. O <code>@Enumerated(STRING)</code> grava o <em>texto</em> do enum, casando com o <code>CHECK</code> da coluna — sem ele o JPA gravaria a posição numérica e o CHECK estouraria. E como o schema é do Flyway (<code>ddl-auto: none</code>), o <code>@Column(nullable, unique)</code> não cria nada: é documentação do contrato, o espelho declarando o que a tabela exige. Os defaults do banco (<code>ativo</code>, <code>criado_em</code>) nascem iguais no campo Java.</p>
+
+<h2 id="historia" data-toc-title="A entidade rica" data-sub="Historia: @ManyToOne, @OneToMany com cascade, @ManyToMany">A entidade rica: Historia</h2>
+<p>A <code>Historia</code> é o coração do domínio e carrega as três relações do JPA:</p>
+<pre><code class="language-java">@ManyToOne(fetch = FetchType.LAZY, optional = false)
+@JoinColumn(name = "categoria_id")
+private Categoria categoria;
+
+@OneToMany(mappedBy = "historia", cascade = CascadeType.ALL, orphanRemoval = true)
+@OrderBy("ordem")
+private List&lt;Cena&gt; cenas = new ArrayList&lt;&gt;();
+
+@ManyToMany
+@JoinTable(name = "historia_personagem",
+        joinColumns = @JoinColumn(name = "historia_id"),
+        inverseJoinColumns = @JoinColumn(name = "personagem_id"))
+@OrderBy("ordem")
+private List&lt;Personagem&gt; personagens = new ArrayList&lt;&gt;();</code></pre>
+<p>O <code>@ManyToOne(LAZY)</code> não busca a categoria junto; só quando alguém chamar <code>getCategoria()</code>. As cenas são os vagões engatados: <code>cascade = ALL</code> salva as cenas junto da história, e <code>orphanRemoval = true</code> apaga do banco a cena que sair da lista — cena sem história não existe. O <code>@OrderBy("ordem")</code> garante a lista sempre na ordem de leitura. E no <code>@ManyToMany</code>, a tabela de junção <code>historia_personagem</code> existe no banco mas <strong>não vira classe</strong>: o JPA cuida dela por baixo.</p>
+<p>Um método pequeno evita o bug clássico de relação bidirecional (esquecer um lado e o insert sair sem <code>historia_id</code>):</p>
+<pre><code class="language-java">public void addCena(Cena cena) {
+    cena.setHistoria(this);   // casa os DOIS lados da relação
+    cenas.add(cena);
+}</code></pre>
+<p>No resto do domínio, duas curiosidades: a <code>Rotina</code> aponta pra ela mesma (<code>proximaRotina</code>, a trilha encadeada do site) e a <code>Emocao</code> carrega duas listas filhas (<code>sinais</code> e <code>passos</code>) — o desenho real que a leitura dos HTMLs impôs lá na etapa 1, não o rascunho genérico do plano.</p>
+
+<h2 id="repositories" data-toc-title="Repositories" data-sub="O nome do método é a consulta">Repositories: o nome é a consulta</h2>
+<p>Oito interfaces, uma por raiz do domínio, todas estendendo <code>JpaRepository</code> — ganham <code>save</code>, <code>findById</code>, <code>findAll</code> e <code>delete</code> de graça. As consultas específicas são <strong>derivadas do nome do método</strong>, zero SQL:</p>
+<pre><code class="language-java">public interface HistoriaRepository extends JpaRepository&lt;Historia, Long&gt; {
+
+    Optional&lt;Historia&gt; findBySlug(String slug);
+
+    /** Só o que aparece no site (o endpoint da Etapa 5 usa este). */
+    List&lt;Historia&gt; findByPublicadaTrueOrderByOrdem();
+}</code></pre>
+<p><code>findByPublicadaTrueOrderByOrdem</code> lê como frase: publicada igual a true, ordenado por ordem. O Spring Data monta o SQL no boot. No <code>UsuarioRepository</code>, o <code>findByEmail</code> já nasceu esperando o login da etapa 4.</p>
+
+<h2 id="teste" data-toc-title="O teste de fumaça" data-sub="@DataJpaTest contra o Postgres real, com rollback">O teste de fumaça contra o banco real</h2>
+<p>Decisão antes do código: <strong>nem H2, nem Testcontainers</strong>. O pom não tem nenhum dos dois, de propósito — o teste roda contra o Postgres real do container, o mesmo schema Flyway de dev. Duas anotações fazem isso, e a transação garante que nada fica:</p>
+<pre><code class="language-java">@DataJpaTest                                                      // só a fatia JPA
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+class HistoriaRepositoryTest {                                    // banco REAL, sem H2
+
+    @Test
+    void salvaELeHistoriaComCenasEPersonagens() {
+        Categoria aventura = categorias.findByChave("aventura").orElseThrow();
+        // ... monta história com 2 cenas + personagem, saveAndFlush ...
+        em.clear();  // limpa o cache de sessão: a releitura vem do BANCO
+
+        Historia lida = historias.findBySlug("teste-o-passeio").orElseThrow();
+        assertThat(lida.getCenas()).hasSize(2);
+        assertThat(lida.isPublicada()).isFalse();  // default: nasce rascunho
+    }
+}</code></pre>
+<p>O <code>@DataJpaTest</code> é transacional: tudo que o teste insere sofre <strong>rollback</strong> no fim, e o banco de dev fica limpo. A categoria vem do seed da V2 (já existe no banco). E a linha fácil de ignorar é o <code>em.clear()</code>: sem ela, o <code>findBySlug</code> devolveria o mesmo objeto do cache de sessão e o teste não provaria nada — com ela, a releitura vem do banco de verdade.</p>
+
+<h2 id="resultado" data-toc-title="Resultado" data-sub="Testes verdes e o SQL batendo com o V1">O resultado</h2>
+<p>Dois testes verdes, e o log do Hibernate como prova visual: <code>insert into historia (audio_path, categoria_id, criada_em, ..., publicada, slug, titulo)</code> — as colunas exatas do V1 — e os selects das cenas com <code>order by ordem</code>. O espelho reflete. Detalhe honesto: sem Lombok no projeto, getters e setters foram escritos na mão; arquivo comprido, zero mágica, e pro objetivo de estudo ver tudo explícito ajuda mais do que esconder.</p>
+
+<h2 id="resumo" data-toc-title="Resumo" data-sub="O essencial">Resumo</h2>
+<p>A etapa 3 em quatro movimentos. A entidade simples (<code>@Entity</code>, id gerado pelo banco, enum como texto, defaults espelhados, nomes convertidos sozinhos). A entidade rica (<code>@ManyToOne</code> preguiçoso, <code>@OneToMany</code> com cascade e orphanRemoval, <code>@ManyToMany</code> com junção invisível, <code>addCena</code> casando os dois lados). Os repositories com consulta derivada do nome. E o teste de fumaça <code>@DataJpaTest</code> + <code>Replace.NONE</code> contra o Postgres real, transacional com rollback, com o <code>em.clear()</code> garantindo que a leitura vem do banco. Próximo capítulo: o login com papéis e a vitrine.</p>
+
+</body>
+</html>
