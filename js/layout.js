@@ -486,6 +486,15 @@ var MENU = [
         basePath: '14-esfera'
     },
     {
+        grupo: 'DLA',
+        pagina: 'dla.html',
+        items: [
+            { label: '1 - Dia 1 - Pensamento Algorítmico', arquivo: '1-dia-1/1-dia-1.html', tipo: 'check' }
+        ],
+        pasta: '15-dla',
+        basePath: '15-dla'
+    },
+    {
         grupo: 'SERVIDOR',
         pagina: 'servidor.html',
         subgrupos: [
