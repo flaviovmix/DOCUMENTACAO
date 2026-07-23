@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dia 1 — DLA — Nexus</title>
+    <script src="../../../js/layout.js"></script>
+</head>
+<body>
+
+    <nav class="page-toc"></nav>
+
+    <div class="home-header">
+        <h1 class="home-title">Dia 1 — Pensamento Algorítmico</h1>
+        <p class="home-sub">Três desafios no papel e caneta: acordar, cozinhar e organizar o dia — o começo de pensar em sequência ordenada de ações</p>
+    </div>
+
+    <div class="audio-player" data-src="audio/dia-1.m4a">
+        <audio preload="metadata"></audio>
+        <button class="audio-btn" title="Play / Pause"></button>
+        <div class="audio-progress-wrap">
+            <input class="audio-seek" type="range" value="0" min="0" max="100" step="0.1">
+            <div class="audio-progress-fill"></div>
+        </div>
+        <span class="audio-time">0:00 / 0:00</span>
+    </div>
+
+    <div class="info-accordion">
+
+        <div class="info-row open">
+            <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+                <span class="info-row-title">O que é o Dia 1 — pensamento algorítmico</span>
+                <span class="info-row-btn">+</span>
+            </div>
+            <div class="info-row-body">
+                <p>O Dia 1 do Desafio Lógica Afiada não tem uma linha de código. São três desafios de papel e caneta, e todos treinam a mesma coisa: <strong>criar uma sequência ordenada de ações</strong> — que é a essência de um algoritmo.</p>
+                <p>A regra combinada nos desafios: <strong>na caneta e sem rasura</strong>. A dúvida que aparece no meio ("eu preciso listar cada movimento do corpo?") é proposital — é você quem define o nível de abstração da sua lista.</p>
+                <ul>
+                    <li><strong>Desafio 01</strong> — o algoritmo de acordar</li>
+                    <li><strong>Desafio 02</strong> — a sua receita favorita, com no mínimo 20 etapas</li>
+                    <li><strong>Desafio 03</strong> — a lista de tarefas do dia inteiro</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+                <span class="info-row-title">Desafio 01 — Escreva o seu algoritmo para acordar</span>
+                <span class="info-row-btn">+</span>
+            </div>
+            <div class="info-row-body">
+                <p>Lista numerada das atividades que você faz quando acorda, até o momento antes do café. Pode ter 20 itens ou 200 — você decide. O importante é enumerar de forma cronológica, um passo a passo.</p>
+                <p>Exemplo de resolução (16 passos):</p>
+                <ol>
+                    <li>Acordar</li>
+                    <li>Desligar o alarme</li>
+                    <li>Levantar-se da cama</li>
+                    <li>Ir ao banheiro</li>
+                    <li>Escovar os dentes</li>
+                    <li>Tomar banho</li>
+                    <li>Vestir-se</li>
+                    <li>Ir à cozinha</li>
+                    <li>Preparar o café da manhã</li>
+                    <li>Sentar-se à mesa</li>
+                    <li>Comer o café da manhã</li>
+                    <li>Limpar a mesa</li>
+                    <li>Lavar a louça do café da manhã</li>
+                    <li>Escovar os dentes novamente</li>
+                    <li>Pegar a mochila/bolsa</li>
+                    <li>Sair de casa</li>
+                </ol>
+                <p>Não há resposta certa ou errada: seu algoritmo pode ser mais detalhado ou mais abstrato do que esse. O objetivo é começar a pensar de maneira algorítmica e praticar a ordenação de tarefas em uma sequência lógica.</p>
+            </div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+                <span class="info-row-title">Desafio 02 — Escreva a sua receita favorita</span>
+                <span class="info-row-btn">+</span>
+            </div>
+            <div class="info-row-body">
+                <p>Cozinhar é muito próximo de executar um programa de computador: se você conhece as técnicas e os passos, basta repetir. O desafio: escrever a sua receita favorita <strong>com no mínimo 20 etapas</strong>, detalhando ao máximo o processo — aqui entra a <strong>granularidade</strong>.</p>
+                <p>Resolução de exemplo: brigadeiro em 21 passos.</p>
+                <ol>
+                    <li>Vá até a cozinha.</li>
+                    <li>Abra o armário onde você guarda os ingredientes.</li>
+                    <li>Pegue uma lata de leite condensado.</li>
+                    <li>Pegue uma colher de sopa de manteiga.</li>
+                    <li>Pegue 4 colheres de sopa de chocolate em pó.</li>
+                    <li>Pegue uma tigela de chocolate granulado.</li>
+                    <li>Feche o armário.</li>
+                    <li>Vá até o fogão e coloque uma panela em uma das bocas do fogão.</li>
+                    <li>Despeje a lata de leite condensado na panela.</li>
+                    <li>Adicione a manteiga à panela.</li>
+                    <li>Adicione o chocolate em pó à panela.</li>
+                    <li>Ligue o fogão na temperatura média.</li>
+                    <li>Com uma colher de pau, mexa os ingredientes na panela.</li>
+                    <li>Continue mexendo até que o brigadeiro comece a desgrudar do fundo da panela.</li>
+                    <li>Desligue o fogão.</li>
+                    <li>Deixe o brigadeiro esfriar por alguns minutos.</li>
+                    <li>Com as mãos limpas, pegue pequenas quantidades de brigadeiro e faça bolinhas.</li>
+                    <li>Passe as bolinhas no chocolate granulado.</li>
+                    <li>Coloque as bolinhas de brigadeiro em uma bandeja.</li>
+                    <li>Repita os passos 17 a 19 até que todo o brigadeiro tenha sido usado.</li>
+                    <li>Sirva os brigadeiros.</li>
+                </ol>
+                <p>A receita é um algoritmo: um conjunto de instruções passo a passo que, seguidas corretamente, levam a um resultado desejado. Foram 21 passos — poderiam ser 100 ou apenas 10, dependendo do nível de detalhe.</p>
+            </div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+                <span class="info-row-title">Desafio 03 — Monte sua lista de tarefas diárias</span>
+                <span class="info-row-btn">+</span>
+            </div>
+            <div class="info-row-body">
+                <p>Lista numerada das tarefas de um dia normal — do acordar até ir dormir: tomar café, fazer exercício, tomar banho, se vestir, ir ao trabalho ou estudar... O mais detalhado possível.</p>
+                <p>O truque no final: depois de terminar, <strong>observe cada item e imagine como seria se cada um fosse um programa de computador que pudesse ser elaborado de forma individual</strong>. É a ponte entre a lista do papel e o mundo dos programas.</p>
+                <p>Esse desafio não tem gabarito — a lista é sua.</p>
+            </div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-row-header" onclick="this.parentElement.classList.toggle('open')">
+                <span class="info-row-title">A lição do dia — granularidade e abstração</span>
+                <span class="info-row-btn">+</span>
+            </div>
+            <div class="info-row-body">
+                <p>Os três desafios parecem bobos, mas escondem duas ideias que carregam a programação inteira:</p>
+                <div class="table-wrap">
+                    <table>
+                        <tr><th>Ideia</th><th>O que é</th><th>Onde apareceu</th></tr>
+                        <tr><td><strong>Sequência ordenada</strong></td><td>Ações numeradas, uma depois da outra, em ordem cronológica</td><td>Os três desafios</td></tr>
+                        <tr><td><strong>Granularidade</strong></td><td>O nível de detalhe de cada passo — "escovar os dentes" ou 15 micro-movimentos</td><td>Receita com mínimo de 20 etapas</td></tr>
+                        <tr><td><strong>Abstração</strong></td><td>Escolher o que vale virar um passo e o que fica implícito — quem define é você</td><td>Algoritmo de acordar</td></tr>
+                    </table>
+                </div>
+                <p>É o mesmo processo de pensamento que mais tarde vira código: o programa é uma sequência de instruções, e o programador decide em que nível de detalhe cada instrução precisa ser escrita.</p>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
