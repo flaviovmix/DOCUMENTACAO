@@ -121,11 +121,13 @@
 
     <script>
     (function() {
-        const totalImages = 21;
+        // img7, img14 e img17 sairam da pasta em 15/07 (commit 6aada8c): a lista segue o que existe em assets-codex/img/
+        const IMAGE_NUMBERS = [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 15, 16, 18, 19, 20, 21];
+        const images = IMAGE_NUMBERS.map((number) => `assets-codex/img/img${number}.png`);
+        const totalImages = images.length;
         // refs setadas dentro de init() — layout.js reescreve body.innerHTML antes do nosso init rodar,
         // então capturar antes daria refs órfãs do document
         let sliderContainer, slide, dotsBar, leftButton, rightButton;
-        const images = Array.from({ length: totalImages }, (_, index) => `assets-codex/img/img${index + 1}.png`);
         const cardNames = ['Anna','Bianca','Clara','Diana','Elisa','Flora','Giovana','Helena','Isabela','Julia','Karla','Laura','Marina','Natasha','Olivia','Paula','Renata','Sofia','Valentina','Yasmin','Zoe'];
         let selectedIndex = null;
         let sequenceWidth = 0;
