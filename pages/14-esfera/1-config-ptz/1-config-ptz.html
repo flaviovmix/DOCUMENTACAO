@@ -39,11 +39,11 @@
                 Primeiro: a câmera está viva? Um ping no endereço dela respondeu. Depois, quais portas estão
                 abertas, já que cada porta é a entrada de um serviço.
             </p>
-<pre><code class="language-bash">ping -n 2 192.168.2.108
+<pre><code class="language-bash">ping -n 2 IP_DA_CAMERA
 
 # portas comuns de câmera
 for p in 80 554 8080 8000 88 443 37777 34567; do
-  (echo &gt; /dev/tcp/192.168.2.108/$p) &gt;/dev/null 2&gt;&amp;1 &amp;&amp; echo "porta $p ABERTA" || echo "porta $p fechada"
+  (echo &gt; /dev/tcp/IP_DA_CAMERA/$p) &gt;/dev/null 2&gt;&amp;1 &amp;&amp; echo "porta $p ABERTA" || echo "porta $p fechada"
 done</code></pre>
             <p>
                 Voltaram três abertas: <strong>80</strong> (web), <strong>443</strong> (web com cadeado) e
@@ -109,23 +109,23 @@ done</code></pre>
         </div>
         <div class="info-row-body">
             <p>
-                Tinha um segundo aparelho na rede, em <code>192.168.2.119</code>. Parecia outra câmera, mas a
+                Tinha um segundo aparelho na rede, em <code>IP_DA_CONTROLADORA</code>. Parecia outra câmera, mas a
                 página web dele se chamava "Camera Control Panel": era a <strong>própria controladora PTZ</strong>
                 (modelo VDL99010). Ela serve uma página web, e cada botão dela chama por baixo um endereço interno
                 chamado <code>fcgi</code>, passando qual ação quer.
             </p>
 <pre><code class="language-bash"># descobrir o modelo
-curl -s 'http://192.168.2.119/fcgi?token=0&amp;req=sys-info'
+curl -s 'http://IP_DA_CONTROLADORA/fcgi?token=0&amp;req=sys-info'
 # {"brand":9,"fw":"V0.1.28","user model":"VDL99010", ...}</code></pre>
             <p>
                 O <strong>tropeço</strong>: tentei logar chamando o campo de senha de <code>passwd</code>, que é o
                 nome comum. Deu erro. Lendo o JavaScript da tela de login, o campo era <code>password</code> por
-                extenso, e ia em texto puro. Com o nome certo, o clássico <code>admin/admin</code> entrou e
+                extenso, e ia em texto puro. Com o nome certo, o login de fábrica entrou e
                 devolveu um <strong>token</strong>, o crachá que precisa ir junto em toda chamada seguinte.
             </p>
-<pre><code class="language-bash">curl -s -X POST 'http://192.168.2.119/fcgi?token=0&amp;req=login' \
+<pre><code class="language-bash">curl -s -X POST 'http://IP_DA_CONTROLADORA/fcgi?token=0&amp;req=login' \
   -H 'Content-Type: application/json' \
-  -d '{"username":"admin","password":"admin"}'
+  -d '{"username":"USUARIO","password":"SENHA"}'
 # {"error":0,"role":1,"token":1798391659}</code></pre>
         </div>
     </div>
@@ -189,10 +189,10 @@ curl -s 'http://192.168.2.119/fcgi?token=0&amp;req=sys-info'
 <pre><code class="language-json">{
   "index": 0,
   "devices": {
-    "ip": "192.168.2.108",
+    "ip": "IP_DA_CAMERA",
     "name": "Câmera 1",
-    "stream": { "enable": 1, "use_tcp": 1, "password": "admin",
-                "source": 0, "url": "rtsp://0.0.0.0", "username": "admin" },
+    "stream": { "enable": 1, "use_tcp": 1, "password": "SENHA",
+                "source": 0, "url": "rtsp://0.0.0.0", "username": "USUARIO" },
     "type": 3,
     "visca over ip": { "compatiable": 0, "port": 52381 }
   }
